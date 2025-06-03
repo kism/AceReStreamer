@@ -1,0 +1,35 @@
+---
+name: Test (PyTest)
+
+on:
+  push:
+    branches:
+      - main
+      - test
+
+jobs:
+  test_boilerplate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"] # Don't bother with beta versions, slow on github. https://github.com/actions/python-versions/releases
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install the project
+        run: uv sync --no-group type --no-group lint
+
+      - name: Test with pytest
+        run: uv run pytest --cov-report=xml # xml report needed for codecov, other settings from pyproject.toml
+
+
+      # - name: Upload coverage reports to Codecov
+      #   uses: codecov/codecov-action@v4.0.1
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}

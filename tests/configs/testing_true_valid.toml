@@ -1,0 +1,7 @@
+
+[app]
+
+[logging]
+
+[flask]
+TESTING = true

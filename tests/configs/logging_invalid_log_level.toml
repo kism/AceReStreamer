@@ -1,0 +1,7 @@
+[app]
+
+[logging]
+level = "INVALID"
+
+[flask]
+TESTING = true
