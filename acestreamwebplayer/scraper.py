@@ -22,7 +22,7 @@ class FoundAceStream(BaseModel):
 class FoundAceStreams(BaseModel):
     """Model for a list of found AceStreams."""
 
-    site: str
+    site_name: str
     stream_list: list[FoundAceStream]
 
 
@@ -55,7 +55,7 @@ class AceScraper:
         """Print the found streams."""
         msg = "Found AceStreams:\n"
         for found_streams in self.streams:
-            msg += f"Site: {found_streams.site}\n"
+            msg += f"Site: {found_streams.site_name}\n"
             for stream in found_streams.stream_list:
                 msg += f"  - {stream.title} ({stream.url})\n"
         logger.info(msg)
@@ -187,7 +187,7 @@ class AceScraper:
 
         found_streams = self._process_candidates(streams_candidates)
         return FoundAceStreams(
-            site=site.name,
+            site_name=site.name,
             stream_list=found_streams,
         )
 

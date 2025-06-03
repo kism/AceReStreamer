@@ -24,10 +24,10 @@ function getStreams() {
       let msg_str = ""; // Initialize an empty string to hold the message
 
       for (const site of data) {
+        msg_str += `<strong>${site.site_name}</strong>: <br />`; // Append the site name to the message string
         for (const [section, sectionData] of Object.entries(site)) {
-          msg_str += `<strong>${section}</strong>: <br />`;
           for (const [key, value] of Object.entries(sectionData)) {
-            msg_str += `${key}: ${value}<br />`; // Append each key-value pair to the message string
+            msg_str += ` ${value.title} (${value.url})<br />`; // Append each key-value pair to the message string
           }
         }
       }
