@@ -46,6 +46,18 @@ class AceScraper:
             if found_ace_streams:
                 self.streams.append(found_ace_streams)
 
+        self.print_streams()
+
+
+    def print_streams(self) -> None:
+        """Print the found streams."""
+        msg = "Found AceStreams:\n"
+        for found_streams in self.streams:
+            msg += f"Site: {found_streams.site}\n"
+            for stream in found_streams.stream_list:
+                msg += f"  - {stream.title} ({stream.url})\n"
+        logger.info(msg)
+
     def _cleanup_candidate_title(self, title: str) -> str:
         """Cleanup the candidate title."""
         title = title.strip()
@@ -112,25 +124,6 @@ class AceScraper:
 
                 candidate_titles: list[str] = []
 
-                # tags_to_search = [link]
-
-                # if link.parent and isinstance(link.parent, Tag):
-                #     tags_to_search.append(link.parent)
-
-                #     if link.parent.parent and isinstance(link.parent.parent, Tag):
-                #         tags_to_search.append(link.parent.parent)
-
-
-                # for tag in tags_to_search:
-                #     if isinstance(tag, Tag):
-                #         candidate_titles.extend(
-                #             search_for_candidate(
-                #                 candidate_titles=candidate_titles.copy(),
-                #                 target_html_class=site.html_class,
-                #                 html_tag=tag,
-                #             )
-                #         )
-
                 # Recurse through the parent tags to find a suitable title
                 candidate_titles.extend(
                     search_for_candidate(
@@ -196,7 +189,7 @@ class AceScraper:
         for candidate in candidates:
             new_title_candidates = []
             for title in candidate.title_candidates:
-                logger.debug("Processing title candidate: %s", title)
+                # logger.debug("Processing title candidate: %s", title)
                 title_count = all_titles.count(title)
                 if title_count == 1:
                     # If the title appears only once, it's likely a unique title
