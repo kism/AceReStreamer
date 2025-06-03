@@ -25,10 +25,9 @@ function getStreams() {
 
       for (const site of data) {
         msg_str += `<strong>${site.site_name}</strong>: <br />`; // Append the site name to the message string
-        for (const [section, sectionData] of Object.entries(site)) {
-          for (const [key, value] of Object.entries(sectionData)) {
-            msg_str += ` ${value.title} (${value.url})<br />`; // Append each key-value pair to the message string
-          }
+
+        for (const siteData of site.stream_list) {
+          msg_str += ` ${siteData.title} (${siteData.url})<br />`; // Append each stream title and URL to the message string
         }
       }
       document.getElementById("stream-status").innerHTML = `API SUCCESS`; // Set message in element to indicate success
