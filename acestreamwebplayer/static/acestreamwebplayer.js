@@ -21,9 +21,18 @@ function getStreams() {
       }
     })
     .then((data) => {
-      const msg = data.msg; // Get the 'msg' field from the JSON data
+      let msg_str = ""; // Initialize an empty string to hold the message
+
+      for (const site of data) {
+        for (const [section, sectionData] of Object.entries(site)) {
+          msg_str += `<strong>${section}</strong>: <br />`;
+          for (const [key, value] of Object.entries(sectionData)) {
+            msg_str += `${key}: ${value}<br />`; // Append each key-value pair to the message string
+          }
+        }
+      }
       document.getElementById("stream-status").innerHTML = `API SUCCESS`; // Set message in element to indicate success
-      document.getElementById("stream-list").innerHTML = msg; // Set message in element to message received from flask
+      document.getElementById("stream-list").innerHTML = msg_str; // Set message in element to message received from flask
       document.getElementById("stream-list").style.color = "#008000"; // Set message in element to message received from flask
     })
     .catch((error) => {
