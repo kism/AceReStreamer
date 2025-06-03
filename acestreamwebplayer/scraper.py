@@ -69,64 +69,26 @@ class AceScraper:
 
         soup = BeautifulSoup(response.text, "html.parser")
 
-        # Determine search scope based on html_class configuration
-        if site.html_class != "":
-            search_scope = soup.find_all(class_=site.html_class)
-            if not search_scope:
-                logger.warning(
-                    "No elements found with class '%s' on site %s",
-                    site.html_class,
-                    site.name,
-                )
-                return FoundAceStreams(site=site.name, stream_list=[])
-            logger.debug(
-                "Found %d elements with class '%s' on site %s",
-                len(search_scope),
-                site.html_class,
-                site.name,
-            )
-            for element in search_scope:
-                logger.debug("Element found: %s", element)
-        else:
-            search_scope = [soup]
+        def search_children(html_class = "") -> list[str]:
+            pass
 
-        # Search for acestream links within the determined scope
-        for scope in search_scope:
-            for link in scope.find_all("a", href=True):
-                if "acestream://" in link["href"]:
-                    title_candidates = []
-                    ace_stream_url: str = link["href"]
+        def search_siblings(html_class = "") -> list[str]:
+            pass
 
-                    if link.text:
-                        title_candidates.append(self._cleanup_candidate_title(link.text))
-                    # Look for Text in parent divs or spans
+        def search_parents(html_class = "") -> list[str]:
+            pass
 
-                    parent_divs = link.find_parents(["div", "span"])
-                    for parent in parent_divs:
-                        # Get direct text content (not from nested tags)
-                        if parent.string:
-                            title_candidates.append(self._cleanup_candidate_title(parent.string))
 
-                        # Get text from direct child text nodes only
-                        for text_node in parent.find_all(text=True, recursive=False):
-                            logger.info("Found text node: %s", text_node)
-                            if text_node.strip():
-                                title_candidates.append(self._cleanup_candidate_title(text_node.strip()))
 
-                        # Get text from immediate previous sibling only
-                        prev_sibling = parent.find_previous_sibling(["div", "span"])
-                        if prev_sibling:
-                            if prev_sibling.string:
-                                title_candidates.append(self._cleanup_candidate_title(prev_sibling.string))
-                            for text_node in prev_sibling.find_all(text=True, recursive=False):
-                                if text_node.strip():
-                                    title_candidates.append(self._cleanup_candidate_title(text_node.strip()))
 
-                    # Remove duplicates and empty titles
-                    title_candidates = list(set(title_candidates))
+        for link in soup.find_all("a", href=True):
+            if "acestream://" in link["href"]:
+                ace_stream_url: str = link["href"]
 
-                    # Create a CandidateAceStream object
-                    streams_candidates.append(CandidateAceStream(url=ace_stream_url, title_candidates=title_candidates))
+
+
+
+
 
         found_streams = self._process_candidates(streams_candidates)
         return FoundAceStreams(
