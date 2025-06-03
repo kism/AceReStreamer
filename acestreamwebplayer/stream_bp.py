@@ -5,9 +5,9 @@ from http import HTTPStatus
 import requests
 from flask import Blueprint, Response, jsonify, render_template
 
-from .blueprint_one_object import MyCoolObject
 from .flask_helpers import get_current_app
 from .logger import get_logger
+from .scraper import AceScraper
 
 # Modules should all setup logging like this so the log messages include the modules name.
 # If you were to list all loggers with something like...
@@ -18,7 +18,7 @@ logger = get_logger(__name__)  # Create a logger: acestreamwebplayer.this_module
 # Register this module (__name__) as available to the blueprints of acestreamwebplayer, I think https://flask.palletsprojects.com/en/3.0.x/blueprints/
 bp = Blueprint("acestreamwebplayer", __name__)
 
-my_cool_object: MyCoolObject | None = None
+my_cool_object: AceScraper | None = None
 current_app = get_current_app()
 
 
@@ -29,14 +29,14 @@ current_app = get_current_app()
 #   you import the module under `with app.app_context():`
 # So we call this to set globals in this module.
 # You don't need to use this to set every variable as current_app will work fine in any function.
-def start_blueprint_one() -> None:
+def start_scraper() -> None:
     """Method to 'configure' this module. Needs to be called under `with app.app_context():` from __init__.py."""
     global my_cool_object  # noqa: PLW0603 Necessary evil as far as I can tell, could move to all objects but eh...
-    my_cool_object = MyCoolObject(current_app.aw_conf.app)  # Create the object with the config from the app object
+    my_cool_object = AceScraper(current_app.aw_conf.app.site_list)  # Create the object with the config from the app object
 
 
 @bp.route("/stream/<path:path>")
-def webplayer_stream(path: str) -> tuple[Response, int]:
+def webplayer_stream(path: str) -> tuple[str, int]:
     """Render the webpage for a stream."""
     stream_url = f"{current_app.config['SERVER_NAME']}/hls/{path}"
 

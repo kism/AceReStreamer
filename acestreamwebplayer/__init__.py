@@ -4,7 +4,7 @@ from pprint import pformat
 
 from flask import render_template
 
-from . import blueprint_one, config, logger
+from . import stream_bp, config, logger
 from .flask_helpers import FlaskAcestreamWebplayer
 
 __version__ = "0.0.1"  # This is the version of the app, used in pyproject.toml, enforced in a test.
@@ -50,12 +50,12 @@ def create_app(
     # KISM-BOILERPLATE: This is a demo blueprint blueprint_one.py. Rename the file
     #  and vars to make your own http endpoints and pages. Use multiple blueprints if
     #  you have functionality you can categorise.
-    app.register_blueprint(blueprint_one.bp)  # Register blueprint
+    app.register_blueprint(stream_bp.bp)  # Register blueprint
 
     # For modules that need information from the app object we need to start them under `with app.app_context():`
     # Since in the blueprint_one module, we use `from flask import current_app` to get the app object to get the config
     with app.app_context():
-        blueprint_one.start_blueprint_one()
+        stream_bp.start_scraper()
 
     # Flask homepage, generally don't have this as a blueprint.
     @app.route("/")

@@ -28,6 +28,7 @@ class AppConfDef(BaseModel):
     """Application configuration definition."""
 
     ace_address: str = "http://localhost:6878"
+    site_list: list[str] = []
 
     @model_validator(mode="after")
     def valid_ace_address(self) -> Self:
