@@ -80,6 +80,10 @@ class AceScraper:
             if not html_classes:
                 return candidate_titles
 
+            # Sibling above, not parent
+
+
+
             # Search children
             more = search_for_candidate(
                 candidate_titles=candidate_titles,
@@ -96,9 +100,14 @@ class AceScraper:
             )
             candidate_titles.extend(more)
 
+
+
+
             # Search the current tag
             for html_class in html_classes:
+                logger.warning("HTML class: %s", html_class)
                 if html_class == target_html_class:
+                    logger.warning("WE ADDING A TITLE: %s", html_tag.get_text())
                     candidate_title = self._cleanup_candidate_title(html_tag.get_text())
                     candidate_titles.append(candidate_title)
 
