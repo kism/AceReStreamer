@@ -56,7 +56,7 @@ class AceScraper:
 
     def _scrape_streams(self, site: ScrapeSite) -> FoundAceStreams | None:
         """Scrape the streams from the configured sites."""
-        streams_candidates = []
+        streams_candidates: list[CandidateAceStream] = []
 
         logger.debug("Scraping streams from site: %s", site)
         try:
@@ -80,10 +80,6 @@ class AceScraper:
             if not html_classes:
                 return candidate_titles
 
-            # Sibling above, not parent
-
-
-
             # Search children
             more = search_for_candidate(
                 candidate_titles=candidate_titles,
@@ -100,18 +96,13 @@ class AceScraper:
             )
             candidate_titles.extend(more)
 
-
-
-
             # Search the current tag
             for html_class in html_classes:
-                logger.warning("HTML class: %s", html_class)
                 if html_class == target_html_class:
-                    logger.warning("WE ADDING A TITLE: %s", html_tag.get_text())
+                    logger.debug("Found class: %s", html_class)
                     candidate_title = self._cleanup_candidate_title(html_tag.get_text())
+                    logger.warning("WE ADDING A TITLE: %s", candidate_title)
                     candidate_titles.append(candidate_title)
-
-            candidate_titles.extend(more)
 
             return candidate_titles
 
@@ -119,13 +110,73 @@ class AceScraper:
             if "acestream://" in link["href"]:
                 ace_stream_url: str = link["href"]
 
-                candidate_titles: list[str] = search_for_candidate(
-                    candidate_titles=[],
-                    target_html_class=site.html_class,
-                    html_tag=link.parent,
+                candidate_titles: list[str] = []
+
+                # tags_to_search = [link]
+
+                # if link.parent and isinstance(link.parent, Tag):
+                #     tags_to_search.append(link.parent)
+
+                #     if link.parent.parent and isinstance(link.parent.parent, Tag):
+                #         tags_to_search.append(link.parent.parent)
+
+
+                # for tag in tags_to_search:
+                #     if isinstance(tag, Tag):
+                #         candidate_titles.extend(
+                #             search_for_candidate(
+                #                 candidate_titles=candidate_titles.copy(),
+                #                 target_html_class=site.html_class,
+                #                 html_tag=tag,
+                #             )
+                #         )
+
+                # Recurse through the parent tags to find a suitable title
+                candidate_titles.extend(
+                    search_for_candidate(
+                        candidate_titles=candidate_titles.copy(),
+                        target_html_class=site.html_class,
+                        html_tag=link.parent,
+                    )
                 )
 
+                logger.info("Part 1 complete, n found: %s", len(candidate_titles))
+
+                # Recursively search the previous sibling for a title
+                previous_sibling = link.find_previous_sibling()
+                if previous_sibling and isinstance(previous_sibling, Tag):
+                    candidate_titles.extend(
+                        search_for_candidate(
+                            candidate_titles=candidate_titles.copy(),
+                            target_html_class=site.html_class,
+                            html_tag=previous_sibling,
+                        )
+                    )
+
+                logger.info("Part 2 complete, n found: %s", len(candidate_titles))
+
+                # Finally, do the same for the parent's sibling
+                if link.parent:
+                    parent_sibling = link.parent.find_previous_sibling()
+                    if parent_sibling and isinstance(parent_sibling, Tag):
+                        candidate_titles.extend(
+                            search_for_candidate(
+                                candidate_titles=candidate_titles.copy(),
+                                target_html_class=site.html_class,
+                                html_tag=parent_sibling,
+                            )
+                        )
+
+                logger.info("Part 3 complete, n found: %s", len(candidate_titles))
+
                 logger.info(candidate_titles)
+
+                streams_candidates.append(
+                    CandidateAceStream(
+                        url=ace_stream_url,
+                        title_candidates=list(set(candidate_titles)),  # Remove duplicates
+                    )
+                )
 
         found_streams = self._process_candidates(streams_candidates)
         return FoundAceStreams(
