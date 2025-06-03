@@ -23,12 +23,28 @@ class FlaskConfDef(BaseModel):
     TESTING: bool = False
     SERVER_NAME: str = "http://127.0.0.1:5100"
 
+class ScrapeSite(BaseModel):
+    """Model for a site to scrape."""
+
+    name: str = "Example"
+    url: str = "https://example.com"
+    html_class: str = ""
+
+    @model_validator(mode="after")
+    def valid_url(self) -> Self:
+        """Validate the URL."""
+        self.url = self.url.strip()
+        if not self.url.startswith("http://") and not self.url.startswith("https://"):
+            msg = f"URL for {self.name} must start with 'http://' or 'https://'"
+            raise ValueError(msg)
+        return self
+
 
 class AppConfDef(BaseModel):
     """Application configuration definition."""
 
     ace_address: str = "http://localhost:6878"
-    site_list: list[str] = []
+    site_list: list[ScrapeSite] = [ScrapeSite()]
 
     @model_validator(mode="after")
     def valid_ace_address(self) -> Self:

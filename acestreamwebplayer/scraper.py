@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from pydantic import BaseModel
 
 from .logger import get_logger
+from .config import ScrapeSite
 
 logger = get_logger(__name__)
 
@@ -16,6 +17,13 @@ class FoundAceStream(BaseModel):
 
     title: str
     url: str
+
+
+class FoundAceStreams(BaseModel):
+    """Model for a list of found AceStreams."""
+
+    site: str
+    stream_list: list[FoundAceStream]
 
 
 class CandidateAceStream(BaseModel):
@@ -29,15 +37,14 @@ class CandidateAceStream(BaseModel):
 class AceScraper:
     """Demo object."""
 
-    def __init__(self, site_list: list[str]) -> None:
+    def __init__(self, site_list: list[ScrapeSite]) -> None:
         """Init MyCoolObject."""
         self.site_list = site_list
-        self.streams: list[FoundAceStream] = []
+        self.streams: list[FoundAceStreams] = []
         for site in self.site_list:
-            self._scrape_streams(site)
-
-        for stream in self.streams:
-            logger.info("Found stream: %s - %s", stream.title, stream.url)
+            found_ace_streams = self._scrape_streams(site)
+            if found_ace_streams:
+                self.streams.append(found_ace_streams)
 
     def _cleanup_candidate_title(self, title: str) -> str:
         """Cleanup the candidate title."""
@@ -47,13 +54,13 @@ class AceScraper:
         # Remove any ace 40 digit hex ids from the title
         return re.sub(r"\b[0-9a-fA-F]{40}\b", "", title).strip()
 
-    def _scrape_streams(self, site: str) -> None:
+    def _scrape_streams(self, site: ScrapeSite) -> FoundAceStreams | None:
         """Scrape the streams from the configured sites."""
         streams_candidates = []
 
         logger.debug("Scraping streams from site: %s", site)
         try:
-            response = requests.get(site, timeout=10)
+            response = requests.get(site.url, timeout=10)
             response.raise_for_status()
             soup = BeautifulSoup(response.text, "html.parser")
             for link in soup.find_all("a", href=True):
@@ -91,10 +98,16 @@ class AceScraper:
                     # Create a CandidateAceStream object
                     streams_candidates.append(CandidateAceStream(url=ace_stream_url, title_candidates=title_candidates))
 
-            self._process_candidates(streams_candidates)
+            found_streams = self._process_candidates(streams_candidates)
+            return FoundAceStreams(
+                site=site.name,
+                stream_list=found_streams,
+            )
 
         except requests.RequestException as e:
             logger.error("Error scraping site %s: %s", site, e)
+
+        return None
 
     def _process_candidates(self, candidates: list[CandidateAceStream]) -> list[FoundAceStream]:
         """Process candidate streams to find valid AceStreams."""
