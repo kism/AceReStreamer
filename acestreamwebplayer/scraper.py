@@ -33,7 +33,6 @@ class CandidateAceStream(BaseModel):
     title_candidates: list[str] = []
 
 
-# KISM-BOILERPLATE: Demo object, doesn't do much
 class AceScraper:
     """Scraper object."""
 
@@ -48,10 +47,9 @@ class AceScraper:
 
         self.print_streams()
 
-    def get_streams(self):
-        value = [stream.model_dump_json() for stream in self.streams]
-
-        return value
+    def get_streams(self) -> list[dict[str, str]]:
+        """Get the found streams as a list of JSON strings."""
+        return [stream.model_dump() for stream in self.streams]
 
     def print_streams(self) -> None:
         """Print the found streams."""
@@ -145,14 +143,10 @@ class AceScraper:
             )
             candidate_titles.extend(more)
 
-            # Search previous sibling
+            # Find and search previous sibling
             previous_sibling = html_tag.find_previous_sibling()
             if previous_sibling and isinstance(previous_sibling, Tag):
-                more = search_for_candidate(
-                    candidate_titles=candidate_titles.copy(),
-                    target_html_class=target_html_class,
-                    html_tag=previous_sibling,
-                )
+                more = check_candidate(target_html_class, previous_sibling)
                 candidate_titles.extend(more)
 
             return candidate_titles
@@ -160,6 +154,10 @@ class AceScraper:
         for link in soup.find_all("a", href=True):
             if "acestream://" in link["href"]:
                 ace_stream_url: str = link["href"]
+
+                # Skip URLs that are already, maybe this can check if the second instance has a different title
+                if ace_stream_url in [stream.url for stream in streams_candidates]:
+                    continue
 
                 candidate_titles: list[str] = []
 

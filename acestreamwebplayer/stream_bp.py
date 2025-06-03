@@ -84,11 +84,13 @@ def ace_content(path: str) -> tuple[Response, int]:
 
     return Response(resp.content, resp.status_code, headers), HTTPStatus.OK
 
-@bp.route("/api/streams")
+@bp.route("/api/v1/streams")
 def api_streams() -> tuple[Response, int]:
     """API endpoint to get the streams."""
     if not ace_scraper:
         logger.error("Scraper object not initialized.")
         return jsonify({"error": "Scraper not initialized"}), HTTPStatus.INTERNAL_SERVER_ERROR
 
-    return jsonify(ace_scraper.get_streams()), HTTPStatus.OK
+    streams = ace_scraper.get_streams()
+
+    return jsonify(streams), HTTPStatus.OK
