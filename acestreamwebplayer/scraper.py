@@ -62,12 +62,41 @@ class AceScraper:
         try:
             response = requests.get(site.url, timeout=10)
             response.raise_for_status()
-            soup = BeautifulSoup(response.text, "html.parser")
-            for link in soup.find_all("a", href=True):
+
+        except requests.RequestException as e:
+            logger.exception("Error scraping site %s: %s", site, e)
+            return None
+
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        # Determine search scope based on html_class configuration
+        if site.html_class != "":
+            search_scope = soup.find_all(class_=site.html_class)
+            if not search_scope:
+                logger.warning(
+                    "No elements found with class '%s' on site %s",
+                    site.html_class,
+                    site.name,
+                )
+                return FoundAceStreams(site=site.name, stream_list=[])
+            logger.debug(
+                "Found %d elements with class '%s' on site %s",
+                len(search_scope),
+                site.html_class,
+                site.name,
+            )
+            for element in search_scope:
+                logger.debug("Element found: %s", element)
+        else:
+            search_scope = [soup]
+
+        # Search for acestream links within the determined scope
+        for scope in search_scope:
+            for link in scope.find_all("a", href=True):
                 if "acestream://" in link["href"]:
+                    title_candidates = []
                     ace_stream_url: str = link["href"]
 
-                    title_candidates = []
                     if link.text:
                         title_candidates.append(self._cleanup_candidate_title(link.text))
                     # Look for Text in parent divs or spans
@@ -80,6 +109,7 @@ class AceScraper:
 
                         # Get text from direct child text nodes only
                         for text_node in parent.find_all(text=True, recursive=False):
+                            logger.info("Found text node: %s", text_node)
                             if text_node.strip():
                                 title_candidates.append(self._cleanup_candidate_title(text_node.strip()))
 
@@ -98,16 +128,11 @@ class AceScraper:
                     # Create a CandidateAceStream object
                     streams_candidates.append(CandidateAceStream(url=ace_stream_url, title_candidates=title_candidates))
 
-            found_streams = self._process_candidates(streams_candidates)
-            return FoundAceStreams(
-                site=site.name,
-                stream_list=found_streams,
-            )
-
-        except requests.RequestException as e:
-            logger.error("Error scraping site %s: %s", site, e)
-
-        return None
+        found_streams = self._process_candidates(streams_candidates)
+        return FoundAceStreams(
+            site=site.name,
+            stream_list=found_streams,
+        )
 
     def _process_candidates(self, candidates: list[CandidateAceStream]) -> list[FoundAceStream]:
         """Process candidate streams to find valid AceStreams."""
@@ -121,6 +146,7 @@ class AceScraper:
         for candidate in candidates:
             new_title_candidates = []
             for title in candidate.title_candidates:
+                logger.debug("Processing title candidate: %s", title)
                 title_count = all_titles.count(title)
                 if title_count == 1:
                     # If the title appears only once, it's likely a unique title
