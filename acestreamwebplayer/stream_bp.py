@@ -18,7 +18,7 @@ logger = get_logger(__name__)  # Create a logger: acestreamwebplayer.this_module
 # Register this module (__name__) as available to the blueprints of acestreamwebplayer, I think https://flask.palletsprojects.com/en/3.0.x/blueprints/
 bp = Blueprint("acestreamwebplayer", __name__)
 
-my_cool_object: AceScraper | None = None
+ace_scraper: AceScraper | None = None
 current_app = get_current_app()
 
 
@@ -31,8 +31,8 @@ current_app = get_current_app()
 # You don't need to use this to set every variable as current_app will work fine in any function.
 def start_scraper() -> None:
     """Method to 'configure' this module. Needs to be called under `with app.app_context():` from __init__.py."""
-    global my_cool_object  # noqa: PLW0603 Necessary evil as far as I can tell, could move to all objects but eh...
-    my_cool_object = AceScraper(current_app.aw_conf.app.site_list)  # Create the object with the config from the app object
+    global ace_scraper  # noqa: PLW0603 Necessary evil as far as I can tell, could move to all objects but eh...
+    ace_scraper = AceScraper(current_app.aw_conf.app.site_list)  # Create the object with the config from the app object
 
 
 @bp.route("/stream/<path:path>")
@@ -83,3 +83,12 @@ def ace_content(path: str) -> tuple[Response, int]:
     headers = [(name, value) for (name, value) in resp.raw.headers.items() if name.lower() not in excluded_headers]
 
     return Response(resp.content, resp.status_code, headers), HTTPStatus.OK
+
+@bp.route("/api/streams")
+def api_streams() -> tuple[Response, int]:
+    """API endpoint to get the streams."""
+    if not ace_scraper:
+        logger.error("Scraper object not initialized.")
+        return jsonify({"error": "Scraper not initialized"}), HTTPStatus.INTERNAL_SERVER_ERROR
+
+    return jsonify(ace_scraper.get_streams()), HTTPStatus.OK

@@ -35,7 +35,7 @@ class CandidateAceStream(BaseModel):
 
 # KISM-BOILERPLATE: Demo object, doesn't do much
 class AceScraper:
-    """Demo object."""
+    """Scraper object."""
 
     def __init__(self, site_list: list[ScrapeSite]) -> None:
         """Init MyCoolObject."""
@@ -48,6 +48,10 @@ class AceScraper:
 
         self.print_streams()
 
+    def get_streams(self):
+        value = [stream.model_dump_json() for stream in self.streams]
+
+        return value
 
     def print_streams(self) -> None:
         """Print the found streams."""
@@ -79,7 +83,25 @@ class AceScraper:
             logger.exception("Error scraping site %s: %s", site, e)
             return None
 
+        response.encoding = "utf-8"  # Ensure the response is decoded correctly
+
         soup = BeautifulSoup(response.text, "html.parser")
+
+        def check_candidate(target_html_class: str, html_tag: Tag | None) -> list[str]:
+            """Check if the tag has the target class."""
+            if not html_tag or not isinstance(html_tag, Tag):
+                return []
+            html_classes = html_tag.get("class", None)
+            if not html_classes:
+                return []
+
+            candidate_titles: list[str] = []
+            for html_class in html_classes:
+                if html_class == target_html_class:
+                    candidate_title = self._cleanup_candidate_title(html_tag.get_text())
+                    candidate_titles.append(candidate_title)
+
+            return candidate_titles
 
         def search_for_candidate(
             candidate_titles: list[str], target_html_class: str = "", html_tag: Tag | None = None
@@ -92,13 +114,7 @@ class AceScraper:
             if not html_classes:
                 return candidate_titles
 
-            # Search children
-            more = search_for_candidate(
-                candidate_titles=candidate_titles,
-                target_html_class=target_html_class,
-                html_tag=html_tag.child,
-            )
-            candidate_titles.extend(more)
+            # Search children could go here with html_tag.child but I think it will do nothing
 
             # Search Parents
             more = search_for_candidate(
@@ -108,13 +124,36 @@ class AceScraper:
             )
             candidate_titles.extend(more)
 
-            # Search the current tag
-            for html_class in html_classes:
-                if html_class == target_html_class:
-                    logger.debug("Found class: %s", html_class)
-                    candidate_title = self._cleanup_candidate_title(html_tag.get_text())
-                    logger.warning("WE ADDING A TITLE: %s", candidate_title)
-                    candidate_titles.append(candidate_title)
+            # Search Self
+            candidates = check_candidate(target_html_class, html_tag)
+            candidate_titles.extend(candidates)
+
+            return candidate_titles
+
+        def search_sibling_for_candidate(
+            candidate_titles: list[str], target_html_class: str = "", html_tag: Tag | None = None
+        ) -> list[str]:
+            """Search the previous sibling of the given tag for a title."""
+            if not html_tag or not isinstance(html_tag, Tag):
+                return candidate_titles
+
+            # Recurse through the parent tags
+            more = search_sibling_for_candidate(
+                candidate_titles=candidate_titles.copy(),
+                target_html_class=target_html_class,
+                html_tag=html_tag.parent,
+            )
+            candidate_titles.extend(more)
+
+            # Search previous sibling
+            previous_sibling = html_tag.find_previous_sibling()
+            if previous_sibling and isinstance(previous_sibling, Tag):
+                more = search_for_candidate(
+                    candidate_titles=candidate_titles.copy(),
+                    target_html_class=target_html_class,
+                    html_tag=previous_sibling,
+                )
+                candidate_titles.extend(more)
 
             return candidate_titles
 
@@ -133,36 +172,13 @@ class AceScraper:
                     )
                 )
 
-                logger.info("Part 1 complete, n found: %s", len(candidate_titles))
-
-                # Recursively search the previous sibling for a title
-                previous_sibling = link.find_previous_sibling()
-                if previous_sibling and isinstance(previous_sibling, Tag):
-                    candidate_titles.extend(
-                        search_for_candidate(
-                            candidate_titles=candidate_titles.copy(),
-                            target_html_class=site.html_class,
-                            html_tag=previous_sibling,
-                        )
+                candidate_titles.extend(
+                    search_sibling_for_candidate(
+                        candidate_titles=candidate_titles.copy(),
+                        target_html_class=site.html_class,
+                        html_tag=link.parent,
                     )
-
-                logger.info("Part 2 complete, n found: %s", len(candidate_titles))
-
-                # Finally, do the same for the parent's sibling
-                if link.parent:
-                    parent_sibling = link.parent.find_previous_sibling()
-                    if parent_sibling and isinstance(parent_sibling, Tag):
-                        candidate_titles.extend(
-                            search_for_candidate(
-                                candidate_titles=candidate_titles.copy(),
-                                target_html_class=site.html_class,
-                                html_tag=parent_sibling,
-                            )
-                        )
-
-                logger.info("Part 3 complete, n found: %s", len(candidate_titles))
-
-                logger.info(candidate_titles)
+                )
 
                 streams_candidates.append(
                     CandidateAceStream(
@@ -189,11 +205,11 @@ class AceScraper:
         for candidate in candidates:
             new_title_candidates = []
             for title in candidate.title_candidates:
-                # logger.debug("Processing title candidate: %s", title)
-                title_count = all_titles.count(title)
-                if title_count == 1:
-                    # If the title appears only once, it's likely a unique title
-                    new_title_candidates.append(title)
+                new_title = title
+                if len(title) < 30:
+                    new_title = title[-30:]  # Shorten titles to last 20 characters if they are too short
+
+                new_title_candidates.append(new_title)
 
             title = "<Unknown Title>"
             if len(new_title_candidates) == 1:

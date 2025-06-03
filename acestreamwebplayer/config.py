@@ -23,6 +23,7 @@ class FlaskConfDef(BaseModel):
     TESTING: bool = False
     SERVER_NAME: str = "http://127.0.0.1:5100"
 
+
 class ScrapeSite(BaseModel):
     """Model for a site to scrape."""
 
