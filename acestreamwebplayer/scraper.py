@@ -3,7 +3,7 @@
 import re
 
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from pydantic import BaseModel
 
 from .logger import get_logger
@@ -69,14 +69,27 @@ class AceScraper:
 
         soup = BeautifulSoup(response.text, "html.parser")
 
-        def search_children(html_class = "") -> list[str]:
-            pass
+        def search_children(html_class: str = "", html_tag: Tag | None = None) -> list[str]:
+            return []
 
-        def search_siblings(html_class = "") -> list[str]:
-            pass
+        def search_sibling(html_class: str = "", html_tag: Tag | None = None) -> list[str]:
+            return []
 
-        def search_parents(html_class = "") -> list[str]:
-            pass
+        def search_parent(target_html_class: str = "", html_tag: Tag | None = None) -> list[str]:
+            """Search the parent of the given tag for a title."""
+            if not html_tag or not isinstance(html_tag, Tag):
+                return []
+
+            html_classes = html_tag.get("class", None)
+            if not html_classes:
+                return []
+
+
+            for html_class in html_classes:
+                if html_class == target_html_class:
+                    return [self._cleanup_candidate_title(html_tag.get_text(strip=True))]
+
+            return []
 
 
 
@@ -85,10 +98,12 @@ class AceScraper:
             if "acestream://" in link["href"]:
                 ace_stream_url: str = link["href"]
 
+                candidate_titles: list[str] = search_parent(
+                    target_html_class=site.html_class,
+                    html_tag=link.parent,
+                )
 
-
-
-
+                logger.info(candidate_titles)
 
         found_streams = self._process_candidates(streams_candidates)
         return FoundAceStreams(
