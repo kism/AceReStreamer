@@ -69,36 +69,49 @@ class AceScraper:
 
         soup = BeautifulSoup(response.text, "html.parser")
 
-        def search_children(html_class: str = "", html_tag: Tag | None = None) -> list[str]:
-            return []
-
-        def search_sibling(html_class: str = "", html_tag: Tag | None = None) -> list[str]:
-            return []
-
-        def search_parent(target_html_class: str = "", html_tag: Tag | None = None) -> list[str]:
+        def search_for_candidate(
+            candidate_titles: list[str], target_html_class: str = "", html_tag: Tag | None = None
+        ) -> list[str]:
             """Search the parent of the given tag for a title."""
             if not html_tag or not isinstance(html_tag, Tag):
-                return []
+                return candidate_titles
 
             html_classes = html_tag.get("class", None)
             if not html_classes:
-                return []
+                return candidate_titles
 
+            # Search children
+            more = search_for_candidate(
+                candidate_titles=candidate_titles,
+                target_html_class=target_html_class,
+                html_tag=html_tag.child,
+            )
+            candidate_titles.extend(more)
 
+            # Search Parents
+            more = search_for_candidate(
+                candidate_titles=candidate_titles,
+                target_html_class=target_html_class,
+                html_tag=html_tag.parent,
+            )
+            candidate_titles.extend(more)
+
+            # Search the current tag
             for html_class in html_classes:
                 if html_class == target_html_class:
-                    return [self._cleanup_candidate_title(html_tag.get_text(strip=True))]
+                    candidate_title = self._cleanup_candidate_title(html_tag.get_text())
+                    candidate_titles.append(candidate_title)
 
-            return []
+            candidate_titles.extend(more)
 
-
-
+            return candidate_titles
 
         for link in soup.find_all("a", href=True):
             if "acestream://" in link["href"]:
                 ace_stream_url: str = link["href"]
 
-                candidate_titles: list[str] = search_parent(
+                candidate_titles: list[str] = search_for_candidate(
+                    candidate_titles=[],
                     target_html_class=site.html_class,
                     html_tag=link.parent,
                 )
