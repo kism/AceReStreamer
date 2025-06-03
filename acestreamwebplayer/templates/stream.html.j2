@@ -4,6 +4,7 @@
 <head>
   <title>Ace Restreamer</title>
   <script src="/static/hls.min.js"></script>
+  <script src="/static/acestreamwebplayer.js"></script>
   <link rel="icon" href="static/favicon.ico" type="image/x-icon" />
   <link rel="stylesheet" href="/static/zy.css" />
 </head>
@@ -15,8 +16,9 @@
   <p>{{ stream_url }}</p>
   <video id="video" controls width="640" height="360"></video>
   <p>Source Ace Stream ID: {{ stream_id }}</p>
+  <code id="stream-status"></code>
+  <ul id="stream-list"></ul>
 </body>
-
 
 <script>
   var video = document.getElementById('video');

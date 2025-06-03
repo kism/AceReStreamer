@@ -35,15 +35,11 @@ def start_scraper() -> None:
     ace_scraper = AceScraper(current_app.aw_conf.app.site_list)  # Create the object with the config from the app object
 
 
-@bp.route("/stream/<path:path>")
-def webplayer_stream(path: str) -> tuple[str, int]:
+@bp.route("/stream")
+def webplayer_stream() -> tuple[str, int]:
     """Render the webpage for a stream."""
-    stream_url = f"{current_app.config['SERVER_NAME']}/hls/{path}"
-
     return render_template(
         "stream.html.j2",
-        stream_url=stream_url,
-        stream_id=path,
     ), HTTPStatus.OK
 
 
@@ -83,6 +79,7 @@ def ace_content(path: str) -> tuple[Response, int]:
     headers = [(name, value) for (name, value) in resp.raw.headers.items() if name.lower() not in excluded_headers]
 
     return Response(resp.content, resp.status_code, headers), HTTPStatus.OK
+
 
 @bp.route("/api/v1/streams")
 def api_streams() -> tuple[Response, int]:
