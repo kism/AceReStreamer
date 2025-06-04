@@ -10,7 +10,7 @@ from .scraper_helpers import search_for_candidate, search_sibling_for_candidate
 
 logger = get_logger(__name__)
 
-STREAM_TITLE_MAX_LENGTH = 25
+STREAM_TITLE_MAX_LENGTH = 30
 
 
 class FoundAceStream(BaseModel):

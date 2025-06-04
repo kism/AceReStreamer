@@ -80,4 +80,4 @@ Defaults are defined in config.py, and config loading and validation are handled
 
 ## todo
 
-less recursion in patient search i think
+~~less recursion in patient search i think~~
