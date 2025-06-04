@@ -1,15 +1,16 @@
 """Scraper object."""
 
-import re
-
 import requests
 from bs4 import BeautifulSoup, Tag
 from pydantic import BaseModel
 
-from .logger import get_logger
 from .config import ScrapeSite
+from .logger import get_logger
+from .scraper_helpers import search_for_candidate, search_sibling_for_candidate
 
 logger = get_logger(__name__)
+
+STREAM_TITLE_MAX_LENGTH = 30
 
 
 class FoundAceStream(BaseModel):
@@ -60,14 +61,6 @@ class AceScraper:
                 msg += f"  - {stream.title} ({stream.url})\n"
         logger.info(msg)
 
-    def _cleanup_candidate_title(self, title: str) -> str:
-        """Cleanup the candidate title."""
-        title = title.strip()
-        title = title.split("acestream://")[-1].strip()
-        title = title.split("\n")[0].strip()  # Remove any newlines
-        # Remove any ace 40 digit hex ids from the title
-        return re.sub(r"\b[0-9a-fA-F]{40}\b", "", title).strip()
-
     def _scrape_streams(self, site: ScrapeSite) -> FoundAceStreams | None:
         """Scrape the streams from the configured sites."""
         streams_candidates: list[CandidateAceStream] = []
@@ -76,116 +69,53 @@ class AceScraper:
         try:
             response = requests.get(site.url, timeout=10)
             response.raise_for_status()
-
+            response.encoding = "utf-8"  # Ensure the response is decoded correctly
         except requests.RequestException as e:
             logger.exception("Error scraping site %s: %s", site, e)
             return None
 
-        response.encoding = "utf-8"  # Ensure the response is decoded correctly
-
         soup = BeautifulSoup(response.text, "html.parser")
 
-        def check_candidate(target_html_class: str, html_tag: Tag | None) -> list[str]:
-            """Check if the tag has the target class."""
-            if not html_tag or not isinstance(html_tag, Tag):
-                return []
-            html_classes = html_tag.get("class", None)
-            if not html_classes:
-                return []
-
-            candidate_titles: list[str] = []
-            for html_class in html_classes:
-                if html_class == target_html_class:
-                    candidate_title = self._cleanup_candidate_title(html_tag.get_text())
-                    candidate_titles.append(candidate_title)
-
-            return candidate_titles
-
-        def search_for_candidate(
-            candidate_titles: list[str], target_html_class: str = "", html_tag: Tag | None = None
-        ) -> list[str]:
-            """Search the parent of the given tag for a title."""
-            if not html_tag or not isinstance(html_tag, Tag):
-                return candidate_titles
-
-            html_classes = html_tag.get("class", None)
-            if not html_classes:
-                return candidate_titles
-
-            # Search children could go here with html_tag.child but I think it will do nothing
-
-            # Search Parents
-            more = search_for_candidate(
-                candidate_titles=candidate_titles,
-                target_html_class=target_html_class,
-                html_tag=html_tag.parent,
-            )
-            candidate_titles.extend(more)
-
-            # Search Self
-            candidates = check_candidate(target_html_class, html_tag)
-            candidate_titles.extend(candidates)
-
-            return candidate_titles
-
-        def search_sibling_for_candidate(
-            candidate_titles: list[str], target_html_class: str = "", html_tag: Tag | None = None
-        ) -> list[str]:
-            """Search the previous sibling of the given tag for a title."""
-            if not html_tag or not isinstance(html_tag, Tag):
-                return candidate_titles
-
-            # Recurse through the parent tags
-            more = search_sibling_for_candidate(
-                candidate_titles=candidate_titles.copy(),
-                target_html_class=target_html_class,
-                html_tag=html_tag.parent,
-            )
-            candidate_titles.extend(more)
-
-            # Find and search previous sibling
-            previous_sibling = html_tag.find_previous_sibling()
-            if previous_sibling and isinstance(previous_sibling, Tag):
-                more = check_candidate(target_html_class, previous_sibling)
-                candidate_titles.extend(more)
-
-            return candidate_titles
-
         for link in soup.find_all("a", href=True):
+            # Appease mypy
+            if not isinstance(link, Tag):
+                continue
             link_href = link.get("href", None)
-            if not link_href and not isinstance(link_href, str):
+            if not link_href or not isinstance(link_href, str):
                 continue
 
+            # We are iterating through all links, we only want AceStream links
             if "acestream://" in link_href:
+                candidate_titles: list[str] = []
                 ace_stream_url: str = link_href.strip()
 
-                # Skip URLs that are already, maybe this can check if the second instance has a different title
+                # Skip URLs that are already added, maybe this can check if the second instance has a different title
                 if ace_stream_url in [stream.url for stream in streams_candidates]:
                     continue
-
-                candidate_titles: list[str] = []
 
                 # Recurse through the parent tags to find a suitable title
                 candidate_titles.extend(
                     search_for_candidate(
                         candidate_titles=candidate_titles.copy(),
                         target_html_class=site.html_class,
-                        html_tag=link.parent,
+                        html_tag=link,
                     )
                 )
 
+                # Recurse through parent tags and check their siblings for a suitable title
                 candidate_titles.extend(
                     search_sibling_for_candidate(
                         candidate_titles=candidate_titles.copy(),
                         target_html_class=site.html_class,
-                        html_tag=link.parent,
+                        html_tag=link,
                     )
                 )
 
+                # Create a candidate AceStream with the found titles, remove duplicates
                 streams_candidates.append(
                     CandidateAceStream(
                         url=ace_stream_url,
-                        title_candidates=list(set(candidate_titles)),  # Remove duplicates
+                        title_candidates=list(set(candidate_titles)),
                     )
                 )
 
@@ -208,8 +138,10 @@ class AceScraper:
             new_title_candidates = []
             for title in candidate.title_candidates:
                 new_title = title
-                if len(title) < 30:
-                    new_title = title[-30:]  # Shorten titles to last 20 characters if they are too short
+                if len(title) < STREAM_TITLE_MAX_LENGTH:
+                    new_title = title[
+                        -STREAM_TITLE_MAX_LENGTH:
+                    ]  # Shorten titles to last 20 characters if they are too short
 
                 new_title_candidates.append(new_title)
 
