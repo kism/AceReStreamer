@@ -73,7 +73,6 @@ class AcestreamWebplayerConfig(BaseSettings):
     app: AppConfDef = AppConfDef()
     flask: FlaskConfDef = FlaskConfDef()
     logging: LoggingConfDef = LoggingConfDef()
-    top_level_field_for_a_laugh: str = "This is a top level field"
 
     def write_config(self, config_location: Path) -> None:
         """Write the current settings to a TOML file."""
