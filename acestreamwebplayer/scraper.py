@@ -10,7 +10,7 @@ from .scraper_helpers import search_for_candidate, search_sibling_for_candidate
 
 logger = get_logger(__name__)
 
-STREAM_TITLE_MAX_LENGTH = 30
+STREAM_TITLE_MAX_LENGTH = 25
 
 
 class FoundAceStream(BaseModel):
@@ -139,10 +139,12 @@ class AceScraper:
             new_title_candidates = []
             for title in candidate.title_candidates:
                 new_title = title
-                if len(title) < STREAM_TITLE_MAX_LENGTH:
-                    new_title = title[
-                        -STREAM_TITLE_MAX_LENGTH:
-                    ]  # Shorten titles to last 20 characters if they are too short
+                # If the candidate is defined multiple times in all_titles, we ignore it
+                if all_titles.count(title) > 1:
+                    continue
+
+                if len(title) > STREAM_TITLE_MAX_LENGTH:
+                    new_title = title[:STREAM_TITLE_MAX_LENGTH]  # Shorten titles if they are too long
 
                 new_title_candidates.append(new_title)
 
