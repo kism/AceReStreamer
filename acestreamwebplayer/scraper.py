@@ -152,8 +152,12 @@ class AceScraper:
             return candidate_titles
 
         for link in soup.find_all("a", href=True):
-            if "acestream://" in link["href"]:
-                ace_stream_url: str = link["href"]
+            link_href = link.get("href", None)
+            if not link_href and not isinstance(link_href, str):
+                continue
+
+            if "acestream://" in link_href:
+                ace_stream_url: str = link_href.strip()
 
                 # Skip URLs that are already, maybe this can check if the second instance has a different title
                 if ace_stream_url in [stream.url for stream in streams_candidates]:

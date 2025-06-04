@@ -1,5 +1,18 @@
 #!/usr/bin/env bash
 
-cd test_site || exit 1
 
-python3 -m http.server 8999 &
+cd tests/test_sites || exit 1
+
+
+
+PORT=8999
+HOST="http://localhost:$PORT"
+
+echo "Paths for test sites:"
+
+find . -type f | sort | sed "s|^\.|$HOST|"
+
+echo
+echo "Starting web server on port $PORT"
+
+python3 -m http.server $PORT
