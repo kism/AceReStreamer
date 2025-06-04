@@ -70,8 +70,8 @@ class AceScraper:
             response = requests.get(site.url, timeout=10)
             response.raise_for_status()
             response.encoding = "utf-8"  # Ensure the response is decoded correctly
-        except requests.RequestException as e:
-            logger.exception("Error scraping site %s: %s", site, e)
+        except requests.RequestException:
+            logger.exception("Error scraping site %s", site)
             return None
 
         soup = BeautifulSoup(response.text, "html.parser")

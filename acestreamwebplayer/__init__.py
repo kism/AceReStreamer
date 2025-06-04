@@ -4,7 +4,7 @@ from pprint import pformat
 
 from flask import render_template
 
-from . import stream_bp, config, logger
+from . import config, logger, stream_bp
 from .flask_helpers import FlaskAcestreamWebplayer
 
 __version__ = "0.0.1"  # This is the version of the app, used in pyproject.toml, enforced in a test.
