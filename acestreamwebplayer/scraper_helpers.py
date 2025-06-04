@@ -4,17 +4,21 @@ import re
 
 from bs4 import Tag
 
+from .logger import get_logger
+
+logger = get_logger(__name__)
+
 
 def check_candidate(target_html_class: str, html_tag: Tag | None) -> list[str]:
     """Check if the tag has the target class."""
     if not html_tag or not isinstance(html_tag, Tag):
         return []
-    html_classes = html_tag.get("class", [""])
-    # if not html_classes:
-    #     return []
+    html_classes = html_tag.get("class", None)
+
+    html_classes_good = [""] if not html_classes or not isinstance(html_classes, list) else html_classes
 
     candidate_titles: list[str] = []
-    for html_class in html_classes:
+    for html_class in html_classes_good:
         if html_class == target_html_class:
             candidate_title = cleanup_candidate_title(html_tag.get_text())
             candidate_titles.append(candidate_title)
@@ -29,10 +33,6 @@ def search_for_candidate(
     if not html_tag or not isinstance(html_tag, Tag):
         return candidate_titles
 
-    html_classes = html_tag.get("class", None)
-    if not html_classes:
-        return candidate_titles
-
     # Search children could go here with html_tag.child but I think it will do nothing
 
     # Search Parents
@@ -42,6 +42,11 @@ def search_for_candidate(
         html_tag=html_tag.parent,
     )
     candidate_titles.extend(more)
+
+    if target_html_class != "":
+        html_classes = html_tag.get("class", None)
+        if not html_classes:
+            return candidate_titles
 
     # Search Self
     candidates = check_candidate(target_html_class, html_tag)

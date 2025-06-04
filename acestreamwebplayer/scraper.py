@@ -103,13 +103,14 @@ class AceScraper:
                 )
 
                 # Recurse through parent tags and check their siblings for a suitable title
-                candidate_titles.extend(
-                    search_sibling_for_candidate(
-                        candidate_titles=candidate_titles.copy(),
-                        target_html_class=site.html_class,
-                        html_tag=link,
+                if site.check_sibling:
+                    candidate_titles.extend(
+                        search_sibling_for_candidate(
+                            candidate_titles=candidate_titles.copy(),
+                            target_html_class=site.html_class,
+                            html_tag=link,
+                        )
                     )
-                )
 
                 # Create a candidate AceStream with the found titles, remove duplicates
                 streams_candidates.append(

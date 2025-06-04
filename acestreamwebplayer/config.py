@@ -30,6 +30,7 @@ class ScrapeSite(BaseModel):
     name: str = "Example"
     url: str = "https://example.com"
     html_class: str = ""
+    check_sibling: bool = False
 
     @model_validator(mode="after")
     def valid_url(self) -> Self:
