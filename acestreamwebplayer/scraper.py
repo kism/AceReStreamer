@@ -139,8 +139,8 @@ class AceScraper:
             new_title_candidates = []
             for title in candidate.title_candidates:
                 new_title = title
-                # Anything that gets found for every candidate gets ignored, -1 because who knows
-                if all_titles.count(title) >= len(candidates) - 1:
+                # Anything that gets found for every candidate gets ignored
+                if all_titles.count(title) >= len(candidates):
                     continue
 
                 if len(title) > STREAM_TITLE_MAX_LENGTH:
