@@ -21,6 +21,8 @@ bp = Blueprint("acestreamwebplayer", __name__)
 ace_scraper: AceScraper | None = None
 current_app = get_current_app()
 
+EXCLUDED_REVERSE_PROXY_HEADERS = ["content-encoding", "content-length", "transfer-encoding", "connection", "keep-alive"]
+
 
 # KISM-BOILERPLATE:
 # So regarding current_app, have a read of https://flask.palletsprojects.com/en/3.0.x/appcontext/
@@ -57,8 +59,11 @@ def hls_stream(path: str) -> tuple[Response, int]:
         logger.error("/hls/ reverse proxy failure %s", error_short)  # noqa: TRY400 Naa this should be shorter
         return jsonify({"error": "Failed to fetch HLS stream"}), HTTPStatus.INTERNAL_SERVER_ERROR
 
-    excluded_headers = ["content-encoding", "content-length", "transfer-encoding", "connection"]
-    headers = [(name, value) for (name, value) in resp.raw.headers.items() if name.lower() not in excluded_headers]
+    headers = [
+        (name, value)
+        for (name, value) in resp.raw.headers.items()
+        if name.lower() not in EXCLUDED_REVERSE_PROXY_HEADERS
+    ]
 
     content_str = resp.content.decode("utf-8", errors="replace")
 
@@ -81,8 +86,11 @@ def ace_content(path: str) -> tuple[Response, int]:
     logger.debug("Ace content requested for path: %s", path)
 
     resp = requests.get(url, timeout=10, stream=True)
-    excluded_headers = ["content-encoding", "content-length", "transfer-encoding", "connection"]
-    headers = [(name, value) for (name, value) in resp.raw.headers.items() if name.lower() not in excluded_headers]
+    headers = [
+        (name, value)
+        for (name, value) in resp.raw.headers.items()
+        if name.lower() not in EXCLUDED_REVERSE_PROXY_HEADERS
+    ]
 
     return Response(resp.content, resp.status_code, headers), HTTPStatus.OK
 

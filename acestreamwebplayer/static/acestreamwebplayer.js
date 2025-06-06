@@ -42,7 +42,7 @@ function getStreams() {
         ele.appendChild(ul); // Append the unordered list to the stream list element
       }
 
-      document.getElementById("stream-status").style.display = "None"; // Set message in element to indicate success
+      document.getElementById("stream-status").innerText = "No stream loaded"; // Set message in element to indicate success
     })
     .catch((error) => {
       clearTimeout(timeoutId); //Stop the timeout since we only care about the GET timing out
@@ -70,6 +70,15 @@ function loadStream() {
   } else {
     console.error("This browser does not support HLS playback.");
   }
+
+  currentStreamId = document.getElementById("current-stream-id");
+  currentStreamId.innerHTML = `Source Ace Stream ID: ${window.location.hash.substring(1)}`; // Set the current stream ID in the element
+
+  //start playing the video
+  video.play().catch((error) => {
+    console.error("Error playing video:", error);
+  });
+  document.getElementById("stream-status").innerHTML = `Loading stream...`; // Set message in element to indicate loading
 }
 
 function loadStreamUrl(streamId) {
