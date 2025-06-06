@@ -326,12 +326,12 @@ input[type="reset"],
 input[type="button"] {
   display: inline-block;
   height: 30px;
-  padding: 0 15px;
+  padding: 0 5px;
   color: white;
   text-align: center;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
-  line-height: 30px;
+  line-height: 25px;
   letter-spacing: 0.1rem;
   text-transform: uppercase;
   text-decoration: none;
@@ -341,7 +341,7 @@ input[type="button"] {
   border: 1px solid white;
   cursor: pointer;
   box-sizing: border-box;
-  min-width: 100px;
+  min-width: 50px;
 }
 
 .button:hover,
@@ -516,6 +516,13 @@ label > .label-body {
 
 .file-list::-webkit-scrollbar-thumb:hover {
   background-color: #555; /* Darker color on hover */
+}
+
+#stream-id-input {
+  width: 100%;
+  max-width: 350px;
+  margin-top: 4px;
+  margin-bottom: 4px;
 }
 
 /* #endregion */
