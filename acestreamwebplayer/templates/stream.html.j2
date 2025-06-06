@@ -15,10 +15,10 @@
   <p>Direct stream url, open with VLC or MPV</p>
   <p>{{ stream_url }}</p>
   <video id="video" controls width="640" height="360"></video>
-  <p>Source Ace Stream ID: {{ stream_id }}</p>
-  <code id="stream-status"></code>
-  <br><br>
-  <code id="stream-list"></code>
+  <p id="current-stream-id">Source Ace Stream ID: </p>
+  <code id="stream-status">Fetching streams</code>
+  <h3>Stream List</h3>
+  <div id="stream-list"></div>
 </body>
 
 <script>

@@ -23,16 +23,25 @@ function getStreams() {
     .then((data) => {
       let msg_str = ""; // Initialize an empty string to hold the message
 
-      for (const site of data) {
-        msg_str += `<strong>${site.site_name}</strong>: <br />`; // Append the site name to the message string
+      ele = document.getElementById("stream-list"); // The div for the stream list
+      ele.innerHTML = ""; // Clear the inner HTML of the stream list element
 
-        for (const siteData of site.stream_list) {
-          msg_str += ` ${siteData.title} (${siteData.url})<br />`; // Append each stream title and URL to the message string
+      for (const site of data) {
+        console.log(site.site_name); // Log the site data to the console for debugging
+        const ul = document.createElement("ul"); // Create a new unordered list element
+        ul.textContent = site.site_name; // Set the text content of the list to the site name
+
+        for (const stream of site.stream_list) {
+          const li = document.createElement("li"); // Create a new list item element
+          li.textContent = `${stream.title} (${stream.url})`; // Set the text content of the list item to the stream title and URL
+          console.log(li.textContent); // Log the list item text content to the console for debugging
+          ul.appendChild(li); // Append the list item to the unordered list
         }
+        ele.appendChild(ul); // Append the unordered list to the stream list element
       }
-      document.getElementById("stream-status").innerHTML = `API SUCCESS`; // Set message in element to indicate success
+
+      document.getElementById("stream-status").style.display = "None"; // Set message in element to indicate success
       document.getElementById("stream-list").innerHTML = msg_str; // Set message in element to message received from flask
-      document.getElementById("stream-list").style.color = "#008000"; // Set message in element to message received from flask
     })
     .catch((error) => {
       clearTimeout(timeoutId); //Stop the timeout since we only care about the GET timing out
