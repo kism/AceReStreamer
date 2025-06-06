@@ -27,21 +27,22 @@ function getStreams() {
       ele.innerHTML = ""; // Clear the inner HTML of the stream list element
 
       for (const site of data) {
-        console.log(site.site_name); // Log the site data to the console for debugging
         const ul = document.createElement("ul"); // Create a new unordered list element
+        ul.className = "file-list"; // Set the class name for the unordered list
         ul.textContent = site.site_name; // Set the text content of the list to the site name
 
         for (const stream of site.stream_list) {
           const li = document.createElement("li"); // Create a new list item element
-          li.textContent = `${stream.title} (${stream.url})`; // Set the text content of the list item to the stream title and URL
-          console.log(li.textContent); // Log the list item text content to the console for debugging
+          const a = document.createElement("a"); // Create a new anchor element
+          a.textContent = `${stream.title}`;
+          a.onclick = () => loadStreamUrl(stream.ace_id); // Set the onclick event to load the stream URL
+          li.appendChild(a); // Append the anchor to the list item
           ul.appendChild(li); // Append the list item to the unordered list
         }
         ele.appendChild(ul); // Append the unordered list to the stream list element
       }
 
       document.getElementById("stream-status").style.display = "None"; // Set message in element to indicate success
-      document.getElementById("stream-list").innerHTML = msg_str; // Set message in element to message received from flask
     })
     .catch((error) => {
       clearTimeout(timeoutId); //Stop the timeout since we only care about the GET timing out
@@ -56,7 +57,29 @@ function getStreams() {
     });
 }
 
+function loadStream() {
+  const video = document.getElementById("video");
+  const videoSrc = `/hls/${window.location.hash.substring(1)}`;
+  console.log(`Loading stream: ${videoSrc}`);
+  if (Hls.isSupported()) {
+    var hls = new Hls();
+    hls.loadSource(videoSrc);
+    hls.attachMedia(video);
+  } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+    video.src = videoSrc; // For Safari
+  } else {
+    console.error("This browser does not support HLS playback.");
+  }
+}
+
+function loadStreamUrl(streamId) {
+  window.location.hash = streamId; // Set the URL in the hash
+  loadStream();
+}
+
 //On page load we run this code, running the function getStreams()
 getStreams();
 //We call every 10 minutes to update the streams
 setInterval(getStreams, 10 * 60 * 1000); // 10 minutes in milliseconds
+
+window.addEventListener("loadStream", loadStream);

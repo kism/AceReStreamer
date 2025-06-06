@@ -50,7 +50,13 @@ def hls_stream(path: str) -> tuple[Response, int]:
 
     logger.debug("HLS stream requested for path: %s", path)
 
-    resp = requests.get(url, timeout=10, stream=True)
+    try:
+        resp = requests.get(url, timeout=10, stream=True)
+    except requests.RequestException as e:
+        error_short = type(e).__name__
+        logger.error("/hls/ reverse proxy failure %s", error_short)  # noqa: TRY400 Naa this should be shorter
+        return jsonify({"error": "Failed to fetch HLS stream"}), HTTPStatus.INTERNAL_SERVER_ERROR
+
     excluded_headers = ["content-encoding", "content-length", "transfer-encoding", "connection"]
     headers = [(name, value) for (name, value) in resp.raw.headers.items() if name.lower() not in excluded_headers]
 

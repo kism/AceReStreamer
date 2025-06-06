@@ -17,7 +17,7 @@ class FoundAceStream(BaseModel):
     """Model for a found AceStream."""
 
     title: str
-    url: str
+    ace_id: str
 
 
 class FoundAceStreams(BaseModel):
@@ -30,7 +30,7 @@ class FoundAceStreams(BaseModel):
 class CandidateAceStream(BaseModel):
     """Model for a candidate AceStream."""
 
-    url: str
+    ace_id: str
     title_candidates: list[str] = []
 
 
@@ -62,7 +62,7 @@ class AceScraper:
         for found_streams in self.streams:
             msg += f"Site: {found_streams.site_name}\n"
             for stream in found_streams.stream_list:
-                msg += f"  - {stream.title} ({stream.url})\n"
+                msg += f"  - {stream.title} ({stream.ace_id})\n"
         logger.info(msg)
 
     def _scrape_streams(self, site: ScrapeSite) -> FoundAceStreams | None:
@@ -95,7 +95,7 @@ class AceScraper:
                 ace_stream_url: str = link_href.strip()
 
                 # Skip URLs that are already added, maybe this can check if the second instance has a different title
-                if ace_stream_url in [stream.url for stream in streams_candidates]:
+                if ace_stream_url in [stream.ace_id for stream in streams_candidates]:
                     continue
 
                 # Recurse through the parent tags to find a suitable title
@@ -120,7 +120,7 @@ class AceScraper:
                 # Create a candidate AceStream with the found titles, remove duplicates
                 streams_candidates.append(
                     CandidateAceStream(
-                        url=ace_stream_url,
+                        ace_id=ace_stream_url,
                         title_candidates=list(set(candidate_titles)),
                     )
                 )
@@ -160,15 +160,15 @@ class AceScraper:
                 # If there are multiple candidates, we can choose the first one
                 title = " / ".join(new_title_candidates)
 
-            url_no_uri = candidate.url.split("acestream://")[-1].strip()
+            url_no_uri = candidate.ace_id.split("acestream://")[-1].strip()
 
             found_streams.append(
                 FoundAceStream(
                     title=title,
-                    url=url_no_uri,
+                    ace_id=url_no_uri,
                 )
             )
 
-        logger.debug("Streams: \n%s", "\n".join([f"{stream.title} - {stream.url}" for stream in found_streams]))
+        logger.debug("Streams: \n%s", "\n".join([f"{stream.title} - {stream.ace_id}" for stream in found_streams]))
 
         return found_streams
