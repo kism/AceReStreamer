@@ -54,6 +54,10 @@ class AceScraper:
 
     def print_streams(self) -> None:
         """Print the found streams."""
+        if not self.streams:
+            logger.warning("Scraper found no AceStreams.")
+            return
+
         msg = "Found AceStreams:\n"
         for found_streams in self.streams:
             msg += f"Site: {found_streams.site_name}\n"
@@ -70,8 +74,9 @@ class AceScraper:
             response = requests.get(site.url, timeout=10)
             response.raise_for_status()
             response.encoding = "utf-8"  # Ensure the response is decoded correctly
-        except requests.RequestException:
-            logger.exception("Error scraping site %s", site)
+        except requests.RequestException as e:
+            error_short = type(e).__name__
+            logger.error("Error scraping site %s, %s", site.url, error_short)  # noqa: TRY400 Naa this should be shorter
             return None
 
         soup = BeautifulSoup(response.text, "html.parser")
