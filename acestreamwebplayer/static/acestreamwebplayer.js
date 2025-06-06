@@ -35,13 +35,14 @@ function getStreams() {
           const li = document.createElement("li"); // Create a new list item element
           const a = document.createElement("a"); // Create a new anchor element
           a.textContent = `${stream.title}`;
-          a.onclick = () => loadStreamUrl(stream.ace_id); // Set the onclick event to load the stream URL
+          a.onclick = () => loadStreamUrl(stream.ace_id, stream.title); // Set the onclick event to load the stream URL
           li.appendChild(a); // Append the anchor to the list item
           ul.appendChild(li); // Append the list item to the unordered list
         }
         ele.appendChild(ul); // Append the unordered list to the stream list element
       }
 
+      document.getElementById("stream-status").style.display = "none"; // Hide the status element
       document.getElementById("stream-status").innerText = "No stream loaded"; // Set message in element to indicate success
     })
     .catch((error) => {
@@ -71,24 +72,32 @@ function loadStream() {
     console.error("This browser does not support HLS playback.");
   }
 
-  currentStreamId = document.getElementById("current-stream-id");
-  currentStreamId.innerHTML = `Source Ace Stream ID: ${window.location.hash.substring(1)}`; // Set the current stream ID in the element
+  directURL = document.getElementById("direct-url");
+  directURL.innerHTML = `${window.location.origin}${videoSrc}`;
 
   //start playing the video
   video.play().catch((error) => {
     console.error("Error playing video:", error);
+    document.getElementById("stream-status").innerHTML = `Error playing video: ${error.message}`; // Set message in element to indicate error
   });
-  document.getElementById("stream-status").innerHTML = `Loading stream...`; // Set message in element to indicate loading
 }
 
-function loadStreamUrl(streamId) {
+function loadStreamUrl(streamId, streamName) {
   window.location.hash = streamId; // Set the URL in the hash
+  document.getElementById("stream-name").innerText = streamName;
   loadStream();
 }
 
-//On page load we run this code, running the function getStreams()
-getStreams();
-//We call every 10 minutes to update the streams
-setInterval(getStreams, 10 * 60 * 1000); // 10 minutes in milliseconds
+// Wrap DOM-dependent code in DOMContentLoaded event
+document.addEventListener("DOMContentLoaded", function () {
+  getStreams();
+  setInterval(getStreams, 10 * 60 * 1000); // 10 minutes in milliseconds
 
-window.addEventListener("loadStream", loadStream);
+  window.addEventListener("loadStream", loadStream);
+
+  let streamId = window.location.hash.substring(1);
+  console.log(`Stream ID from URL: ${streamId}`);
+  if (streamId) {
+    loadStreamUrl(streamId, streamId);
+  }
+});

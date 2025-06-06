@@ -21,7 +21,8 @@ bp = Blueprint("acestreamwebplayer", __name__)
 ace_scraper: AceScraper | None = None
 current_app = get_current_app()
 
-EXCLUDED_REVERSE_PROXY_HEADERS = ["content-encoding", "content-length", "transfer-encoding", "connection", "keep-alive"]
+REVERSE_PROXY_EXCLUDED_HEADERS = ["content-encoding", "content-length", "transfer-encoding", "connection", "keep-alive"]
+REVERSE_PROXY_TIMEOUT = 30  # Very high but alas
 
 
 # KISM-BOILERPLATE:
@@ -53,7 +54,7 @@ def hls_stream(path: str) -> tuple[Response, int]:
     logger.debug("HLS stream requested for path: %s", path)
 
     try:
-        resp = requests.get(url, timeout=10, stream=True)
+        resp = requests.get(url, timeout=REVERSE_PROXY_TIMEOUT, stream=True)
     except requests.RequestException as e:
         error_short = type(e).__name__
         logger.error("/hls/ reverse proxy failure %s", error_short)  # noqa: TRY400 Naa this should be shorter
@@ -62,14 +63,14 @@ def hls_stream(path: str) -> tuple[Response, int]:
     headers = [
         (name, value)
         for (name, value) in resp.raw.headers.items()
-        if name.lower() not in EXCLUDED_REVERSE_PROXY_HEADERS
+        if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS
     ]
 
     content_str = resp.content.decode("utf-8", errors="replace")
 
     if "#EXTM3U" not in content_str:
         logger.error("Invalid HLS stream received for path: %s", path)
-        return jsonify({"error": "Invalid HLS stream"}), HTTPStatus.BAD_REQUEST
+        return jsonify({"error": "Invalid HLS stream", "m3u8": content_str}), HTTPStatus.BAD_REQUEST
 
     # Replace the base URL in the stream with the new address
     # The docker container for acestream will always be localhost:6878
@@ -85,11 +86,17 @@ def ace_content(path: str) -> tuple[Response, int]:
 
     logger.debug("Ace content requested for path: %s", path)
 
-    resp = requests.get(url, timeout=10, stream=True)
+    try:
+        resp = requests.get(url, timeout=REVERSE_PROXY_TIMEOUT, stream=True)
+    except requests.RequestException as e:
+        error_short = type(e).__name__
+        logger.error("/ace/c/ reverse proxy failure %s", error_short)  # noqa: TRY400 Naa this should be shorter
+        return jsonify({"error": "Failed to fetch HLS stream"}), HTTPStatus.INTERNAL_SERVER_ERROR
+
     headers = [
         (name, value)
         for (name, value) in resp.raw.headers.items()
-        if name.lower() not in EXCLUDED_REVERSE_PROXY_HEADERS
+        if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS
     ]
 
     return Response(resp.content, resp.status_code, headers), HTTPStatus.OK
