@@ -34,8 +34,11 @@ function getStreams() {
         for (const stream of site.stream_list) {
           const li = document.createElement("li"); // Create a new list item element
           const a = document.createElement("a"); // Create a new anchor element
+          const code = document.createElement("code"); // Create a new code element
+          code.textContent = `(${stream.quality})`; // Set the text content of the code element to the stream quality
           a.textContent = `${stream.title}`;
           a.onclick = () => loadStreamUrl(stream.ace_id, stream.title); // Set the onclick event to load the stream URL
+          li.appendChild(code); // Append the code element to the list item
           li.appendChild(a); // Append the anchor to the list item
           ul.appendChild(li); // Append the list item to the unordered list
         }
@@ -68,7 +71,7 @@ function setOnPageErrorMessage(message) {
   // wait 5 seconds
   setTimeout(() => {
     document.getElementById("stream-status").style.backgroundColor = ""; // Reset the background color
-  }, 100); 
+  }, 100);
 
 
 }
@@ -139,7 +142,8 @@ function checkIfPlaying() {
 // Wrap DOM-dependent code in DOMContentLoaded event
 document.addEventListener("DOMContentLoaded", function () {
   getStreams();
-  setInterval(getStreams, 10 * 60 * 1000); // 10 minutes in milliseconds
+  //setInterval(getStreams, 10 * 60 * 1000); // 10 minutes in milliseconds
+  setInterval(getStreams, 60 * 100); // 10 seconds in milliseconds
 
   window.addEventListener("loadStream", loadStream);
 

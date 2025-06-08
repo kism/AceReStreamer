@@ -49,6 +49,10 @@ def webplayer_stream() -> tuple[str, int]:
 @bp.route("/hls/<path:path>")
 def hls_stream(path: str) -> tuple[Response, int]:
     """Reverse proxy the HLS from Ace."""
+    if not ace_scraper:
+        logger.error("Scraper object not initialized.")
+        return jsonify({"error": "Scraper not initialized"}), HTTPStatus.INTERNAL_SERVER_ERROR
+
     url = f"{current_app.aw_conf.app.ace_address}/ace/manifest.m3u8?content_id={path}"
 
     logger.debug("HLS stream requested for path: %s", path)
@@ -58,6 +62,7 @@ def hls_stream(path: str) -> tuple[Response, int]:
     except requests.RequestException as e:
         error_short = type(e).__name__
         logger.error("/hls/ reverse proxy failure %s", error_short)  # noqa: TRY400 Naa this should be shorter
+        ace_scraper.set_quality(path, -5)
         return jsonify({"error": "Failed to fetch HLS stream"}), HTTPStatus.INTERNAL_SERVER_ERROR
 
     headers = [
@@ -75,6 +80,8 @@ def hls_stream(path: str) -> tuple[Response, int]:
     # Replace the base URL in the stream with the new address
     # The docker container for acestream will always be localhost:6878
     content_str = content_str.replace("http://localhost:6878", current_app.config["SERVER_NAME"])
+
+    ace_scraper.set_quality(path, 1)
 
     return Response(content_str, resp.status_code, headers), HTTPStatus.OK
 

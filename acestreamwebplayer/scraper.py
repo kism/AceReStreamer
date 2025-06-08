@@ -18,6 +18,7 @@ class FoundAceStream(BaseModel):
 
     title: str
     ace_id: str
+    quality: int = 50
 
 
 class FoundAceStreams(BaseModel):
@@ -51,6 +52,16 @@ class AceScraper:
     def get_streams(self) -> list[dict[str, str]]:
         """Get the found streams as a list of JSON strings."""
         return [stream.model_dump() for stream in self.streams]
+
+    def set_quality(self, ace_id: str, rating: int) -> None:
+        """Increment the quality of a stream by ace_id."""
+        for found_streams in self.streams:
+            for stream in found_streams.stream_list:
+                if stream.ace_id == ace_id:
+                    stream.quality += rating
+                    stream.quality = max(stream.quality, 0)
+                    stream.quality = min(stream.quality, 99)
+                    return
 
     def print_streams(self) -> None:
         """Print the found streams."""
