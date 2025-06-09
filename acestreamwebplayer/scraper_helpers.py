@@ -86,3 +86,18 @@ def cleanup_candidate_title(title: str) -> str:
     title = title.split("\n")[0].strip()  # Remove any newlines
     # Remove any ace 40 digit hex ids from the title
     return re.sub(r"\b[0-9a-fA-F]{40}\b", "", title).strip()
+
+
+def candidates_regex_cleanup(candidate_titles: list[str], regex: str) -> list[str]:
+    """Cleanup the title using a regex."""
+    if regex == "":
+        return candidate_titles
+
+    new_candidate_titles = []
+
+    for title in candidate_titles:
+        title_new = re.sub(regex, "", title).strip()
+        if title_new != "":
+            new_candidate_titles.append(title_new)
+
+    return new_candidate_titles

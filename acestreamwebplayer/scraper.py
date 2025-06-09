@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from .config import AceScrapeSettings, ScrapeSite
 from .logger import get_logger
-from .scraper_helpers import search_for_candidate, search_sibling_for_candidate
+from .scraper_helpers import candidates_regex_cleanup, search_for_candidate, search_sibling_for_candidate
 
 logger = get_logger(__name__)
 
@@ -198,14 +198,7 @@ class AceScraper:
                     )
 
                 # Through all title candidates, clean them up if there is a regex defined
-                if site.regex_remove != "":
-                    new_candidate_titles = []
-                    for title in candidate_titles:
-                        title_new = re.sub(site.regex_remove, "", title).strip()
-                        if title_new != "":
-                            new_candidate_titles.append(title_new)
-
-                    candidate_titles = new_candidate_titles
+                candidate_titles = candidates_regex_cleanup(candidate_titles, site.stream_title_regex_postprocessing)
 
                 # Create a candidate AceStream with the found titles, remove duplicates
                 streams_candidates.append(
