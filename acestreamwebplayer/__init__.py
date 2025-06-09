@@ -2,8 +2,6 @@
 
 from pprint import pformat
 
-from flask import render_template
-
 from . import authentication_bp, config, logger, stream_bp
 from .flask_helpers import FlaskAcestreamWebplayer
 

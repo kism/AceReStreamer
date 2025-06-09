@@ -52,7 +52,6 @@ uv sync --no-group test --no-group type --no-group lint
   - ~~populate quality~~
   - ~~cache the quality~~
 - scraper global settings
-  - user agent
   - frequency
-  - forbidden titles
+  - ~~forbidden titles~~
 - ~~actually set stream id in js~~

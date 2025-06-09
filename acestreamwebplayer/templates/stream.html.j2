@@ -13,13 +13,21 @@
   <h1>Ace Restreamer</h1>
   <p>Web playback will only work depending on the stream source's audio and video codecs</p>
   <h2 id="stream-name">No Stream Loaded</h2>
-  <p>{{ stream_url }}</p>
   <video id="video" controls width="640" height="360"></video>
-  <code id="stream-status">Javescript not loaded</code>
-  <p>Direct stream url, open with VLC or MPV<br>
-    <code id="direct-url">...No stream loaded</code>
-  </p>
-  <div id="stream-manual-input"></div>
+  <h3>Stream Info</h3>
+  <table>
+    <tr>
+      <td>Status</td>
+      <td><code id="stream-status">Javascript not loaded</code></td>
+    </tr>
+    <tr>
+      <td>Direct URL</td>
+      <td><code id="stream-url">No stream loaded</code></td>
+    </tr>
+  </table>
+  <h3>Load Ace Stream</h3>
+  <input type="text" id="stream-id-input" placeholder="Enter stream ID">
+  <button id="load-stream-button">Load</button>
   <h3>Stream List</h3>
   <table id="stream-table"></table>
 </body>

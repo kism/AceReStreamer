@@ -109,8 +109,8 @@ function loadStream() {
   console.log(`Loading stream: ${videoSrc}`);
 
   const streamStatus = document.getElementById("stream-status");
+  streamStatus.className = "status-neutral";
   streamStatus.innerHTML = `Stream loading...`;
-  streamStatus.classNameName = "status-neutral";
 
   if (Hls.isSupported()) {
     var hls = new Hls();
@@ -182,6 +182,10 @@ function checkIfPlaying() {
 
 // Wrap DOM-dependent code in DOMContentLoaded event
 document.addEventListener("DOMContentLoaded", function () {
+  const streamStatus = document.getElementById("stream-status");
+  streamStatus.className = "status-neutral";
+  streamStatus.innerHTML = "Ready to load a stream";
+
   getStreams();
   //setInterval(getStreams, 10 * 60 * 1000); // 10 minutes in milliseconds
   setInterval(getStreams, 60 * 100); // 10 seconds in milliseconds
@@ -196,16 +200,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   setInterval(checkIfPlaying, 1000); // Check every second if the video is playing
 
-  manualInput = document.getElementById("stream-manual-input");
-  inputField = document.createElement("input");
-  inputField.type = "text";
-  inputField.id = "stream-id-input";
-  inputField.placeholder = "Enter Ace Stream ID";
-  manualInput.appendChild(inputField);
-  manualInput.appendChild(document.createElement("code"));
-  manualInput.appendChild(document.createElement("button"));
-  manualInput.lastChild.innerText = "Load";
-  manualInput.lastChild.onclick = () => {
+  loadStreamButton = document.getElementById("load-stream-button");
+  loadStreamButton.onclick = () => {
     const streamId = document.getElementById("stream-id-input").value; // Get the value from the input field
     if (streamId) {
       loadStreamUrl(streamId, streamId); // Load the stream with the entered ID
