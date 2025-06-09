@@ -36,8 +36,8 @@ REVERSE_PROXY_TIMEOUT = 30  # Very high but alas
 def start_scraper() -> None:
     """Method to 'configure' this module. Needs to be called under `with app.app_context():` from __init__.py."""
     global ace_scraper  # noqa: PLW0603 Necessary evil as far as I can tell, could move to all objects but eh...
-    scraper_cache = Path(current_app.instance_path) / "ace_scraper_cache.json"  # Path to the cache file for the AceScraper
-    ace_scraper = AceScraper(current_app.aw_conf.app.site_list, scraper_cache)  # Create the object with the config from the app object
+    scraper_cache = Path(current_app.instance_path) / "ace_quality_cache.json"
+    ace_scraper = AceScraper(current_app.aw_conf.app.site_list, scraper_cache)
 
 
 @bp.route("/stream")
@@ -64,7 +64,7 @@ def hls_stream(path: str) -> tuple[Response, int]:
     except requests.RequestException as e:
         error_short = type(e).__name__
         logger.error("/hls/ reverse proxy failure %s", error_short)  # noqa: TRY400 Naa this should be shorter
-        ace_scraper.set_quality(path, -5)
+        ace_scraper.increment_quality(path, -5)
         return jsonify({"error": "Failed to fetch HLS stream"}), HTTPStatus.INTERNAL_SERVER_ERROR
 
     headers = [
@@ -77,14 +77,14 @@ def hls_stream(path: str) -> tuple[Response, int]:
 
     if "#EXTM3U" not in content_str:
         logger.error("Invalid HLS stream received for path: %s", path)
-        ace_scraper.set_quality(path, -5)
+        ace_scraper.increment_quality(path, -5)
         return jsonify({"error": "Invalid HLS stream", "m3u8": content_str}), HTTPStatus.BAD_REQUEST
 
     # Replace the base URL in the stream with the new address
     # The docker container for acestream will always be localhost:6878
     content_str = content_str.replace("http://localhost:6878", current_app.config["SERVER_NAME"])
 
-    ace_scraper.set_quality(path, 1)
+    ace_scraper.increment_quality(path, 1)
 
     return Response(content_str, resp.status_code, headers), HTTPStatus.OK
 

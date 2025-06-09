@@ -42,6 +42,7 @@ class AceQuality:
     """For tracking quality of Streams."""
 
     default_quality: int = -1
+    quality_on_first_success: int = 20
     min_quality: int = 0
     max_quality: int = 99
 
@@ -91,6 +92,9 @@ class AceQuality:
         if ace_id not in self.ace_streams:
             self.ace_streams[ace_id] = self.default_quality
 
+        if self.ace_streams[ace_id] == self.default_quality and rating > 0:
+            rating = self.quality_on_first_success
+
         self.ace_streams[ace_id] += rating
         self.ace_streams[ace_id] = max(self.ace_streams[ace_id], self.min_quality)
         self.ace_streams[ace_id] = min(self.ace_streams[ace_id], self.max_quality)
@@ -122,7 +126,7 @@ class AceScraper:
 
         return streams
 
-    def set_quality(self, ace_id: str, rating: int) -> None:
+    def increment_quality(self, ace_id: str, rating: int) -> None:
         """Increment the quality of a stream by ace_id."""
         self._ace_quality.increment_quality(ace_id, rating)
 
