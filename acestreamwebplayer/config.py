@@ -54,6 +54,7 @@ class AceScrapeSettings(BaseModel):
 class AppConfDef(BaseModel):
     """Application configuration definition."""
 
+    password: str = ""
     ace_address: str = "http://localhost:6878"
     ace_scrape_settings: AceScrapeSettings = AceScrapeSettings()
 

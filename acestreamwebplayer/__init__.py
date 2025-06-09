@@ -4,10 +4,10 @@ from pprint import pformat
 
 from flask import render_template
 
-from . import config, logger, stream_bp
+from . import authentication_bp, config, logger, stream_bp
 from .flask_helpers import FlaskAcestreamWebplayer
 
-__version__ = "0.1.4"  # This is the version of the app, used in pyproject.toml, enforced in a test.
+__version__ = "0.1.5"  # This is the version of the app, used in pyproject.toml, enforced in a test.
 PROGRAM_NAME = "Acestream Webplayer"  # This is the name of the app, used in the config file.
 URL = "https://github.com/kism/acestream-webplayer"
 
@@ -51,17 +51,13 @@ def create_app(
     #  and vars to make your own http endpoints and pages. Use multiple blueprints if
     #  you have functionality you can categorise.
     app.register_blueprint(stream_bp.bp)  # Register blueprint
+    app.register_blueprint(authentication_bp.bp)  # Register authentication blueprint
 
     # For modules that need information from the app object we need to start them under `with app.app_context():`
     # Since in the blueprint_one module, we use `from flask import current_app` to get the app object to get the config
     with app.app_context():
         stream_bp.start_scraper()
-
-    # Flask homepage, generally don't have this as a blueprint.
-    @app.route("/")
-    def home() -> str:
-        """Flask home."""
-        return render_template("home.html.j2", __app_nice_name=__name__)  # Return a webpage
+        authentication_bp.start_allowlist()
 
     app.logger.info("Starting Web Server")
     app.logger.info("%s version: %s", PROGRAM_NAME, __version__)

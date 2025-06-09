@@ -4,8 +4,10 @@ from http import HTTPStatus
 from pathlib import Path
 
 import requests
-from flask import Blueprint, Response, jsonify, render_template
+from flask import Blueprint, Response, jsonify, redirect, render_template
+from werkzeug.wrappers import Response as WerkzeugResponse
 
+from .authentication_bp import get_ip_from_request, is_ip_allowed
 from .flask_helpers import get_current_app
 from .logger import get_logger
 from .scraper import AceScraper
@@ -40,20 +42,52 @@ def start_scraper() -> None:
     ace_scraper = AceScraper(current_app.aw_conf.app.ace_scrape_settings, scraper_cache)
 
 
+def assumed_auth_failure() -> None | Response | WerkzeugResponse:
+    """Check if the IP is allowed."""
+    if is_ip_allowed(get_ip_from_request()):
+        return None
+
+    return redirect("/", HTTPStatus.FOUND)
+
+
+@bp.route("/")
+def home() -> Response | WerkzeugResponse:
+    """Render the home page, redirect to stream if IP is allowed."""
+    ip_is_allowed = is_ip_allowed(get_ip_from_request())
+    if ip_is_allowed:
+        return redirect("/stream", HTTPStatus.FOUND)
+
+    template = render_template(
+        "home.html.j2",
+    )
+    return Response(template, HTTPStatus.OK)
+
+
 @bp.route("/stream")
-def webplayer_stream() -> tuple[str, int]:
+def webplayer_stream() -> Response | WerkzeugResponse:
     """Render the webpage for a stream."""
-    return render_template(
-        "stream.html.j2",
-    ), HTTPStatus.OK
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
+    return Response(
+        render_template(
+            "stream.html.j2",
+        ),
+        HTTPStatus.OK,
+    )
 
 
 @bp.route("/hls/<path:path>")
-def hls_stream(path: str) -> tuple[Response, int]:
+def hls_stream(path: str) -> Response | WerkzeugResponse:
     """Reverse proxy the HLS from Ace."""
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
     if not ace_scraper:
         logger.error("Scraper object not initialized.")
-        return jsonify({"error": "Scraper not initialized"}), HTTPStatus.INTERNAL_SERVER_ERROR
+        return jsonify({"error": "Scraper not initialized"}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
     url = f"{current_app.aw_conf.app.ace_address}/ace/manifest.m3u8?content_id={path}"
 
@@ -65,7 +99,7 @@ def hls_stream(path: str) -> tuple[Response, int]:
         error_short = type(e).__name__
         logger.error("/hls/ reverse proxy failure %s", error_short)  # noqa: TRY400 Naa this should be shorter
         ace_scraper.increment_quality(path, -5)
-        return jsonify({"error": "Failed to fetch HLS stream"}), HTTPStatus.INTERNAL_SERVER_ERROR
+        return jsonify({"error": "Failed to fetch HLS stream"}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
     headers = [
         (name, value)
@@ -78,7 +112,7 @@ def hls_stream(path: str) -> tuple[Response, int]:
     if "#EXTM3U" not in content_str:
         logger.error("Invalid HLS stream received for path: %s", path)
         ace_scraper.increment_quality(path, -5)
-        return jsonify({"error": "Invalid HLS stream", "m3u8": content_str}), HTTPStatus.BAD_REQUEST
+        return jsonify({"error": "Invalid HLS stream", "m3u8": content_str}, HTTPStatus.BAD_REQUEST)
 
     # Replace the base URL in the stream with the new address
     # The docker container for acestream will always be localhost:6878
@@ -86,12 +120,16 @@ def hls_stream(path: str) -> tuple[Response, int]:
 
     ace_scraper.increment_quality(path, 1)
 
-    return Response(content_str, resp.status_code, headers), HTTPStatus.OK
+    return Response(content_str, resp.status_code, headers)
 
 
 @bp.route("/ace/c/<path:path>")
-def ace_content(path: str) -> tuple[Response, int]:
+def ace_content(path: str) -> Response | WerkzeugResponse:
     """Reverse proxy the Ace content."""
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
     url = f"{current_app.aw_conf.app.ace_address}/ace/c/{path}"
 
     logger.debug("Ace content requested for path: %s", path)
@@ -101,36 +139,48 @@ def ace_content(path: str) -> tuple[Response, int]:
     except requests.RequestException as e:
         error_short = type(e).__name__
         logger.error("/ace/c/ reverse proxy failure %s", error_short)  # noqa: TRY400 Naa this should be shorter
-        return jsonify({"error": "Failed to fetch HLS stream"}), HTTPStatus.INTERNAL_SERVER_ERROR
-
+        return jsonify({"error": "Failed to fetch HLS stream"}, HTTPStatus.INTERNAL_SERVER_ERROR)
     headers = [
         (name, value)
         for (name, value) in resp.raw.headers.items()
         if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS
     ]
 
-    return Response(resp.content, resp.status_code, headers), HTTPStatus.OK
+    return Response(resp.content, resp.status_code, headers)
 
 
 @bp.route("/api/streams")
-def api_streams() -> tuple[Response, int]:
+def api_streams() -> Response | WerkzeugResponse:
     """API endpoint to get the streams."""
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
     if not ace_scraper:
         logger.error("Scraper object not initialized.")
-        return jsonify({"error": "Scraper not initialized"}), HTTPStatus.INTERNAL_SERVER_ERROR
+        return jsonify({"error": "Scraper not initialized"}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
     streams = ace_scraper.get_streams()
 
-    return jsonify(streams), HTTPStatus.OK
+    response = jsonify(streams)
+    response.status_code = HTTPStatus.OK
+    return response
 
 
 @bp.route("/api/streams/health")
-def api_streams_health() -> tuple[Response, int]:
+def api_streams_health() -> Response | WerkzeugResponse:
     """API endpoint to get the streams."""
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
     if not ace_scraper:
         logger.error("Scraper object not initialized.")
-        return jsonify({"error": "Scraper not initialized"}), HTTPStatus.INTERNAL_SERVER_ERROR
+        return jsonify({"error": "Scraper not initialized"}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
     streams = ace_scraper.get_streams_health()
 
-    return jsonify(streams), HTTPStatus.OK
+    response = jsonify(streams)
+    response.status_code = HTTPStatus.OK
+
+    return response
