@@ -109,7 +109,7 @@ function loadStream() {
   console.log(`Loading stream: ${videoSrc}`);
 
   const streamDirectUrl = document.getElementById("stream-url");
-  streamDirectUrl.innerHTML = `${window.location.origin}/${videoSrc}`;
+  streamDirectUrl.innerHTML = `${window.location.origin}${videoSrc}`;
 
   const streamStatus = document.getElementById("stream-status");
   streamStatus.className = "status-neutral";
