@@ -83,6 +83,10 @@ class LoggingConfDef(BaseModel):
     level: str = "INFO"
     path: Path | str = ""
 
+class NginxConfDef(BaseModel):
+    """Nginx configuration definition."""
+
+    server_name: str = ""
 
 class AcestreamWebplayerConfig(BaseSettings):
     """Settings loaded from a TOML file."""
@@ -90,6 +94,7 @@ class AcestreamWebplayerConfig(BaseSettings):
     # Default values for our settings
     app: AppConfDef = AppConfDef()
     flask: FlaskConfDef = FlaskConfDef()
+    nginx: NginxConfDef | None = None  # Nginx configuration is optional
     logging: LoggingConfDef = LoggingConfDef()
 
     def write_config(self, config_location: Path) -> None:
@@ -99,6 +104,9 @@ class AcestreamWebplayerConfig(BaseSettings):
         config_location.parent.mkdir(parents=True, exist_ok=True)
 
         config_data = json.loads(self.model_dump_json())  # This is how we make the object safe for tomlkit
+        if self.nginx is None:
+            config_data.pop("nginx")  # Remove nginx if it is None
+
         if not config_location.exists():
             logger.warning("Config file does not exist, creating it at %s", config_location)
             config_location.touch()
