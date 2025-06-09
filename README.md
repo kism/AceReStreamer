@@ -1,5 +1,10 @@
 # acestreamwebplayer
 
+[![Check](https://github.com/kism/acestream-webplayer/actions/workflows/check.yml/badge.svg)](https://github.com/kism/acestream-webplayer/actions/workflows/check.yml)
+[![CheckType](https://github.com/kism/acestream-webplayer/actions/workflows/check_types.yml/badge.svg)](https://github.com/kism/acestream-webplayer/actions/workflows/check_types.yml)
+[![Test](https://github.com/kism/acestream-webplayer/actions/workflows/test.yml/badge.svg)](https://github.com/kism/acestream-webplayer/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/kism/acestream-webplayer/graph/badge.svg?token=FPGDA0ODT7)](https://codecov.io/gh/kism/acestream-webplayer)
+
 ## Prerequisites
 
 Install uv <https://docs.astral.sh/uv/getting-started/installation/>
@@ -43,9 +48,9 @@ uv sync --no-group test --no-group type --no-group lint
 ## todo
 
 - ~~less recursion in patient search i think~~
-- scraper list
-  - populate quality
-  - cache the quality
+- ~~scraper list~~
+  - ~~populate quality~~
+  - ~~cache the quality~~
 - scraper global settings
   - user agent
   - frequency
