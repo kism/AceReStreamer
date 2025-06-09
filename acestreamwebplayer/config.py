@@ -24,12 +24,12 @@ class FlaskConfDef(BaseModel):
     SERVER_NAME: str = "http://127.0.0.1:5100"
 
 
-class ScrapeSite(BaseModel):
+class ScrapeSiteHTML(BaseModel):
     """Model for a site to scrape."""
 
     name: str = "Example"
     url: str = "https://example.com"
-    target_class: str = "" # Target html class
+    target_class: str = ""  # Target html class
     check_sibling: bool = False
     stream_title_regex_postprocessing: str = ""
 
@@ -43,10 +43,18 @@ class ScrapeSite(BaseModel):
         return self
 
 
+class ScrapeSiteIPTV(BaseModel):
+    """Model for a site to scrape IPTV streams."""
+
+    name: str = "Example IPTV"
+    url: str = "https://example.com/iptv.txt"
+
+
 class AceScrapeSettings(BaseModel):
     """Settings for scraping AceStreams."""
 
-    site_list_html: list[ScrapeSite] = [ScrapeSite()]
+    site_list_html: list[ScrapeSiteHTML] = []
+    site_list_iptv_m3u8: list[ScrapeSiteIPTV] = []
     scrape_interval: int = 7200  # 2 hours
     disallowed_words: list[str] = []
 

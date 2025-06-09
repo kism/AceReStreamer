@@ -7,6 +7,7 @@ from .config import AceScrapeSettings
 from .logger import get_logger
 from .scraper_health import AceQuality
 from .scraper_html import scrape_streams_html_sites
+from .scraper_iptv import scrape_streams_iptv_sites
 
 if TYPE_CHECKING:
     from .scraper_objects import FoundAceStreams
@@ -19,11 +20,21 @@ class AceScraper:
 
     def __init__(self, ace_scrape_settings: AceScrapeSettings, ace_quality_cache_path: Path | None) -> None:
         """Init MyCoolObject."""
+        self.streams: list[FoundAceStreams] = []
+
         self.scrape_interval = ace_scrape_settings.scrape_interval
         self.disallowed_words = ace_scrape_settings.disallowed_words
-        self.site_list_html = ace_scrape_settings.site_list_html
-        self.streams: list[FoundAceStreams] = []
+
         self._ace_quality = AceQuality(ace_quality_cache_path)
+
+        self.site_list_html = ace_scrape_settings.site_list_html
+        self.site_list_iptv_m3u8 = ace_scrape_settings.site_list_iptv_m3u8
+        self.run_scrape()
+        self.print_streams()
+
+    def run_scrape(self) -> None:
+        """Run the scraper to find AceStreams."""
+        logger.info("Running AceStream scraper...")
 
         self.streams.extend(
             scrape_streams_html_sites(
@@ -32,7 +43,12 @@ class AceScraper:
             )
         )
 
-        self.print_streams()
+        self.streams.extend(
+            scrape_streams_iptv_sites(
+                sites=self.site_list_iptv_m3u8,
+                disallowed_words=self.disallowed_words,
+            )
+        )
 
     def get_streams(self) -> list[dict[str, str]]:
         """Get the found streams as a list of JSON strings."""

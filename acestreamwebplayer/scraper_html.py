@@ -3,7 +3,7 @@
 import requests
 from bs4 import BeautifulSoup, Tag
 
-from .config import ScrapeSite
+from .config import ScrapeSiteHTML
 from .logger import get_logger
 from .scraper_helpers import STREAM_TITLE_MAX_LENGTH, candidates_regex_cleanup, cleanup_candidate_title
 from .scraper_objects import CandidateAceStream, FoundAceStream, FoundAceStreams
@@ -11,7 +11,7 @@ from .scraper_objects import CandidateAceStream, FoundAceStream, FoundAceStreams
 logger = get_logger(__name__)
 
 
-def scrape_streams_html_sites(sites: list[ScrapeSite], disallowed_words: list[str]) -> list[FoundAceStreams]:
+def scrape_streams_html_sites(sites: list[ScrapeSiteHTML], disallowed_words: list[str]) -> list[FoundAceStreams]:
     """Scrape the streams from the configured sites."""
     found_streams: list[FoundAceStreams] = []
 
@@ -23,7 +23,7 @@ def scrape_streams_html_sites(sites: list[ScrapeSite], disallowed_words: list[st
     return found_streams
 
 
-def scrape_streams_html_site(site: ScrapeSite, disallowed_words: list[str]) -> FoundAceStreams | None:
+def scrape_streams_html_site(site: ScrapeSiteHTML, disallowed_words: list[str]) -> FoundAceStreams | None:
     """Scrape the streams from the configured sites."""
     streams_candidates: list[CandidateAceStream] = []
 

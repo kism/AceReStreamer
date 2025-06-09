@@ -54,7 +54,7 @@ function getStreams() {
             code.className = "status-bad";
           } else if (stream.quality >= 20 && stream.quality <= 80) {
             code.className = "status-neutral";
-          } else if (stream.quality <= 80) {
+          } else if (stream.quality >= 80) {
             code.className = "status-good";
           }
           td_quality.appendChild(code);
@@ -107,6 +107,9 @@ function loadStream() {
   const video = document.getElementById("video");
   const videoSrc = `/hls/${window.location.hash.substring(1)}`;
   console.log(`Loading stream: ${videoSrc}`);
+
+  const streamDirectUrl = document.getElementById("stream-url");
+  streamDirectUrl.innerHTML = `${window.location.origin}/${videoSrc}`;
 
   const streamStatus = document.getElementById("stream-status");
   streamStatus.className = "status-neutral";
