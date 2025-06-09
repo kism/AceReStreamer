@@ -48,12 +48,14 @@ function getStreams() {
           const code = document.createElement("code");
           code.textContent = `${stream.quality}`;
           if (stream.quality === -1) {
+            code.className = "status-neutral";
+            code.textContent = "?";
           } else if (stream.quality < 20) {
-            code.style.color = "#FF0000";
+            code.className = "status-bad";
           } else if (stream.quality >= 20 && stream.quality <= 80) {
-            code.style.color = "#FFA500";
+            code.className = "status-neutral";
           } else if (stream.quality <= 80) {
-            code.style.color = "#00FF00";
+            code.className = "status-good";
           }
           td_quality.appendChild(code);
 
@@ -75,11 +77,6 @@ function getStreams() {
           table.appendChild(tr);
         }
       }
-      ele.appendChild(table); // Append the table to the stream list element
-
-      const streamStatus = document.getElementById("stream-status");
-      streamStatus.className = "status-neutral";
-      streamStatus.innerHTML = `"No stream loaded"`;
     })
     .catch((error) => {
       clearTimeout(timeoutId); //Stop the timeout since we only care about the GET timing out
@@ -103,7 +100,7 @@ function setOnPageErrorMessage(message) {
   // wait 5 seconds
   setTimeout(() => {
     streamStatus.style.backgroundColor = ""; // Reset the background color
-  }, 100);
+  }, 200);
 }
 
 function loadStream() {
