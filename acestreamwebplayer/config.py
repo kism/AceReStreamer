@@ -29,7 +29,7 @@ class ScrapeSite(BaseModel):
 
     name: str = "Example"
     url: str = "https://example.com"
-    html_class: str = ""
+    target_class: str = "" # Target html class
     check_sibling: bool = False
     stream_title_regex_postprocessing: str = ""
 
@@ -46,7 +46,7 @@ class ScrapeSite(BaseModel):
 class AceScrapeSettings(BaseModel):
     """Settings for scraping AceStreams."""
 
-    site_list: list[ScrapeSite] = [ScrapeSite()]
+    site_list_html: list[ScrapeSite] = [ScrapeSite()]
     scrape_interval: int = 7200  # 2 hours
     disallowed_words: list[str] = []
 

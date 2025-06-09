@@ -9,7 +9,8 @@ from pydantic import BaseModel
 
 from .config import AceScrapeSettings, ScrapeSite
 from .logger import get_logger
-from .scraper_helpers import candidates_regex_cleanup, search_for_candidate, search_sibling_for_candidate
+from .scraper_helpers import candidates_regex_cleanup
+from .scraper_html import search_for_candidate, search_sibling_for_candidate
 
 logger = get_logger(__name__)
 
@@ -107,10 +108,10 @@ class AceScraper:
         """Init MyCoolObject."""
         self.scrape_interval = ace_scrape_settings.scrape_interval
         self.disallowed_words = ace_scrape_settings.disallowed_words
-        self.site_list = ace_scrape_settings.site_list
+        self.site_list_html = ace_scrape_settings.site_list_html
         self.streams: list[FoundAceStreams] = []
         self._ace_quality = AceQuality(ace_quality_cache_path)
-        for site in self.site_list:
+        for site in self.site_list_html:
             found_ace_streams = self._scrape_streams(site)
             if found_ace_streams:
                 self.streams.append(found_ace_streams)
@@ -185,7 +186,7 @@ class AceScraper:
                 candidate_titles.extend(
                     search_for_candidate(
                         candidate_titles=candidate_titles.copy(),
-                        target_html_class=site.html_class,
+                        target_html_class=site.target_class,
                         html_tag=link,
                     )
                 )
@@ -195,7 +196,7 @@ class AceScraper:
                     candidate_titles.extend(
                         search_sibling_for_candidate(
                             candidate_titles=candidate_titles.copy(),
-                            target_html_class=site.html_class,
+                            target_html_class=site.target_class,
                             html_tag=link,
                         )
                     )
