@@ -1,4 +1,8 @@
+"""Helper functions for scrapers."""
+
 import re
+
+STREAM_TITLE_MAX_LENGTH = 50
 
 
 def cleanup_candidate_title(title: str) -> str:
