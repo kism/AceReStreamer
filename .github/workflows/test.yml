@@ -8,7 +8,7 @@ on:
       - test
 
 jobs:
-  test_boilerplate:
+  pytest:
     runs-on: ubuntu-latest
     strategy:
       matrix:
