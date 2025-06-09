@@ -1,6 +1,7 @@
-"""Blueprint one's object..."""
+"""Main Stream Site Blueprint."""
 
 from http import HTTPStatus
+from pathlib import Path
 
 import requests
 from flask import Blueprint, Response, jsonify, render_template
@@ -35,7 +36,8 @@ REVERSE_PROXY_TIMEOUT = 30  # Very high but alas
 def start_scraper() -> None:
     """Method to 'configure' this module. Needs to be called under `with app.app_context():` from __init__.py."""
     global ace_scraper  # noqa: PLW0603 Necessary evil as far as I can tell, could move to all objects but eh...
-    ace_scraper = AceScraper(current_app.aw_conf.app.site_list)  # Create the object with the config from the app object
+    scraper_cache = Path(current_app.instance_path) / "ace_scraper_cache.json"  # Path to the cache file for the AceScraper
+    ace_scraper = AceScraper(current_app.aw_conf.app.site_list, scraper_cache)  # Create the object with the config from the app object
 
 
 @bp.route("/stream")

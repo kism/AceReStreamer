@@ -1,5 +1,9 @@
 """Scraper object."""
 
+import json
+
+from pathlib import Path
+
 import requests
 from bs4 import BeautifulSoup, Tag
 from pydantic import BaseModel
@@ -41,9 +45,34 @@ class AceQuality:
     min_quality: int = 0
     max_quality: int = 99
 
-    def __init__(self) -> None:
+    def __init__(self, cache_file: Path | None) -> None:
         """Init AceQuality."""
+        self.cache_file = cache_file
         self.ace_streams: dict[str, int] = {}
+        self._load_cache()
+
+    def _load_cache(self) -> None:
+        if self.cache_file and self.cache_file.exists():
+            try:
+                with self.cache_file.open("r") as f:
+                    cache_json_raw = f.read()
+
+                self.ace_streams = json.loads(cache_json_raw)
+            except (json.JSONDecodeError, OSError):
+                logger.exception("Error loading cache file: %s", self.cache_file)
+                return
+
+    def save_cache(self) -> None:
+        """Save the current quality cache to a file."""
+        logger.debug("Saving AceQuality cache to %s", self.cache_file)
+        if not self.cache_file:
+            return
+
+        try:
+            with self.cache_file.open("w") as f:
+                json.dump(self.ace_streams, f, indent=4)
+        except OSError:
+            logger.exception("Error saving cache file: %s", self.cache_file)
 
     def get_quality(self, ace_id: str) -> int:
         """Get the quality of a stream by ace_id."""
@@ -65,16 +94,17 @@ class AceQuality:
         self.ace_streams[ace_id] += rating
         self.ace_streams[ace_id] = max(self.ace_streams[ace_id], self.min_quality)
         self.ace_streams[ace_id] = min(self.ace_streams[ace_id], self.max_quality)
+        self.save_cache()
 
 
 class AceScraper:
     """Scraper object."""
 
-    def __init__(self, site_list: list[ScrapeSite]) -> None:
+    def __init__(self, site_list: list[ScrapeSite], ace_quality_cache_path: Path | None) -> None:
         """Init MyCoolObject."""
         self.site_list = site_list
         self.streams: list[FoundAceStreams] = []
-        self._ace_quality = AceQuality()
+        self._ace_quality = AceQuality(ace_quality_cache_path)
         for site in self.site_list:
             found_ace_streams = self._scrape_streams(site)
             if found_ace_streams:
