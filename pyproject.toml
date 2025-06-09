@@ -1,6 +1,6 @@
 [project]
 name = "acestreamwebplayer"
-version = "0.1.4"
+version = "0.1.6"
 description = ""
 authors = [
     { name = "Kieran Gee", email = "kieran.lost.the.game@gmail.com" },
