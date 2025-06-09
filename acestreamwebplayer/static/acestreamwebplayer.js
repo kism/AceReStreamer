@@ -109,7 +109,7 @@ function loadStream() {
   const video = document.getElementById("video");
   const videoSrc = `/hls/${window.location.hash.substring(1)}`;
   console.log(`Loading stream: ${videoSrc}`);
-  document.getElementById("stream-status").style.display = "none"; // Show the status element
+  document.getElementById("stream-status").style.color = "none"; // Show the status element
 
   if (Hls.isSupported()) {
     var hls = new Hls();

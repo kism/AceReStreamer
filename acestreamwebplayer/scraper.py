@@ -18,7 +18,6 @@ class FoundAceStream(BaseModel):
 
     title: str
     ace_id: str
-    quality: int = -1
 
 
 class FoundAceStreams(BaseModel):
@@ -35,6 +34,39 @@ class CandidateAceStream(BaseModel):
     title_candidates: list[str] = []
 
 
+class AceQuality:
+    """For tracking quality of Streams."""
+
+    default_quality: int = -1
+    min_quality: int = 0
+    max_quality: int = 99
+
+    def __init__(self) -> None:
+        """Init AceQuality."""
+        self.ace_streams: dict[str, int] = {}
+
+    def get_quality(self, ace_id: str) -> int:
+        """Get the quality of a stream by ace_id."""
+        if ace_id not in self.ace_streams:
+            self.ensure_entry(ace_id)
+        return self.ace_streams[ace_id]
+
+    def ensure_entry(self, ace_id: str) -> None:
+        """Creates an entry with defaults if it doen't exist."""
+        if ace_id not in self.ace_streams:
+            self.ace_streams[ace_id] = self.default_quality
+
+    def increment_quality(self, ace_id: str, rating: int) -> None:
+        """Increment the quality of a stream by ace_id."""
+        logger.debug("Setting quality for AceStream %s by %d", ace_id, rating)
+        if ace_id not in self.ace_streams:
+            self.ace_streams[ace_id] = self.default_quality
+
+        self.ace_streams[ace_id] += rating
+        self.ace_streams[ace_id] = max(self.ace_streams[ace_id], self.min_quality)
+        self.ace_streams[ace_id] = min(self.ace_streams[ace_id], self.max_quality)
+
+
 class AceScraper:
     """Scraper object."""
 
@@ -42,6 +74,7 @@ class AceScraper:
         """Init MyCoolObject."""
         self.site_list = site_list
         self.streams: list[FoundAceStreams] = []
+        self._ace_quality = AceQuality()
         for site in self.site_list:
             found_ace_streams = self._scrape_streams(site)
             if found_ace_streams:
@@ -51,18 +84,17 @@ class AceScraper:
 
     def get_streams(self) -> list[dict[str, str]]:
         """Get the found streams as a list of JSON strings."""
-        return [stream.model_dump() for stream in self.streams]
+        streams = [stream.model_dump() for stream in self.streams]
+
+        for found_stream in streams:
+            for stream in found_stream["stream_list"]:
+                stream["quality"] = self._ace_quality.get_quality(stream["ace_id"])
+
+        return streams
 
     def set_quality(self, ace_id: str, rating: int) -> None:
         """Increment the quality of a stream by ace_id."""
-        logger.debug("Setting quality for AceStream %s by %d", ace_id, rating)
-        for found_streams in self.streams:
-            for stream in found_streams.stream_list:
-                if stream.ace_id == ace_id:
-                    stream.quality += rating
-                    stream.quality = max(stream.quality, 0)
-                    stream.quality = min(stream.quality, 99)
-                    return
+        self._ace_quality.increment_quality(ace_id, rating)
 
     def print_streams(self) -> None:
         """Print the found streams."""
@@ -174,6 +206,7 @@ class AceScraper:
 
             url_no_uri = candidate.ace_id.split("acestream://")[-1].strip()
 
+            self._ace_quality.ensure_entry(url_no_uri)
             found_streams.append(
                 FoundAceStream(
                     title=title,
