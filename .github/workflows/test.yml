@@ -6,7 +6,9 @@ on:
     branches:
       - main
       - test
-
+    paths-ignore:
+      - "**/README.md"
+      - "**/README*.md"
 jobs:
   pytest:
     runs-on: ubuntu-latest
