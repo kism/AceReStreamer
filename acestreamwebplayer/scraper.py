@@ -18,7 +18,7 @@ class FoundAceStream(BaseModel):
 
     title: str
     ace_id: str
-    quality: int = 50
+    quality: int = -1
 
 
 class FoundAceStreams(BaseModel):
@@ -55,6 +55,7 @@ class AceScraper:
 
     def set_quality(self, ace_id: str, rating: int) -> None:
         """Increment the quality of a stream by ace_id."""
+        logger.debug("Setting quality for AceStream %s by %d", ace_id, rating)
         for found_streams in self.streams:
             for stream in found_streams.stream_list:
                 if stream.ace_id == ace_id:

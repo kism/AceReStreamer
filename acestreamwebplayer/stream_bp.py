@@ -75,6 +75,7 @@ def hls_stream(path: str) -> tuple[Response, int]:
 
     if "#EXTM3U" not in content_str:
         logger.error("Invalid HLS stream received for path: %s", path)
+        ace_scraper.set_quality(path, -5)
         return jsonify({"error": "Invalid HLS stream", "m3u8": content_str}), HTTPStatus.BAD_REQUEST
 
     # Replace the base URL in the stream with the new address

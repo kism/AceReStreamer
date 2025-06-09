@@ -21,31 +21,62 @@ function getStreams() {
       }
     })
     .then((data) => {
-      let msg_str = ""; // Initialize an empty string to hold the message
+      const table = document.getElementById("stream-table");
+      table.innerHTML = ""; // Clear the table before adding new data
+      const tr_heading = document.createElement("tr");
 
-      ele = document.getElementById("stream-list"); // The div for the stream list
-      ele.innerHTML = ""; // Clear the inner HTML of the stream list element
+      const th_quality = document.createElement("th");
+      th_quality.textContent = "Quality";
+      tr_heading.appendChild(th_quality);
+
+      const th_link = document.createElement("th");
+      th_link.textContent = "Stream";
+      tr_heading.appendChild(th_link);
+
+      const th_source = document.createElement("th");
+      th_source.textContent = "Source";
+      tr_heading.appendChild(th_source);
+
+      table.appendChild(tr_heading);
 
       for (const site of data) {
-        const ul = document.createElement("ul"); // Create a new unordered list element
-        ul.className = "file-list"; // Set the class name for the unordered list
-        ul.textContent = site.site_name; // Set the text content of the list to the site name
-
         for (const stream of site.stream_list) {
-          const li = document.createElement("li"); // Create a new list item element
+          const tr = document.createElement("tr");
+
+          // Quality cell
+          const td_quality = document.createElement("td");
+          const code = document.createElement("code");
+          code.textContent = `${stream.quality}`;
+          if (stream.quality === -1) {
+          } else if (stream.quality < 20) {
+            code.style.color = "#FF0000";
+          } else if (stream.quality >= 20 && stream.quality <= 80) {
+            code.style.color = "#FFA500";
+          } else if (stream.quality <= 80) {
+            code.style.color = "#00FF00";
+          }
+          td_quality.appendChild(code);
+
+          // Link cell
+          td_link = document.createElement("td");
           const a = document.createElement("a"); // Create a new anchor element
-          const code = document.createElement("code"); // Create a new code element
-          code.textContent = `(${stream.quality})`; // Set the text content of the code element to the stream quality
           a.textContent = `${stream.title}`;
           a.onclick = () => loadStreamUrl(stream.ace_id, stream.title); // Set the onclick event to load the stream URL
-          li.appendChild(code); // Append the code element to the list item
-          li.appendChild(a); // Append the anchor to the list item
-          ul.appendChild(li); // Append the list item to the unordered list
-        }
-        ele.appendChild(ul); // Append the unordered list to the stream list element
-      }
+          td_link.appendChild(a); // Append the anchor element to the table data cell
 
-      document.getElementById("stream-status").style.display = "none"; // Hide the status element
+          // Source Cell
+          td_source = document.createElement("td");
+          td_source.textContent = `${site.site_name}`;
+
+          // Append to the row
+          tr.appendChild(td_quality);
+          tr.appendChild(td_link);
+          tr.appendChild(td_source);
+          table.appendChild(tr);
+        }
+      }
+      ele.appendChild(table); // Append the table to the stream list element
+
       document.getElementById("stream-status").innerText = "No stream loaded"; // Set message in element to indicate success
     })
     .catch((error) => {
@@ -72,8 +103,6 @@ function setOnPageErrorMessage(message) {
   setTimeout(() => {
     document.getElementById("stream-status").style.backgroundColor = ""; // Reset the background color
   }, 100);
-
-
 }
 
 function loadStream() {
