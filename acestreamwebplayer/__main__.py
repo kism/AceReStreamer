@@ -21,14 +21,17 @@ def generate_config_file(config_path: Path, *, include_html: bool = False, inclu
     """Generate a default configuration file at the specified path."""
     if config_path.exists():
         logger.error("Configuration file already exists at %s", config_path)
+        logger.info("Exiting")
         sys.exit(1)
 
     if config_path.is_dir():
         logger.error("The specified path %s is a directory, not a file.", config_path)
+        logger.info("Exiting")
         sys.exit(1)
 
     if config_path.suffix != ".toml":
         logger.error("Configuration file must have a .toml extension, got %s", config_path.suffix)
+        logger.info("Exiting")
         sys.exit(1)
 
     logger.info("Generating default configuration file at %s", config_path)
@@ -43,7 +46,6 @@ def generate_config_file(config_path: Path, *, include_html: bool = False, inclu
         config.app.ace_scrape_settings.site_list_iptv_m3u8.append(ScrapeSiteIPTV())
 
     config.write_config(config_location=config_path)
-    logger.info("Configuration file created successfully at %s", config_path)
 
 
 def main() -> None:
@@ -55,18 +57,23 @@ def main() -> None:
         help="Show the version of the Acestream Webplayer.",
     )
     parser.add_argument(
-        "--generate-config",
+        "--config-path",
         type=Path,
         default=None,
-        required=False,
+        required=True,
     )
     parser.add_argument(
-        "--config-html-scraper",
+        "--generate-config",
+        action="store_true",
+        help="Generate a default configuration file.",
+    )
+    parser.add_argument(
+        "--generate-html-scraper",
         action="store_true",
         help="Include a scraper for HTML sites in the generated configuration.",
     )
     parser.add_argument(
-        "--config-iptv-scraper",
+        "--generate-iptv-scraper",
         action="store_true",
         help="Include a scraper for IPTV M3U8 sites in the generated configuration.",
     )
@@ -88,11 +95,11 @@ def main() -> None:
         sys.exit(0)
 
     if args.generate_config:
-        logger.info("Generating configuration file at %s", args.generate_config)
+        logger.info("Generating configuration file at %s", args.config_path)
         generate_config_file(
-            args.generate_config,
-            include_html=args.config_html_scraper,
-            include_iptv=args.config_iptv_scraper,
+            args.config_path,
+            include_html=args.generate_html_scraper,
+            include_iptv=args.generate_iptv_scraper,
         )
 
 
