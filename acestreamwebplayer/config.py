@@ -31,6 +31,7 @@ class ScrapeSite(BaseModel):
     url: str = "https://example.com"
     html_class: str = ""
     check_sibling: bool = False
+    regex_remove: str = ""
 
     @model_validator(mode="after")
     def valid_url(self) -> Self:
@@ -42,11 +43,19 @@ class ScrapeSite(BaseModel):
         return self
 
 
+class AceScrapeSettings(BaseModel):
+    """Settings for scraping AceStreams."""
+
+    site_list: list[ScrapeSite] = [ScrapeSite()]
+    scrape_interval: int = 7200  # 2 hours
+    disallowed_words: list[str] = []
+
+
 class AppConfDef(BaseModel):
     """Application configuration definition."""
 
     ace_address: str = "http://localhost:6878"
-    site_list: list[ScrapeSite] = [ScrapeSite()]
+    ace_scrape_settings: AceScrapeSettings = AceScrapeSettings()
 
     @model_validator(mode="after")
     def valid_ace_address(self) -> Self:

@@ -1,19 +1,20 @@
 """Scraper object."""
 
 import json
+import re
 from pathlib import Path
 
 import requests
 from bs4 import BeautifulSoup, Tag
 from pydantic import BaseModel
 
-from .config import ScrapeSite
+from .config import AceScrapeSettings, ScrapeSite
 from .logger import get_logger
 from .scraper_helpers import search_for_candidate, search_sibling_for_candidate
 
 logger = get_logger(__name__)
 
-STREAM_TITLE_MAX_LENGTH = 30
+STREAM_TITLE_MAX_LENGTH = 50
 
 
 class FoundAceStream(BaseModel):
@@ -103,9 +104,11 @@ class AceQuality:
 class AceScraper:
     """Scraper object."""
 
-    def __init__(self, site_list: list[ScrapeSite], ace_quality_cache_path: Path | None) -> None:
+    def __init__(self, ace_scrape_settings: AceScrapeSettings, ace_quality_cache_path: Path | None) -> None:
         """Init MyCoolObject."""
-        self.site_list = site_list
+        self.scrape_interval = ace_scrape_settings.scrape_interval
+        self.disallowed_words = ace_scrape_settings.disallowed_words
+        self.site_list = ace_scrape_settings.site_list
         self.streams: list[FoundAceStreams] = []
         self._ace_quality = AceQuality(ace_quality_cache_path)
         for site in self.site_list:
@@ -194,6 +197,16 @@ class AceScraper:
                         )
                     )
 
+                # Through all title candidates, clean them up if there is a regex defined
+                if site.regex_remove != "":
+                    new_candidate_titles = []
+                    for title in candidate_titles:
+                        title_new = re.sub(site.regex_remove, "", title).strip()
+                        if title_new != "":
+                            new_candidate_titles.append(title_new)
+
+                    candidate_titles = new_candidate_titles
+
                 # Create a candidate AceStream with the found titles, remove duplicates
                 streams_candidates.append(
                     CandidateAceStream(
@@ -214,6 +227,7 @@ class AceScraper:
 
         all_titles = []
 
+        # Collect a list of all candidate titles to find duplicates including duplicates
         for candidate in candidates:
             all_titles.extend(candidate.title_candidates)
 
@@ -231,6 +245,16 @@ class AceScraper:
                 new_title_candidates.append(new_title)
 
             title = "<Unknown Title>"
+
+            # Check if the title contains any disallowed words, skip if so
+            if any(
+                disallowed_word in title.lower()
+                for title in new_title_candidates
+                for disallowed_word in self.disallowed_words
+            ):
+                logger.debug("Skipping stream with disallowed word: %s", new_title_candidates)
+                continue
+
             if len(new_title_candidates) == 1:
                 title = new_title_candidates[0]
             elif len(new_title_candidates) > 1:
