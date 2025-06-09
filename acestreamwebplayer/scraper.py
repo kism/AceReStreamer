@@ -128,6 +128,10 @@ class AceScraper:
 
         return streams
 
+    def get_streams_health(self) -> dict[str, int]:
+        """Get the health of the streams."""
+        return self._ace_quality.ace_streams
+
     def increment_quality(self, ace_id: str, rating: int) -> None:
         """Increment the quality of a stream by ace_id."""
         self._ace_quality.increment_quality(ace_id, rating)

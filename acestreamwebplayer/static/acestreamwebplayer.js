@@ -4,7 +4,7 @@ function getStreams() {
   const timeoutId = setTimeout(() => controller.abort(), 1000); // 1 second timeout:
 
   // GET the hello endpoint that the flask app has
-  fetch("/api/v1/streams", {
+  fetch("/api/streams", {
     method: "GET",
     signal: controller.signal,
   })
@@ -13,9 +13,9 @@ function getStreams() {
       if (response.ok) {
         return response.json(); // We interoperate the response as json and pass it along...
       } else {
-        document.getElementById("stream-status").innerHTML = `API FAILURE`; // Set message in element to indicate failure
-        document.getElementById("stream-list").innerHTML = `${response.status}`; // Set message in element to message received from flask
-        document.getElementById("stream-list").style.color = "#800000"; // Set message in element to message received from flask
+        const streamStatus = document.getElementById("stream-status");
+        streamStatus.className = "status-bad";
+        streamStatus.innerHTML = `API FAILURE ${response.status}`; // Set message in element to indicate failure
 
         throw new Error(`Error fetching data. Status code: ${response.status}`);
       }
@@ -77,15 +77,17 @@ function getStreams() {
       }
       ele.appendChild(table); // Append the table to the stream list element
 
-      document.getElementById("stream-status").innerText = "No stream loaded"; // Set message in element to indicate success
+      const streamStatus = document.getElementById("stream-status");
+      streamStatus.className = "status-neutral";
+      streamStatus.innerHTML = `"No stream loaded"`;
     })
     .catch((error) => {
       clearTimeout(timeoutId); //Stop the timeout since we only care about the GET timing out
       if (error.name === "AbortError") {
         console.error("Fetch request timed out");
-        document.getElementById("stream-status").innerHTML = `API FAILURE`; // Set message in element to indicate failure
-        document.getElementById("stream-list").innerHTML = `Fetch Timeout`; // Set message in element to message received from flask
-        document.getElementById("stream-list").style.color = "#800000"; // Set message in element to message received from flask
+        const streamStatus = document.getElementById("stream-status");
+        streamStatus.className = "status-bad";
+        streamStatus.innerHTML = `API FAILURE: Fetch Timeout`;
       } else {
         console.error(`Error: ${error.message}`);
       }
@@ -93,15 +95,14 @@ function getStreams() {
 }
 
 function setOnPageErrorMessage(message) {
-  element = document.getElementById("stream-status");
-  element.innerHTML = message; // Set the inner HTML of the element to the error message
-  element.style.display = "block"; // Make the element visible
-  element.style.color = "#FF0000"; // Set the text color to a dark red
+  const streamStatus = document.getElementById("stream-status");
+  streamStatus.innerHTML = message;
+  streamStatus.className = "status-bad";
   //on a timeout, set the background color of the stream status to red
-  document.getElementById("stream-status").style.backgroundColor = "#331111"; // Set the background color to red
+  streamStatus.style.backgroundColor = "#331111"; // Set the background color to red
   // wait 5 seconds
   setTimeout(() => {
-    document.getElementById("stream-status").style.backgroundColor = ""; // Reset the background color
+    streamStatus.style.backgroundColor = ""; // Reset the background color
   }, 100);
 }
 
@@ -109,7 +110,10 @@ function loadStream() {
   const video = document.getElementById("video");
   const videoSrc = `/hls/${window.location.hash.substring(1)}`;
   console.log(`Loading stream: ${videoSrc}`);
-  document.getElementById("stream-status").style.color = "none"; // Show the status element
+
+  const streamStatus = document.getElementById("stream-status");
+  streamStatus.innerHTML = `Stream loading...`;
+  streamStatus.classNameName = "status-neutral";
 
   if (Hls.isSupported()) {
     var hls = new Hls();
@@ -151,7 +155,16 @@ function loadStream() {
   //start playing the video
   video.play().catch((error) => {
     console.error("Error playing video:", error);
-    document.getElementById("stream-status").innerHTML = `Error playing video: ${error.message}`; // Set message in element to indicate error
+    const streamStatus = document.getElementById("stream-status");
+
+    // Check if it's an autoplay policy error
+    if (error.name === "NotAllowedError") {
+      streamStatus.innerHTML = "Autoplay is disabled. Click the video to start playback.";
+      streamStatus.className = "status-neutral";
+    } else {
+      streamStatus.innerHTML = `Error playing video: ${error.message}`;
+      streamStatus.className = "status-bad";
+    }
   });
 }
 
@@ -164,7 +177,9 @@ function loadStreamUrl(streamId, streamName) {
 function checkIfPlaying() {
   const video = document.getElementById("video");
   if (!video.paused && !video.ended && video.currentTime > 0 && video.readyState > 2) {
-    document.getElementById("stream-status").style.display = "none"; // Hide the status element if the video is playing
+    const streamStatus = document.getElementById("stream-status");
+    streamStatus.innerHTML = "Playing"; // Hide the status element if the video is playing
+    streamStatus.className = "status-good"; // Set the text color to green
   }
 }
 
@@ -185,14 +200,14 @@ document.addEventListener("DOMContentLoaded", function () {
   setInterval(checkIfPlaying, 1000); // Check every second if the video is playing
 
   manualInput = document.getElementById("stream-manual-input");
-  inputField = document.createElement("input"); // Create an input field
-  inputField.type = "text"; // Set the input type to text
-  inputField.id = "stream-id-input"; // Set the ID for the input field
-  inputField.placeholder = "Enter Ace Stream ID"; // Set a placeholder for the input field
-  manualInput.appendChild(inputField); // Append the input field to the manual input element
-  manualInput.appendChild(document.createElement("code")); // Add a line break for spacing
-  manualInput.appendChild(document.createElement("button")); // Create a button element
-  manualInput.lastChild.innerText = "Load"; // Set the button text
+  inputField = document.createElement("input");
+  inputField.type = "text";
+  inputField.id = "stream-id-input";
+  inputField.placeholder = "Enter Ace Stream ID";
+  manualInput.appendChild(inputField);
+  manualInput.appendChild(document.createElement("code"));
+  manualInput.appendChild(document.createElement("button"));
+  manualInput.lastChild.innerText = "Load";
   manualInput.lastChild.onclick = () => {
     const streamId = document.getElementById("stream-id-input").value; // Get the value from the input field
     if (streamId) {

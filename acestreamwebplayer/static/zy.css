@@ -485,8 +485,12 @@ label > .label-body {
   max-width: 100%;
 }
 
-/* #region: File List, breadcrumbs */
+/* #region: Stream List */
 
+#stream-status {
+  display: block;
+  width: fit-content;
+}
 
 #stream-id-input {
   width: 100%;
@@ -496,3 +500,17 @@ label > .label-body {
 }
 
 /* #endregion */
+
+/* #region: Status Colours */
+
+.status-good {
+  color: #00ff00;
+}
+
+.status-bad {
+  color: #ff0000;
+}
+
+.status-neutral {
+  color: #c8c8c8;
+}
