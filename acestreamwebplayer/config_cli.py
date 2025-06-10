@@ -128,6 +128,13 @@ def generate_nginx_config_file(
     if app_config.nginx.ip_allow_list_path == "":
         app_config.nginx.ip_allow_list_path = (Path("instance") / "ip_allow_list.conf").absolute()
 
+    if isinstance(app_config.nginx.ip_allow_list_path, str):
+        app_config.nginx.ip_allow_list_path = Path(app_config.nginx.ip_allow_list_path)
+
+    if not app_config.nginx.ip_allow_list_path.is_file():
+        with app_config.nginx.ip_allow_list_path.open("w", encoding="utf-8") as f:
+            f.write("deny all;")
+
     if not all(required_fields):
         logger.error("Nginx configuration is missing required fields: server_name, cert_path, cert_key_path.")
         logger.info("Please set these fields in the app configuration file.")
