@@ -87,7 +87,15 @@ class LoggingConfDef(BaseModel):
 class NginxConfDef(BaseModel):
     """Nginx configuration definition."""
 
+    # CLI config generation only
     server_name: str = ""
+    dhparam_path: Path | str = ""
+    cert_path: Path | str = ""
+    cert_key_path: Path | str = ""
+    extra_config_file_path: Path | str = "" # Example /etc/letsencrypt/options-ssl-nginx.conf
+
+    # Actually used in the webapp, used to generate the ip allow list for nginx
+    ip_allow_list_path: Path | str = ""
 
 
 class AcestreamWebplayerConfig(BaseSettings):

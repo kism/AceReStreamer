@@ -126,8 +126,14 @@ def generate_nginx_config_file(
         logger.info("Exiting")
         sys.exit(1)
 
-    if app_config.nginx.server_name == "":
-        logger.error("Nginx server_name is not set in the app configuration.")
+    required_fields = [app_config.nginx.server_name, app_config.nginx.cert_path, app_config.nginx.cert_key_path]
+    if app_config.nginx.ip_allow_list_path == "":
+        app_config.nginx.ip_allow_list_path = (Path("instance") / "ip_allow_list.conf").absolute()
+
+
+    if not all(required_fields):
+        logger.error("Nginx configuration is missing required fields: server_name, cert_path, cert_key_path.")
+        logger.info("Please set these fields in the app configuration file.")
         logger.info("Exiting")
         sys.exit(1)
 
@@ -141,6 +147,11 @@ def generate_nginx_config_file(
         "flask_server_address": flask_server_address,
         "nginx_server_name": app_config.nginx.server_name,
         "ace_server_address": app_config.app.ace_address,
+        "dhparam_path": app_config.nginx.dhparam_path,
+        "cert_path": app_config.nginx.cert_path,
+        "cert_key_path": app_config.nginx.cert_key_path,
+        "extra_config_file_path": app_config.nginx.extra_config_file_path,
+        "ip_allow_list_path": app_config.nginx.ip_allow_list_path,
     }
 
     env = Environment(loader=FileSystemLoader(TEMPLATES_DIR), autoescape=True)
