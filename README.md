@@ -55,3 +55,5 @@ uv sync --no-group test --no-group type --no-group lint
   - frequency
   - ~~forbidden titles~~
 - ~~actually set stream id in js~~
+- ~~use unauthorised for endpoints that require auth~~
+- player stopped by default

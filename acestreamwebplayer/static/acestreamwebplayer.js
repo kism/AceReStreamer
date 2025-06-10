@@ -113,7 +113,7 @@ function loadStream() {
 
   const streamStatus = document.getElementById("stream-status");
   streamStatus.className = "status-neutral";
-  streamStatus.innerHTML = `Stream loading...`;
+  streamStatus.innerHTML = `Stream loaded, paused.`;
 
   if (Hls.isSupported()) {
     var hls = new Hls();
@@ -148,24 +148,6 @@ function loadStream() {
     setOnPageErrorMessage("This browser does not support HLS playbook.");
     return;
   }
-
-  directURL = document.getElementById("direct-url");
-  directURL.innerHTML = `${window.location.origin}${videoSrc}`;
-
-  //start playing the video
-  video.play().catch((error) => {
-    console.error("Error playing video:", error);
-    const streamStatus = document.getElementById("stream-status");
-
-    // Check if it's an autoplay policy error
-    if (error.name === "NotAllowedError") {
-      streamStatus.innerHTML = "Autoplay is disabled. Click the video to start playback.";
-      streamStatus.className = "status-neutral";
-    } else {
-      streamStatus.innerHTML = `Error playing video: ${error.message}`;
-      streamStatus.className = "status-bad";
-    }
-  });
 }
 
 function loadStreamUrl(streamId, streamName) {
@@ -190,13 +172,12 @@ document.addEventListener("DOMContentLoaded", function () {
   streamStatus.innerHTML = "Ready to load a stream";
 
   getStreams();
-  //setInterval(getStreams, 10 * 60 * 1000); // 10 minutes in milliseconds
   setInterval(getStreams, 60 * 100); // 10 seconds in milliseconds
 
   window.addEventListener("loadStream", loadStream);
 
   let streamId = window.location.hash.substring(1);
-  console.log(`Stream ID from URL: ${streamId}`);
+  console.log(`Loading stream on page load: ${streamId}`);
   if (streamId) {
     loadStreamUrl(streamId, streamId);
   }
@@ -208,8 +189,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const streamId = document.getElementById("stream-id-input").value; // Get the value from the input field
     if (streamId) {
       loadStreamUrl(streamId, streamId); // Load the stream with the entered ID
-    } else {
-      alert("Please enter a valid Ace Stream ID."); // Alert if no ID is entered
     }
   };
 });

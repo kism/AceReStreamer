@@ -47,7 +47,7 @@ def assumed_auth_failure() -> None | Response | WerkzeugResponse:
     if is_ip_allowed(get_ip_from_request()):
         return None
 
-    return redirect("/", HTTPStatus.FOUND)
+    return redirect("/", HTTPStatus.UNAUTHORIZED)
 
 
 @bp.route("/")
