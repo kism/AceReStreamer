@@ -110,7 +110,7 @@ def generate_nginx_config_file(
     app_config = load_config(app_config_path)
 
     # Check the nginx config path
-    _check_config_path(  # Happy to overwrite existing config files
+    _check_config_path(
         nginx_config_path,
         ".conf",
         expect_config=False,
@@ -131,6 +131,11 @@ def generate_nginx_config_file(
         logger.info("Exiting")
         sys.exit(1)
 
+    if "complete" in generate_options:
+        logger.info("Generating COMPLETE Nginx configuration file.")
+    else:
+        logger.info("Generating SITE Nginx configuration file.")
+
     template_name = "nginx_complete.conf.j2" if "complete" in generate_options else "nginx_site.conf.j2"
     context = {
         "flask_server_address": flask_server_address,
@@ -142,7 +147,10 @@ def generate_nginx_config_file(
     template = env.get_template(template_name)
     nginx_config = template.render(context)
 
-    logger.info("Nginx configuration content:\n%s", nginx_config)
+    with nginx_config_path.open("w", encoding="utf-8") as f:
+        f.write(nginx_config)
+
+    logger.info("Nginx configuration file generated successfully at %s", nginx_config_path)
 
 
 def main() -> None:

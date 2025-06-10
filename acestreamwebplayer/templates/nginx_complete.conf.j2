@@ -1,0 +1,41 @@
+events{}
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    sendfile        on;
+    keepalive_timeout  65;
+
+    server {
+        server_name {{ nginx_server_name }};
+        location / {
+            proxy_pass {{ flask_server_address }};
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+        location /ace/c/ {
+            proxy_pass {{ ace_server_address }};
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+        listen 443 ssl;
+        listen [::]:443 ssl ipv6only=on;
+
+        ssl_certificate /path/to/your/certificate.crt;
+        ssl_certificate_key /path/to/your/private.key;
+        # ssl_dhparam /path/to/your/dhparam.pem;
+        ssl_protocols TLSv1.2 TLSv1.3;
+    }
+
+    server {
+        if ($host = {{ nginx_server_name }}) {
+            return 301 https://$host$request_uri;
+        }
+        listen 80;
+        listen [::]:80;
+        server_name {{ nginx_server_name }};
+        return 404;
+    }
+}
