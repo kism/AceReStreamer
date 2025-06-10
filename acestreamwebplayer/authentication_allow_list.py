@@ -17,6 +17,15 @@ class AllowList:
         self.nginx_allowlist_path = nginx_allowlist_path
         self.allowlist_ips: list[str] = []
         self.load()
+        self._ensure_correct_ips()
+
+    def _ensure_correct_ips(self) -> None:
+        """Fix any incorrect IP addresses in the allow list."""
+        for ip in self.allowlist_ips:
+            if ip.startswith("::ffff:"):
+                ip_no_prefix = ip[7:]  # Remove IPv6 prefix
+                if ip_no_prefix not in self.allowlist_ips:
+                    self.allowlist_ips.append(ip_no_prefix)
 
     def add(self, ip: str) -> None:
         """Add an IP address to the allow list."""
@@ -28,7 +37,7 @@ class AllowList:
             self.allowlist_ips.append(ip)
 
             if ip.startswith("::ffff:"):
-                self.allowlist_ips.append(ip[7:])  # Remove IPv6 prefix if present
+                self.allowlist_ips.append(ip[7:])  # Remove IPv6 prefix
 
             logger.info("Added IP address to allow list: %s", ip)
             self.save()
