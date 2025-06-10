@@ -26,6 +26,10 @@ class AllowList:
 
         if ip not in self.allowlist_ips:
             self.allowlist_ips.append(ip)
+
+            if ip.startswith("::ffff:"):
+                self.allowlist_ips.append(ip[7:])  # Remove IPv6 prefix if present
+
             logger.info("Added IP address to allow list: %s", ip)
             self.save()
 
