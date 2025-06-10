@@ -23,7 +23,8 @@ def start_allowlist() -> None:
     """Initialize the allow list from the configuration."""
     global ip_allow_list  # noqa: PLW0603
     allowlist_path = Path(current_app.instance_path) / "allowed_ips.json"
-    ip_allow_list = AllowList(allowlist_path)
+    nginx_allowlist_path = Path(current_app.aw_conf.nginx.ip_allow_list_path) if current_app.aw_conf.nginx else None
+    ip_allow_list = AllowList(allowlist_path, nginx_allowlist_path)
 
 
 def get_ip_from_request() -> str:

@@ -11,9 +11,10 @@ logger = get_logger(__name__)
 class AllowList:
     """A simple allow list for IP addresses."""
 
-    def __init__(self, allowlist_path: Path | None) -> None:
+    def __init__(self, allowlist_path: Path | None, nginx_allowlist_path: Path | None) -> None:
         """Initialize the allow list with a path to the allow list file."""
         self.allowlist_path = allowlist_path
+        self.nginx_allowlist_path = nginx_allowlist_path
         self.allowlist_ips: list[str] = []
         self.load()
 
@@ -44,10 +45,17 @@ class AllowList:
                 except json.JSONDecodeError:
                     logger.error("Failed to decode JSON from allow list file, resetting")  # noqa: TRY400
 
+        self.save()
+
     def save(self) -> None:
         """Save the allow list to a file."""
-        if not self.allowlist_path:
-            return
+        if self.allowlist_path:
+            with self.allowlist_path.open("w") as f:
+                json.dump(self.allowlist_ips, f)
 
-        with self.allowlist_path.open("w") as f:
-            json.dump(self.allowlist_ips, f)
+        if self.nginx_allowlist_path:
+            with self.nginx_allowlist_path.open("w") as f:
+                for ip in self.allowlist_ips:
+                    f.write(f"allow {ip};\n")
+                f.write("deny all;\n")
+            logger.info("Nginx allow list updated with %d IPs", len(self.allowlist_ips))
