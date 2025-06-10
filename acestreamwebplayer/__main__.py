@@ -1,172 +1,218 @@
 """CLI For Adhoc Tasks."""
 
 import argparse
-import logging
 import sys
 from pathlib import Path
 
+from jinja2 import Environment, FileSystemLoader
+
 from . import __version__
-from .config import NginxConfDef, AcestreamWebplayerConfig, ScrapeSiteHTML, ScrapeSiteIPTV, load_config
-from .logger import LOG_LEVELS, _set_log_level
+from .config import AcestreamWebplayerConfig, NginxConfDef, ScrapeSiteHTML, ScrapeSiteIPTV, load_config
+from .logger import LOG_LEVELS, get_logger, setup_logger
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(message)s",
-)
+logger = get_logger(__name__)
 
-logger = logging.getLogger(__name__)
+GENERATE_HELP = """Help for --generate
+Comma separated list of things to generate, if you do not specify anything, it will generate with default settings.
+Example: --generate html,iptv,nginx
+app config: `html`, `iptv`, `nginx`
+    html: Include HTML scraper in the app config.
+    iptv: Include IPTV M3U8 scraper in the app config.
+    nginx: Include Nginx configuration in the app config.
+nginx config: `complete`
+    complete: Instead of generating a config for a site, generate a complete Nginx configuration file."""
+
+TEMPLATES_DIR = Path(__file__).parent / "templates"
 
 
-def _check_config_path(config_path: Path, extension: str) -> None:
+def _check_config_path(
+    config_path: Path,
+    extension: str,
+    *,
+    expect_config: bool = True,
+    overwrite: bool = False,
+) -> None:
     """Check if the config path is valid and has the correct extension."""
-    if config_path.exists():
-        logger.error("Configuration already exists at: %s", config_path)
-        logger.info("Exiting")
-        sys.exit(1)
+    cannot_proceed = False
 
-    if config_path.is_dir():
-        logger.error("The specified path %s is a directory, not a file.", config_path)
-        logger.info("Exiting")
-        sys.exit(1)
+    if expect_config and not config_path.is_file():
+        logger.error("No configuration at: %s", config_path)
+        cannot_proceed = True
+
+    if overwrite:  # If we want to overwrite, we don't care if the file exists, break from this check
+        pass
+    elif (
+        not expect_config  # If we don't expect a config, we continue this check
+        and config_path.is_file()  # Fail if the file exists, since we are not expecting a config
+    ):
+        logger.error("Configuration file already exists at: %s", config_path)
+        logger.error("Use --overwrite to overwrite the existing configuration file.")
+        cannot_proceed = True
 
     if config_path.suffix != extension:
         logger.error("Configuration file must have a %s extension, got %s", extension, config_path.suffix)
-        logger.info("Exiting")
+        cannot_proceed = True
+
+    if config_path.is_dir():
+        logger.error("The specified path %s is a directory, not a file.", config_path)
+        cannot_proceed = True
+
+    if cannot_proceed:
+        logger.error("Exiting due to configuration path issues.")
         sys.exit(1)
 
 
-def generate_config_file(
-    config_path: Path,
+def generate_app_config_file(
+    app_config_path: Path,
+    generate_options: list[str],
     *,
-    include_html: bool = False,
-    include_iptv: bool = False,
-    include_nginx: bool = False,
+    overwrite: bool = False,
 ) -> None:
     """Generate a default configuration file at the specified path."""
-    _check_config_path(config_path, ".toml")
+    msg = (
+        f"Overwriting existing configuration file at {app_config_path}"
+        if overwrite
+        else f"Generating configuration file at {app_config_path}"
+    )
+    _check_config_path(app_config_path, ".toml", expect_config=overwrite, overwrite=overwrite)
 
-    logger.info("Generating default configuration file at %s", config_path)
+    logger.info(msg)
+
     config = AcestreamWebplayerConfig()
+    if app_config_path.is_file():  # If we are here, we are overwriting
+        config = load_config(app_config_path)
 
-    if include_html:
+    if "html" in generate_options:
         logger.info("Including HTML scraper in the configuration.")
         config.app.ace_scrape_settings.site_list_html.append(ScrapeSiteHTML())
 
-    if include_iptv:
+    if "iptv" in generate_options:
         logger.info("Including IPTV M3U8 scraper in the configuration.")
         config.app.ace_scrape_settings.site_list_iptv_m3u8.append(ScrapeSiteIPTV())
 
-    if include_nginx:
+    if "nginx" in generate_options:
         logger.info("Including Nginx configuration in the configuration.")
         config.nginx = NginxConfDef()
 
-    config.write_config(config_location=config_path)
+    config.write_config(config_location=app_config_path)
 
 
-def generate_nginx_config_file(config: AcestreamWebplayerConfig, nginx_config_path: Path) -> None:
+def generate_nginx_config_file(
+    app_config_path: Path,
+    nginx_config_path: Path,
+    generate_options: list[str],
+    *,
+    overwrite: bool = False,
+) -> None:
     """Generate a default Nginx configuration file at the specified path."""
-    _check_config_path(nginx_config_path, ".conf")
+    # Check the app config path and load
+    _check_config_path(app_config_path, ".toml", expect_config=True)
+    app_config = load_config(app_config_path)
+
+    # Check the nginx config path
+    _check_config_path(  # Happy to overwrite existing config files
+        nginx_config_path,
+        ".conf",
+        expect_config=False,
+        overwrite=overwrite,
+    )
 
     logger.info("Generating default Nginx configuration file at %s", nginx_config_path)
 
-    flask_server_address = config.flask.SERVER_NAME.rstrip("/")  # Ensure no trailing slash
-    if not config.nginx:
-        logger.error("Nginx server_name is not set in the configuration.")
+    flask_server_address = app_config.flask.SERVER_NAME.rstrip("/")  # Ensure no trailing slash
+    if not app_config.nginx:
+        logger.error("No nginx section in the app configuration, please regenerate.")
+        logger.error("Generate the nginx configuration by running the CLI with --generate nginx.")
         logger.info("Exiting")
         sys.exit(1)
 
-    nginx_server_name = config.nginx.server_name
+    if app_config.nginx.server_name == "":
+        logger.error("Nginx server_name is not set in the app configuration.")
+        logger.info("Exiting")
+        sys.exit(1)
 
-    nginx_config = f"""
-    server {{
-        listen 80;
-        server_name {nginx_server_name};
+    template_name = "nginx_complete.conf.j2" if "complete" in generate_options else "nginx_site.conf.j2"
+    context = {
+        "flask_server_address": flask_server_address,
+        "nginx_server_name": app_config.nginx.server_name,
+        "ace_server_address": app_config.app.ace_address,
+    }
 
-        location / {{
-            proxy_pass {flask_server_address};
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        }}
-    }}
-    """
+    env = Environment(loader=FileSystemLoader(TEMPLATES_DIR), autoescape=True)
+    template = env.get_template(template_name)
+    nginx_config = template.render(context)
+
     logger.info("Nginx configuration content:\n%s", nginx_config)
 
 
 def main() -> None:
     """Main CLI for adhoc tasks."""
-    parser = argparse.ArgumentParser(description="Acestream Webplayer CLI for generating config.")
+    parser = argparse.ArgumentParser(description=f"Acestream Webplayer CLI {__version__} for generating config.")
     parser.add_argument(
-        "--version",
-        action="store_true",
-        help="Show the version of the Acestream Webplayer.",
-    )
-    parser.add_argument(
-        "--config-path",
+        "--app-config",
         type=Path,
         default=None,
-        required=True,
+        help="Path to save the generated application configuration file.",
     )
     parser.add_argument(
-        "--generate-app-config",
-        action="store_true",
-        help="Generate a default configuration file.",
-    )
-    parser.add_argument(
-        "--generate-app-config-html-scraper",
-        action="store_true",
-        help="Include a scraper for HTML sites in the generated configuration.",
-    )
-    parser.add_argument(
-        "--generate-app-config-iptv-scraper",
-        action="store_true",
-        help="Include a scraper for IPTV M3U8 sites in the generated configuration.",
-    )
-    parser.add_argument(
-        "--generate-app-config-nginx",
-        action="store_true",
-        help="Include Nginx configuration in the generated configuration.",
-    )
-    parser.add_argument(
-        "--generate-nginx-config-path",
+        "--nginx-config",
         type=Path,
         default=None,
-        required=False,
-        help="Generate a default Nginx configuration file.",
+        help="Path to save the generated Nginx configuration file.",
+    )
+    parser.add_argument(
+        "--generate",
+        type=lambda x: x.lower(),
+        default="",
+        help="Comma separated extra things to generate. --generate help for more details.",
+    )
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Overwrite existing configuration files if they exist.",
+        default=False,
     )
     parser.add_argument(
         "--log-level",
-        type=str,
+        type=lambda x: x.upper(),
         default="INFO",
         choices=LOG_LEVELS,
         help="Set the logging level for the application.",
     )
     args = parser.parse_args()
 
-    _set_log_level(logger, args.log_level)
+    setup_logger(
+        log_level=args.log_level,
+        console_only=True,  # Only log to console for CLI
+    )
+
+    if args.generate == "help":
+        logger.info(GENERATE_HELP)
+        sys.exit(0)
+
+    if args.app_config is None:
+        logger.error("No application configuration path provided. Use --app-config to specify a path.")
+        sys.exit(1)
 
     logger.info("Acestream Webplayer CLI %s started with log level: %s", __version__, args.log_level)
 
-    if args.version:
-        logger.info("Acestream Webplayer version %s", __version__)
-        sys.exit(0)
-
-    if args.generate_app_config:
-        logger.info("Generating configuration file at %s", args.config_path)
-        generate_config_file(
-            args.config_path,
-            include_html=args.generate_app_config_html_scraper,
-            include_iptv=args.generate_app_config_iptv_scraper,
-            include_nginx=args.generate_app_config_nginx,
+    if not args.nginx_config:  # Generate app config
+        print()  # noqa: T201
+        logger.info("--- Generating app configuration ---")
+        generate_app_config_file(
+            app_config_path=args.app_config,
+            generate_options=args.generate.split(",") if args.generate else [],
+            overwrite=args.overwrite,
         )
         sys.exit(0)
-
-    if args.generate_nginx_config_path:
-        logger.info("Generating Nginx configuration file at %s", args.config_path)
-        app_config = load_config(args.config_path)
+    elif args.nginx_config:  # Generate nginx config
+        print()  # noqa: T201
+        logger.info("--- Generating Nginx configuration ---")
         generate_nginx_config_file(
-            app_config,
-            nginx_config_path=args.generate_nginx_config_path,
+            app_config_path=args.app_config,
+            generate_options=args.generate.split(",") if args.generate else [],
+            nginx_config_path=args.nginx_config,
+            overwrite=args.overwrite,
         )
         sys.exit(0)
 

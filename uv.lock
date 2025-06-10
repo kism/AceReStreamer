@@ -7,7 +7,9 @@ version = "0.1.6"
 source = { virtual = "." }
 dependencies = [
     { name = "bs4" },
+    { name = "colorama" },
     { name = "flask" },
+    { name = "jinja2" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "requests" },
@@ -28,13 +30,16 @@ test = [
 ]
 type = [
     { name = "mypy" },
+    { name = "types-colorama" },
     { name = "types-requests" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "bs4", specifier = ">=0.0.2" },
+    { name = "colorama", specifier = ">=0.4.6" },
     { name = "flask", specifier = ">=3.1,<4" },
+    { name = "jinja2", specifier = ">=3.1.6" },
     { name = "pydantic", specifier = ">=2.11" },
     { name = "pydantic-settings", specifier = ">=2.9" },
     { name = "requests", specifier = ">=2.32.3" },
@@ -53,6 +58,7 @@ test = [
 ]
 type = [
     { name = "mypy" },
+    { name = "types-colorama", specifier = ">=0.4.15.20240311" },
     { name = "types-requests", specifier = ">=2.32.0.20250602" },
 ]
 
@@ -569,6 +575,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/cc/18/0bbf3884e9eaa38819ebe46a7bd25dcd56b67434402b66a58c4b8e552575/tomlkit-0.13.3.tar.gz", hash = "sha256:430cf247ee57df2b94ee3fbe588e71d362a941ebb545dec29b53961d61add2a1", size = 185207 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/bd/75/8539d011f6be8e29f339c42e633aae3cb73bffa95dd0f9adec09b9c58e85/tomlkit-0.13.3-py3-none-any.whl", hash = "sha256:c89c649d79ee40629a9fda55f8ace8c6a1b42deb912b2a8fd8d942ddadb606b0", size = 38901 },
+]
+
+[[package]]
+name = "types-colorama"
+version = "0.4.15.20240311"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/59/73/0fb0b9fe4964b45b2a06ed41b60c352752626db46aa0fb70a49a9e283a75/types-colorama-0.4.15.20240311.tar.gz", hash = "sha256:a28e7f98d17d2b14fb9565d32388e419f4108f557a7d939a66319969b2b99c7a", size = 5608 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b7/83/6944b4fa01efb2e63ac62b791a8ddf0fee358f93be9f64b8f152648ad9d3/types_colorama-0.4.15.20240311-py3-none-any.whl", hash = "sha256:6391de60ddc0db3f147e31ecb230006a6823e81e380862ffca1e4695c13a0b8e", size = 5840 },
 ]
 
 [[package]]

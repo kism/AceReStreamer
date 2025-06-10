@@ -6,6 +6,19 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import cast
 
+from colorama import Fore, init
+
+init(autoreset=True)
+
+COLOURS = {
+    "TRACE": Fore.CYAN,
+    "DEBUG": Fore.GREEN,
+    "INFO": Fore.WHITE,
+    "WARNING": Fore.YELLOW,
+    "ERROR": Fore.RED,
+    "CRITICAL": Fore.RED,
+}
+
 LOG_LEVELS = [
     "TRACE",
     "DEBUG",
@@ -15,7 +28,33 @@ LOG_LEVELS = [
     "CRITICAL",
 ]  # Valid str logging levels.
 LOG_FORMAT = "%(asctime)s:%(levelname)s:%(name)s:%(message)s"  # This is the logging message format that I like.
+LOG_FORMAT_CONSOLE = "%(levelname)s:%(message)s"
 TRACE_LEVEL_NUM = 5
+
+
+class ColorFormatter(logging.Formatter):
+    """Formatter for coloring the log messages, this is ONLY for console output."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        """Format the log message."""
+        if isinstance(record.msg, tuple):
+            record.msg = "  ".join(map(str, record.msg))
+
+        elif record.msg is None:
+            record.msg = "<NoneType>"
+
+        elif isinstance(record.msg, list):
+            record.msg = "  \n".join(map(str, record.msg))
+
+        if record.levelno == logging.INFO:  # No need to colourise/format INFO messages
+            return f"{record.getMessage()}"
+
+        colour = COLOURS.get(record.levelname, "")
+        if colour:
+            record.name = f"{colour}{record.name}"
+            record.levelname = f"{colour}{record.levelname}"
+            record.msg = f"{colour}{record.msg}"
+        return super().format(record)
 
 
 class CustomLogger(logging.Logger):
@@ -50,6 +89,7 @@ def setup_logger(
     in_loggers: list[logging.Logger] | None = None,
     *,
     include_root_logger: bool = True,
+    console_only: bool = False,
 ) -> None:
     """Setup the logger, set configuration per logging_conf.
 
@@ -68,7 +108,7 @@ def setup_logger(
     for in_logger in in_loggers:
         # If the logger doesn't have a console handler (root logger doesn't by default)
         if not _has_console_handler(in_logger):
-            _add_console_handler(in_logger)
+            _add_console_handler(in_logger, console_only=console_only)
 
         _set_log_level(in_logger, log_level)
 
@@ -94,9 +134,12 @@ def _has_console_handler(in_logger: logging.Logger) -> bool:
     return any(isinstance(handler, logging.StreamHandler) for handler in in_logger.handlers)
 
 
-def _add_console_handler(in_logger: logging.Logger) -> None:
+def _add_console_handler(in_logger: logging.Logger, *, console_only: bool = False) -> None:
     """Add a console handler to the logger."""
-    formatter = logging.Formatter(LOG_FORMAT)
+    log_fromat = LOG_FORMAT_CONSOLE if console_only else LOG_FORMAT
+
+    formatter = ColorFormatter(log_fromat) if console_only else logging.Formatter(log_fromat)
+
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(formatter)
 
