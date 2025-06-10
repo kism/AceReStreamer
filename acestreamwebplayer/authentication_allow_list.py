@@ -18,6 +18,7 @@ class AllowList:
         self.allowlist_ips: list[str] = []
         self.load()
         self._ensure_correct_ips()
+        self.save()
 
     def _ensure_correct_ips(self) -> None:
         """Fix any incorrect IP addresses in the allow list."""
@@ -57,8 +58,6 @@ class AllowList:
                     self.allowlist_ips = json.load(f)
                 except json.JSONDecodeError:
                     logger.error("Failed to decode JSON from allow list file, resetting")  # noqa: TRY400
-
-        self.save()
 
     def save(self) -> None:
         """Save the allow list to a file."""
