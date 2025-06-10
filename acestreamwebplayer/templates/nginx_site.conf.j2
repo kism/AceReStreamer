@@ -25,8 +25,7 @@ server {
     if ($host = {{ nginx_server_name }}) {
         return 301 https://$host$request_uri;
     }
-    listen 80;
-    listen [::]:80;
+    listen [::]:80 ipv6only=off;
     server_name {{ nginx_server_name }};
     return 404;
 }
