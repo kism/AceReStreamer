@@ -117,8 +117,6 @@ def generate_nginx_config_file(
         overwrite=overwrite,
     )
 
-    logger.info("Generating default Nginx configuration file at %s", nginx_config_path)
-
     flask_server_address = app_config.flask.SERVER_NAME.rstrip("/")  # Ensure no trailing slash
     if not app_config.nginx:
         logger.error("No nginx section in the app configuration, please regenerate.")
@@ -137,7 +135,8 @@ def generate_nginx_config_file(
         sys.exit(1)
 
     if "complete" in generate_options:
-        logger.info("Generating COMPLETE Nginx configuration file part 1.")
+        logger.info("Generating COMPLETE Nginx configuration")
+        logger.debug("Generating COMPLETE Nginx configuration file part 1.")
     else:
         logger.info("Generating SITE Nginx configuration file.")
 
@@ -157,7 +156,7 @@ def generate_nginx_config_file(
     nginx_config = template.render(context)
 
     if "complete" in generate_options:
-        logger.info("Generating COMPLETE Nginx configuration file part 2.")
+        logger.debug("Generating COMPLETE Nginx configuration file part 2.")
         indented = "\n".join("    " + line for line in nginx_config.splitlines()) + "\n"
         complete_template = env.get_template("nginx_complete.conf.j2")
         nginx_config = complete_template.render({"servers": indented})
