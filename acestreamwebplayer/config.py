@@ -83,10 +83,12 @@ class LoggingConfDef(BaseModel):
     level: str = "INFO"
     path: Path | str = ""
 
+
 class NginxConfDef(BaseModel):
     """Nginx configuration definition."""
 
     server_name: str = ""
+
 
 class AcestreamWebplayerConfig(BaseSettings):
     """Settings loaded from a TOML file."""

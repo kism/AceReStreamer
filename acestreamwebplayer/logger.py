@@ -98,6 +98,7 @@ def setup_logger(
         log_path: Path to log to.
         in_loggers: Loggers to configure, includes root logger by default.
         include_root_logger: Include the root logger in the configuration, false for testing.
+        console_only: If true, load the settings for CLI mode.
     """
     if in_loggers is None:  # Fun python things
         in_loggers = []
