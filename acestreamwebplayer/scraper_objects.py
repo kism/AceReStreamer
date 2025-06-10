@@ -1,5 +1,7 @@
 """Custom Pydantic models (objects) for scraping."""
 
+from typing import TypedDict
+
 from pydantic import BaseModel
 
 
@@ -22,3 +24,12 @@ class CandidateAceStream(BaseModel):
 
     ace_id: str
     title_candidates: list[str] = []
+
+
+class FlatFoundAceStream(TypedDict):
+    """Flat model for a found AceStream, TypedDict so it can be json'd."""
+
+    site_name: str
+    quality: int
+    title: str
+    ace_id: str

@@ -61,3 +61,5 @@ uv sync --no-group test --no-group type --no-group lint
 - add table sorting
 - iptv support
 - instructions page
+- figure out types for get_streams and get_streams_flat
+  - pydantic to replace typedict?

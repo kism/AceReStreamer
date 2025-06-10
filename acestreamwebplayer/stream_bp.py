@@ -11,6 +11,7 @@ from .authentication_bp import get_ip_from_request, is_ip_allowed
 from .flask_helpers import get_current_app
 from .logger import get_logger
 from .scraper import AceScraper
+from .scraper_helpers import get_streams_as_iptv
 
 # Modules should all setup logging like this so the log messages include the modules name.
 # If you were to list all loggers with something like...
@@ -89,6 +90,27 @@ def guide() -> Response | WerkzeugResponse:
         render_template(
             "guide.html.j2",
         ),
+        HTTPStatus.OK,
+    )
+
+
+@bp.route("/iptv")
+def iptv() -> Response | WerkzeugResponse:
+    """Render the IPTV page."""
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
+    if not ace_scraper:
+        logger.error("Scraper object not initialized.")
+        return jsonify({"error": "Scraper not initialized"}, HTTPStatus.INTERNAL_SERVER_ERROR)
+
+    streams = ace_scraper.get_streams_flat()
+    hls_path = current_app.config["SERVER_NAME"] + "/hls/"
+    m3u8 = get_streams_as_iptv(streams, hls_path)
+
+    return Response(
+        m3u8,
         HTTPStatus.OK,
     )
 

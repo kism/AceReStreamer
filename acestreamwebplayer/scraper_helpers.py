@@ -1,6 +1,12 @@
 """Helper functions for scrapers."""
 
 import re
+from typing import TYPE_CHECKING
+
+from .logger import get_logger
+from .scraper_objects import FlatFoundAceStream
+
+logger = get_logger(__name__)
 
 STREAM_TITLE_MAX_LENGTH = 50
 
@@ -27,3 +33,16 @@ def candidates_regex_cleanup(candidate_titles: list[str], regex: str) -> list[st
             new_candidate_titles.append(title_new)
 
     return new_candidate_titles
+
+
+def get_streams_as_iptv(streams: list[FlatFoundAceStream], base_url_hls: str) -> str:
+    """Get the found streams as an IPTV M3U8 string."""
+    m3u8_content = "#EXTM3U\n"
+
+    for stream in streams:
+        logger.debug(stream)
+        if stream["quality"] > 0:
+            m3u8_content += f"#EXTINF:-1 ,{stream['title']}\n"
+            m3u8_content += f"{base_url_hls}{stream['ace_id']}\n"
+
+    return m3u8_content

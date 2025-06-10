@@ -8,6 +8,7 @@ from .logger import get_logger
 from .scraper_health import AceQuality
 from .scraper_html import scrape_streams_html_sites
 from .scraper_iptv import scrape_streams_iptv_sites
+from .scraper_objects import FlatFoundAceStream
 
 if TYPE_CHECKING:
     from .scraper_objects import FoundAceStreams
@@ -51,7 +52,7 @@ class AceScraper:
         )
 
     def get_streams(self) -> list[dict[str, str]]:
-        """Get the found streams as a list of JSON strings."""
+        """Get the found streams as a list of dicts, ready to be turned into json."""
         streams = [stream.model_dump() for stream in self.streams]
 
         for found_stream in streams:
@@ -59,6 +60,22 @@ class AceScraper:
                 stream["quality"] = self._ace_quality.get_quality(stream["ace_id"])
 
         return streams
+
+    def get_streams_flat(self) -> list[FlatFoundAceStream]:
+        """Get a list of streams, as a list of dicts."""
+        streams = [stream.model_dump() for stream in self.streams]
+
+        flat_streams = []
+        for found_stream in streams:
+            for stream in found_stream["stream_list"]:
+                new_stream: FlatFoundAceStream = FlatFoundAceStream(
+                    site_name=found_stream["site_name"],
+                    quality=self._ace_quality.get_quality(stream["ace_id"]),
+                    title=stream["title"],
+                    ace_id=stream["ace_id"],
+                )
+                flat_streams.append(new_stream)
+        return flat_streams
 
     def get_streams_health(self) -> dict[str, int]:
         """Get the health of the streams."""
