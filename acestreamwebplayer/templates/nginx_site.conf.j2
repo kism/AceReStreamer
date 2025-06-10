@@ -11,14 +11,15 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        include {{ ip_allow_list_path }}
     }
     listen 443 ssl;
     listen [::]:443 ssl ipv6only=on;
 
-    ssl_certificate /path/to/your/certificate.crt;
-    ssl_certificate_key /path/to/your/private.key;
-    # ssl_dhparam /path/to/your/dhparam.pem;
-    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_certificate {{ cert_path }};
+    ssl_certificate_key {{ cert_key_path }};
+    {% if dhparam_path != "" %}ssl_dhparam {{ dhparam_path }};{% endif %}
+    {% if extra_config_file_path != "" %}include {{ extra_config_file_path }};{% else %}ssl_protocols TLSv1.2 TLSv1.3;{% endif %}
 }
 
 server {
