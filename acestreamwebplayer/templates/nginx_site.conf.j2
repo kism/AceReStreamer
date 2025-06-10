@@ -14,7 +14,7 @@ server {
         include {{ ip_allow_list_path }};
     }
     listen 443 ssl;
-    listen [::]:443 ssl ipv6only=on;
+    listen [::]:443 ssl;
 
     ssl_certificate {{ cert_path }};
     ssl_certificate_key {{ cert_key_path }};
