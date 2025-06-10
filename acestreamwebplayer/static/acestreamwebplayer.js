@@ -39,43 +39,56 @@ function getStreams() {
 
       table.appendChild(tr_heading);
 
+      let dataFlattened = [];
       for (const site of data) {
         for (const stream of site.stream_list) {
-          const tr = document.createElement("tr");
-
-          // Quality cell
-          const td_quality = document.createElement("td");
-          const code = document.createElement("code");
-          code.textContent = `${stream.quality}`;
-          if (stream.quality === -1) {
-            code.className = "status-neutral";
-            code.textContent = "?";
-          } else if (stream.quality < 20) {
-            code.className = "status-bad";
-          } else if (stream.quality >= 20 && stream.quality <= 80) {
-            code.className = "status-neutral";
-          } else if (stream.quality >= 80) {
-            code.className = "status-good";
-          }
-          td_quality.appendChild(code);
-
-          // Link cell
-          td_link = document.createElement("td");
-          const a = document.createElement("a"); // Create a new anchor element
-          a.textContent = `${stream.title}`;
-          a.onclick = () => loadStreamUrl(stream.ace_id, stream.title); // Set the onclick event to load the stream URL
-          td_link.appendChild(a); // Append the anchor element to the table data cell
-
-          // Source Cell
-          td_source = document.createElement("td");
-          td_source.textContent = `${site.site_name}`;
-
-          // Append to the row
-          tr.appendChild(td_quality);
-          tr.appendChild(td_link);
-          tr.appendChild(td_source);
-          table.appendChild(tr);
+          dataFlattened.push({
+            quality: stream.quality,
+            title: stream.title,
+            ace_id: stream.ace_id,
+            site_name: site.site_name,
+          });
         }
+      }
+
+      // Sort the data by quality in descending order
+      dataFlattened.sort((a, b) => b.quality - a.quality);
+
+      for (const stream of dataFlattened) {
+        const tr = document.createElement("tr");
+
+        // Quality cell
+        const td_quality = document.createElement("td");
+        const code = document.createElement("code");
+        code.textContent = `${stream.quality}`;
+        if (stream.quality === -1) {
+          code.className = "status-neutral";
+          code.textContent = "?";
+        } else if (stream.quality < 20) {
+          code.className = "status-bad";
+        } else if (stream.quality >= 20 && stream.quality <= 80) {
+          code.className = "status-neutral";
+        } else if (stream.quality >= 80) {
+          code.className = "status-good";
+        }
+        td_quality.appendChild(code);
+
+        // Link cell
+        td_link = document.createElement("td");
+        const a = document.createElement("a"); // Create a new anchor element
+        a.textContent = `${stream.title}`;
+        a.onclick = () => loadStreamUrl(stream.ace_id, stream.title); // Set the onclick event to load the stream URL
+        td_link.appendChild(a); // Append the anchor element to the table data cell
+
+        // Source Cell
+        td_source = document.createElement("td");
+        td_source.textContent = `${stream.site_name}`;
+
+        // Append to the row
+        tr.appendChild(td_quality);
+        tr.appendChild(td_link);
+        tr.appendChild(td_source);
+        table.appendChild(tr);
       }
     })
     .catch((error) => {

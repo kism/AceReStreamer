@@ -78,6 +78,21 @@ def webplayer_stream() -> Response | WerkzeugResponse:
     )
 
 
+@bp.route("/guide")
+def guide() -> Response | WerkzeugResponse:
+    """Render the guide page."""
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
+    return Response(
+        render_template(
+            "guide.html.j2",
+        ),
+        HTTPStatus.OK,
+    )
+
+
 @bp.route("/hls/<path:path>")
 def hls_stream(path: str) -> Response | WerkzeugResponse:
     """Reverse proxy the HLS from Ace."""
