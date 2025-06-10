@@ -130,7 +130,6 @@ def generate_nginx_config_file(
     if app_config.nginx.ip_allow_list_path == "":
         app_config.nginx.ip_allow_list_path = (Path("instance") / "ip_allow_list.conf").absolute()
 
-
     if not all(required_fields):
         logger.error("Nginx configuration is missing required fields: server_name, cert_path, cert_key_path.")
         logger.info("Please set these fields in the app configuration file.")
@@ -138,11 +137,10 @@ def generate_nginx_config_file(
         sys.exit(1)
 
     if "complete" in generate_options:
-        logger.info("Generating COMPLETE Nginx configuration file.")
+        logger.info("Generating COMPLETE Nginx configuration file part 1.")
     else:
         logger.info("Generating SITE Nginx configuration file.")
 
-    template_name = "nginx_complete.conf.j2" if "complete" in generate_options else "nginx_site.conf.j2"
     context = {
         "flask_server_address": flask_server_address,
         "nginx_server_name": app_config.nginx.server_name,
@@ -155,8 +153,14 @@ def generate_nginx_config_file(
     }
 
     env = Environment(loader=FileSystemLoader(TEMPLATES_DIR), autoescape=True)
-    template = env.get_template(template_name)
+    template = env.get_template("nginx_site.conf.j2")
     nginx_config = template.render(context)
+
+    if "complete" in generate_options:
+        logger.info("Generating COMPLETE Nginx configuration file part 2.")
+        indented = "\n".join("    " + line for line in nginx_config.splitlines()) + "\n"
+        complete_template = env.get_template("nginx_complete.conf.j2")
+        nginx_config = complete_template.render({"servers": indented})
 
     with nginx_config_path.open("w", encoding="utf-8") as f:
         f.write(nginx_config)
