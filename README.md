@@ -57,9 +57,9 @@ uv sync --no-group test --no-group type --no-group lint
 - ~~actually set stream id in js~~
 - ~~use unauthorised for endpoints that require auth~~
 - ~~player stopped by default~~
-- add about page
-- add table sorting
-- iptv support
-- instructions page
-- figure out types for get_streams and get_streams_flat
-  - pydantic to replace typedict?
+- ~~add about page~~
+- ~~add table sorting~~
+- ~~iptv support~~
+- ~~instructions page~~
+- ~~figure out types for get_streams and get_streams_flat~~
+  - ~~pydantic to replace typedict?~~

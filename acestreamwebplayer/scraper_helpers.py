@@ -41,8 +41,8 @@ def get_streams_as_iptv(streams: list[FlatFoundAceStream], base_url_hls: str) ->
 
     for stream in streams:
         logger.debug(stream)
-        if stream["quality"] > 0:
-            m3u8_content += f"#EXTINF:-1 ,{stream['title']}\n"
-            m3u8_content += f"{base_url_hls}{stream['ace_id']}\n"
+        if stream.quality > 0:
+            m3u8_content += f"#EXTINF:-1 ,{stream.title}\n"
+            m3u8_content += f"{base_url_hls}{stream.ace_id}\n"
 
     return m3u8_content

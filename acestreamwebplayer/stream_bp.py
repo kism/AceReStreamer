@@ -198,8 +198,9 @@ def api_streams() -> Response | WerkzeugResponse:
         return jsonify({"error": "Scraper not initialized"}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
     streams = ace_scraper.get_streams()
+    streams_serialized = [stream.model_dump() for stream in streams]
 
-    response = jsonify(streams)
+    response = jsonify(streams_serialized)
     response.status_code = HTTPStatus.OK
     return response
 
