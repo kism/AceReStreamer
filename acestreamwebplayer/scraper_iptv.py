@@ -51,6 +51,11 @@ def scrape_streams_iptv_site(site: ScrapeSiteIPTV, disallowed_words: list[str]) 
                 continue
 
             title = parts[1].strip()
+            # If title contains a disallowed_words word, skip this stream
+            if any(word in title for word in site.disallowed_words):
+                title = ""
+                continue
+
         elif any(line.startswith(prefix) for prefix in ace_url_prefixes):
             ace_id_temp = line.strip()
             for ace_url_prefix in ace_url_prefixes:
@@ -63,7 +68,6 @@ def scrape_streams_iptv_site(site: ScrapeSiteIPTV, disallowed_words: list[str]) 
                 ace_id = ace_id_temp
 
         if title != "" and ace_id != "":
-            print(ace_id)
             streams.append(
                 FoundAceStream(
                     title=title,

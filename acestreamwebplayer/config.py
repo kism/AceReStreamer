@@ -48,6 +48,7 @@ class ScrapeSiteIPTV(BaseModel):
 
     name: str = "Example IPTV"
     url: str = "https://example.com/iptv.txt"
+    disallowed_words: list[str] = []
 
 
 class AceScrapeSettings(BaseModel):
