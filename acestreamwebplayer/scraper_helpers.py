@@ -1,7 +1,6 @@
 """Helper functions for scrapers."""
 
 import re
-from typing import TYPE_CHECKING
 
 from .logger import get_logger
 from .scraper_objects import FlatFoundAceStream
