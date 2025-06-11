@@ -185,7 +185,6 @@ document.addEventListener("DOMContentLoaded", function () {
   streamStatus.innerHTML = "Ready to load a stream";
 
   getStreams();
-  setInterval(getStreams, 60 * 100); // 10 seconds in milliseconds
 
   window.addEventListener("loadStream", loadStream);
 

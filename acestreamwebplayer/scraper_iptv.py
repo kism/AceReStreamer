@@ -35,7 +35,7 @@ def scrape_streams_iptv_site(site: ScrapeSiteIPTV, disallowed_words: list[str]) 
         logger.error("Error scraping IPTV site %s, %s", site.url, error_short)  # noqa: TRY400 Naa this should be shorter
         return None
 
-    ace_url_prefix = "http://127.0.0.1:6878/ace/getstream?id="
+    ace_url_prefixes = ["http://127.0.0.1:6878/ace/getstream?id=", "acestream://"]
     url_section = 2
 
     lines = response.text.splitlines()
@@ -51,11 +51,19 @@ def scrape_streams_iptv_site(site: ScrapeSiteIPTV, disallowed_words: list[str]) 
                 continue
 
             title = parts[1].strip()
-        elif line.startswith(ace_url_prefix):
-            ace_id = line.split(ace_url_prefix)[-1].strip()
-            ace_id = ace_id.split("&")[0]  # Remove any query parameters if present
+        elif any(line.startswith(prefix) for prefix in ace_url_prefixes):
+            ace_id_temp = line.strip()
+            for ace_url_prefix in ace_url_prefixes:
+                ace_id_temp = ace_id_temp.replace(ace_url_prefix, "")
+
+            if "&" in ace_id_temp:
+                ace_id_temp = ace_id_temp.split("&")[0]
+
+            if len(ace_id_temp) == 40:  # Correct length for AceStream ID
+                ace_id = ace_id_temp
 
         if title != "" and ace_id != "":
+            print(ace_id)
             streams.append(
                 FoundAceStream(
                     title=title,

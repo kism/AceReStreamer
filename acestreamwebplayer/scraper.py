@@ -87,9 +87,8 @@ class AceScraper:
             logger.warning("Scraper found no AceStreams.")
             return
 
+        n = 0
         msg = "Found AceStreams:\n"
         for found_streams in self.streams:
-            msg += f"Site: {found_streams.site_name}\n"
-            for stream in found_streams.stream_list:
-                msg += f"  - {stream.title} ({stream.ace_id})\n"
+            n = n + len(found_streams.stream_list)
         logger.info(msg)
