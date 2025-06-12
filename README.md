@@ -79,6 +79,7 @@ uv sync --no-group test --no-group type --no-group lint
 
 ## todo
 
+- login page
 - /health endpoint
 - api reference
 - pytest

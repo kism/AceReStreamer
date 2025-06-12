@@ -4,7 +4,7 @@ import hmac
 from http import HTTPStatus
 from pathlib import Path
 
-from flask import Blueprint, Response, jsonify, redirect, request
+from flask import Blueprint, Response, jsonify, redirect, request, send_file
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from .authentication_allow_list import AllowList
@@ -18,6 +18,8 @@ bp = Blueprint("acerestreamer_auth", __name__)
 
 current_app = get_current_app()
 ip_allow_list: None | AllowList = None
+
+STATIC_PATH = Path(__file__).parent / "static"
 
 
 def start_allowlist() -> None:
@@ -101,3 +103,12 @@ def authenticate() -> Response | WerkzeugResponse:
         response = jsonify({"status": "success", "message": "Authenticated successfully"})
 
     return response
+
+
+@bp.route("/login")
+def login() -> Response | WerkzeugResponse:
+    """Render the login page."""
+    if not ip_allow_list:
+        return Response("Not initialized", HTTPStatus.INTERNAL_SERVER_ERROR)
+
+    return send_file(STATIC_PATH / "login.html")

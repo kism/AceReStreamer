@@ -222,6 +222,7 @@ embed,
 iframe,
 video {
   border: 0;
+  background-color: #2d2d2d;
 }
 
 small {
@@ -271,7 +272,9 @@ a:focus {
 }
 
 a:visited {
-  color: #885560;
+  /* color: #885560; */
+  color: teal;
+  text-decoration: none;
 }
 
 tr {
@@ -525,6 +528,14 @@ nav ul {
   padding: 0;
   margin: 0;
   gap: 1rem; /* Spacing between items */
+}
+
+/* #endregion */
+
+/* #region: Login */
+
+#login-redirect {
+  display: None;
 }
 
 /* #endregion */
