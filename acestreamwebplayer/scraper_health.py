@@ -52,7 +52,6 @@ class AceQuality:
 
     def save_cache(self) -> None:
         """Save the current quality cache to a file."""
-        logger.debug("Saving AceQuality cache to %s", self.cache_file)
         if not self.cache_file:
             return
 

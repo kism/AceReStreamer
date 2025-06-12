@@ -24,6 +24,16 @@ class FlaskConfDef(BaseModel):
     SERVER_NAME: str = "http://127.0.0.1:5100"
 
 
+class TitleFilter(BaseModel):
+    """Model for title filtering."""
+
+    always_exclude_words: list[str] = []
+    always_include_words: list[str] = []
+    exclude_words: list[str] = []
+    include_words: list[str] = []
+    regex_postprocessing: str = ""
+
+
 class ScrapeSiteHTML(BaseModel):
     """Model for a site to scrape."""
 
@@ -31,7 +41,7 @@ class ScrapeSiteHTML(BaseModel):
     url: str = "https://example.com"
     target_class: str = ""  # Target html class
     check_sibling: bool = False
-    stream_title_regex_postprocessing: str = ""
+    title_filter: TitleFilter = TitleFilter()
 
     @model_validator(mode="after")
     def valid_url(self) -> Self:
@@ -48,7 +58,7 @@ class ScrapeSiteIPTV(BaseModel):
 
     name: str = "Example IPTV"
     url: str = "https://example.com/iptv.txt"
-    disallowed_words: list[str] = []
+    title_filter: TitleFilter = TitleFilter()
 
 
 class AceScrapeSettings(BaseModel):
@@ -57,7 +67,6 @@ class AceScrapeSettings(BaseModel):
     site_list_html: list[ScrapeSiteHTML] = []
     site_list_iptv_m3u8: list[ScrapeSiteIPTV] = []
     scrape_interval: int = 7200  # 2 hours
-    disallowed_words: list[str] = []
 
 
 class AppConfDef(BaseModel):
@@ -65,7 +74,6 @@ class AppConfDef(BaseModel):
 
     password: str = ""
     ace_address: str = "http://localhost:6878"
-    ace_scrape_settings: AceScrapeSettings = AceScrapeSettings()
 
     @model_validator(mode="after")
     def valid_ace_address(self) -> Self:
@@ -107,6 +115,7 @@ class AcestreamWebplayerConfig(BaseSettings):
     flask: FlaskConfDef = FlaskConfDef()
     nginx: NginxConfDef | None = None  # Nginx configuration is optional
     logging: LoggingConfDef = LoggingConfDef()
+    scraper: AceScrapeSettings = AceScrapeSettings()
 
     def write_config(self, config_location: Path) -> None:
         """Write the current settings to a TOML file."""

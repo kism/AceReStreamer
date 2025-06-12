@@ -4,25 +4,25 @@ import requests
 
 from .config import ScrapeSiteIPTV
 from .logger import get_logger
-from .scraper_helpers import check_valid_ace_id, check_valid_ace_url, extract_ace_id_from_url
+from .scraper_helpers import check_title_allowed, check_valid_ace_id, check_valid_ace_url, extract_ace_id_from_url
 from .scraper_objects import FoundAceStream, FoundAceStreams
 
 logger = get_logger(__name__)
 
 
-def scrape_streams_iptv_sites(sites: list[ScrapeSiteIPTV], disallowed_words: list[str]) -> list[FoundAceStreams]:
+def scrape_streams_iptv_sites(sites: list[ScrapeSiteIPTV]) -> list[FoundAceStreams]:
     """Scrape the streams from the configured IPTV sites."""
     found_streams: list[FoundAceStreams] = []
 
     for site in sites:
-        streams = scrape_streams_iptv_site(site, disallowed_words)
+        streams = scrape_streams_iptv_site(site)
         if streams:
             found_streams.append(streams)
 
     return found_streams
 
 
-def scrape_streams_iptv_site(site: ScrapeSiteIPTV, disallowed_words: list[str]) -> FoundAceStreams | None:
+def scrape_streams_iptv_site(site: ScrapeSiteIPTV) -> FoundAceStreams | None:
     """Scrape the streams from the configured IPTV sites."""
     streams: list[FoundAceStream] = []
 
@@ -42,22 +42,26 @@ def scrape_streams_iptv_site(site: ScrapeSiteIPTV, disallowed_words: list[str]) 
     title = ""
     ace_id = ""
     for line in lines:
+        line_normalised = line.replace("#EXTINF:-1,", "#EXTINF:-1").strip()
         if line.startswith("#EXTINF:"):
             ace_id = ""  # Reset
             title = ""  # Reset
-            parts = line.split(",")
-            if len(parts) < url_section:
-                logger.warning("Malformed line in IPTV stream: %s", line)
+            parts = line_normalised.split(",")
+            if len(parts) != url_section:
+                logger.warning("Malformed line in IPTV stream: %s", line_normalised)
                 continue
 
             title = parts[1].strip()
-            # If title contains a disallowed_words word, skip this stream
-            if any(word in title for word in site.disallowed_words):
+
+            if not check_title_allowed(
+                title=title,
+                title_filter=site.title_filter,
+            ):
                 title = ""
                 continue
 
-        elif check_valid_ace_url(line):
-            ace_id = extract_ace_id_from_url(line)
+        elif check_valid_ace_url(line_normalised):
+            ace_id = extract_ace_id_from_url(line_normalised)
 
             if not check_valid_ace_id(ace_id):
                 logger.warning("Invalid Ace ID found in candidate: %s, skipping", ace_id)
@@ -77,7 +81,7 @@ def scrape_streams_iptv_site(site: ScrapeSiteIPTV, disallowed_words: list[str]) 
     return (
         FoundAceStreams(
             site_name=site.name,
-            stream_list=[stream for stream in streams if not any(word in stream.title for word in disallowed_words)],
+            stream_list=streams,
         )
         if streams
         else None

@@ -8,6 +8,7 @@ from .logger import get_logger
 from .scraper_helpers import (
     STREAM_TITLE_MAX_LENGTH,
     candidates_regex_cleanup,
+    check_title_allowed,
     check_valid_ace_id,
     check_valid_ace_url,
     cleanup_candidate_title,
@@ -18,19 +19,19 @@ from .scraper_objects import CandidateAceStream, FoundAceStream, FoundAceStreams
 logger = get_logger(__name__)
 
 
-def scrape_streams_html_sites(sites: list[ScrapeSiteHTML], disallowed_words: list[str]) -> list[FoundAceStreams]:
+def scrape_streams_html_sites(sites: list[ScrapeSiteHTML]) -> list[FoundAceStreams]:
     """Scrape the streams from the configured sites."""
     found_streams: list[FoundAceStreams] = []
 
     for site in sites:
-        streams = scrape_streams_html_site(site, disallowed_words)
+        streams = scrape_streams_html_site(site)
         if streams:
             found_streams.append(streams)
 
     return found_streams
 
 
-def scrape_streams_html_site(site: ScrapeSiteHTML, disallowed_words: list[str]) -> FoundAceStreams | None:
+def scrape_streams_html_site(site: ScrapeSiteHTML) -> FoundAceStreams | None:
     """Scrape the streams from the configured sites."""
     streams_candidates: list[CandidateAceStream] = []
 
@@ -83,24 +84,28 @@ def scrape_streams_html_site(site: ScrapeSiteHTML, disallowed_words: list[str]) 
                 )
 
             # Through all title candidates, clean them up if there is a regex defined
-            candidate_titles = candidates_regex_cleanup(candidate_titles, site.stream_title_regex_postprocessing)
+            candidate_titles = candidates_regex_cleanup(
+                candidate_titles,
+                site.title_filter.regex_postprocessing,
+            )
 
-            # Create a candidate AceStream with the found titles, remove duplicates
+            candidate_titles = list(set(candidate_titles))  # Remove duplicates
+
             streams_candidates.append(
                 CandidateAceStream(
                     ace_id=ace_stream_url,
-                    title_candidates=list(set(candidate_titles)),
+                    title_candidates=candidate_titles,
                 )
             )
 
-    found_streams = process_candidates(streams_candidates, disallowed_words)
+    found_streams = process_candidates(streams_candidates, site)
     return FoundAceStreams(
         site_name=site.name,
         stream_list=found_streams,
     )
 
 
-def process_candidates(candidates: list[CandidateAceStream], disallowed_words: list[str]) -> list[FoundAceStream]:
+def process_candidates(candidates: list[CandidateAceStream], site: ScrapeSiteHTML) -> list[FoundAceStream]:
     """Process candidate streams to find valid AceStreams."""
     found_streams: list[FoundAceStream] = []
 
@@ -125,13 +130,6 @@ def process_candidates(candidates: list[CandidateAceStream], disallowed_words: l
 
         title = "<Unknown Title>"
 
-        # Check if the title contains any disallowed words, skip if so
-        if any(
-            disallowed_word in title.lower() for title in new_title_candidates for disallowed_word in disallowed_words
-        ):
-            logger.debug("Skipping stream with disallowed word: %s", new_title_candidates)
-            continue
-
         if len(new_title_candidates) == 1:
             title = new_title_candidates[0]
         elif len(new_title_candidates) > 1:
@@ -139,6 +137,12 @@ def process_candidates(candidates: list[CandidateAceStream], disallowed_words: l
             title = " / ".join(new_title_candidates)
 
         url_no_uri = extract_ace_id_from_url(candidate.ace_id)
+
+        if not check_title_allowed(
+            title=title,
+            title_filter=site.title_filter,
+        ):
+            continue
 
         if not check_valid_ace_id(url_no_uri):
             logger.warning("Invalid Ace ID found in candidate: %s, skipping", url_no_uri)
@@ -179,8 +183,6 @@ def search_for_candidate(
     """Search the parent of the given tag for a title."""
     if not html_tag or not isinstance(html_tag, Tag):
         return candidate_titles
-
-    # Search children could go here with html_tag.child but I think it will do nothing
 
     # Search Parents
     more = search_for_candidate(

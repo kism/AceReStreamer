@@ -29,7 +29,7 @@ def start_scraper() -> None:
     """Method to 'configure' this module. Needs to be called under `with app.app_context():` from __init__.py."""
     global ace_scraper  # noqa: PLW0603 Necessary evil as far as I can tell, could move to all objects but eh...
     scraper_cache = Path(current_app.instance_path) / "ace_quality_cache.json"
-    ace_scraper = AceScraper(current_app.aw_conf.app.ace_scrape_settings, scraper_cache)
+    ace_scraper = AceScraper(current_app.aw_conf.scraper, scraper_cache)
 
 
 @bp.route("/")

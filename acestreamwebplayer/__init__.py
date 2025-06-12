@@ -6,8 +6,8 @@ from . import authentication_bp, config, info_bp, logger, stream_bp
 from .flask_helpers import FlaskAcestreamWebplayer
 
 __version__ = "0.1.6"  # This is the version of the app, used in pyproject.toml, enforced in a test.
-PROGRAM_NAME = "Acestream Webplayer"  # This is the name of the app, used in the config file.
-URL = "https://github.com/kism/acestream-webplayer"
+PROGRAM_NAME = "Ace ReStreamer"  # This is the name of the app, used in the config file.
+URL = "https://github.com/kism/ace-restreamer"
 
 
 def create_app(

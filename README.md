@@ -100,4 +100,5 @@ uv sync --no-group test --no-group type --no-group lint
 - cache the sources
 - iptv api
 - chromecast / airplay support
-- breadcrumb
+- ~~breadcrumb~~
+- investigate .copy()

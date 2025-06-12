@@ -20,7 +20,6 @@ class AceScraper:
         self.streams: list[FoundAceStreams] = []
 
         self.scrape_interval = ace_scrape_settings.scrape_interval
-        self.disallowed_words = ace_scrape_settings.disallowed_words
 
         self._ace_quality = AceQuality(ace_quality_cache_path)
 
@@ -36,14 +35,12 @@ class AceScraper:
         self.streams.extend(
             scrape_streams_html_sites(
                 sites=self.site_list_html,
-                disallowed_words=self.disallowed_words,
             )
         )
 
         self.streams.extend(
             scrape_streams_iptv_sites(
                 sites=self.site_list_iptv_m3u8,
-                disallowed_words=self.disallowed_words,
             )
         )
 
