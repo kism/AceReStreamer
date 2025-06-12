@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from acestreamwebplayer import create_app
-from acestreamwebplayer.config import load_config
+from acerestreamer import create_app
+from acerestreamer.config import load_config
 
 TEST_CONFIGS_LOCATION = Path.cwd() / "tests" / "configs"
 

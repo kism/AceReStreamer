@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from acestreamwebplayer.config import load_config
+from acerestreamer.config import load_config
 
 
 def test_load_missing_config(tmp_path):

@@ -2,7 +2,7 @@ from pathlib import Path
 
 import tomlkit
 
-import acestreamwebplayer
+import acerestreamer
 
 
 def test_version_pyproject():
@@ -10,7 +10,7 @@ def test_version_pyproject():
     pyproject_path = Path("pyproject.toml")
     with pyproject_path.open("rb") as f:
         pyproject_toml = tomlkit.load(f)
-    assert pyproject_toml["project"]["version"] == acestreamwebplayer.__version__
+    assert pyproject_toml["project"]["version"] == acerestreamer.__version__
 
 
 def test_version_lock():
@@ -22,7 +22,7 @@ def test_version_lock():
     found_version = False
     for package in uv_lock["package"]:
         if package["name"] == "acerestreamer":
-            assert package["version"] == acestreamwebplayer.__version__
+            assert package["version"] == acerestreamer.__version__
             found_version = True
             break
 

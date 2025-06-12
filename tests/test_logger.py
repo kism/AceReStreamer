@@ -4,7 +4,7 @@ import logging
 
 from flask import Flask
 
-from acestreamwebplayer import create_app
+from acerestreamer import create_app
 
 
 def test_config_invalid_log_level(tmp_path, get_test_config, caplog):

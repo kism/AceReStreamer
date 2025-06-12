@@ -11,7 +11,7 @@ And thus in the boilerplate I have some checks to ensure that your tests aren't 
 
 import pytest
 
-from acestreamwebplayer import create_app
+from acerestreamer import create_app
 
 
 def test_instance_path_check(get_test_config):
