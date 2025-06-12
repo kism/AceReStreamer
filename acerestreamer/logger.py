@@ -1,4 +1,4 @@
-"""Setup the logger functionality for acestreamwebplayer."""
+"""Setup the logger functionality for acerestreamer."""
 
 import logging
 import typing
@@ -76,8 +76,8 @@ logger = cast("CustomLogger", logging.getLogger(__name__))
 
 # In flask the root logger doesn't have any handlers, its all in app.logger
 # root_logger : root,
-# app.logger  : root, acestreamwebplayer,
-# logger      : root, acestreamwebplayer, acestreamwebplayer.module_name,
+# app.logger  : root, acerestreamer,
+# logger      : root, acerestreamer, acerestreamer.module_name,
 # The issue is that waitress, werkzeug (any any other modules that log) will log separately.
 # The aim is, remove the default handler from the flask App and create one on the root logger to apply config to all.
 

@@ -26,7 +26,7 @@ Or if you are not using GitHub you can check out workflow badges from your Git h
 
 ### Locally
 
-To get code coverage locally, the config is set in 'pyproject.toml', or run with `pytest --cov=acestreamwebplayer --cov-report=term --cov-report=html`
+To get code coverage locally, the config is set in 'pyproject.toml', or run with `pytest --cov=acerestreamer --cov-report=term --cov-report=html`
 
 ```bash
 python -m http.server -b 127.0.0.1 8000

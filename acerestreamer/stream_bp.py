@@ -15,9 +15,9 @@ from .logger import get_logger
 from .scraper import AceScraper
 from .scraper_helpers import get_streams_as_iptv
 
-logger = get_logger(__name__)  # Create a logger: acestreamwebplayer.this_module_name, inherit config from root logger
+logger = get_logger(__name__)  # Create a logger: acerestreamer.this_module_name, inherit config from root logger
 
-bp = Blueprint("acestreamwebplayer_scraper", __name__)
+bp = Blueprint("acerestreamer_scraper", __name__)
 ace_scraper: AceScraper | None = None
 current_app = get_current_app()
 

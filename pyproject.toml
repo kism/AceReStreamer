@@ -1,11 +1,10 @@
 [project]
-name = "Ace ReStreamer"
-version = "0.1.6"
-description = ""
-authors = [
-    { name = "Kieran Gee", email = "kieran.lost.the.game@gmail.com" },
-]
+name = "acerestreamer"
+version = "0.1.7"
+description = "Ace Restreamer, a web interface, scraper, and restreamer for Ace Stream."
 readme = "README.md"
+license = { file = "LICENSE.md" }
+authors = [{ name = "Kieran Gee", email = "kieran.lost.the.game@gmail.com" }]
 requires-python = "~=3.12"
 dependencies = [
     "flask>=3.1, <4",
@@ -50,7 +49,7 @@ extend-unsafe-fixes = [
 select = ["ALL"] # KG Include absolutely all of Ruff's rules.
 ignore = [
     # Modules
-    "DJ",  # KG Django not required
+    "DJ", # KG Django not required
 
     # Specific rules
     "TD002",  # KG Verbose TODO, only I work on this project
@@ -94,7 +93,7 @@ docstring-code-line-length = 40
 [tool.pytest.ini_options]
 addopts = [
     "--cov-context=test",
-    "--cov=acestreamwebplayer",
+    "--cov=acerestreamer",
     "--cov-report=term",
     "--cov-report=html",
 ]
@@ -104,7 +103,7 @@ testpaths = ["tests"]
 show_contexts = true
 
 [tool.mypy]
-files = ["acestreamwebplayer"]
+files = ["acerestreamer"]
 namespace_packages = true
 explicit_package_bases = true
 show_error_codes = true

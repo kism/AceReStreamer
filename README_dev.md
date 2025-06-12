@@ -81,5 +81,5 @@ regex_postprocessing = ""
 ## Run the application
 
 ```bash
-flask --app acestreamwebplayer run --port 5100 --debug
+flask --app acerestreamer run --port 5100 --debug
 ```

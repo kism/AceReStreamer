@@ -21,9 +21,9 @@ def test_version_lock():
 
     found_version = False
     for package in uv_lock["package"]:
-        if package["name"] == "acestreamwebplayer":
+        if package["name"] == "acerestreamer":
             assert package["version"] == acestreamwebplayer.__version__
             found_version = True
             break
 
-    assert found_version, "acestreamwebplayer not found in uv.lock"
+    assert found_version, "acerestreamer not found in uv.lock"

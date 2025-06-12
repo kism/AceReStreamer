@@ -3,6 +3,6 @@
     "hls.js": "^1.6.4"
   },
   "scripts": {
-    "postinstall": "cp node_modules/hls.js/dist/hls.min.js acestreamwebplayer/static/hls.min.js && cp node_modules/hls.js/dist/hls.min.js.map acestreamwebplayer/static/hls.min.js.map"
+    "postinstall": "cp node_modules/hls.js/dist/hls.min.js acerestreamer/static/hls.min.js && cp node_modules/hls.js/dist/hls.min.js.map acerestreamer/static/hls.min.js.map"
   }
 }

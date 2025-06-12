@@ -15,6 +15,6 @@ def test_home(client):
 
 
 def test_static_js_exists(client):
-    """TEST: /static/acestreamwebplayer.js loads."""
-    response = client.get("/static/acestreamwebplayer.js")
+    """TEST: /static/acerestreamer.js loads."""
+    response = client.get("/static/acerestreamer.js")
     assert response.status_code == HTTPStatus.OK

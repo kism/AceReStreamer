@@ -10,7 +10,7 @@ from .flask_helpers import get_current_app
 from .html_snippets import get_header_snippet
 from .logger import get_logger
 
-bp = Blueprint("acestreamwebplayer_info", __name__, template_folder="templates/info")
+bp = Blueprint("acerestreamer_info", __name__, template_folder="templates/info")
 current_app = get_current_app()
 logger = get_logger(__name__)
 

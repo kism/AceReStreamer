@@ -1,4 +1,4 @@
-# acestreamwebplayer
+# acerestreamer
 
 [![Check](https://github.com/kism/acestream-webplayer/actions/workflows/check.yml/badge.svg)](https://github.com/kism/acestream-webplayer/actions/workflows/check.yml)
 [![CheckType](https://github.com/kism/acestream-webplayer/actions/workflows/check_types.yml/badge.svg)](https://github.com/kism/acestream-webplayer/actions/workflows/check_types.yml)
@@ -25,7 +25,7 @@ docker run -t -p 6878:6878 ghcr.io/martinbjeldbak/acestream-http-proxy
 uv venv
 source .venv/bin/activate
 uv sync
-flask --app acestreamwebplayer run --port 5100
+flask --app acerestreamer run --port 5100
 ```
 
 ### Run Prod
@@ -42,7 +42,7 @@ uv sync --no-group test --no-group type --no-group lint
     --log-untrusted-proxy-headers \
     --clear-untrusted-proxy-headers \
     --threads 4 \
-    --call acestreamwebplayer:create_app
+    --call acerestreamer:create_app
 ```
 
 ## todo structure
