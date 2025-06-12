@@ -17,11 +17,14 @@ Run ace stream, I use docker
 
 ```bash
 docker run -t -p 6878:6878 ghcr.io/martinbjeldbak/acestream-http-proxy
+# Or maybe it's better to also allow the torrent port?
+docker run -t -p 6878:6878 -p 8621:8621 ghcr.io/martinbjeldbak/acestream-http-proxy
 ```
 
 ### Get node_modules
 
 ```bash
+nvm use 24
 npm install
 ```
 
