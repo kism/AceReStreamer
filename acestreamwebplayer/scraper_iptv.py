@@ -4,6 +4,7 @@ import requests
 
 from .config import ScrapeSiteIPTV
 from .logger import get_logger
+from .scraper_helpers import check_valid_ace_id, check_valid_ace_url, extract_ace_id_from_url
 from .scraper_objects import FoundAceStream, FoundAceStreams
 
 logger = get_logger(__name__)
@@ -35,7 +36,6 @@ def scrape_streams_iptv_site(site: ScrapeSiteIPTV, disallowed_words: list[str]) 
         logger.error("Error scraping IPTV site %s, %s", site.url, error_short)  # noqa: TRY400 Naa this should be shorter
         return None
 
-    ace_url_prefixes = ["http://127.0.0.1:6878/ace/getstream?id=", "acestream://"]
     url_section = 2
 
     lines = response.text.splitlines()
@@ -56,16 +56,13 @@ def scrape_streams_iptv_site(site: ScrapeSiteIPTV, disallowed_words: list[str]) 
                 title = ""
                 continue
 
-        elif any(line.startswith(prefix) for prefix in ace_url_prefixes):
-            ace_id_temp = line.strip()
-            for ace_url_prefix in ace_url_prefixes:
-                ace_id_temp = ace_id_temp.replace(ace_url_prefix, "")
+        elif check_valid_ace_url(line):
+            ace_id = extract_ace_id_from_url(line)
 
-            if "&" in ace_id_temp:
-                ace_id_temp = ace_id_temp.split("&")[0]
-
-            if len(ace_id_temp) == 40:  # Correct length for AceStream ID
-                ace_id = ace_id_temp
+            if not check_valid_ace_id(ace_id):
+                logger.warning("Invalid Ace ID found in candidate: %s, skipping", ace_id)
+                ace_id = ""
+                continue
 
         if title != "" and ace_id != "":
             streams.append(

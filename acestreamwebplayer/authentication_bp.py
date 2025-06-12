@@ -1,5 +1,6 @@
 """Main Stream Site Blueprint."""
 
+import hmac
 from http import HTTPStatus
 from pathlib import Path
 
@@ -57,32 +58,46 @@ def is_ip_allowed(ip: str) -> bool:
     return ip_allow_list.check(ip)
 
 
-@bp.route("/api/authenticate")
-@bp.route("/api/authenticate/")
-@bp.route("/api/authenticate/<password>")
-def authenticate(password: str = "") -> Response | WerkzeugResponse:
+@bp.route("/api/authenticate", methods=["GET", "POST"])
+def authenticate() -> Response | WerkzeugResponse:
     """Authenticate the user."""
     if not ip_allow_list:
         return Response("Not initialized", HTTPStatus.INTERNAL_SERVER_ERROR)
 
-    # This authentication is so cooked, but by doing this I avoid a string compare
-    if current_app.aw_conf.app.password.encode("utf-8") == password.encode("utf-8"):
+    if request.method == "POST":
+        password = request.form.get("password", "").strip()
+
+        # This authentication is so cooked, but by doing this I avoid a string compare / timing attacks
+        if hmac.compare_digest(
+            current_app.aw_conf.app.password,
+            password,
+        ):
+            ip = get_ip_from_request()
+            if ip != "":
+                ip_allow_list.add(ip)
+                logger.info("Authenticated IP address: %s", ip)
+            else:
+                logger.warning("Failed to get IP address from request, authentication may not be secure.")
+                response = jsonify({"status": "error", "message": "Failed to get IP address from request"})
+                response.status_code = HTTPStatus.BAD_REQUEST
+                return response
+
+            return redirect(
+                f"{current_app.aw_conf.flask.SERVER_NAME}/stream",
+                code=HTTPStatus.FOUND,
+            )
+
+        response = jsonify({"status": "error", "message": "Authentication failed"})
+        response.status_code = HTTPStatus.UNAUTHORIZED
+
+    # Get the current authentication
+    if request.method == "GET":
         ip = get_ip_from_request()
-        if ip != "":
-            ip_allow_list.add(ip)
-            logger.info("Authenticated IP address: %s", ip)
-        else:
-            logger.warning("Failed to get IP address from request, authentication may not be secure.")
-            response = jsonify({"status": "error", "message": "Failed to get IP address from request"})
-            response.status_code = HTTPStatus.BAD_REQUEST
+        if not is_ip_allowed(ip):
+            response = jsonify({"status": "error", "message": "IP address not allowed"})
+            response.status_code = HTTPStatus.FORBIDDEN
             return response
 
-        return redirect(
-            f"{current_app.aw_conf.flask.SERVER_NAME}/stream",
-            code=HTTPStatus.FOUND,
-        )
-
-    response = jsonify({"status": "error", "message": "Authentication failed"})
-    response.status_code = HTTPStatus.UNAUTHORIZED
+        response = jsonify({"status": "success", "message": "Authenticated successfully"})
 
     return response

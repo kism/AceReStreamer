@@ -8,7 +8,8 @@ from .scraper_objects import FlatFoundAceStream
 logger = get_logger(__name__)
 
 STREAM_TITLE_MAX_LENGTH = 50
-
+ACE_ID_LENGTH = 40
+ACE_URL_PREFIXES = ["http://127.0.0.1:6878/ace/getstream?id=", "acestream://"]
 
 def cleanup_candidate_title(title: str) -> str:
     """Cleanup the candidate title."""
@@ -45,3 +46,30 @@ def get_streams_as_iptv(streams: list[FlatFoundAceStream], base_url_hls: str) ->
             m3u8_content += f"{base_url_hls}{stream.ace_id}\n"
 
     return m3u8_content
+
+def check_valid_ace_id(ace_id: str) -> bool:
+    """Check if the AceStream ID is valid."""
+    if len(ace_id) != ACE_ID_LENGTH:
+        logger.warning("AceStream ID is not the expected length (%d), skipping: %s", ACE_ID_LENGTH, ace_id)
+        return False
+
+    if not re.match(r"^[0-9a-fA-F]+$", ace_id):
+        logger.warning("AceStream ID contains invalid characters: %s", ace_id)
+        return False
+
+    return True
+
+def extract_ace_id_from_url(url: str) -> str:
+    """Extract the AceStream ID from a URL."""
+    url = url.strip()
+    for prefix in ACE_URL_PREFIXES:
+        url = url.replace(prefix, "")
+
+    if "&" in url:
+        url = url.split("&")[0]
+
+    return url
+
+def check_valid_ace_url(url: str) -> bool:
+    """Check if the AceStream URL is valid."""
+    return any(url.startswith(prefix) for prefix in ACE_URL_PREFIXES)

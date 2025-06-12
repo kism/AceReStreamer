@@ -45,6 +45,32 @@ uv sync --no-group test --no-group type --no-group lint
     --call acestreamwebplayer:create_app
 ```
 
+## todo structure
+
+### Pages
+
+| path         | description                      |
+| ------------ | -------------------------------- |
+| /            | login page                       |
+| /stream      | stream webplayer                 |
+| /hls         | reverse proxy for ace m3u8 files |
+| /ace/c       | proxy for ace stream .ts files   |
+| /iptv        | iptv m3u8 playlist               |
+| /info/guide  | Main guide page                  |
+| /info/iptv   | IPTV guide page                  |
+| /info/health | health check page                |
+
+### API Endpoints
+
+| path                 | method | description               |
+| -------------------- | ------ | ------------------------- |
+| /api/authenticate    | POST   | authenticate endpoint     |
+| /api/authenticate    | GET    | get authentication status |
+| /api/streams/flat    | GET    | get all streams flat      |
+| /api/streams/by_site | GET    | get all streams           |
+| /api/streams/health  | GET    | stream ids w/health       |
+| /api/stream/{id}     | GET    | get stream by id          |
+
 ## todo
 
 - ~~less recursion in patient search i think~~
@@ -63,3 +89,12 @@ uv sync --no-group test --no-group type --no-group lint
 - ~~instructions page~~
 - ~~figure out types for get_streams and get_streams_flat~~
   - ~~pydantic to replace typedict?~~
+- /health endpoint
+- api reference
+- publish
+  - streams/flat
+  - streams/by_site
+- pytest
+- vitest?
+- iptv guide
+- cache the sources

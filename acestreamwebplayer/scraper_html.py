@@ -5,7 +5,14 @@ from bs4 import BeautifulSoup, Tag
 
 from .config import ScrapeSiteHTML
 from .logger import get_logger
-from .scraper_helpers import STREAM_TITLE_MAX_LENGTH, candidates_regex_cleanup, cleanup_candidate_title
+from .scraper_helpers import (
+    STREAM_TITLE_MAX_LENGTH,
+    candidates_regex_cleanup,
+    check_valid_ace_id,
+    check_valid_ace_url,
+    cleanup_candidate_title,
+    extract_ace_id_from_url,
+)
 from .scraper_objects import CandidateAceStream, FoundAceStream, FoundAceStreams
 
 logger = get_logger(__name__)
@@ -48,7 +55,7 @@ def scrape_streams_html_site(site: ScrapeSiteHTML, disallowed_words: list[str]) 
             continue
 
         # We are iterating through all links, we only want AceStream links
-        if "acestream://" in link_href:
+        if check_valid_ace_url(link_href):
             candidate_titles: list[str] = []
             ace_stream_url: str = link_href.strip()
 
@@ -131,7 +138,11 @@ def process_candidates(candidates: list[CandidateAceStream], disallowed_words: l
             # If there are multiple candidates, we can choose the first one
             title = " / ".join(new_title_candidates)
 
-        url_no_uri = candidate.ace_id.split("acestream://")[-1].strip()
+        url_no_uri = extract_ace_id_from_url(candidate.ace_id)
+
+        if not check_valid_ace_id(url_no_uri):
+            logger.warning("Invalid Ace ID found in candidate: %s, skipping", url_no_uri)
+            continue
 
         found_streams.append(
             FoundAceStream(
