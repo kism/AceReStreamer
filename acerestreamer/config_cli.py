@@ -84,11 +84,11 @@ def generate_app_config_file(
 
     if "html" in generate_options:
         logger.info("Including HTML scraper in the configuration.")
-        config.app.ace_scrape_settings.html.append(ScrapeSiteHTML())
+        config.scraper.html.append(ScrapeSiteHTML())
 
     if "iptv" in generate_options:
         logger.info("Including IPTV M3U8 scraper in the configuration.")
-        config.app.ace_scrape_settings.iptv_m3u8.append(ScrapeSiteIPTV())
+        config.scraper.iptv_m3u8.append(ScrapeSiteIPTV())
 
     if "nginx" in generate_options:
         logger.info("Including Nginx configuration in the configuration.")
