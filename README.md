@@ -79,13 +79,27 @@ uv sync --no-group test --no-group type --no-group lint
 
 ## todo
 
+- /health endpoint
+- api reference
+- pytest
+- vitest?
+- cache the sources
+- iptv api
+  - more on the iptv guide
+- chromecast / airplay support
+- investigate .copy()
+- actually fetch in a thread
+
+- ~~publish~~
+  - ~~streams/flat~~
+  - ~~streams/by_site~~
+- ~~breadcrumb~~
 - ~~less recursion in patient search i think~~
 - ~~scraper list~~
   - ~~populate quality~~
   - ~~cache the quality~~
-- scraper global settings
-  - frequency
-  - ~~forbidden titles~~
+- ~~figure out types for get_streams and get_streams_flat~~
+  - ~~pydantic to replace typedict?~~
 - ~~actually set stream id in js~~
 - ~~use unauthorised for endpoints that require auth~~
 - ~~player stopped by default~~
@@ -93,18 +107,6 @@ uv sync --no-group test --no-group type --no-group lint
 - ~~add table sorting~~
 - ~~iptv support~~
 - ~~instructions page~~
-- ~~figure out types for get_streams and get_streams_flat~~
-  - ~~pydantic to replace typedict?~~
-- /health endpoint
-- api reference
-- ~~publish~~
-  - ~~streams/flat~~
-  - ~~streams/by_site~~
-- pytest
-- vitest?
-- iptv guide
-- cache the sources
-- iptv api
-- chromecast / airplay support
-- ~~breadcrumb~~
-- investigate .copy()
+- ~~scraper global settings~~
+  - ~~frequency~~
+  - ~~forbidden titles~~
