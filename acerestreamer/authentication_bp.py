@@ -96,8 +96,8 @@ def authenticate() -> Response | WerkzeugResponse:
     if request.method == "GET":
         ip = get_ip_from_request()
         if not is_ip_allowed(ip):
-            response = jsonify({"status": "error", "message": "IP address not allowed"})
-            response.status_code = HTTPStatus.FORBIDDEN
+            response = jsonify({"status": "error", "message": "Unauthenticated"})
+            response.status_code = HTTPStatus.UNAUTHORIZED
             return response
 
         response = jsonify({"status": "success", "message": "Authenticated successfully"})

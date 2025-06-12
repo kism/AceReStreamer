@@ -37,12 +37,9 @@ def home() -> Response | WerkzeugResponse:
     """Render the home page, redirect to stream if IP is allowed."""
     ip_is_allowed = is_ip_allowed(get_ip_from_request())
     if ip_is_allowed:
-        return redirect("/stream", HTTPStatus.FOUND)
+        return redirect("/stream")
 
-    template = render_template(
-        "home.html.j2",
-    )
-    return Response(template, HTTPStatus.OK)
+    return redirect("/login")
 
 
 @bp.route("/stream")

@@ -21,6 +21,8 @@ function checkAuthentication() {
     if (response.ok) {
       printSuccess(`Already authenticated!`);
       hideLoginForm();
+    } else {
+      printFailure(`Not authenticated`);
     }
   });
 }
