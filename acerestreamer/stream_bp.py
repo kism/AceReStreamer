@@ -22,7 +22,7 @@ ace_scraper: AceScraper | None = None
 current_app = get_current_app()
 
 REVERSE_PROXY_EXCLUDED_HEADERS = ["content-encoding", "content-length", "transfer-encoding", "connection", "keep-alive"]
-REVERSE_PROXY_TIMEOUT = 30  # Very high but alas
+REVERSE_PROXY_TIMEOUT = 10  # Very high but alas
 
 
 def start_scraper() -> None:

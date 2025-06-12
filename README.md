@@ -114,3 +114,4 @@ uv sync --no-group test --no-group type --no-group lint
 - ~~scraper global settings~~
   - ~~frequency~~
   - ~~forbidden titles~~
+- investigate if I need to reload nginx
