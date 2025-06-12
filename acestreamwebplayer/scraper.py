@@ -47,6 +47,20 @@ class AceScraper:
             )
         )
 
+    def get_stream_by_ace_id(self, ace_id: str) -> FlatFoundAceStream:
+        """Get a stream by its Ace ID, will use the first found matching FlatFoundAceStream by ace_id."""
+        streams = self.get_streams_flat()
+        for found_stream in streams:
+            if found_stream.ace_id == ace_id:
+                return found_stream
+
+        return FlatFoundAceStream(
+            site_name="Unknown",
+            quality=self._ace_quality.default_quality,
+            title=ace_id,
+            ace_id=ace_id,
+        )
+
     def get_streams(self) -> list[FoundAceStreams]:
         """Get the found streams as a list of dicts, ready to be turned into json."""
         streams = list(self.streams)

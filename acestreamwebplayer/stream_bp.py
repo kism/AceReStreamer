@@ -185,8 +185,42 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
 
     return Response(resp.content, resp.status_code, headers)
 
+@bp.route("/api/stream/<path:ace_id>")
+def api_stream(ace_id: str) -> Response | WerkzeugResponse:
+    """API endpoint to get a specific stream by Ace ID."""
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
 
-@bp.route("/api/streams")
+    if not ace_scraper:
+        logger.error("Scraper object not initialized.")
+        return jsonify({"error": "Scraper not initialized"}, HTTPStatus.INTERNAL_SERVER_ERROR)
+
+    stream = ace_scraper.get_stream_by_ace_id(ace_id)
+
+    response = jsonify(stream.model_dump())
+    response.status_code = HTTPStatus.OK
+    return response
+
+@bp.route("/api/streams/flat")
+def api_streams_flat() -> Response | WerkzeugResponse:
+    """API endpoint to get the flat streams."""
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
+    if not ace_scraper:
+        logger.error("Scraper object not initialized.")
+        return jsonify({"error": "Scraper not initialized"}, HTTPStatus.INTERNAL_SERVER_ERROR)
+
+    streams = ace_scraper.get_streams_flat()
+    streams_serialized = [stream.model_dump() for stream in streams]
+
+    response = jsonify(streams_serialized)
+    response.status_code = HTTPStatus.OK
+    return response
+
+@bp.route("/api/streams/by_site")
 def api_streams() -> Response | WerkzeugResponse:
     """API endpoint to get the streams."""
     auth_failure = assumed_auth_failure()

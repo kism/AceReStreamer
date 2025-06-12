@@ -67,7 +67,7 @@ uv sync --no-group test --no-group type --no-group lint
 | /api/authenticate    | POST   | authenticate endpoint     |
 | /api/authenticate    | GET    | get authentication status |
 | /api/streams/flat    | GET    | get all streams flat      |
-| /api/streams/by_site | GET    | get all streams           |
+| /api/streams/by_site | GET    | get all streams by site   |
 | /api/streams/health  | GET    | stream ids w/health       |
 | /api/stream/{id}     | GET    | get stream by id          |
 

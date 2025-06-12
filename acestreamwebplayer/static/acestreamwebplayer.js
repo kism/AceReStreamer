@@ -1,10 +1,39 @@
-function getStreams() {
+function getStream(streamId) {
   const controller = new AbortController();
-
   const timeoutId = setTimeout(() => controller.abort(), 1000); // 1 second timeout:
 
   // GET the hello endpoint that the flask app has
-  fetch("/api/streams", {
+  return fetch(`/api/stream/${streamId}`, {
+    method: "GET",
+    signal: controller.signal,
+  })
+    .then((response) => {
+      // Check if the request was successful (status code 200)
+      if (response.ok) {
+        return response.json(); // We interoperate the response as json and pass it along...
+      }
+    })
+    .then((data) => {
+      console.log(`Stream data: ${JSON.stringify(data)}`);
+      return data; // Return the data to the caller
+    })
+    .catch((error) => {
+      clearTimeout(timeoutId);
+      if (error.name === "AbortError") {
+        console.error("Fetch request timed out");
+      } else {
+        console.error(`Error: ${error.message}`);
+      }
+      throw error; // Re-throw to allow caller to handle
+    });
+}
+
+function getStreams() {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 1000); // 1 second timeout:
+
+  // GET the hello endpoint that the flask app has
+  fetch("/api/streams/flat", {
     method: "GET",
     signal: controller.signal,
   })
@@ -39,22 +68,10 @@ function getStreams() {
 
       table.appendChild(tr_heading);
 
-      let dataFlattened = [];
-      for (const site of data) {
-        for (const stream of site.stream_list) {
-          dataFlattened.push({
-            quality: stream.quality,
-            title: stream.title,
-            ace_id: stream.ace_id,
-            site_name: site.site_name,
-          });
-        }
-      }
-
       // Sort the data by quality in descending order
-      dataFlattened.sort((a, b) => b.quality - a.quality);
+      data.sort((a, b) => b.quality - a.quality);
 
-      for (const stream of dataFlattened) {
+      for (const stream of data) {
         const tr = document.createElement("tr");
 
         // Quality cell
@@ -191,7 +208,15 @@ document.addEventListener("DOMContentLoaded", function () {
   let streamId = window.location.hash.substring(1);
   console.log(`Loading stream on page load: ${streamId}`);
   if (streamId) {
-    loadStreamUrl(streamId, streamId);
+    getStream(streamId)
+      .then((streamInfo) => {
+        console.log(`Stream info: ${JSON.stringify(streamInfo)}`);
+        loadStreamUrl(streamId, streamInfo.title);
+      })
+      .catch((error) => {
+        console.error("Failed to get stream info:", error);
+        loadStreamUrl(streamId, streamId); // Fallback to streamId as title
+      });
   }
 
   setInterval(checkIfPlaying, 1000); // Check every second if the video is playing
@@ -200,7 +225,14 @@ document.addEventListener("DOMContentLoaded", function () {
   loadStreamButton.onclick = () => {
     const streamId = document.getElementById("stream-id-input").value; // Get the value from the input field
     if (streamId) {
-      loadStreamUrl(streamId, streamId); // Load the stream with the entered ID
+      getStream(streamId)
+        .then((streamInfo) => {
+          loadStreamUrl(streamId, streamInfo.title);
+        })
+        .catch((error) => {
+          console.error("Failed to get stream info:", error);
+          loadStreamUrl(streamId, streamId);
+        });
     }
   };
 });
