@@ -3,6 +3,7 @@
 
 <head>
   <title>Ace Restreamer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="/static/hls.min.js"></script>
   <script src="/static/acestreamwebplayer.js"></script>
   <link rel="icon" href="static/favicon.ico" type="image/x-icon" />
@@ -10,8 +11,7 @@
 </head>
 
 <body>
-  <h1>Ace ReStreamer</h1>
-  <p><a href="/guide">More information</a></p>
+  {{ rendered_header }}
   <h2 id="stream-name">No Stream Loaded</h2>
   <video id="video" controls width="640" height="360"></video>
   <h3>Stream Info</h3>

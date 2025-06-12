@@ -92,10 +92,10 @@ body.non-contained {
 
 hr {
   border: 0;
-  border-top: 1px solid rgb(255 255 255 / 12%);
+  border-top: 2px solid #c8c8c8;
   display: block;
-  margin-top: 16px;
-  margin-bottom: 16px;
+  margin-top: 6px;
+  margin-bottom: 6px;
   width: 100%;
   box-sizing: content-box;
   height: 0;
@@ -271,7 +271,7 @@ a:focus {
 }
 
 a:visited {
-  color: maroon;
+  color: #885560;
 }
 
 tr {
@@ -514,3 +514,17 @@ label > .label-body {
 .status-neutral {
   color: #c8c8c8;
 }
+
+/* #endregion */
+
+/* #region: Navigation */
+
+nav ul {
+  display: flex;
+  list-style: none; /* Removes bullets */
+  padding: 0;
+  margin: 0;
+  gap: 1rem; /* Spacing between items */
+}
+
+/* #endregion */

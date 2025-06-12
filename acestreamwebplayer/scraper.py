@@ -102,7 +102,8 @@ class AceScraper:
             return
 
         n = 0
-        msg = "Found AceStreams:\n"
+        msg = "Found AceStreams: "
         for found_streams in self.streams:
             n = n + len(found_streams.stream_list)
+        msg += f"{n} streams across {len(self.streams)} sites."
         logger.info(msg)

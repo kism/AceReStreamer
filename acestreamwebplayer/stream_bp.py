@@ -8,20 +8,16 @@ from flask import Blueprint, Response, jsonify, redirect, render_template
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from .authentication_bp import get_ip_from_request, is_ip_allowed
+from .authentication_helpers import assumed_auth_failure
 from .flask_helpers import get_current_app
+from .html_snippets import get_header_snippet
 from .logger import get_logger
 from .scraper import AceScraper
 from .scraper_helpers import get_streams_as_iptv
 
-# Modules should all setup logging like this so the log messages include the modules name.
-# If you were to list all loggers with something like...
-# `loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]`
-# Before creating this object, you would not see a logger with this modules name (acestreamwebplayer.this_module_name)
 logger = get_logger(__name__)  # Create a logger: acestreamwebplayer.this_module_name, inherit config from root logger
 
-# Register this module (__name__) as available to the blueprints of acestreamwebplayer, I think https://flask.palletsprojects.com/en/3.0.x/blueprints/
-bp = Blueprint("acestreamwebplayer", __name__)
-
+bp = Blueprint("acestreamwebplayer_scraper", __name__)
 ace_scraper: AceScraper | None = None
 current_app = get_current_app()
 
@@ -29,26 +25,11 @@ REVERSE_PROXY_EXCLUDED_HEADERS = ["content-encoding", "content-length", "transfe
 REVERSE_PROXY_TIMEOUT = 30  # Very high but alas
 
 
-# KISM-BOILERPLATE:
-# So regarding current_app, have a read of https://flask.palletsprojects.com/en/3.0.x/appcontext/
-# This function is a bit of a silly example, but often you need to do things to initialise the module.
-# You can't use the current_app object outside of a function since it behaves a bit weird, even if
-#   you import the module under `with app.app_context():`
-# So we call this to set globals in this module.
-# You don't need to use this to set every variable as current_app will work fine in any function.
 def start_scraper() -> None:
     """Method to 'configure' this module. Needs to be called under `with app.app_context():` from __init__.py."""
     global ace_scraper  # noqa: PLW0603 Necessary evil as far as I can tell, could move to all objects but eh...
     scraper_cache = Path(current_app.instance_path) / "ace_quality_cache.json"
     ace_scraper = AceScraper(current_app.aw_conf.app.ace_scrape_settings, scraper_cache)
-
-
-def assumed_auth_failure() -> None | Response | WerkzeugResponse:
-    """Check if the IP is allowed."""
-    if is_ip_allowed(get_ip_from_request()):
-        return None
-
-    return redirect("/", HTTPStatus.UNAUTHORIZED)
 
 
 @bp.route("/")
@@ -74,21 +55,7 @@ def webplayer_stream() -> Response | WerkzeugResponse:
     return Response(
         render_template(
             "stream.html.j2",
-        ),
-        HTTPStatus.OK,
-    )
-
-
-@bp.route("/guide")
-def guide() -> Response | WerkzeugResponse:
-    """Render the guide page."""
-    auth_failure = assumed_auth_failure()
-    if auth_failure:
-        return auth_failure
-
-    return Response(
-        render_template(
-            "guide.html.j2",
+            rendered_header=get_header_snippet("Ace ReStreamer"),
         ),
         HTTPStatus.OK,
     )
@@ -185,6 +152,7 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
 
     return Response(resp.content, resp.status_code, headers)
 
+
 @bp.route("/api/stream/<path:ace_id>")
 def api_stream(ace_id: str) -> Response | WerkzeugResponse:
     """API endpoint to get a specific stream by Ace ID."""
@@ -201,6 +169,7 @@ def api_stream(ace_id: str) -> Response | WerkzeugResponse:
     response = jsonify(stream.model_dump())
     response.status_code = HTTPStatus.OK
     return response
+
 
 @bp.route("/api/streams/flat")
 def api_streams_flat() -> Response | WerkzeugResponse:
@@ -219,6 +188,7 @@ def api_streams_flat() -> Response | WerkzeugResponse:
     response = jsonify(streams_serialized)
     response.status_code = HTTPStatus.OK
     return response
+
 
 @bp.route("/api/streams/by_site")
 def api_streams() -> Response | WerkzeugResponse:

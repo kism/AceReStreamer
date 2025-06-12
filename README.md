@@ -49,16 +49,16 @@ uv sync --no-group test --no-group type --no-group lint
 
 ### Pages
 
-| path         | description                      |
-| ------------ | -------------------------------- |
-| /            | login page                       |
-| /stream      | stream webplayer                 |
-| /hls         | reverse proxy for ace m3u8 files |
-| /ace/c       | proxy for ace stream .ts files   |
-| /iptv        | iptv m3u8 playlist               |
-| /info/guide  | Main guide page                  |
-| /info/iptv   | IPTV guide page                  |
-| /info/health | health check page                |
+| path        | description                      |
+| ----------- | -------------------------------- |
+| /           | login page                       |
+| /stream     | stream webplayer                 |
+| /hls        | reverse proxy for ace m3u8 files |
+| /ace/c      | proxy for ace stream .ts files   |
+| /iptv       | iptv m3u8 playlist               |
+| /info/guide | Main guide page                  |
+| /info/iptv  | IPTV guide page                  |
+| /info/about | about / health check page        |
 
 ### API Endpoints
 
@@ -91,10 +91,13 @@ uv sync --no-group test --no-group type --no-group lint
   - ~~pydantic to replace typedict?~~
 - /health endpoint
 - api reference
-- publish
-  - streams/flat
-  - streams/by_site
+- ~~publish~~
+  - ~~streams/flat~~
+  - ~~streams/by_site~~
 - pytest
 - vitest?
 - iptv guide
 - cache the sources
+- iptv api
+- chromecast / airplay support
+- breadcrumb

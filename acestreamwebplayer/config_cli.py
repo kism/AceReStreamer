@@ -22,7 +22,7 @@ app config: `html`, `iptv`, `nginx`
 nginx config: `complete`
     complete: Instead of generating a config for a site, generate a complete Nginx configuration file."""
 
-TEMPLATES_DIR = Path(__file__).parent / "templates"
+TEMPLATES_DIR = Path(__file__).parent / "templates" / "nginx"
 
 
 def _check_config_path(
@@ -159,13 +159,13 @@ def generate_nginx_config_file(
     }
 
     env = Environment(loader=FileSystemLoader(TEMPLATES_DIR), autoescape=True)
-    template = env.get_template("nginx_site.conf.j2")
+    template = env.get_template("site.conf.j2")
     nginx_config = template.render(context)
 
     if "complete" in generate_options:
         logger.debug("Generating COMPLETE Nginx configuration file part 2.")
         indented = "\n".join("    " + line for line in nginx_config.splitlines()) + "\n"
-        complete_template = env.get_template("nginx_complete.conf.j2")
+        complete_template = env.get_template("complete.conf.j2")
         nginx_config = complete_template.render({"servers": indented})
 
     with nginx_config_path.open("w", encoding="utf-8") as f:

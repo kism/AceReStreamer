@@ -2,7 +2,7 @@
 
 from pprint import pformat
 
-from . import authentication_bp, config, logger, stream_bp
+from . import authentication_bp, config, info_bp, logger, stream_bp
 from .flask_helpers import FlaskAcestreamWebplayer
 
 __version__ = "0.1.6"  # This is the version of the app, used in pyproject.toml, enforced in a test.
@@ -44,15 +44,10 @@ def create_app(
 
     app.logger.debug(app_config_str)
 
-    # Now that we have loaded out configuration, we can import our blueprints
-    # KISM-BOILERPLATE: This is a demo blueprint blueprint_one.py. Rename the file
-    #  and vars to make your own http endpoints and pages. Use multiple blueprints if
-    #  you have functionality you can categorise.
-    app.register_blueprint(stream_bp.bp)  # Register blueprint
-    app.register_blueprint(authentication_bp.bp)  # Register authentication blueprint
+    app.register_blueprint(stream_bp.bp)
+    app.register_blueprint(authentication_bp.bp)
+    app.register_blueprint(info_bp.bp)
 
-    # For modules that need information from the app object we need to start them under `with app.app_context():`
-    # Since in the blueprint_one module, we use `from flask import current_app` to get the app object to get the config
     with app.app_context():
         stream_bp.start_scraper()
         authentication_bp.start_allowlist()
