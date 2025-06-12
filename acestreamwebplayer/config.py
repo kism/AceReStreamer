@@ -64,8 +64,8 @@ class ScrapeSiteIPTV(BaseModel):
 class AceScrapeSettings(BaseModel):
     """Settings for scraping AceStreams."""
 
-    site_list_html: list[ScrapeSiteHTML] = []
-    site_list_iptv_m3u8: list[ScrapeSiteIPTV] = []
+    html: list[ScrapeSiteHTML] = []
+    iptv_m3u8: list[ScrapeSiteIPTV] = []
     scrape_interval: int = 7200  # 2 hours
 
 

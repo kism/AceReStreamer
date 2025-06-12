@@ -23,8 +23,8 @@ class AceScraper:
 
         self._ace_quality = AceQuality(ace_quality_cache_path)
 
-        self.site_list_html = ace_scrape_settings.site_list_html
-        self.site_list_iptv_m3u8 = ace_scrape_settings.site_list_iptv_m3u8
+        self.html = ace_scrape_settings.html
+        self.iptv_m3u8 = ace_scrape_settings.iptv_m3u8
         self.run_scrape()
         self.print_streams()
 
@@ -34,13 +34,13 @@ class AceScraper:
 
         self.streams.extend(
             scrape_streams_html_sites(
-                sites=self.site_list_html,
+                sites=self.html,
             )
         )
 
         self.streams.extend(
             scrape_streams_iptv_sites(
-                sites=self.site_list_iptv_m3u8,
+                sites=self.iptv_m3u8,
             )
         )
 
