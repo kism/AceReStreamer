@@ -1,9 +1,9 @@
 # acerestreamer
 
-[![Check](https://github.com/kism/acestream-webplayer/actions/workflows/check.yml/badge.svg)](https://github.com/kism/acestream-webplayer/actions/workflows/check.yml)
-[![CheckType](https://github.com/kism/acestream-webplayer/actions/workflows/check_types.yml/badge.svg)](https://github.com/kism/acestream-webplayer/actions/workflows/check_types.yml)
-[![Test](https://github.com/kism/acestream-webplayer/actions/workflows/test.yml/badge.svg)](https://github.com/kism/acestream-webplayer/actions/workflows/test.yml)
-[![codecov](https://codecov.io/gh/kism/acestream-webplayer/graph/badge.svg?token=FPGDA0ODT7)](https://codecov.io/gh/kism/acestream-webplayer)
+[![Check](https://github.com/kism/AceReStreamer/actions/workflows/check.yml/badge.svg)](https://github.com/kism/AceReStreamer/actions/workflows/check.yml)
+[![CheckType](https://github.com/kism/AceReStreamer/actions/workflows/check_types.yml/badge.svg)](https://github.com/kism/AceReStreamer/actions/workflows/check_types.yml)
+[![Test](https://github.com/kism/AceReStreamer/actions/workflows/test.yml/badge.svg)](https://github.com/kism/AceReStreamer/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/kism/AceReStreamer/graph/badge.svg?token=FPGDA0ODT7)](https://codecov.io/gh/kism/AceReStreamer)
 
 ## Prerequisites
 
