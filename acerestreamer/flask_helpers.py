@@ -1,4 +1,4 @@
-"""Flask helpers for AcestreamWebplayer."""
+"""Flask helpers for AceReStreamer."""
 
 from pathlib import Path
 from typing import Any, cast
@@ -8,7 +8,7 @@ from flask import Flask, current_app
 from .config import load_config
 
 
-class FlaskAcestreamWebplayer(Flask):
+class FlaskAceReStreamer(Flask):
     """Extend flask to add out config object to the app object."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:  # noqa: ANN401
@@ -18,6 +18,6 @@ class FlaskAcestreamWebplayer(Flask):
         self.aw_conf.write_config(Path(self.instance_path) / "config.toml")
 
 
-def get_current_app() -> FlaskAcestreamWebplayer:
+def get_current_app() -> FlaskAceReStreamer:
     """Get the current app object."""
-    return cast("FlaskAcestreamWebplayer", current_app)
+    return cast("FlaskAceReStreamer", current_app)

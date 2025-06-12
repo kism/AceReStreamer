@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from .config import AceScrapeSettings
+from .config import AceScrapeConf
 from .logger import get_logger
 from .scraper_health import AceQuality
 from .scraper_html import scrape_streams_html_sites
@@ -15,7 +15,7 @@ logger = get_logger(__name__)
 class AceScraper:
     """Scraper object."""
 
-    def __init__(self, ace_scrape_settings: AceScrapeSettings, ace_quality_cache_path: Path | None) -> None:
+    def __init__(self, ace_scrape_settings: AceScrapeConf, ace_quality_cache_path: Path | None) -> None:
         """Init MyCoolObject."""
         self.streams: list[FoundAceStreams] = []
 

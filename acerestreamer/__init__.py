@@ -3,7 +3,7 @@
 from pprint import pformat
 
 from . import authentication_bp, config, info_bp, logger, stream_bp
-from .flask_helpers import FlaskAcestreamWebplayer
+from .flask_helpers import FlaskAceReStreamer
 
 __version__ = "0.1.7"  # This is the version of the app, used in pyproject.toml, enforced in a test.
 PROGRAM_NAME = "Ace ReStreamer"  # This is the name of the app, used in the config file.
@@ -11,11 +11,11 @@ URL = "https://github.com/kism/ace-restreamer"
 
 
 def create_app(
-    test_config: config.AcestreamWebplayerConfig | None = None,
+    test_config: config.AceReStreamerConf | None = None,
     instance_path: str | None = None,
-) -> FlaskAcestreamWebplayer:
+) -> FlaskAceReStreamer:
     """Create and configure an instance of the Flask application."""
-    app = FlaskAcestreamWebplayer(__name__, instance_relative_config=True, instance_path=instance_path)
+    app = FlaskAceReStreamer(__name__, instance_relative_config=True, instance_path=instance_path)
     app.logger.handlers.clear()
 
     logger.setup_logger(in_loggers=[])  # Setup flask logger with defaults

@@ -7,7 +7,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
 from . import __version__
-from .config import AcestreamWebplayerConfig, NginxConfDef, ScrapeSiteHTML, ScrapeSiteIPTV, load_config
+from .config import AceReStreamerConf, NginxConf, ScrapeSiteHTML, ScrapeSiteIPTV, load_config
 from .logger import LOG_LEVELS, get_logger, setup_logger
 
 logger = get_logger(__name__)
@@ -78,7 +78,7 @@ def generate_app_config_file(
 
     logger.info(msg)
 
-    config = AcestreamWebplayerConfig()
+    config = AceReStreamerConf()
     if app_config_path.is_file():  # If we are here, we are overwriting
         config = load_config(app_config_path)
 
@@ -92,7 +92,7 @@ def generate_app_config_file(
 
     if "nginx" in generate_options:
         logger.info("Including Nginx configuration in the configuration.")
-        config.nginx = NginxConfDef()
+        config.nginx = NginxConf()
 
     config.write_config(config_location=app_config_path)
 

@@ -19,6 +19,12 @@ Run ace stream, I use docker
 docker run -t -p 6878:6878 ghcr.io/martinbjeldbak/acestream-http-proxy
 ```
 
+### Get node_modules
+
+```bash
+npm install
+```
+
 ### Run Dev
 
 ```bash

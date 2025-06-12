@@ -16,7 +16,7 @@ from .logger import get_logger
 logger = get_logger(__name__)
 
 
-class FlaskConfDef(BaseModel):
+class FlaskConf(BaseModel):
     """Flask configuration definition."""
 
     DEBUG: bool = False
@@ -61,7 +61,7 @@ class ScrapeSiteIPTV(BaseModel):
     title_filter: TitleFilter = TitleFilter()
 
 
-class AceScrapeSettings(BaseModel):
+class AceScrapeConf(BaseModel):
     """Settings for scraping AceStreams."""
 
     html: list[ScrapeSiteHTML] = []
@@ -69,7 +69,7 @@ class AceScrapeSettings(BaseModel):
     scrape_interval: int = 7200  # 2 hours
 
 
-class AppConfDef(BaseModel):
+class AppConf(BaseModel):
     """Application configuration definition."""
 
     password: str = ""
@@ -86,14 +86,14 @@ class AppConfDef(BaseModel):
         raise ValueError(msg)
 
 
-class LoggingConfDef(BaseModel):
+class LoggingConf(BaseModel):
     """Logging configuration definition."""
 
     level: str = "INFO"
     path: Path | str = ""
 
 
-class NginxConfDef(BaseModel):
+class NginxConf(BaseModel):
     """Nginx configuration definition."""
 
     # CLI config generation only
@@ -107,15 +107,15 @@ class NginxConfDef(BaseModel):
     ip_allow_list_path: Path | str = ""
 
 
-class AcestreamWebplayerConfig(BaseSettings):
+class AceReStreamerConf(BaseSettings):
     """Settings loaded from a TOML file."""
 
     # Default values for our settings
-    app: AppConfDef = AppConfDef()
-    flask: FlaskConfDef = FlaskConfDef()
-    nginx: NginxConfDef | None = None  # Nginx configuration is optional
-    logging: LoggingConfDef = LoggingConfDef()
-    scraper: AceScrapeSettings = AceScrapeSettings()
+    app: AppConf = AppConf()
+    flask: FlaskConf = FlaskConf()
+    nginx: NginxConf | None = None  # Nginx configuration is optional
+    logging: LoggingConf = LoggingConf()
+    scraper: AceScrapeConf = AceScrapeConf()
 
     def write_config(self, config_location: Path) -> None:
         """Write the current settings to a TOML file."""
@@ -152,14 +152,14 @@ class AcestreamWebplayerConfig(BaseSettings):
             f.write(new_file_content_str)
 
 
-def load_config(config_path: Path) -> AcestreamWebplayerConfig:
+def load_config(config_path: Path) -> AceReStreamerConf:
     """Load the configuration file."""
     import tomlkit
 
     if not config_path.exists():
-        return AcestreamWebplayerConfig()
+        return AceReStreamerConf()
 
     with config_path.open("r") as f:
         config = tomlkit.load(f)
 
-    return AcestreamWebplayerConfig(**config)
+    return AceReStreamerConf(**config)
