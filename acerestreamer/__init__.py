@@ -47,7 +47,7 @@ def create_app(
     app.register_blueprint(stream_bp.bp)
     app.register_blueprint(authentication_bp.bp)
     app.register_blueprint(info_bp.bp)
-    app.register_blueprint(static_bp.bp)
+    # app.register_blueprint(static_bp.bp)
 
     with app.app_context():
         stream_bp.start_scraper()
