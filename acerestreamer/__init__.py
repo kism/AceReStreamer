@@ -36,7 +36,7 @@ def create_app(
                         "Please run 'git lfs install' 'git lfs pull' to download the actual file."
                     )
         except UnicodeDecodeError:
-            pass # All good, not a pointer file
+            pass  # All good, not a pointer file
 
     app.logger.debug("Instance path is: %s", app.instance_path)
 
