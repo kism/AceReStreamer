@@ -82,7 +82,6 @@ uv sync --no-group test --no-group type --no-group lint
 
 ## todo
 
-- login page
 - /health endpoint
 - api reference
 - pytest
@@ -91,7 +90,6 @@ uv sync --no-group test --no-group type --no-group lint
 - iptv api
   - more on the iptv guide
 - chromecast / airplay support
-- investigate .copy()
 - actually fetch from sites in a thread
 
 - ~~publish~~
@@ -116,3 +114,5 @@ uv sync --no-group test --no-group type --no-group lint
   - ~~forbidden titles~~
 - ~~investigate if I need to reload nginx~~
 - ~~get media info from hls.js~~ impossible
+- ~~investigate .copy()~~
+- ~~login page~~
