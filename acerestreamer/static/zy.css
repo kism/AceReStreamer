@@ -552,7 +552,6 @@ label > .label-body {
   font-family: "Fira Code", "Consolas", "Lucida Console", monospace;
   font-size: 12px;
   background-color: #2d2d2d;
-  width: fit-content;
 }
 
 .flash-refresh {
