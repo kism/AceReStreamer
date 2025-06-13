@@ -4,6 +4,7 @@ import json
 import subprocess
 from pathlib import Path
 
+from .authentication_helpers import _find_nginx_bin_path
 from .logger import get_logger
 
 logger = get_logger(__name__)
@@ -16,7 +17,8 @@ class AllowList:
         """Initialize the allow list with a path to the allow list file."""
         self.allowlist_path = allowlist_path
         self.nginx_allowlist_path = nginx_allowlist_path
-        self._nginx_bin_path = None
+        self._nginx_bin_path: Path | None = _find_nginx_bin_path()
+
         self.allowlist_ips: list[str] = []
         self.load()
         self._ensure_correct_ips()
@@ -75,19 +77,6 @@ class AllowList:
             logger.info("Nginx allow list updated with %d IPs", len(self.allowlist_ips))
 
             self._reload_nginx()
-
-    def _find_nginx_bin_path(self) -> None:
-        """Find the Nginx executable path."""
-        possible_paths = [
-            Path("/usr/sbin/nginx"),
-            Path("/usr/local/sbin/nginx"),
-            Path("/usr/bin/nginx"),
-            Path("/usr/local/bin/nginx"),
-        ]
-
-        for path in possible_paths:
-            if path.exists() and path.is_file():
-                self._nginx_bin_path = path
 
     def _reload_nginx(self) -> None:
         """Reload Nginx to apply the new allow list."""
