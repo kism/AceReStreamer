@@ -1,7 +1,6 @@
 """Authentication helpers."""
 
 from http import HTTPStatus
-from pathlib import Path
 
 from flask import Response, redirect
 from werkzeug.wrappers import Response as WerkzeugResponse
