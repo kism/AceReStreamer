@@ -14,3 +14,9 @@ STATIC_DIR = Path(__file__).parent / "static"
 def static_fonts(filename: str) -> Response:
     """Serve static font files, fix the MIME type issue."""
     return send_from_directory(STATIC_DIR / "fonts", filename, mimetype="font/woff2")
+
+
+@bp.route("/favicon.ico")
+def favicon() -> Response:
+    """Serve the favicon."""
+    return send_from_directory(STATIC_DIR, "favicon.ico", mimetype="image/x-icon")
