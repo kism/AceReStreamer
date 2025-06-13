@@ -171,6 +171,10 @@ def generate_nginx_config_file(
     with nginx_config_path.open("w", encoding="utf-8") as f:
         f.write(nginx_config)
 
+    logger.info("Creating allowlist file at %s", app_config.nginx.ip_allow_list_path)
+    with app_config.nginx.ip_allow_list_path.open("w", encoding="utf-8") as f:
+        f.write("deny all;")
+
     logger.info("Nginx configuration file generated successfully at %s", nginx_config_path)
 
 
