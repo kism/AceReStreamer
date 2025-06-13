@@ -160,7 +160,7 @@ def process_candidates(candidates: list[CandidateAceStream], site: ScrapeSiteHTM
     return found_streams
 
 
-def check_candidate(target_html_class: str, html_tag: Tag | None) -> list[str]:
+def _check_candidate(target_html_class: str, html_tag: Tag | None) -> list[str]:
     """Check if the tag has the target class."""
     if not html_tag or not isinstance(html_tag, Tag):
         return []
@@ -198,7 +198,7 @@ def _search_for_candidate(
             return candidate_titles
 
     # Search Self
-    candidates = check_candidate(target_html_class, html_tag)
+    candidates = _check_candidate(target_html_class, html_tag)
     candidate_titles.extend(candidates)
 
     return candidate_titles
@@ -222,7 +222,7 @@ def _search_sibling_for_candidate(
     # Find and search previous sibling
     previous_sibling = html_tag.find_previous_sibling()
     if previous_sibling and isinstance(previous_sibling, Tag):
-        more = check_candidate(target_html_class, previous_sibling)
+        more = _check_candidate(target_html_class, previous_sibling)
         candidate_titles.extend(more)
 
     return candidate_titles
