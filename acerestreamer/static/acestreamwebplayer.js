@@ -14,7 +14,7 @@ function getStream(streamId) {
       }
     })
     .then((data) => {
-      console.log(`Stream data: ${JSON.stringify(data)}`);
+      // console.log(`Stream data: ${JSON.stringify(data)}`);
       return data; // Return the data to the caller
     })
     .catch((error) => {
@@ -233,6 +233,35 @@ function togglePlayerSize() {
   }
 }
 
+function loadPlayStream(streamID) {
+  getStream(streamID)
+    .then((streamInfo) => {
+      loadStreamUrl(streamID, streamInfo.title);
+    })
+    .catch((error) => {
+      console.error("Failed to get stream info:", error);
+      loadStreamUrl(streamID, streamID);
+    });
+
+  //Play
+  const video = document.getElementById("video");
+  video.play().catch((error) => {
+    console.error("Error playing video:", error);
+    setOnPageErrorMessage("Error playing video");
+  });
+}
+
+function loadPlayStreamFromHash() {
+  const streamId = window.location.hash.substring(1);
+  if (streamId) {
+    console.log(`Loading stream from hash: ${streamId}`);
+    loadPlayStream(streamId);
+  } else {
+    console.error("No stream loaded.");
+    setOnPageErrorMessage("No stream loaded.");
+  }
+}
+
 // Wrap DOM-dependent code in DOMContentLoaded event
 document.addEventListener("DOMContentLoaded", function () {
   const streamStatus = document.getElementById("stream-status");
@@ -244,8 +273,9 @@ document.addEventListener("DOMContentLoaded", function () {
   window.addEventListener("loadStream", loadStream);
 
   let streamId = window.location.hash.substring(1);
-  console.log(`Loading stream on page load: ${streamId}`);
+
   if (streamId) {
+    console.log(`Loading stream on page load: ${streamId}`);
     getStream(streamId)
       .then((streamInfo) => {
         console.log(`Stream info: ${JSON.stringify(streamInfo)}`);
@@ -263,20 +293,7 @@ document.addEventListener("DOMContentLoaded", function () {
   loadStreamButton.onclick = () => {
     const streamId = document.getElementById("stream-id-input").value; // Get the value from the input field
     if (streamId) {
-      getStream(streamId)
-        .then((streamInfo) => {
-          loadStreamUrl(streamId, streamInfo.title);
-        })
-        .catch((error) => {
-          console.error("Failed to get stream info:", error);
-          loadStreamUrl(streamId, streamId);
-        });
+      loadPlayStream(streamId);
     }
-    //Play
-    const video = document.getElementById("video");
-    video.play().catch((error) => {
-      console.error("Error playing video:", error);
-      setOnPageErrorMessage("Error playing video");
-    });
   };
 });
