@@ -5,7 +5,7 @@
   font-family: "Fira Code";
   font-style: normal;
   font-weight: 400;
-  src: local(""), url("/static/fonts/fira-code-400.woff2") format("woff2");
+  src: url("/static/fonts/fira-code-400.woff2") format("woff2");
 }
 
 /* fira-code-500 - latin */
@@ -13,7 +13,7 @@
   font-family: "Fira Code";
   font-style: normal;
   font-weight: 500;
-  src: local(""), url("/static/fonts/fira-code-500.woff2") format("woff2");
+  src: url("/static/fonts/fira-code-500.woff2") format("woff2");
 }
 
 /* fira-code-600 - latin */
@@ -21,7 +21,7 @@
   font-family: "Fira Code";
   font-style: normal;
   font-weight: 600;
-  src: local(""), url("/static/fonts/fira-code-600.woff2") format("woff2");
+  src: url("/static/fonts/fira-code-600.woff2") format("woff2");
 }
 
 /* fira-code-700 - latin */
@@ -29,7 +29,7 @@
   font-family: "Fira Code";
   font-style: normal;
   font-weight: 700;
-  src: local(""), url("/static/fonts/fira-code-700.woff2") format("woff2");
+  src: url("/static/fonts/fira-code-700.woff2") format("woff2");
 }
 
 /* noto-sans-display-regular-400 - latin */
@@ -37,7 +37,7 @@
   font-family: "Noto Sans Display";
   font-style: normal;
   font-weight: 400;
-  src: local(""), url("/static/fonts/noto-sans-display-latin-400.woff2") format("woff2");
+  src: url("/static/fonts/noto-sans-display-latin-400.woff2") format("woff2");
 }
 
 /* noto-sans-display-italic-400 - latin */
@@ -45,7 +45,7 @@
   font-family: "Noto Sans Display";
   font-style: italic;
   font-weight: 400;
-  src: local(""), url("/static/fonts/noto-sans-display-latin-400italic.woff2") format("woff2");
+  src: url("/static/fonts/noto-sans-display-latin-400italic.woff2") format("woff2");
 }
 
 /* noto-sans-display-regular-500 - latin */
@@ -53,7 +53,7 @@
   font-family: "Noto Sans Display";
   font-style: normal;
   font-weight: 500;
-  src: local(""), url("/static/fonts/noto-sans-display-latin-500.woff2") format("woff2");
+  src: url("/static/fonts/noto-sans-display-latin-500.woff2") format("woff2");
 }
 
 /* noto-sans-display-italic-500 - latin */
@@ -61,7 +61,7 @@
   font-family: "Noto Sans Display";
   font-style: italic;
   font-weight: 500;
-  src: local(""), url("/static/fonts/noto-sans-display-latin-500italic.woff2") format("woff2");
+  src: url("/static/fonts/noto-sans-display-latin-500italic.woff2") format("woff2");
 }
 
 /* A C T U A L  C S S */
