@@ -66,7 +66,7 @@ def scrape_streams_html_site(site: ScrapeSiteHTML) -> FoundAceStreams | None:
 
             # Recurse through the parent tags to find a suitable title
             candidate_titles.extend(
-                search_for_candidate(
+                _search_for_candidate(
                     candidate_titles=candidate_titles.copy(),
                     target_html_class=site.target_class,
                     html_tag=link,
@@ -76,7 +76,7 @@ def scrape_streams_html_site(site: ScrapeSiteHTML) -> FoundAceStreams | None:
             # Recurse through parent tags and check their siblings for a suitable title
             if site.check_sibling:
                 candidate_titles.extend(
-                    search_sibling_for_candidate(
+                    _search_sibling_for_candidate(
                         candidate_titles=candidate_titles.copy(),
                         target_html_class=site.target_class,
                         html_tag=link,
@@ -177,7 +177,7 @@ def check_candidate(target_html_class: str, html_tag: Tag | None) -> list[str]:
     return candidate_titles
 
 
-def search_for_candidate(
+def _search_for_candidate(
     candidate_titles: list[str], target_html_class: str = "", html_tag: Tag | None = None
 ) -> list[str]:
     """Search the parent of the given tag for a title."""
@@ -185,7 +185,7 @@ def search_for_candidate(
         return candidate_titles
 
     # Search Parents
-    more = search_for_candidate(
+    more = _search_for_candidate(
         candidate_titles=candidate_titles,
         target_html_class=target_html_class,
         html_tag=html_tag.parent,
@@ -204,7 +204,7 @@ def search_for_candidate(
     return candidate_titles
 
 
-def search_sibling_for_candidate(
+def _search_sibling_for_candidate(
     candidate_titles: list[str], target_html_class: str = "", html_tag: Tag | None = None
 ) -> list[str]:
     """Search the previous sibling of the given tag for a title."""
@@ -212,7 +212,7 @@ def search_sibling_for_candidate(
         return candidate_titles
 
     # Recurse through the parent tags
-    more = search_sibling_for_candidate(
+    more = _search_sibling_for_candidate(
         candidate_titles=candidate_titles.copy(),
         target_html_class=target_html_class,
         html_tag=html_tag.parent,

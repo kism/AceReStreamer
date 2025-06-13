@@ -92,8 +92,7 @@ uv sync --no-group test --no-group type --no-group lint
   - more on the iptv guide
 - chromecast / airplay support
 - investigate .copy()
-- actually fetch in a thread
-- get media info from hls.js
+- actually fetch from sites in a thread
 
 - ~~publish~~
   - ~~streams/flat~~
@@ -116,3 +115,4 @@ uv sync --no-group test --no-group type --no-group lint
   - ~~frequency~~
   - ~~forbidden titles~~
 - ~~investigate if I need to reload nginx~~
+- ~~get media info from hls.js~~ impossible
