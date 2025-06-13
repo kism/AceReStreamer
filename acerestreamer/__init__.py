@@ -6,7 +6,7 @@ from pprint import pformat
 from . import authentication_bp, config, info_bp, logger, stream_bp
 from .flask_helpers import FlaskAceReStreamer
 
-__version__ = "0.1.8"  # This is the version of the app, used in pyproject.toml, enforced in a test.
+__version__ = "0.1.9"  # This is the version of the app, used in pyproject.toml, enforced in a test.
 PROGRAM_NAME = "Ace ReStreamer"  # This is the name of the app, used in the config file.
 URL = "https://github.com/kism/ace-restreamer"
 
@@ -36,7 +36,7 @@ def create_app(
                         "Please run 'git lfs install' 'git lfs pull' to download the actual file."
                     )
         except UnicodeDecodeError:
-            pass # All good, not a pointer file
+            pass  # All good, not a pointer file
 
     app.logger.debug("Instance path is: %s", app.instance_path)
 

@@ -32,19 +32,17 @@ function getStreams() {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 1000); // 1 second timeout:
 
-  // GET the hello endpoint that the flask app has
   fetch("/api/streams/flat", {
     method: "GET",
     signal: controller.signal,
   })
     .then((response) => {
-      // Check if the request was successful (status code 200)
       if (response.ok) {
-        return response.json(); // We interoperate the response as json and pass it along...
+        return response.json();
       } else {
         const streamStatus = document.getElementById("stream-status");
-        streamStatus.className = "status-bad";
-        streamStatus.innerHTML = `API FAILURE ${response.status}`; // Set message in element to indicate failure
+        setStatusClass(streamStatus, "bad");
+        streamStatus.innerHTML = `API FAILURE ${response.status}`;
 
         throw new Error(`Error fetching data. Status code: ${response.status}`);
       }
@@ -76,19 +74,18 @@ function getStreams() {
 
         // Quality cell
         const td_quality = document.createElement("td");
-        const code = document.createElement("code");
-        code.textContent = `${stream.quality}`;
+        td_quality.textContent = `${stream.quality}`;
         if (stream.quality === -1) {
-          code.className = "status-neutral";
-          code.textContent = "?";
+          setStatusClass(td_quality, "neutral");
+          td_quality.textContent = "?";
         } else if (stream.quality < 20) {
-          code.className = "status-bad";
+          setStatusClass(td_quality, "bad");
         } else if (stream.quality >= 20 && stream.quality <= 80) {
-          code.className = "status-neutral";
+          setStatusClass(td_quality, "neutral");
         } else if (stream.quality >= 80) {
-          code.className = "status-good";
+          setStatusClass(td_quality, "good");
         }
-        td_quality.appendChild(code);
+        td_quality.classList.add("quality-code");
 
         // Link cell
         td_link = document.createElement("td");
@@ -101,7 +98,7 @@ function getStreams() {
             console.error("Error playing video:", error);
             setOnPageErrorMessage("Error playing video");
           });
-        }
+        };
         td_link.appendChild(a); // Append the anchor element to the table data cell
 
         // Source Cell
@@ -120,7 +117,7 @@ function getStreams() {
       if (error.name === "AbortError") {
         console.error("Fetch request timed out");
         const streamStatus = document.getElementById("stream-status");
-        streamStatus.className = "status-bad";
+        setStatusClass(streamStatus, "bad");
         streamStatus.innerHTML = `API FAILURE: Fetch Timeout`;
       } else {
         console.error(`Error: ${error.message}`);
@@ -128,10 +125,27 @@ function getStreams() {
     });
 }
 
+function setStatusClass(element, status) {
+  // Remove all status classes from the element
+  const statusClasses = ["status-good", "status-neutral", "status-bad"];
+  statusClasses.forEach((cls) => {
+    element.classList.remove(cls);
+  });
+  // Add the appropriate status class based on the status parameter
+  if (status === "good") {
+    element.classList.add("status-good");
+  } else if (status === "neutral") {
+    element.classList.add("status-neutral");
+  } else if (status === "bad") {
+    element.classList.add("status-bad");
+  }
+}
+
 function setOnPageErrorMessage(message) {
   const streamStatus = document.getElementById("stream-status");
   streamStatus.innerHTML = message;
-  streamStatus.className = "status-bad";
+  setStatusClass(streamStatus, "bad");
+
   //on a timeout, set the background color of the stream status to red
   streamStatus.style.backgroundColor = "#331111"; // Set the background color to red
   // wait 5 seconds
@@ -149,7 +163,7 @@ function loadStream() {
   streamDirectUrl.innerHTML = `${window.location.origin}${videoSrc}`;
 
   const streamStatus = document.getElementById("stream-status");
-  streamStatus.className = "status-neutral";
+  setStatusClass(streamStatus, "neutral");
   streamStatus.innerHTML = `Stream loaded, paused.`;
 
   if (Hls.isSupported()) {
@@ -198,14 +212,31 @@ function checkIfPlaying() {
   if (!video.paused && !video.ended && video.currentTime > 0 && video.readyState > 2) {
     const streamStatus = document.getElementById("stream-status");
     streamStatus.innerHTML = "Playing"; // Hide the status element if the video is playing
-    streamStatus.className = "status-good"; // Set the text color to green
+    setStatusClass(streamStatus, "good");
+  }
+}
+
+function togglePlayerSize() {
+  const video = document.getElementById("video");
+  const playerContainer = document.getElementById("player-container");
+
+  if (video.style.width === "100%") {
+    video.style.width = "640px"; // Set to original width
+    video.style.height = "360px"; // Set to original height
+    playerContainer.style.width = "640px"; // Set container width
+    playerContainer.style.height = "360px"; // Set container height
+  } else {
+    video.style.width = "100%"; // Set to full width
+    video.style.height = "100%"; // Set to full height
+    playerContainer.style.width = "100%"; // Set container width
+    playerContainer.style.height = "100%"; // Set container height
   }
 }
 
 // Wrap DOM-dependent code in DOMContentLoaded event
 document.addEventListener("DOMContentLoaded", function () {
   const streamStatus = document.getElementById("stream-status");
-  streamStatus.className = "status-neutral";
+  setStatusClass(streamStatus, "neutral");
   streamStatus.innerHTML = "Ready to load a stream";
 
   getStreams();

@@ -223,6 +223,7 @@ iframe,
 video {
   border: 0;
   background-color: #2d2d2d;
+  max-width: 100%;
 }
 
 small {
@@ -280,10 +281,11 @@ a:visited {
 tr {
   border-bottom: 2px solid rgb(255 255 255 / 12%);
   margin-bottom: 8px;
+  background-color: #101010;
 }
 
 thead tr {
-  border-bottom: 1px solid rgb(255 255 255 / 12%);
+  border-bottom: None; /* No border for header rows */
   background: rgb(255 255 255 / 12%);
 }
 
@@ -291,16 +293,20 @@ caption {
   padding: 8px 0;
 }
 
+th {
+  background-color: #2d2d2d;
+}
+
 th,
 td {
-  border-bottom: 1px solid black;
   padding: 2px;
+  padding-left: 8px;
+  padding-right: 8px;
   vertical-align: inherit;
 }
 
 thead th {
   border: 0;
-  border-bottom: 2px solid black;
   text-align: left;
 }
 
@@ -489,9 +495,11 @@ label > .label-body {
 }
 
 /* #region: Stream List */
+#stream-table {
+  border-collapse: collapse; /* This removes gaps between cells */
+}
 
 #stream-status {
-  display: block;
   width: fit-content;
 }
 
@@ -502,9 +510,14 @@ label > .label-body {
   margin-bottom: 4px;
 }
 
+.quality-code {
+  font-family: "Fira Code", Consolas, "Lucida Console", monospace;
+  text-align: center;
+}
+
 /* #endregion */
 
-/* #region: Status Colours */
+/* #region: Status Colours, message */
 
 .status-good {
   color: #00ff00;
@@ -516,6 +529,13 @@ label > .label-body {
 
 .status-neutral {
   color: #c8c8c8;
+}
+
+.status-message {
+  font-family: "Fira Code", "Consolas", "Lucida Console", monospace;
+  font-size: 12px;
+  background-color: #2d2d2d;
+  width: fit-content;
 }
 
 /* #endregion */
@@ -539,3 +559,25 @@ nav ul {
 }
 
 /* #endregion */
+
+/* #region: Stream Info */
+#stream-info {
+  border-collapse: separate;
+}
+
+#stream-info tbody tr {
+  border: 3px solid #2d2d2d;
+}
+
+/* #endregion */
+
+/* #region: Video Controls */
+
+#video-controls {
+  border: None;
+  background-color: None;
+}
+
+#video-controls td {
+  background-color: None;
+}
