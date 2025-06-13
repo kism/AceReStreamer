@@ -506,6 +506,9 @@ label > .label-body {
 
 #stream-status {
   width: fit-content;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 #stream-id-input {
@@ -513,6 +516,18 @@ label > .label-body {
   max-width: 350px;
   /* margin-top: 4px;
   margin-bottom: 4px; */
+}
+
+#stream-url {
+  word-break: break-all !important;
+}
+
+#stream-info {
+  border-collapse: separate;
+}
+
+#stream-info tbody tr {
+  border: 3px solid #2d2d2d;
 }
 
 .quality-code {
@@ -558,7 +573,6 @@ label > .label-body {
   background-color: #ff0000;
 }
 
-
 /* #endregion */
 
 /* #region: Navigation */
@@ -577,17 +591,6 @@ nav ul {
 
 #login-redirect {
   display: None;
-}
-
-/* #endregion */
-
-/* #region: Stream Info */
-#stream-info {
-  border-collapse: separate;
-}
-
-#stream-info tbody tr {
-  border: 3px solid #2d2d2d;
 }
 
 /* #endregion */
