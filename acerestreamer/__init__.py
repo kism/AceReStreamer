@@ -2,7 +2,7 @@
 
 from pprint import pformat
 
-from . import authentication_bp, config, info_bp, logger, stream_bp
+from . import authentication_bp, config, info_bp, logger, stream_bp, static_bp
 from .flask_helpers import FlaskAceReStreamer
 
 __version__ = "0.1.7"  # This is the version of the app, used in pyproject.toml, enforced in a test.
@@ -47,6 +47,7 @@ def create_app(
     app.register_blueprint(stream_bp.bp)
     app.register_blueprint(authentication_bp.bp)
     app.register_blueprint(info_bp.bp)
+    app.register_blueprint(static_bp.bp)
 
     with app.app_context():
         stream_bp.start_scraper()
