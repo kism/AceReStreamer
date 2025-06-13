@@ -187,9 +187,9 @@ function loadStream() {
       let errorMessage = "Stream loading failed";
 
       if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-        errorMessage = "Network error: Unable to load stream";
+        errorMessage = "Network error: Ace doen't have the stream segment";
       } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-        errorMessage = "Media error: Stream format issue";
+        errorMessage = "Media error: Stream not ready";
       } else if (data.type === Hls.ErrorTypes.MUX_ERROR) {
         errorMessage = "Stream parsing error";
       }
@@ -230,7 +230,6 @@ function checkIfPlaying() {
     const streamStatus = document.getElementById("stream-status");
     streamStatus.innerHTML = "Playing"; // Hide the status element if the video is playing
     setStatusClass(streamStatus, "good");
-    flashBackgroundColor(streamStatus, "good", 500);
   }
 }
 

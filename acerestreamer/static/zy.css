@@ -529,7 +529,7 @@ label > .label-body {
 }
 
 .status-good-background {
-  background-color: #113311;
+  background-color: #113311 !important;
 }
 
 .status-bad {
@@ -537,7 +537,7 @@ label > .label-body {
 }
 
 .status-bad-background {
-  background-color: #331111;
+  background-color: #331111 !important;
 }
 
 .status-neutral {
@@ -545,7 +545,7 @@ label > .label-body {
 }
 
 .status-neutral-background {
-  background-color: #333333;
+  background-color: #333333 !important;
 }
 
 .status-message {
