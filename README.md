@@ -93,6 +93,7 @@ uv sync --no-group test --no-group type --no-group lint
 - chromecast / airplay support
 - investigate .copy()
 - actually fetch in a thread
+- get media info from hls.js
 
 - ~~publish~~
   - ~~streams/flat~~
@@ -114,4 +115,4 @@ uv sync --no-group test --no-group type --no-group lint
 - ~~scraper global settings~~
   - ~~frequency~~
   - ~~forbidden titles~~
-- investigate if I need to reload nginx
+- ~~investigate if I need to reload nginx~~

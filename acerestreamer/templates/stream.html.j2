@@ -6,9 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett">
   <link rel="preload" href="/static/fonts/noto-sans-display-latin-400.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="/static/fonts/noto-sans-display-latin-400italic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/static/fonts/noto-sans-display-latin-400italic.woff2" as="font" type="font/woff2"
+    crossorigin>
   <link rel="preload" href="/static/fonts/noto-sans-display-latin-500.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="/static/fonts/noto-sans-display-latin-500italic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/static/fonts/noto-sans-display-latin-500italic.woff2" as="font" type="font/woff2"
+    crossorigin>
   <link rel="preload" href="/static/fonts/fira-code-400.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/static/fonts/fira-code-500.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/static/fonts/fira-code-600.woff2" as="font" type="font/woff2" crossorigin>
@@ -24,14 +26,14 @@
   <h2 id="stream-name">No Stream Loaded</h2>
   <video id="video" controls width="640" height="360"></video>
   <h3>Stream Info</h3>
-  <table>
+  <table id="stream-info">
     <tr>
       <td>Status</td>
-      <td><code id="stream-status">Javascript not loaded</code></td>
+      <td class="status-message" id="stream-status">Javascript not loaded</td>
     </tr>
     <tr>
       <td>Direct URL</td>
-      <td><code id="stream-url">No stream loaded</code></td>
+      <td class="status-message" id="stream-url">No stream loaded</td>
     </tr>
   </table>
   <h3>Load Ace Stream</h3>

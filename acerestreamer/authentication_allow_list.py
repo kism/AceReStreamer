@@ -1,6 +1,7 @@
 """Allow List Object for Authentication."""
 
 import json
+import subprocess
 from pathlib import Path
 
 from .logger import get_logger
@@ -71,3 +72,38 @@ class AllowList:
                     f.write(f"allow {ip};\n")
                 f.write("deny all;\n")
             logger.info("Nginx allow list updated with %d IPs", len(self.allowlist_ips))
+
+            self._reload_nginx()
+
+    def _find_nginx_bin_path(self) -> None:
+        """Find the Nginx executable path."""
+        self._nginx_path = None
+
+        possible_paths = [
+            Path("/usr/sbin/nginx"),
+            Path("/usr/local/sbin/nginx"),
+            Path("/usr/bin/nginx"),
+            Path("/usr/local/bin/nginx"),
+        ]
+
+        for path in possible_paths:
+            if path.exists() and path.is_file():
+                self._nginx_path = path
+
+    def _reload_nginx(self) -> None:
+        """Reload Nginx to apply the new allow list."""
+        if not self._nginx_path:
+            logger.error("Nginx binary path not found, cannot reload Nginx.")
+            return
+
+        output = subprocess.run(  # noqa: S603 # I trust this subprocess call
+            [self._nginx_path, "-s", "reload"],
+            check=True,
+            capture_output=True,
+            text=True,
+            shell=False,
+        )
+
+        if output.returncode != 0:
+            logger.error("Failed to reload Nginx: %s", output.stderr.strip())
+            return
