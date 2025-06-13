@@ -169,7 +169,6 @@ li {
 }
 
 table {
-  border-collapse: collapse; /* This removes gaps between cells */
   margin-bottom: 16px;
 }
 
@@ -496,6 +495,9 @@ label > .label-body {
 }
 
 /* #region: Stream List */
+#stream-table {
+  border-collapse: collapse; /* This removes gaps between cells */
+}
 
 #stream-status {
   width: fit-content;
@@ -565,7 +567,17 @@ nav ul {
 
 #stream-info tbody tr {
   border: 3px solid #2d2d2d;
-
 }
 
 /* #endregion */
+
+/* #region: Video Controls */
+
+#video-controls {
+  border: None;
+  background-color: None;
+}
+
+#video-controls td {
+  background-color: None;
+}

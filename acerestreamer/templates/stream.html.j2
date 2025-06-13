@@ -24,7 +24,10 @@
 <body>
   {{ rendered_header }}
   <h2 id="stream-name">No Stream Loaded</h2>
-  <video id="video" controls width="640" height="360"></video>
+  <p><video id="video" controls width="640" height="360"></video></p>
+  <div id="video-controls">
+    <input type="button" id="toggle-video-size" value="Toggle Player Size" onclick="togglePlayerSize()">
+  </div>
   <h3>Stream Info</h3>
   <table id="stream-info">
     <tr>

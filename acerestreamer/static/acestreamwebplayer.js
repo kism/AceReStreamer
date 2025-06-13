@@ -216,6 +216,23 @@ function checkIfPlaying() {
   }
 }
 
+function togglePlayerSize() {
+  const video = document.getElementById("video");
+  const playerContainer = document.getElementById("player-container");
+
+  if (video.style.width === "100%") {
+    video.style.width = "640px"; // Set to original width
+    video.style.height = "360px"; // Set to original height
+    playerContainer.style.width = "640px"; // Set container width
+    playerContainer.style.height = "360px"; // Set container height
+  } else {
+    video.style.width = "100%"; // Set to full width
+    video.style.height = "100%"; // Set to full height
+    playerContainer.style.width = "100%"; // Set container width
+    playerContainer.style.height = "100%"; // Set container height
+  }
+}
+
 // Wrap DOM-dependent code in DOMContentLoaded event
 document.addEventListener("DOMContentLoaded", function () {
   const streamStatus = document.getElementById("stream-status");
