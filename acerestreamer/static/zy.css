@@ -543,6 +543,11 @@ label > .label-body {
   width: fit-content;
 }
 
+.flash-refresh {
+  background-color: #ff0000;
+}
+
+
 /* #endregion */
 
 /* #region: Navigation */

@@ -28,6 +28,21 @@ function getStream(streamId) {
     });
 }
 
+function flashBackgroundColor(element, state, duration = 200) {
+  color = "#333333";
+  if (state === "good") {
+    color = "#113311"; // Greenish color for good state
+  } else if (state === "bad") {
+    color = "#331111"; // Reddish color for bad state
+  }
+
+  const originalColor = element.style.backgroundColor; // Store the original background color
+  element.style.backgroundColor = color; // Set the new background color
+  setTimeout(() => {
+    element.style.backgroundColor = originalColor; // Reset to the original color after the duration
+  }, duration);
+}
+
 function getStreams() {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 1000); // 1 second timeout:
@@ -55,15 +70,18 @@ function getStreams() {
       const th_quality = document.createElement("th");
       th_quality.textContent = "Quality";
       tr_heading.appendChild(th_quality);
+      flashBackgroundColor(th_quality);
 
       const th_link = document.createElement("th");
       th_link.textContent = "Stream";
       tr_heading.appendChild(th_link);
+      flashBackgroundColor(th_link);
 
       const th_source = document.createElement("th");
       th_source.textContent = "Source";
-      tr_heading.appendChild(th_source);
+      flashBackgroundColor(th_source);
 
+      tr_heading.appendChild(th_source);
       table.appendChild(tr_heading);
 
       // Sort the data by quality in descending order
@@ -146,12 +164,7 @@ function setOnPageErrorMessage(message) {
   streamStatus.innerHTML = message;
   setStatusClass(streamStatus, "bad");
 
-  //on a timeout, set the background color of the stream status to red
-  streamStatus.style.backgroundColor = "#331111"; // Set the background color to red
-  // wait 5 seconds
-  setTimeout(() => {
-    streamStatus.style.backgroundColor = ""; // Reset the background color
-  }, 200);
+  flashBackgroundColor(streamStatus, "bad", 500); // Flash the background color to indicate an error
 }
 
 function loadStream() {
