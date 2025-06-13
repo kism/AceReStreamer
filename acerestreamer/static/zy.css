@@ -528,12 +528,24 @@ label > .label-body {
   color: #00ff00;
 }
 
+.status-good-background {
+  background-color: #113311;
+}
+
 .status-bad {
   color: #ff0000;
 }
 
+.status-bad-background {
+  background-color: #331111;
+}
+
 .status-neutral {
   color: #c8c8c8;
+}
+
+.status-neutral-background {
+  background-color: #333333;
 }
 
 .status-message {

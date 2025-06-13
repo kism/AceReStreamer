@@ -29,17 +29,16 @@ function getStream(streamId) {
 }
 
 function flashBackgroundColor(element, state, duration = 200) {
-  color = "#333333";
+  let backgroundClass = 'status-neutral-background';
   if (state === "good") {
-    color = "#113311"; // Greenish color for good state
+    backgroundClass = 'status-good-background';
   } else if (state === "bad") {
-    color = "#331111"; // Reddish color for bad state
+    backgroundClass = 'status-bad-background';
   }
 
-  const originalColor = element.style.backgroundColor; // Store the original background color
-  element.style.backgroundColor = color; // Set the new background color
+  element.classList.add(backgroundClass);
   setTimeout(() => {
-    element.style.backgroundColor = originalColor; // Reset to the original color after the duration
+    element.classList.remove(backgroundClass);
   }, duration);
 }
 
@@ -231,6 +230,7 @@ function checkIfPlaying() {
     const streamStatus = document.getElementById("stream-status");
     streamStatus.innerHTML = "Playing"; // Hide the status element if the video is playing
     setStatusClass(streamStatus, "good");
+    flashBackgroundColor(streamStatus, "good", 500);
   }
 }
 
