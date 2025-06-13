@@ -129,7 +129,8 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
         line_temp = line.strip()
         if "/ace/c/" in line:
             for address in current_app.aw_conf.app.ace_addresses:
-                line_temp = line.replace(address, current_app.config["SERVER_NAME"])
+                if line_temp.startswith(address):
+                    line_temp = line_temp.replace(address, current_app.config["SERVER_NAME"])
 
             current_content_identifier = re.search(r"/ace/c/([a-f0-9]+)", line_temp)
             if current_content_identifier:
@@ -154,7 +155,13 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
     if not ace_pool:
         return jsonify({"error": "Ace pool not initialized"}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
-    ace_address = ace_pool.get_instance_by_content_path(path)
+    path_filtered = re.search(r"^([a-f0-9]+)", path)
+    if not path_filtered:
+        logger.error("Invalid Ace content path: %s", path)
+        return jsonify({"error": "Invalid Ace content path"}, HTTPStatus.BAD_REQUEST)
+    ace_content_path_filtered = path_filtered.group(1)
+
+    ace_address = ace_pool.get_instance_by_content_path(ace_content_path_filtered)
 
     url = f"{ace_address}/ace/c/{path}"
 
@@ -163,7 +170,8 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
     try:
         resp = requests.get(url, timeout=REVERSE_PROXY_TIMEOUT, stream=True)
     except requests.RequestException as e:
-        error_short = type(e).__name__
+        # error_short = type(e).__name__
+        error_short = e
         logger.error("/ace/c/ reverse proxy failure %s", error_short)  # noqa: TRY400 Naa this should be shorter
         return jsonify({"error": "Failed to fetch HLS stream"}, HTTPStatus.INTERNAL_SERVER_ERROR)
     headers = [

@@ -47,4 +47,5 @@ class AcePool:
         for instance in self.ace_instances:
             if instance.ace_content_path == content_path:
                 return instance.ace_url
+
         return ""
