@@ -1,11 +1,12 @@
 """Flask webapp acerestreamer."""
 
+from pathlib import Path
 from pprint import pformat
 
-from . import authentication_bp, config, info_bp, logger, static_bp, stream_bp
+from . import authentication_bp, config, info_bp, logger, stream_bp
 from .flask_helpers import FlaskAceReStreamer
 
-__version__ = "0.1.7"  # This is the version of the app, used in pyproject.toml, enforced in a test.
+__version__ = "0.1.8"  # This is the version of the app, used in pyproject.toml, enforced in a test.
 PROGRAM_NAME = "Ace ReStreamer"  # This is the name of the app, used in the config file.
 URL = "https://github.com/kism/ace-restreamer"
 
@@ -25,6 +26,17 @@ def create_app(
             app.logger.critical("When testing supply both test_config and instance_path!")
             raise AttributeError(instance_path)
         app.aw_conf = test_config
+
+    if app.static_folder:
+        try:
+            with (Path(app.static_folder) / "favicon.ico").open() as f:
+                if "version " in f.read():
+                    app.logger.error(
+                        "The favicon.ico file is a Git LFS pointer file, the web fonts are probably also wrong too.\n"
+                        "Please run 'git lfs install' 'git lfs pull' to download the actual file."
+                    )
+        except UnicodeDecodeError:
+            pass # All good, not a pointer file
 
     app.logger.debug("Instance path is: %s", app.instance_path)
 
@@ -47,7 +59,6 @@ def create_app(
     app.register_blueprint(stream_bp.bp)
     app.register_blueprint(authentication_bp.bp)
     app.register_blueprint(info_bp.bp)
-    # app.register_blueprint(static_bp.bp)
 
     with app.app_context():
         stream_bp.start_scraper()
