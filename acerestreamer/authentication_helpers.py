@@ -21,19 +21,3 @@ def assumed_auth_failure() -> None | Response | WerkzeugResponse:
         return None
 
     return redirect("/", HTTPStatus.UNAUTHORIZED)
-
-
-def _find_nginx_bin_path() -> Path | None:
-    """Find the Nginx executable path."""
-    possible_paths = [
-        Path("/usr/sbin/nginx"),
-        Path("/usr/local/sbin/nginx"),
-        Path("/usr/bin/nginx"),
-        Path("/usr/local/bin/nginx"),
-    ]
-
-    for path in possible_paths:
-        if path.exists() and path.is_file():
-            return path
-
-    return None

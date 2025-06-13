@@ -4,7 +4,6 @@ import json
 import subprocess
 from pathlib import Path
 
-from .authentication_helpers import _find_nginx_bin_path
 from .logger import get_logger
 
 logger = get_logger(__name__)
@@ -95,3 +94,19 @@ class AllowList:
         if output.returncode != 0:
             logger.error("Failed to reload Nginx: %s", output.stderr.strip())
             return
+
+
+def _find_nginx_bin_path() -> Path | None:
+    """Find the Nginx executable path."""
+    possible_paths = [
+        Path("/usr/sbin/nginx"),
+        Path("/usr/local/sbin/nginx"),
+        Path("/usr/bin/nginx"),
+        Path("/usr/local/bin/nginx"),
+    ]
+
+    for path in possible_paths:
+        if path.exists() and path.is_file():
+            return path
+
+    return None
