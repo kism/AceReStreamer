@@ -1,10 +1,9 @@
 """Flask webapp acerestreamer."""
 
-from pathlib import Path
 from pprint import pformat
 
 from . import authentication_bp, config, info_bp, logger, stream_bp
-from .flask_helpers import FlaskAceReStreamer
+from .flask_helpers import FlaskAceReStreamer, check_static_folder, register_error_handlers
 
 __version__ = "0.2.0"  # This is the version of the app, used in pyproject.toml, enforced in a test.
 PROGRAM_NAME = "Ace ReStreamer"  # This is the name of the app, used in the config file.
@@ -27,16 +26,7 @@ def create_app(
             raise AttributeError(instance_path)
         app.aw_conf = test_config
 
-    if app.static_folder:
-        try:
-            with (Path(app.static_folder) / "favicon.ico").open() as f:
-                if "version " in f.read():
-                    app.logger.error(
-                        "The favicon.ico file is a Git LFS pointer file, the web fonts are probably also wrong too.\n"
-                        "Please run 'git lfs install' 'git lfs pull' to download the actual file."
-                    )
-        except UnicodeDecodeError:
-            pass  # All good, not a pointer file
+    check_static_folder(app.static_folder)
 
     app.logger.debug("Instance path is: %s", app.instance_path)
 
@@ -66,5 +56,7 @@ def create_app(
 
     app.logger.info("Starting Web Server")
     app.logger.info("%s version: %s", PROGRAM_NAME, __version__)
+
+    register_error_handlers(app)
 
     return app
