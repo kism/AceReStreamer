@@ -16,6 +16,7 @@ class AllowList:
         """Initialize the allow list with a path to the allow list file."""
         self.allowlist_path = allowlist_path
         self.nginx_allowlist_path = nginx_allowlist_path
+        self._nginx_bin_path = None
         self.allowlist_ips: list[str] = []
         self.load()
         self._ensure_correct_ips()
@@ -77,8 +78,6 @@ class AllowList:
 
     def _find_nginx_bin_path(self) -> None:
         """Find the Nginx executable path."""
-        self._nginx_path = None
-
         possible_paths = [
             Path("/usr/sbin/nginx"),
             Path("/usr/local/sbin/nginx"),
@@ -88,16 +87,16 @@ class AllowList:
 
         for path in possible_paths:
             if path.exists() and path.is_file():
-                self._nginx_path = path
+                self._nginx_bin_path = path
 
     def _reload_nginx(self) -> None:
         """Reload Nginx to apply the new allow list."""
-        if not self._nginx_path:
+        if not self._nginx_bin_path:
             logger.error("Nginx binary path not found, cannot reload Nginx.")
             return
 
         output = subprocess.run(  # noqa: S603 # I trust this subprocess call
-            [self._nginx_path, "-s", "reload"],
+            [self._nginx_bin_path, "-s", "reload"],
             check=True,
             capture_output=True,
             text=True,
