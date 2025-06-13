@@ -1,5 +1,6 @@
 """Main Stream Site Blueprint."""
 
+import re
 from http import HTTPStatus
 from pathlib import Path
 
@@ -7,6 +8,7 @@ import requests
 from flask import Blueprint, Response, jsonify, redirect, render_template
 from werkzeug.wrappers import Response as WerkzeugResponse
 
+from .ace_pool import AcePool
 from .authentication_bp import get_ip_from_request, is_ip_allowed
 from .authentication_helpers import assumed_auth_failure
 from .flask_helpers import get_current_app
@@ -19,6 +21,7 @@ logger = get_logger(__name__)  # Create a logger: acerestreamer.this_module_name
 
 bp = Blueprint("acerestreamer_scraper", __name__)
 ace_scraper: AceScraper | None = None
+ace_pool: AcePool | None = None
 current_app = get_current_app()
 
 REVERSE_PROXY_EXCLUDED_HEADERS = ["content-encoding", "content-length", "transfer-encoding", "connection", "keep-alive"]
@@ -28,8 +31,12 @@ REVERSE_PROXY_TIMEOUT = 10  # Very high but alas
 def start_scraper() -> None:
     """Method to 'configure' this module. Needs to be called under `with app.app_context():` from __init__.py."""
     global ace_scraper  # noqa: PLW0603 Necessary evil as far as I can tell, could move to all objects but eh...
+    global ace_pool  # noqa: PLW0603 Necessary evil as far as I can tell, could move to all objects but eh...
+
     scraper_cache = Path(current_app.instance_path) / "ace_quality_cache.json"
     ace_scraper = AceScraper(current_app.aw_conf.scraper, scraper_cache)
+
+    ace_pool = AcePool(current_app.aw_conf.app.ace_addresses)
 
 
 @bp.route("/")
@@ -86,11 +93,13 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    if not ace_scraper:
-        logger.error("Scraper object not initialized.")
+    if not ace_scraper or not ace_pool:
+        logger.error("Scraper or Pool object not initialized.")
         return jsonify({"error": "Scraper not initialized"}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
-    url = f"{current_app.aw_conf.app.ace_address}/ace/manifest.m3u8?content_id={path}"
+    ace_address = ace_pool.get_instance(path)
+
+    url = f"{ace_address}/ace/manifest.m3u8?content_id={path}"
 
     logger.debug("HLS stream requested for path: %s", path)
 
@@ -115,9 +124,20 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
         ace_scraper.increment_quality(path, -5)
         return jsonify({"error": "Invalid HLS stream", "m3u8": content_str}, HTTPStatus.BAD_REQUEST)
 
-    # Replace the base URL in the stream with the new address
-    # The docker container for acestream will always be localhost:6878
-    content_str = content_str.replace("http://localhost:6878", current_app.config["SERVER_NAME"])
+    lines_new = []
+    for line in content_str.splitlines():
+        line_temp = line.strip()
+        if "/ace/c/" in line:
+            for address in current_app.aw_conf.app.ace_addresses:
+                line_temp = line.replace(address, current_app.config["SERVER_NAME"])
+
+            current_content_identifier = re.search(r"/ace/c/([a-f0-9]+)", line_temp)
+            if current_content_identifier:
+                ace_pool.set_content_path(ace_id=path, content_path=current_content_identifier.group(1))
+
+        lines_new.append(line_temp)
+
+    content_str = "\n".join(lines_new)
 
     ace_scraper.increment_quality(path, 1)
 
@@ -131,7 +151,12 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    url = f"{current_app.aw_conf.app.ace_address}/ace/c/{path}"
+    if not ace_pool:
+        return jsonify({"error": "Ace pool not initialized"}, HTTPStatus.INTERNAL_SERVER_ERROR)
+
+    ace_address = ace_pool.get_instance_by_content_path(path)
+
+    url = f"{ace_address}/ace/c/{path}"
 
     logger.debug("Ace content requested for path: %s", path)
 

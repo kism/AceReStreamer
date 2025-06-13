@@ -73,17 +73,27 @@ class AppConf(BaseModel):
     """Application configuration definition."""
 
     password: str = ""
-    ace_address: str = "http://localhost:6878"
+    ace_addresses: list[str] = [
+        "http://localhost:6878",
+        "http://localhost:6879",
+        "http://localhost:6880",
+        "http://localhost:6881",
+    ]
 
     @model_validator(mode="after")
     def valid_ace_address(self) -> Self:
         """Validate the configuration."""
-        self.ace_address = self.ace_address.strip()
-        self.ace_address = self.ace_address.rstrip("/")  # Remove trailing slash if it exists
-        if self.ace_address.startswith("http://") or self.ace_address.startswith("https://"):
-            return self
-        msg = "ace_address must start with 'http://'"
-        raise ValueError(msg)
+        ace_addresses_clean = []
+
+        for ace_address in self.ace_addresses:
+            ace_address_temp = ace_address.strip().rstrip("/")
+            if not ace_address_temp.startswith("http://"):
+                msg = f"ace_address '{ace_address_temp}' must start with 'http://'"
+                raise ValueError(msg)
+            ace_addresses_clean.append(ace_address_temp)
+
+        self.ace_addresses = ace_addresses_clean
+        return self
 
 
 class LoggingConf(BaseModel):
