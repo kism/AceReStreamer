@@ -334,13 +334,16 @@ input[type="submit"],
 input[type="reset"],
 input[type="button"] {
   display: inline-block;
-  height: 30px;
-  padding: 0 5px;
+  height: 24px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  padding-left: 10px;
+  padding-right: 9px;
   color: white;
   text-align: center;
   font-size: 10px;
   font-weight: 600;
-  line-height: 25px;
+  line-height: 24px;
   letter-spacing: 0.1rem;
   text-transform: uppercase;
   text-decoration: none;
@@ -351,6 +354,8 @@ input[type="button"] {
   cursor: pointer;
   box-sizing: border-box;
   min-width: 50px;
+  margin-top: 4px;
+  margin-bottom: 4px;
 }
 
 .button:hover,
@@ -388,8 +393,8 @@ select {
   box-shadow: none;
   box-sizing: border-box;
   width: 250px;
-  margin-top: 3px;
-  margin-bottom: 3px;
+  margin-top: 4px;
+  margin-bottom: 4px;
 }
 
 /* Removes awkward default styles on some inputs for iOS */
@@ -506,8 +511,8 @@ label > .label-body {
 #stream-id-input {
   width: 100%;
   max-width: 350px;
-  margin-top: 4px;
-  margin-bottom: 4px;
+  /* margin-top: 4px;
+  margin-bottom: 4px; */
 }
 
 .quality-code {

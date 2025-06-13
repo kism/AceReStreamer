@@ -184,6 +184,11 @@ function loadStream() {
       setOnPageErrorMessage(errorMessage);
     });
 
+    // Wait for HLS to be ready before allowing play
+    hls.on(Hls.Events.MANIFEST_PARSED, function () {
+      console.log("HLS manifest parsed, stream ready to play");
+    });
+
     hls.loadSource(videoSrc);
     hls.attachMedia(video);
   } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
@@ -237,18 +242,20 @@ function loadPlayStream(streamID) {
   getStream(streamID)
     .then((streamInfo) => {
       loadStreamUrl(streamID, streamInfo.title);
+
+      // Wait a bit for the stream to load, then play
+      setTimeout(() => {
+        const video = document.getElementById("video");
+        video.play().catch((error) => {
+          console.error("Error playing video:", error);
+          setOnPageErrorMessage("Error playing video");
+        });
+      }, 1000);
     })
     .catch((error) => {
       console.error("Failed to get stream info:", error);
       loadStreamUrl(streamID, streamID);
     });
-
-  //Play
-  const video = document.getElementById("video");
-  video.play().catch((error) => {
-    console.error("Error playing video:", error);
-    setOnPageErrorMessage("Error playing video");
-  });
 }
 
 function loadPlayStreamFromHash() {
