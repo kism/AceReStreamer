@@ -2,7 +2,7 @@
 
 from pprint import pformat
 
-from . import authentication_bp, config, info_bp, logger, stream_bp, static_bp
+from . import authentication_bp, config, info_bp, logger, static_bp, stream_bp
 from .flask_helpers import FlaskAceReStreamer
 
 __version__ = "0.1.7"  # This is the version of the app, used in pyproject.toml, enforced in a test.

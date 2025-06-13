@@ -4,7 +4,7 @@ from pathlib import Path
 
 from flask import Blueprint, Response, send_from_directory
 
-bp = Blueprint("acerestreamer_scraper", __name__)
+bp = Blueprint("acerestreamer_static_fix", __name__)
 
 
 STATIC_DIR = Path(__file__).parent / "static"
