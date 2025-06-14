@@ -1,6 +1,6 @@
 """AceStream pool management module."""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import requests
 from pydantic import BaseModel
@@ -13,6 +13,7 @@ ACESTREAM_API_TIMEOUT = 3
 
 OUR_TIMEZONE = datetime.now().astimezone().tzinfo
 
+LOCK_IN_TIME: timedelta = timedelta(minutes=5)
 
 class AcePoolEntry(BaseModel):
     """Model for an AceStream pool entry."""
@@ -47,6 +48,11 @@ class AcePoolEntry(BaseModel):
         self.ace_content_path = content_path
         self.update_last_used()
         self.date_started = datetime.now(tz=OUR_TIMEZONE)
+
+
+    def get_time_active(self) -> timedelta:
+        """Get the time this instance has been active."""
+        return datetime.now(tz=OUR_TIMEZONE) - self.date_started
 
 class AcePool:
     """A pool of AceStream instances to distribute requests across."""
