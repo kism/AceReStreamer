@@ -13,7 +13,7 @@ ACESTREAM_API_TIMEOUT = 3
 
 OUR_TIMEZONE = datetime.now().astimezone().tzinfo
 
-LOCK_IN_TIME: timedelta = timedelta(minutes=1)
+LOCK_IN_TIME: timedelta = timedelta(minutes=3)
 LOCK_IN_RESET_MAX: timedelta = timedelta(minutes=30)
 
 
