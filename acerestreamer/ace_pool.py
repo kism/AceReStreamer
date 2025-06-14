@@ -51,35 +51,25 @@ class AcePoolEntry(BaseModel):
         self.update_last_used()
         self.date_started = datetime.now(tz=OUR_TIMEZONE)
 
-    def get_time_active(self) -> timedelta:
-        """Get the time this instance has been active."""
-        return datetime.now(tz=OUR_TIMEZONE) - self.date_started
-
     def check_locked_in(self) -> bool:
         """Check if the instance is locked in for a certain period."""
         # If the instance has not been used for a while, it is not locked in, maximum reset time is LOCK_IN_RESET_MAX
-        time_watched_delta: timedelta = datetime.now(tz=OUR_TIMEZONE) - self.last_used
-        required_time_to_unlock = min(LOCK_IN_RESET_MAX, time_watched_delta)
+        time_now = datetime.now(tz=OUR_TIMEZONE)
+        time_since_last_watched: timedelta = time_now - self.last_used
+        time_since_date_started: timedelta = time_now - self.date_started
+        required_time_to_unlock = min(LOCK_IN_RESET_MAX, time_since_last_watched)
+
         logger.info("---")
-        logger.info(f"Required time to unlock: {required_time_to_unlock}, time_watched: {time_watched_delta}")
-
-        time_since_last_watched = datetime.now(tz=OUR_TIMEZONE) - self.last_used
-
+        logger.info(f"Current time: {time_now}, Last used: {self.last_used}")
+        logger.info(f"Required time watched to unlock: {required_time_to_unlock}")
+        logger.info(f"Time since date started: {time_since_date_started}")
         logger.info(f"Time since last watched: {time_since_last_watched}")
 
+        if time_since_last_watched > required_time_to_unlock:
+            self.locked_in = False
+            logger.info(f"Instance not locked in, last used: {self.last_used}, reset time: {required_time_to_unlock}")
+            return self.locked_in
 
-        # if self.last_used + calculated_lock_in_reset < datetime.now(tz=OUR_TIMEZONE):
-        #     self.locked_in = False
-        #     logger.info(f"Instance not locked in, last used: {self.last_used} {self.locked_in}, reset time: {calculated_lock_in_reset}")
-        #     return self.locked_in
-
-        # If the instance has been active for longer than LOCK_IN_TIME, it is locked in
-        active_time = self.get_time_active()
-        self.locked_in = active_time < LOCK_IN_TIME
-        # if self.locked_in:
-            # logger.info(f"Instance locked in, active time: {active_time}, reset time: {LOCK_IN_TIME}")
-        # else:
-            # logger.info(f"Instance not locked in, active time: {active_time}, reset time: {LOCK_IN_TIME}")
         return self.locked_in
 
 
@@ -123,7 +113,8 @@ class AcePool:
             logger.error("No available AceStream instance found.")
             return None
 
-        instance_to_claim.ace_id = ace_id
+        # instance_to_claim.ace_id = ace_id
+        instance_to_claim.switch_content(ace_id, "")
 
         return instance_to_claim.ace_url
 
