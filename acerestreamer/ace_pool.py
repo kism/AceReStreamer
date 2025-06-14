@@ -73,7 +73,7 @@ class AcePoolEntry(BaseModel):
             self.locked_in = False
             return self.locked_in
 
-        if time_since_last_watched > required_time_to_unlock:
+        if time_since_last_watched <= required_time_to_unlock:
             self.locked_in = True
         else:
             self.locked_in = False
