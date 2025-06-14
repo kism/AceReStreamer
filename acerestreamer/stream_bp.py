@@ -170,8 +170,7 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
     try:
         resp = requests.get(url, timeout=REVERSE_PROXY_TIMEOUT, stream=True)
     except requests.RequestException as e:
-        # error_short = type(e).__name__
-        error_short = e
+        error_short = type(e).__name__
         logger.error("/ace/c/ reverse proxy failure %s", error_short)  # noqa: TRY400 Naa this should be shorter
         return jsonify({"error": "Failed to fetch HLS stream"}, HTTPStatus.INTERNAL_SERVER_ERROR)
     headers = [
@@ -269,6 +268,10 @@ def api_ace_pool() -> Response | WerkzeugResponse:
         return jsonify({"error": "Ace pool not initialized"}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
     pool_list = ace_pool.ace_instances
+
+    # Refresh each
+    for entry in pool_list:
+        entry.check_locked_in()
 
     pool_list_serialized = [entry.model_dump() for entry in pool_list]
 

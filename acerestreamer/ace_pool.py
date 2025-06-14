@@ -13,8 +13,8 @@ ACESTREAM_API_TIMEOUT = 3
 
 OUR_TIMEZONE = datetime.now().astimezone().tzinfo
 
-LOCK_IN_TIME: timedelta = timedelta(minutes=5)
-LOCK_IN_RESET: timedelta = timedelta(minutes=10)
+LOCK_IN_TIME: timedelta = timedelta(minutes=1)
+LOCK_IN_RESET_MAX: timedelta = timedelta(minutes=30)
 
 
 class AcePoolEntry(BaseModel):
@@ -26,7 +26,7 @@ class AcePoolEntry(BaseModel):
     healthy: bool = False
     date_started: datetime = datetime(1970, 1, 1, tzinfo=OUR_TIMEZONE)
     last_used: datetime = datetime(1970, 1, 1, tzinfo=OUR_TIMEZONE)
-    locked_in: bool = False # Only for visibility, do not use in logic
+    locked_in: bool = False  # Only for visibility, do not use in logic
 
     def check_ace_running(self) -> None:
         """Use the AceStream API to check if the instance is running."""
@@ -57,14 +57,31 @@ class AcePoolEntry(BaseModel):
 
     def check_locked_in(self) -> bool:
         """Check if the instance is locked in for a certain period."""
-        # If the instance has not been used for a while, it is not locked in
-        if self.last_used + LOCK_IN_RESET < datetime.now(tz=OUR_TIMEZONE):
-            self.locked_in = False
-            return self.locked_in
+        # If the instance has not been used for a while, it is not locked in, maximum reset time is LOCK_IN_RESET_MAX
+        time_watched_delta: timedelta = datetime.now(tz=OUR_TIMEZONE) - self.last_used
+        required_time_to_unlock = min(LOCK_IN_RESET_MAX, time_watched_delta)
+        logger.info("---")
+        logger.info(f"Required time to unlock: {required_time_to_unlock}, time_watched: {time_watched_delta}")
+
+        time_since_last_watched = datetime.now(tz=OUR_TIMEZONE) - self.last_used
+
+        logger.info(f"Time since last watched: {time_since_last_watched}")
+
+
+        # if self.last_used + calculated_lock_in_reset < datetime.now(tz=OUR_TIMEZONE):
+        #     self.locked_in = False
+        #     logger.info(f"Instance not locked in, last used: {self.last_used} {self.locked_in}, reset time: {calculated_lock_in_reset}")
+        #     return self.locked_in
 
         # If the instance has been active for longer than LOCK_IN_TIME, it is locked in
-        self.locked_in = self.get_time_active() < LOCK_IN_TIME
+        active_time = self.get_time_active()
+        self.locked_in = active_time < LOCK_IN_TIME
+        # if self.locked_in:
+            # logger.info(f"Instance locked in, active time: {active_time}, reset time: {LOCK_IN_TIME}")
+        # else:
+            # logger.info(f"Instance not locked in, active time: {active_time}, reset time: {LOCK_IN_TIME}")
         return self.locked_in
+
 
 class AcePool:
     """A pool of AceStream instances to distribute requests across."""
@@ -75,16 +92,11 @@ class AcePool:
         for instance in self.ace_instances:
             instance.check_ace_running()
             instance.check_locked_in()
-        self.current_index = 0
 
     def get_available_instance(self) -> AcePoolEntry | None:
         """Get the next available AceStream instance URL."""
         if not self.ace_instances:
             return None
-
-        # Check if the current instance is healthy
-        if self.ace_instances[self.current_index].healthy:
-            return self.ace_instances[self.current_index]
 
         instance_to_use = None
 
@@ -101,13 +113,19 @@ class AcePool:
         """Find the AceStream instance URL for a given ace_id."""
         for instance in self.ace_instances:
             if instance.ace_id == ace_id:
-                instance.check_locked_in()
+                instance.check_locked_in()  # Just to update the status, should be removed later
                 return instance.ace_url
 
         # If not found, return the next available instance in a round-robin fashion
-        instance = self.ace_instances[self.current_index]
-        self.current_index = (self.current_index + 1) % len(self.ace_instances)
-        return instance.ace_url
+        instance_to_claim: AcePoolEntry | None = self.get_available_instance()
+
+        if instance_to_claim is None:
+            logger.error("No available AceStream instance found.")
+            return None
+
+        instance_to_claim.ace_id = ace_id
+
+        return instance_to_claim.ace_url
 
     def set_content_path(self, ace_id: str, content_path: str) -> None:
         """Set the content path for a specific AceStream instance."""

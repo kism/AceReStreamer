@@ -117,6 +117,10 @@ def setup_logger(
         if not _has_file_handler(in_logger) and not isinstance(log_path, str):
             _add_file_handler(in_logger, log_path)
 
+        # Configure modules that are external and have their own loggers
+        logging.getLogger("waitress").setLevel(logging.INFO)  # Prod web server, info has useful info.
+        logging.getLogger("werkzeug").setLevel(logging.DEBUG)  # Only will be used in dev, debug logs incoming requests.
+
         logger.debug("Logger configuration set!")
 
 

@@ -92,6 +92,8 @@ uv sync --no-group test --no-group type --no-group lint
   - more on the iptv guide
 - chromecast / airplay support
 - actually fetch from sites in a thread
+- pools api
+- reload player on failure a couple of times
 
 - ~~publish~~
   - ~~streams/flat~~
