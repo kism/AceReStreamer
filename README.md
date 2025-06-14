@@ -79,6 +79,7 @@ uv sync --no-group test --no-group type --no-group lint
 | /api/streams/by_site | GET    | get all streams by site   |
 | /api/streams/health  | GET    | stream ids w/health       |
 | /api/stream/{id}     | GET    | get stream by id          |
+| /api/ace_pool        | GET    | get pool of streams       |
 
 ## todo
 

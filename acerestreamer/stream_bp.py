@@ -256,3 +256,22 @@ def api_streams_health() -> Response | WerkzeugResponse:
     response.status_code = HTTPStatus.OK
 
     return response
+
+@bp.route("/api/ace_pool")
+def api_ace_pool() -> Response | WerkzeugResponse:
+    """API endpoint to get the Ace pool."""
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
+    if not ace_pool:
+        logger.error("Ace pool not initialized.")
+        return jsonify({"error": "Ace pool not initialized"}, HTTPStatus.INTERNAL_SERVER_ERROR)
+
+    pool_list = ace_pool.ace_instances
+
+    pool_list_serialized = [entry.model_dump() for entry in pool_list]
+
+    response = jsonify(pool_list_serialized)
+    response.status_code = HTTPStatus.OK
+    return response
