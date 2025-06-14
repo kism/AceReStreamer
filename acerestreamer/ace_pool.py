@@ -57,7 +57,7 @@ class AcePoolEntry(BaseModel):
         time_now = datetime.now(tz=OUR_TIMEZONE)
         time_since_last_watched: timedelta = time_now - self.last_used
         time_since_date_started: timedelta = time_now - self.date_started
-        required_time_to_unlock = min(LOCK_IN_RESET_MAX, time_since_date_started)
+        required_time_to_unlock = min(LOCK_IN_RESET_MAX, (time_since_date_started - time_since_last_watched))
 
         logger.info("---")
         logger.info(f"Current time: {time_now}, Last used: {self.last_used}")
