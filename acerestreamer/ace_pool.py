@@ -14,7 +14,7 @@ ACESTREAM_API_TIMEOUT = 3
 OUR_TIMEZONE = datetime.now().astimezone().tzinfo
 
 LOCK_IN_TIME: timedelta = timedelta(minutes=5)
-LOCK_IN_RESET: timedelta = timedelta(minutes=3)
+LOCK_IN_RESET: timedelta = timedelta(minutes=10)
 
 
 class AcePoolEntry(BaseModel):
@@ -101,6 +101,7 @@ class AcePool:
         """Find the AceStream instance URL for a given ace_id."""
         for instance in self.ace_instances:
             if instance.ace_id == ace_id:
+                instance.check_locked_in()
                 return instance.ace_url
 
         # If not found, return the next available instance in a round-robin fashion
