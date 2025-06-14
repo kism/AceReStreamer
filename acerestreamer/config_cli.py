@@ -150,7 +150,6 @@ def generate_nginx_config_file(
     context = {
         "flask_server_address": flask_server_address,
         "nginx_server_name": app_config.nginx.server_name,
-        "ace_server_address": app_config.app.ace_address,
         "dhparam_path": app_config.nginx.dhparam_path,
         "cert_path": app_config.nginx.cert_path,
         "cert_key_path": app_config.nginx.cert_key_path,
