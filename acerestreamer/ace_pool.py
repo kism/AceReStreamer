@@ -77,6 +77,8 @@ class AcePool:
 
         # Iterate through the instances to find the one that was used the longest time ago
         for instance in self.ace_instances:
+            if instance.get_time_active() > LOCK_IN_TIME:
+                continue
             if instance.healthy and (instance_to_use is None or instance.last_used < instance_to_use.last_used):
                 instance_to_use = instance
 
