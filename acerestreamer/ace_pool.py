@@ -14,6 +14,8 @@ ACESTREAM_API_TIMEOUT = 3
 OUR_TIMEZONE = datetime.now().astimezone().tzinfo
 
 LOCK_IN_TIME: timedelta = timedelta(minutes=5)
+LOCK_IN_RESET: timedelta = timedelta(minutes=3)
+
 
 class AcePoolEntry(BaseModel):
     """Model for an AceStream pool entry."""
@@ -24,6 +26,7 @@ class AcePoolEntry(BaseModel):
     healthy: bool = False
     date_started: datetime = datetime(1970, 1, 1, tzinfo=OUR_TIMEZONE)
     last_used: datetime = datetime(1970, 1, 1, tzinfo=OUR_TIMEZONE)
+    locked_in: bool = False # Only for visibility, do not use in logic
 
     def check_ace_running(self) -> None:
         """Use the AceStream API to check if the instance is running."""
@@ -41,7 +44,6 @@ class AcePoolEntry(BaseModel):
         """Update the last used timestamp."""
         self.last_used = datetime.now(tz=OUR_TIMEZONE)
 
-
     def switch_content(self, ace_id: str, content_path: str) -> None:
         """Switch the content path and ace_id for this instance."""
         self.ace_id = ace_id
@@ -49,10 +51,20 @@ class AcePoolEntry(BaseModel):
         self.update_last_used()
         self.date_started = datetime.now(tz=OUR_TIMEZONE)
 
-
     def get_time_active(self) -> timedelta:
         """Get the time this instance has been active."""
         return datetime.now(tz=OUR_TIMEZONE) - self.date_started
+
+    def check_locked_in(self) -> bool:
+        """Check if the instance is locked in for a certain period."""
+        # If the instance has not been used for a while, it is not locked in
+        if self.last_used + LOCK_IN_RESET < datetime.now(tz=OUR_TIMEZONE):
+            self.locked_in = False
+            return self.locked_in
+
+        # If the instance has been active for longer than LOCK_IN_TIME, it is locked in
+        self.locked_in = self.get_time_active() < LOCK_IN_TIME
+        return self.locked_in
 
 class AcePool:
     """A pool of AceStream instances to distribute requests across."""
@@ -62,6 +74,7 @@ class AcePool:
         self.ace_instances = [AcePoolEntry(ace_url=address) for address in ace_addresses]
         for instance in self.ace_instances:
             instance.check_ace_running()
+            instance.check_locked_in()
         self.current_index = 0
 
     def get_available_instance(self) -> AcePoolEntry | None:
@@ -77,7 +90,7 @@ class AcePool:
 
         # Iterate through the instances to find the one that was used the longest time ago
         for instance in self.ace_instances:
-            if instance.get_time_active() > LOCK_IN_TIME:
+            if instance.check_locked_in():
                 continue
             if instance.healthy and (instance_to_use is None or instance.last_used < instance_to_use.last_used):
                 instance_to_use = instance
