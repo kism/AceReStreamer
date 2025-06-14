@@ -57,7 +57,15 @@ class AcePoolEntry(BaseModel):
         time_now = datetime.now(tz=OUR_TIMEZONE)
         time_since_last_watched: timedelta = time_now - self.last_used
         time_since_date_started: timedelta = time_now - self.date_started
-        required_time_to_unlock = min(LOCK_IN_RESET_MAX, time_since_last_watched)
+        required_time_to_unlock = min(LOCK_IN_RESET_MAX, time_since_date_started)
+
+        if self.ace_id == "":
+            self.locked_in = False
+            return self.locked_in
+
+        if time_since_date_started < LOCK_IN_TIME:
+            self.locked_in = False
+            return self.locked_in
 
         logger.info("---")
         logger.info(f"Current time: {time_now}, Last used: {self.last_used}")
@@ -66,9 +74,9 @@ class AcePoolEntry(BaseModel):
         logger.info(f"Time since last watched: {time_since_last_watched}")
 
         if time_since_last_watched > required_time_to_unlock:
+            self.locked_in = True
+        else:
             self.locked_in = False
-            logger.info(f"Instance not locked in, last used: {self.last_used}, reset time: {required_time_to_unlock}")
-            return self.locked_in
 
         return self.locked_in
 
