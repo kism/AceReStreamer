@@ -99,9 +99,7 @@ uv sync --no-group test --no-group type --no-group lint
 
 ### Apps that don't work
 
-- DangoPlayer
-- Jellyfin app
-- ProgTV looping issue
+see iptv.html.j2
 
 ### Done
 
