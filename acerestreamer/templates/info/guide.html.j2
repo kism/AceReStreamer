@@ -31,7 +31,10 @@
     <p>On Computer, go to Media &gt; Open Network Stream, paste the Direct URL and click Open.</p>
     <p>On Mobile, go to Browse, Open Network Stream, Paste the Direct URL and click Open Network Stream</p>
     <h4>MPV</h4>
-    <p>Run <code>mpv &lt;Direct URL&gt;</code> in a terminal.</p>
+    <p>Run <code>mpv &lt;Direct URL&gt;</code> in a terminal.<br>If you would like safer buffering, add the command line
+        arguments:
+        <code>--cache=auto --cache-secs=30 --cache-pause=yes --cache-pause-wait=5 --cache-pause-initial=yes</code>. You
+        can add these to mpv.conf as well.</p>
     <p>On MacOS you will first need to make a symlink to your path:<br>
         <code>sudo ln -s /Applications/mpv.app/Contents/MacOS/mpv /usr/local/bin/mpv</code>
     </p>

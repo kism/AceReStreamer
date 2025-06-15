@@ -20,14 +20,19 @@
 
 <body>
     {{ rendered_header }}
-    <p>Point your IPTV app at: <code class="code-block">{{ iptv_main_url }}</code> The channel list will only provide
-        entries with a quality greater than zero.</p>
+    <p>Point your IPTV app at one of, some apps only accept the .m3u or .m3u8 extensions:
+        <code class="code-block">{{ iptv_main_url }}</code>
+        <code class="code-block">{{ iptv_main_url }}.m3u</code>
+        <code class="code-block">{{ iptv_main_url }}.m3u8</code>
+        The channel list will only provide
+        entries with a quality greater than zero.
+    </p>
+    <p>Some apps will only work if this site is on https.</p>
     <h3>Recommended Apps</h3>
     <p>Many apps are made to be players for their subscription IPTV services, and on the side offer loading external
         playlists. These recommendations are tested, free and don't nag you to pay. Also check out this list <a
             href="https://awesomelists.top/#/iptv-org/awesome-iptv">Awesome IPTV</a>.</p>
-    <p>Right now Jellyfin seems to only work in the web interface, some apps seem to only accept a playlist from sites
-        with https.</p>
+    <p>The apps featured here have been tested to work.</p>
     <h4>iOS</h4>
     <ul>
         <li><a href="https://apps.apple.com/ae/app/flex-iptv/id1182930255">Flex IPTV</a></li>
@@ -44,11 +49,11 @@
         <li><a href="https://play.google.com/store/apps/details?id=com.progdvb.progtva">ProgTV</a></li>
     </ul>
     <h3>TESTED NOT WORKING</h3>
-    <code class="code-block">
-DangoPlayer
-Jellyfin app
-ProgTV has a looping issue, looking into settings.
-    </code>
+    <p>
+        DangoPlayer<br>
+        Jellyfin app<br>
+        ProgTV has an occasional looping issue, looking into settings.
+    </p>
     <h3>More IPTV Sources</h3>
     <ul>
         <li><a href="https://bugsfreeweb.github.io/LiveTVCollector/">Live TV Collector</a>, country list takes a while
