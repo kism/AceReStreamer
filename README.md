@@ -83,6 +83,8 @@ uv sync --no-group test --no-group type --no-group lint
 
 ## todo
 
+### Features
+
 - /health endpoint
 - api reference
 - pytest
@@ -94,6 +96,14 @@ uv sync --no-group test --no-group type --no-group lint
 - actually fetch from sites in a thread
 - pools api
 - reload player on failure a couple of times
+
+### Apps that don't work
+
+- DangoPlayer
+- Jellyfin app
+- ProgTV looping issue
+
+### Done
 
 - ~~publish~~
   - ~~streams/flat~~

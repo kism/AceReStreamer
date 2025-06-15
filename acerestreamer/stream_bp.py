@@ -66,6 +66,8 @@ def webplayer_stream() -> Response | WerkzeugResponse:
 
 
 @bp.route("/iptv")
+@bp.route("/iptv.m3u")
+@bp.route("/iptv.m3u8")
 def iptv() -> Response | WerkzeugResponse:
     """Render the IPTV page."""
     auth_failure = assumed_auth_failure()
@@ -83,6 +85,7 @@ def iptv() -> Response | WerkzeugResponse:
     return Response(
         m3u8,
         HTTPStatus.OK,
+        mimetype="application/vnd.apple.mpegurl",
     )
 
 

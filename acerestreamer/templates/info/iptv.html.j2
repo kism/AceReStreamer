@@ -20,8 +20,34 @@
 
 <body>
     {{ rendered_header }}
-    <p>Point your IPTV app at <code>{{ iptv_main_url }}</code>, will only provide entries with a quality greater than
-        zero.</p>
+    <p>Point your IPTV app at: <code class="code-block">{{ iptv_main_url }}</code> The channel list will only provide
+        entries with a quality greater than zero.</p>
+    <h3>Recommended Apps</h3>
+    <p>Many apps are made to be players for their subscription IPTV services, and on the side offer loading external
+        playlists. These recommendations are tested, free and don't nag you to pay. Also check out this list <a
+            href="https://awesomelists.top/#/iptv-org/awesome-iptv">Awesome IPTV</a>.</p>
+    <p>Right now Jellyfin seems to only work in the web interface, some apps seem to only accept a playlist from sites
+        with https.</p>
+    <h4>iOS</h4>
+    <ul>
+        <li><a href="https://apps.apple.com/ae/app/flex-iptv/id1182930255">Flex IPTV</a></li>
+        <li><a href="https://www.perfectiptv.app/#features">Perfect IPTV</a></li>
+    </ul>
+    <h4>Android</h4>
+    <ul>
+        <li><a href="https://github.com/oxyroid/M3UAndroid">M3UAndroid, not on the play store.</a></li>
+        <li><a href="https://play.google.com/store/apps/details?id=com.progdvb.progtva">ProgTV</a></li>
+    </ul>
+    <h4>Android TV</h4>
+    <ul>
+        <li><a href="https://play.google.com/store/apps/details?id=com.progdvb.progtva">ProgTV</a></li>
+    </ul>
+    <h3>More IPTV Sources</h3>
+    <ul>
+        <li><a href="https://bugsfreeweb.github.io/LiveTVCollector/">Live TV Collector</a>, country list takes a while
+            to populate.</li>
+        <li><a href="https://github.com/iptv-org/iptv">IPTV-org lists.</a></li>
+    </ul>
 </body>
 
 </html>
