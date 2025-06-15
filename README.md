@@ -96,6 +96,8 @@ uv sync --no-group test --no-group type --no-group lint
 - actually fetch from sites in a thread
 - pools api
 - reload player on failure a couple of times
+- ace_pool more verbose api
+- ace_pool on info on /stream
 
 ### Apps that don't work
 
@@ -127,3 +129,4 @@ see iptv.html.j2
 - ~~get media info from hls.js~~ impossible
 - ~~investigate .copy()~~
 - ~~login page~~
+- ~~document iptv clients~~
