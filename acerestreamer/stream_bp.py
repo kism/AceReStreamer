@@ -182,7 +182,11 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
         if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS
     ]
 
-    return Response(resp.content, resp.status_code, headers)
+    response = Response(resp.content, resp.status_code, headers)
+
+    response.headers["Content-Type"] = "video/MP2T" # Doesn't seem to be necessary
+
+    return response
 
 
 @bp.route("/api/stream/<path:ace_id>")
