@@ -600,3 +600,7 @@ nav ul {
 #video-controls td {
   background-color: None;
 }
+
+.api-table td {
+  font-family: "Fira Code", Consolas, "Lucida Console", monospace;
+}

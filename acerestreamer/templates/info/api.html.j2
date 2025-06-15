@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Ace Stream WebPlayer Guide</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett">
+    <link rel="preload" href="/static/fonts/noto-sans-display-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/static/fonts/noto-sans-display-latin-400italic.woff2" as="font" type="font/woff2"
+        crossorigin>
+    <link rel="preload" href="/static/fonts/noto-sans-display-latin-500.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/static/fonts/noto-sans-display-latin-500italic.woff2" as="font" type="font/woff2"
+        crossorigin>
+    <link rel="preload" href="/static/fonts/fira-code-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/static/fonts/fira-code-500.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/static/fonts/fira-code-600.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/static/fonts/fira-code-700.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/static/zy.css" />
+</head>
+
+<body>
+    {{ rendered_header }}
+    <h3>Web Endpoints</h3>
+    <table class="api-table">
+        <tr>
+            <th>Path</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>/</td>
+            <td>Login page</td>
+        </tr>
+        <tr>
+            <td>/stream</td>
+            <td>Stream webplayer</td>
+        </tr>
+        <tr>
+            <td>/hls/</td>
+            <td>Reverse proxy for ace m3u8 files</td>
+        </tr>
+        <tr>
+            <td>/ace/c/</td>
+            <td>Proxy for ace stream .ts files</td>
+        </tr>
+        <tr>
+            <td>/iptv</td>
+            <td>IPTV m3u8 playlist</td>
+        </tr>
+        <tr>
+            <td>/info/guide</td>
+            <td>Main guide page</td>
+        </tr>
+        <tr>
+            <td>/info/iptv</td>
+            <td>IPTV guide page</td>
+        </tr>
+        <tr>
+            <td>/info/about</td>
+            <td>About page</td>
+        </tr>
+        <tr>
+            <td>/info/api</td>
+            <td>API information</td>
+        </tr>
+    </table>
+    <h3>API Endpoints</h3>
+    <table class="api-table">
+        <tr>
+            <th>Path</th>
+            <th>Method</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>/api/authenticate</td>
+            <td>POST</td>
+            <td>Authenticate endpoint</td>
+        </tr>
+        <tr>
+            <td>/api/authenticate</td>
+            <td>GET</td>
+            <td>Get authentication status</td>
+        </tr>
+        <tr>
+            <td>/api/streams/flat</td>
+            <td>GET</td>
+            <td>Get all streams flat</td>
+        </tr>
+        <tr>
+            <td>/api/streams/by_site</td>
+            <td>GET</td>
+            <td>Get all streams by site</td>
+        </tr>
+        <tr>
+            <td>/api/streams/health</td>
+            <td>GET</td>
+            <td>Stream IDs with health status</td>
+        </tr>
+        <tr>
+            <td>/api/stream/{id}</td>
+            <td>GET</td>
+            <td>Get stream by ID</td>
+        </tr>
+        <tr>
+            <td>/api/ace_pool</td>
+            <td>GET</td>
+            <td>Get pool of streams</td>
+        </tr>
+
+    </table>
+
+</body>
+
+</html>

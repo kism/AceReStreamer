@@ -54,33 +54,6 @@ uv sync --no-group test --no-group type --no-group lint
     --call acerestreamer:create_app
 ```
 
-## todo structure
-
-### Pages
-
-| path        | description                      |
-| ----------- | -------------------------------- |
-| /           | login page                       |
-| /stream     | stream webplayer                 |
-| /hls        | reverse proxy for ace m3u8 files |
-| /ace/c      | proxy for ace stream .ts files   |
-| /iptv       | iptv m3u8 playlist               |
-| /info/guide | Main guide page                  |
-| /info/iptv  | IPTV guide page                  |
-| /info/about | about / health check page        |
-
-### API Endpoints
-
-| path                 | method | description               |
-| -------------------- | ------ | ------------------------- |
-| /api/authenticate    | POST   | authenticate endpoint     |
-| /api/authenticate    | GET    | get authentication status |
-| /api/streams/flat    | GET    | get all streams flat      |
-| /api/streams/by_site | GET    | get all streams by site   |
-| /api/streams/health  | GET    | stream ids w/health       |
-| /api/stream/{id}     | GET    | get stream by id          |
-| /api/ace_pool        | GET    | get pool of streams       |
-
 ## todo
 
 ### Features

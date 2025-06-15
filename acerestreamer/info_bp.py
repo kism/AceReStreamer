@@ -43,9 +43,24 @@ def guide() -> Response | WerkzeugResponse:
         "rendered_header": get_header_snippet("Ace ReStreamer IPTV Guide"),
     }
 
-    logger.warning(context)
-
     return Response(
         render_template("iptv.html.j2", **context),
+        HTTPStatus.OK,
+    )
+
+
+@bp.route("/info/api")
+def api() -> Response | WerkzeugResponse:
+    """Render the API information page."""
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
+    context = {
+        "rendered_header": get_header_snippet("Ace ReStreamer API Information"),
+    }
+
+    return Response(
+        render_template("api.html.j2", **context),
         HTTPStatus.OK,
     )
