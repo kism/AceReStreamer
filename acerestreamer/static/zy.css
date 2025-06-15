@@ -601,6 +601,6 @@ nav ul {
   background-color: None;
 }
 
-.api-table td {
+.api-table tr td:first-child {
   font-family: "Fira Code", Consolas, "Lucida Console", monospace;
 }
