@@ -3,12 +3,37 @@
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
+from .logger import get_logger
 
 TEMPLATES_DIR = Path(__file__).parent / "templates" / "snippets"
+
+logger = get_logger(__name__)  # Create a logger: acerestreamer.html_snippets, inherit config from root logger
 
 
 def get_header_snippet(page_title: str) -> str:
     """Get the HTML header snippet with the given page title."""
+    from acerestreamer import __version__
+
+    git_head_log = Path.cwd() / ".git" / "logs" / "HEAD"
+    git_head = Path.cwd() / ".git" / "HEAD"
+    last_commit = ""
+    current_branch = ""
+
+    if git_head_log.is_file():
+        with git_head_log.open("r") as f:
+            last_commit = f.readlines()[-1].strip().split(" ")[0][:7]  # Get the last commit hash, first 7 characters
+            logger.debug(last_commit)
+
+    if git_head.is_file():
+        with git_head.open("r") as f:
+            current_branch = f.read().strip().split("/")[-1]
+
+    version_info = (
+        f"Version: {__version__}"
+        f"{(', ' + current_branch + ' ') if current_branch else ''}"
+        f"{(' (' + last_commit + ')') if last_commit else ''}"
+    )
+
     env = Environment(loader=FileSystemLoader(TEMPLATES_DIR), autoescape=True)
     template = env.get_template("header.html.j2")
-    return template.render(page_title=page_title)
+    return template.render(page_title=page_title, version_info=version_info)
