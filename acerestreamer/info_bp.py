@@ -24,7 +24,7 @@ def info_guide() -> Response | WerkzeugResponse | CachedResponse:
     if auth_failure:
         return auth_failure
 
-    return CachedResponse(
+    return CachedResponse( #type: ignore[no-untyped-call] # Missing from flask-caching
         response=Response(
             render_template(
                 "guide.html.j2",
@@ -43,7 +43,7 @@ def guide() -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    return CachedResponse(
+    return CachedResponse( #type: ignore[no-untyped-call] # Missing from flask-caching
         response=Response(
             render_template(
                 "iptv.html.j2",
@@ -63,7 +63,7 @@ def api() -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    return CachedResponse(
+    return CachedResponse( #type: ignore[no-untyped-call] # Missing from flask-caching
         response=Response(
             render_template(
                 "api.html.j2",
