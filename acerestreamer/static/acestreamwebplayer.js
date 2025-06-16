@@ -29,11 +29,11 @@ function getStream(streamId) {
 }
 
 function flashBackgroundColor(element, state, duration = 200) {
-  let backgroundClass = 'status-neutral-background';
+  let backgroundClass = "status-neutral-background";
   if (state === "good") {
-    backgroundClass = 'status-good-background';
+    backgroundClass = "status-good-background";
   } else if (state === "bad") {
-    backgroundClass = 'status-bad-background';
+    backgroundClass = "status-bad-background";
   }
 
   element.classList.add(backgroundClass);
@@ -108,14 +108,7 @@ function getStreams() {
         td_link = document.createElement("td");
         const a = document.createElement("a"); // Create a new anchor element
         a.textContent = `${stream.title}`;
-        a.onclick = () => {
-          loadStreamUrl(stream.ace_id, stream.title); // Set the onclick event to load the stream URL
-          const video = document.getElementById("video");
-          video.play().catch((error) => {
-            console.error("Error playing video:", error);
-            setOnPageErrorMessage("Error playing video");
-          });
-        };
+        a.onclick = () => loadPlayStream(stream.ace_id);
         td_link.appendChild(a); // Append the anchor element to the table data cell
 
         // Source Cell
