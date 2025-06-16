@@ -115,7 +115,6 @@ class AcePool:
             logger.error("No available AceStream instance found.")
             return None
 
-        # instance_to_claim.ace_id = ace_id
         instance_to_claim.switch_content(ace_id, "")
 
         return instance_to_claim.ace_url

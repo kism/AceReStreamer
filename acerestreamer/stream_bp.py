@@ -184,7 +184,7 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
 
     response = Response(resp.content, resp.status_code, headers)
 
-    response.headers["Content-Type"] = "video/MP2T" # Doesn't seem to be necessary
+    response.headers["Content-Type"] = "video/MP2T"  # Doesn't seem to be necessary
 
     return response
 
@@ -262,6 +262,7 @@ def api_streams_health() -> Response | WerkzeugResponse:
     response.status_code = HTTPStatus.OK
 
     return response
+
 
 @bp.route("/api/ace_pool")
 def api_ace_pool() -> Response | WerkzeugResponse:
