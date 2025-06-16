@@ -3,10 +3,11 @@
 from http import HTTPStatus
 
 from flask import Blueprint, Response, render_template
+from flask_caching import CachedResponse
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from .authentication_helpers import assumed_auth_failure
-from .flask_helpers import get_current_app
+from .flask_helpers import DEFAULT_CACHE_DURATION, cache, get_current_app
 from .html_snippets import get_header_snippet
 from .logger import get_logger
 
@@ -16,18 +17,22 @@ logger = get_logger(__name__)
 
 
 @bp.route("/info/guide")
-def info_guide() -> Response | WerkzeugResponse:
+@cache.cached()
+def info_guide() -> Response | WerkzeugResponse | CachedResponse:
     """Render the guide page."""
     auth_failure = assumed_auth_failure()
     if auth_failure:
         return auth_failure
 
-    return Response(
-        render_template(
-            "guide.html.j2",
-            rendered_header=get_header_snippet("Ace ReStreamer Guide"),
+    return CachedResponse(
+        response=Response(
+            render_template(
+                "guide.html.j2",
+                rendered_header=get_header_snippet("Ace ReStreamer Guide"),
+            ),
+            status=HTTPStatus.OK,
         ),
-        HTTPStatus.OK,
+        timeout=DEFAULT_CACHE_DURATION,
     )
 
 
@@ -38,14 +43,16 @@ def guide() -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    context = {
-        "iptv_main_url": current_app.aw_conf.flask.SERVER_NAME + "/iptv",
-        "rendered_header": get_header_snippet("Ace ReStreamer IPTV Guide"),
-    }
-
-    return Response(
-        render_template("iptv.html.j2", **context),
-        HTTPStatus.OK,
+    return CachedResponse(
+        response=Response(
+            render_template(
+                "iptv.html.j2",
+                iptv_main_url=current_app.aw_conf.flask.SERVER_NAME + "/iptv",
+                rendered_header=get_header_snippet("Ace ReStreamer Guide"),
+            ),
+            status=HTTPStatus.OK,
+        ),
+        timeout=DEFAULT_CACHE_DURATION,
     )
 
 
@@ -56,11 +63,13 @@ def api() -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    context = {
-        "rendered_header": get_header_snippet("Ace ReStreamer API Information"),
-    }
-
-    return Response(
-        render_template("api.html.j2", **context),
-        HTTPStatus.OK,
+    return CachedResponse(
+        response=Response(
+            render_template(
+                "api.html.j2",
+                rendered_header=get_header_snippet("Ace ReStreamer API Information"),
+            ),
+            status=HTTPStatus.OK,
+        ),
+        timeout=DEFAULT_CACHE_DURATION,
     )

@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from flask import Flask, Response, current_app, send_file
+from flask_caching import Cache
 
 from .config import load_config
 from .logger import get_logger
@@ -12,6 +13,9 @@ from .logger import get_logger
 logger = get_logger(__name__)
 
 STATIC_DIRECTORY = Path(__file__).parent / "static"
+
+DEFAULT_CACHE_DURATION = 60 * 60 * 24  # 1 day in seconds
+cache = Cache(config={"DEBUG": True, "CACHE_TYPE": "SimpleCache", "CACHE_DEFAULT_TIMEOUT": DEFAULT_CACHE_DURATION})
 
 
 class FlaskAceReStreamer(Flask):
