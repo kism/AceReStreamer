@@ -248,19 +248,54 @@ function loadPlayStream(streamID) {
     .then((streamInfo) => {
       loadStreamUrl(streamID, streamInfo.title);
 
-      // Wait a bit for the stream to load, then play
-      setTimeout(() => {
-        const video = document.getElementById("video");
-        video.play().catch((error) => {
-          console.error("Error playing video:", error);
-          setOnPageErrorMessage("Error playing video");
-        });
-      }, 1000);
+      // Try to play with retry logic
+      attemptPlayWithRetry();
     })
     .catch((error) => {
       console.error("Failed to get stream info:", error);
       loadStreamUrl(streamID, streamID);
+      attemptPlayWithRetry();
     });
+}
+
+function attemptPlayWithRetry(maxAttempts = 3, currentAttempt = 1) {
+  const video = document.getElementById("video");
+
+  setTimeout(() => {
+    video
+      .play()
+      .then(() => {
+        console.log(`Play attempt ${currentAttempt} initiated`);
+
+        // Check if video actually started playing after a brief delay
+        setTimeout(() => {
+          if (video.paused || video.ended || video.currentTime === 0) {
+            console.log(`Play attempt ${currentAttempt} failed - video not playing`);
+
+            if (currentAttempt < maxAttempts) {
+              console.log(`Retrying... (${currentAttempt + 1}/${maxAttempts})`);
+              attemptPlayWithRetry(maxAttempts, currentAttempt + 1);
+            } else {
+              console.error("All play attempts failed");
+              setOnPageErrorMessage("Failed to start video playback after multiple attempts");
+            }
+          } else {
+            console.log(`Video successfully started playing on attempt ${currentAttempt}`);
+          }
+        }, 500); // Check after 500ms
+      })
+      .catch((error) => {
+        console.error(`Play attempt ${currentAttempt} error:`, error);
+
+        if (currentAttempt < maxAttempts) {
+          console.log(`Retrying after error... (${currentAttempt + 1}/${maxAttempts})`);
+          attemptPlayWithRetry(maxAttempts, currentAttempt + 1);
+        } else {
+          console.error("All play attempts failed with errors");
+          setOnPageErrorMessage("Error playing video after multiple attempts");
+        }
+      });
+  }, 1000 * currentAttempt); // Increase delay with each attempt
 }
 
 function loadPlayStreamFromHash() {
