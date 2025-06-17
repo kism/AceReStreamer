@@ -182,7 +182,7 @@ function loadStream() {
 
   const streamStatus = document.getElementById("stream-status");
   setStatusClass(streamStatus, "neutral");
-  streamStatus.innerHTML = "Stream loaded.";
+  streamStatus.innerHTML = "Stream loaded...";
 
   if (Hls.isSupported()) {
     const hls = new Hls();

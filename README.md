@@ -62,18 +62,14 @@ uv sync --no-group test --no-group type --no-group lint
 - api reference
 - pytest
 - vitest?
-- cache the sources
 - iptv api
   - more on the iptv guide
 - chromecast / airplay support
 - actually fetch from sites in a thread
 - pools api
-- reload player on failure a couple of times
+- ~~reload player on failure a couple of times~~
 - ace_pool more verbose api
 - ace_pool on info on /stream
-- resize video player on page load, maybe mobile only
-- api playground
-- ~~caching for pages~~
 
 ### Apps that don't work
 
@@ -106,3 +102,8 @@ see iptv.html.j2
 - ~~investigate .copy()~~
 - ~~login page~~
 - ~~document iptv clients~~
+- ~~resize video player on page load, maybe mobile only~~
+- ~~api playground~~
+- ~~caching for pages~~
+- ~~biome~~
+- ~~cache the sources~~
