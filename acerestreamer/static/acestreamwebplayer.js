@@ -1,3 +1,4 @@
+// region API calls
 function getStream(streamId) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 1000); // 1 second timeout:
@@ -26,20 +27,6 @@ function getStream(streamId) {
       }
       throw error; // Re-throw to allow caller to handle
     });
-}
-
-function flashBackgroundColor(element, state, duration = 200) {
-  let backgroundClass = "status-neutral-background";
-  if (state === "good") {
-    backgroundClass = "status-good-background";
-  } else if (state === "bad") {
-    backgroundClass = "status-bad-background";
-  }
-
-  element.classList.add(backgroundClass);
-  setTimeout(() => {
-    element.classList.remove(backgroundClass);
-  }, duration);
 }
 
 function getStreams() {
@@ -135,6 +122,22 @@ function getStreams() {
     });
 }
 
+// region Status
+
+function flashBackgroundColor(element, state, duration = 200) {
+  let backgroundClass = "status-neutral-background";
+  if (state === "good") {
+    backgroundClass = "status-good-background";
+  } else if (state === "bad") {
+    backgroundClass = "status-bad-background";
+  }
+
+  element.classList.add(backgroundClass);
+  setTimeout(() => {
+    element.classList.remove(backgroundClass);
+  }, duration);
+}
+
 function setStatusClass(element, status) {
   // Remove all status classes from the element
   const statusClasses = ["status-good", "status-neutral", "status-bad"];
@@ -159,6 +162,17 @@ function setOnPageErrorMessage(message) {
   flashBackgroundColor(streamStatus, "bad", 500); // Flash the background color to indicate an error
 }
 
+function checkIfPlaying() {
+  const video = document.getElementById("video");
+  if (!video.paused && !video.ended && video.currentTime > 0 && video.readyState > 2) {
+    const streamStatus = document.getElementById("stream-status");
+    streamStatus.innerHTML = "Playing"; // Hide the status element if the video is playing
+    setStatusClass(streamStatus, "good");
+  }
+}
+
+// region Stream handling
+
 function loadStream() {
   const video = document.getElementById("video");
   const videoSrc = `/hls/${window.location.hash.substring(1)}`;
@@ -181,6 +195,7 @@ function loadStream() {
 
       if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
         errorMessage = "Network error: Ace doen't have the stream segment";
+        attemptPlayWithRetry();
       } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
         errorMessage = "Media error: Stream not ready";
       } else if (data.type === Hls.ErrorTypes.MUX_ERROR) {
@@ -217,14 +232,35 @@ function loadStreamUrl(streamId, streamName) {
   loadStream();
 }
 
-function checkIfPlaying() {
-  const video = document.getElementById("video");
-  if (!video.paused && !video.ended && video.currentTime > 0 && video.readyState > 2) {
-    const streamStatus = document.getElementById("stream-status");
-    streamStatus.innerHTML = "Playing"; // Hide the status element if the video is playing
-    setStatusClass(streamStatus, "good");
+function loadPlayStream(streamID) {
+  getStream(streamID)
+    .then((streamInfo) => {
+      loadStreamUrl(streamID, streamInfo.title);
+
+      // Try to play with retry logic
+      attemptPlayWithRetry();
+    })
+    .catch((error) => {
+      console.error("Failed to get stream info:", error);
+      loadStreamUrl(streamID, streamID);
+      attemptPlayWithRetry();
+    });
+}
+
+function loadPlayStreamFromHash() {
+  const streamId = window.location.hash.substring(1);
+  if (streamId) {
+    console.log(`Loading stream from hash: ${streamId}`);
+    loadPlayStream(streamId);
+  } else {
+    console.error("No stream ID loaded...");
+    setOnPageErrorMessage("No stream ID loaded...");
   }
 }
+
+// endregion
+
+// region Video Player
 
 function togglePlayerSize() {
   const video = document.getElementById("video");
@@ -243,21 +279,6 @@ function togglePlayerSize() {
   }
 }
 
-function loadPlayStream(streamID) {
-  getStream(streamID)
-    .then((streamInfo) => {
-      loadStreamUrl(streamID, streamInfo.title);
-
-      // Try to play with retry logic
-      attemptPlayWithRetry();
-    })
-    .catch((error) => {
-      console.error("Failed to get stream info:", error);
-      loadStreamUrl(streamID, streamID);
-      attemptPlayWithRetry();
-    });
-}
-
 function attemptPlayWithRetry(maxAttempts = 3, currentAttempt = 1) {
   const video = document.getElementById("video");
 
@@ -271,7 +292,6 @@ function attemptPlayWithRetry(maxAttempts = 3, currentAttempt = 1) {
         setTimeout(() => {
           if (video.paused || video.ended || video.currentTime === 0) {
             console.log(`Play attempt ${currentAttempt} failed - video not playing`);
-
             if (currentAttempt < maxAttempts) {
               console.log(`Retrying... (${currentAttempt + 1}/${maxAttempts})`);
               attemptPlayWithRetry(maxAttempts, currentAttempt + 1);
@@ -298,18 +318,7 @@ function attemptPlayWithRetry(maxAttempts = 3, currentAttempt = 1) {
   }, 1000 * currentAttempt); // Increase delay with each attempt
 }
 
-function loadPlayStreamFromHash() {
-  const streamId = window.location.hash.substring(1);
-  if (streamId) {
-    console.log(`Loading stream from hash: ${streamId}`);
-    loadPlayStream(streamId);
-  } else {
-    console.error("No stream loaded.");
-    setOnPageErrorMessage("No stream loaded.");
-  }
-}
-
-// Wrap DOM-dependent code in DOMContentLoaded event
+// region DOMContentLoaded
 document.addEventListener("DOMContentLoaded", function () {
   const streamStatus = document.getElementById("stream-status");
   setStatusClass(streamStatus, "neutral");
