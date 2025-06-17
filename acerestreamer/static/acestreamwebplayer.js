@@ -474,6 +474,16 @@ document.addEventListener("DOMContentLoaded", () => {
   populateStreamTable();
   setInterval(populateAcePoolTable, 95001);
 
+  // Check if Hls is even defined
+  if (typeof Hls === "undefined") {
+    console.error("Hls.js is not defined. Check if loaded");
+    const playerStatus = document.getElementById("player-status");
+    setStatusClass(playerStatus, "bad");
+    playerStatus.innerHTML = "Hls.js is not defined. Whoever set this up didn't run npm install.";
+    setOnPageStreamErrorMessage("Probably working if you use the direct link.");
+    return;
+  }
+
   // Check the page hash for a stream ID, load it if present
   const streamId = window.location.hash.substring(1);
   if (streamId) {
