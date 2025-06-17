@@ -271,6 +271,7 @@ a:focus,
 .link:hover,
 .link:focus {
   text-decoration: underline;
+  cursor: pointer;
 }
 
 a:visited {

@@ -38,7 +38,6 @@ function populateApiEndpointLinks() {
         const apiEndpoint = pathCell.textContent.trim();
         apiInput.value = apiEndpoint;
       });
-      pathCell.style.cursor = "pointer"; // Change cursor to pointer for better UX
       pathCell.classList.add("link");
     }
   }

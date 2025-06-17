@@ -170,6 +170,8 @@ function loadStream() {
         errorMessage = "Media error: Stream not ready";
       } else if (data.type === Hls.ErrorTypes.MUX_ERROR) {
         errorMessage = "Stream parsing error";
+      } else if (data.details) {
+        errorMessage = `HLS error: ${data.details}`;
       }
       setOnPageStreamErrorMessage(errorMessage);
     });
@@ -277,11 +279,12 @@ function attemptPlayWithRetry(maxAttempts = 3, currentAttempt = 1) {
       .play()
       .then(() => {
         console.log(`Play attempt ${currentAttempt} initiated`);
+        setStatusClass(playerStatus, "neutral");
+        playerStatus.innerHTML = `Attempting to play... (${currentAttempt}/${maxAttempts})`;
 
         // Check if video actually started playing after a brief delay
         setTimeout(() => {
           if (video.paused || video.ended || video.currentTime === 0) {
-            playerStatus.innerHTML = `Play attempt ${currentAttempt} failed - video not playing`;
             setStatusClass(playerStatus, "bad");
 
             console.log(`Play attempt ${currentAttempt} failed - video not playing`);
@@ -296,6 +299,7 @@ function attemptPlayWithRetry(maxAttempts = 3, currentAttempt = 1) {
             playerStatus.innerHTML = "Playing";
             setStatusClass(playerStatus, "good");
             console.log(`Video successfully started playing on attempt ${currentAttempt}`);
+            populateAcePoolTable();
           }
         }, 500); // Check after 500ms
       })
@@ -340,7 +344,6 @@ function populateAcePoolTable() {
 
       let n = 1;
       for (const instance of acePool) {
-        console.log(`Instance: ${JSON.stringify(instance)}`);
         const tr = document.createElement("tr");
 
         // Instance number cell
@@ -469,6 +472,7 @@ document.addEventListener("DOMContentLoaded", () => {
   populateAcePoolTable();
   setInterval(populateAcePoolTable, 30000);
   populateStreamTable();
+  setInterval(populateAcePoolTable, 95001);
 
   // Check the page hash for a stream ID, load it if present
   const streamId = window.location.hash.substring(1);

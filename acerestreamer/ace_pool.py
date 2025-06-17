@@ -1,11 +1,12 @@
 """AceStream pool management module."""
 
+import contextlib
 import threading
 import time
 from datetime import datetime, timedelta
 
 import requests
-from pydantic import BaseModel, ConfigDict, field_serializer
+from pydantic import BaseModel, field_serializer
 
 from .logger import get_logger
 
@@ -88,22 +89,20 @@ class AcePoolEntry(BaseModel):
             refresh_interval = 5
             url = f"{self.ace_url}/ace/manifest.m3u8?content_id={self.ace_id}"
             while True:
-                if self.check_locked_in(): # If we are locked in, we keep the stream alive
-                    logger.debug("Keeping alive: %s", url)
-                    resp = requests.get(url, timeout=ACESTREAM_API_TIMEOUT)
-                    logger.debug("Keep alive response: %s", resp.status_code)
+                if self.check_locked_in():  # If we are locked in, we keep the stream alive
+                    with contextlib.suppress(requests.RequestException):
+                        resp = requests.get(url, timeout=ACESTREAM_API_TIMEOUT * 2)
+                        logger.trace("Keep alive response: %s", resp.status_code)
                 time.sleep(refresh_interval)
 
         if not self._keep_alive_active:
             self._keep_alive_active = True
             threading.Thread(target=keep_alive, daemon=True).start()
-            logger.info("Started keep alive thread for %s with ace_id %s", self.ace_url, self.ace_id)
+            logger.debug("Started keep alive thread for %s with ace_id %s", self.ace_url, self.ace_id)
 
 
 class AcePoolEntryForAPI(AcePoolEntry):
     """Nice model with some calculated fields for the API."""
-
-    model_config = ConfigDict(ser_json_timedelta="iso8601")
 
     locked_in: bool = False
     time_until_unlock: timedelta = timedelta(seconds=0)
