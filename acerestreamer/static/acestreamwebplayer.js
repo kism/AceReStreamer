@@ -40,13 +40,12 @@ function getStreams() {
     .then((response) => {
       if (response.ok) {
         return response.json();
-      } else {
-        const streamStatus = document.getElementById("stream-status");
-        setStatusClass(streamStatus, "bad");
-        streamStatus.innerHTML = `API FAILURE ${response.status}`;
-
-        throw new Error(`Error fetching data. Status code: ${response.status}`);
       }
+      const streamStatus = document.getElementById("stream-status");
+      setStatusClass(streamStatus, "bad");
+      streamStatus.innerHTML = `API FAILURE ${response.status}`;
+
+      throw new Error(`Error fetching data. Status code: ${response.status}`);
     })
     .then((data) => {
       const table = document.getElementById("stream-table");
@@ -115,7 +114,7 @@ function getStreams() {
         console.error("Fetch request timed out");
         const streamStatus = document.getElementById("stream-status");
         setStatusClass(streamStatus, "bad");
-        streamStatus.innerHTML = `API FAILURE: Fetch Timeout`;
+        streamStatus.innerHTML = "API FAILURE: Fetch Timeout";
       } else {
         console.error(`Error: ${error.message}`);
       }
@@ -141,9 +140,9 @@ function flashBackgroundColor(element, state, duration = 200) {
 function setStatusClass(element, status) {
   // Remove all status classes from the element
   const statusClasses = ["status-good", "status-neutral", "status-bad"];
-  statusClasses.forEach((cls) => {
+  for (const cls of statusClasses) {
     element.classList.remove(cls);
-  });
+  }
   // Add the appropriate status class based on the status parameter
   if (status === "good") {
     element.classList.add("status-good");
@@ -183,13 +182,13 @@ function loadStream() {
 
   const streamStatus = document.getElementById("stream-status");
   setStatusClass(streamStatus, "neutral");
-  streamStatus.innerHTML = `Stream loaded.`;
+  streamStatus.innerHTML = "Stream loaded.";
 
   if (Hls.isSupported()) {
-    var hls = new Hls();
+    const hls = new Hls();
 
     // Add error event listener
-    hls.on(Hls.Events.ERROR, function (event, data) {
+    hls.on(Hls.Events.ERROR, (_event, data) => {
       console.error("HLS error:", data);
       let errorMessage = "Stream loading failed";
 
@@ -205,7 +204,7 @@ function loadStream() {
     });
 
     // Wait for HLS to be ready before allowing play
-    hls.on(Hls.Events.MANIFEST_PARSED, function () {
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
       console.log("HLS manifest parsed, stream ready to play");
     });
 
@@ -215,7 +214,7 @@ function loadStream() {
     video.src = videoSrc; // For Safari
 
     // Add error event listener for Safari
-    video.addEventListener("error", function (e) {
+    video.addEventListener("error", (e) => {
       console.error("Video error:", e);
       setOnPageErrorMessage("Stream loading failed");
     });
@@ -330,7 +329,7 @@ function attemptPlayWithRetry(maxAttempts = 3, currentAttempt = 1) {
 }
 
 // region DOMContentLoaded
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
   resizePlayerMobile();
 
   // Init stream status
@@ -342,7 +341,7 @@ document.addEventListener("DOMContentLoaded", function () {
   getStreams();
 
   // Check the page hash for a stream ID, load it if present
-  let streamId = window.location.hash.substring(1);
+  const streamId = window.location.hash.substring(1);
   if (streamId) {
     console.log(`Loading stream on page load: ${streamId}`);
     getStream(streamId)
