@@ -120,6 +120,7 @@ def setup_logger(
         # Configure modules that are external and have their own loggers
         logging.getLogger("waitress").setLevel(logging.INFO)  # Prod web server, info has useful info.
         logging.getLogger("werkzeug").setLevel(logging.DEBUG)  # Only will be used in dev, debug logs incoming requests.
+        logging.getLogger("urllib3").setLevel(logging.WARNING)  # Suppress urllib3 warnings, we don't care about them.
 
         logger.debug("Logger configuration set!")
 

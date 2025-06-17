@@ -86,17 +86,18 @@ class AcePoolEntry(BaseModel):
 
         def keep_alive() -> None:
             refresh_interval = 5
-            url = f"{self.ace_url}/hls/{self.ace_id}"
+            url = f"{self.ace_url}/ace/manifest.m3u8?content_id={self.ace_id}"
             while True:
-                if self.check_locked_in():
-                    logger.debug("Keeping alive")
-                    requests.get(url, timeout=ACESTREAM_API_TIMEOUT)
+                if self.check_locked_in(): # If we are locked in, we keep the stream alive
+                    logger.debug("Keeping alive: %s", url)
+                    resp = requests.get(url, timeout=ACESTREAM_API_TIMEOUT)
+                    logger.debug("Keep alive response: %s", resp.status_code)
                 time.sleep(refresh_interval)
 
         if not self._keep_alive_active:
             self._keep_alive_active = True
             threading.Thread(target=keep_alive, daemon=True).start()
-            logger.debug("Started keep alive thread for %s with ace_id %s", self.ace_url, self.ace_id)
+            logger.info("Started keep alive thread for %s with ace_id %s", self.ace_url, self.ace_id)
 
 
 class AcePoolEntryForAPI(AcePoolEntry):
