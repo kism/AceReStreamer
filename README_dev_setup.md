@@ -2,7 +2,17 @@
 
 ## Checking
 
+### Python
+
 Run `ruff check .` or get the vscode ruff extension, the rules are defined in pyproject.toml.
+
+### JavaScript
+
+```bash
+npx @biomejs/biome format --write .
+npx @biomejs/biome lint .
+npx @biomejs/biome check --fix .
+```
 
 ## Type Checking
 

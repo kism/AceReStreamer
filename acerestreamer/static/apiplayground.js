@@ -28,7 +28,7 @@ function populateApiEndpointLinks() {
     console.warn("No API endpoints found in the table.");
     return;
   }
-  apiEndpoints.forEach((row) => {
+  for (const row of apiEndpoints) {
     const pathCell = row.querySelector("td:nth-child(1)");
     if (!pathCell) {
       console.warn("No path cell found in the row:", row);
@@ -41,15 +41,15 @@ function populateApiEndpointLinks() {
       pathCell.style.cursor = "pointer"; // Change cursor to pointer for better UX
       pathCell.classList.add("link");
     }
-  });
+  }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
   const apiInput = document.getElementById("api-input");
   const apiSubmit = document.getElementById("do-api-btn");
   const apiOutput = document.getElementById("api-output");
 
-  apiSubmit.addEventListener("click", function () {
+  apiSubmit.addEventListener("click", () => {
     const apiEndpoint = apiInput.value.trim();
     if (apiEndpoint) {
       doApiCall(apiEndpoint).then((response) => {

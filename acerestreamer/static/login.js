@@ -10,7 +10,7 @@ function printFailure(message) {
 }
 
 function hideLoginForm() {
-  let loginForm = document.getElementById("login-form");
+  const loginForm = document.getElementById("login-form");
   loginForm.style.display = "none";
 }
 
@@ -19,15 +19,15 @@ function checkAuthentication() {
     method: "GET",
   }).then((response) => {
     if (response.ok) {
-      printSuccess(`Already authenticated!`);
+      printSuccess("Already authenticated!");
       hideLoginForm();
     } else {
-      printFailure(`Not authenticated`);
+      printFailure("Not authenticated");
     }
   });
 }
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("login-form").onsubmit = async function (event) {
     event.preventDefault(); // Prevent the default form submission
 
@@ -43,14 +43,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Check if the request was successful
       if (response.ok) {
-        printSuccess(`Authenticated!`);
+        printSuccess("Authenticated!");
         hideLoginForm();
       } else {
-        printFailure(`Authentication Failure`);
+        printFailure("Authentication Failure");
       }
     } catch (error) {
       // Handle errors (e.g., display an error message)
-      printFailure("Form submission failed: " + error.message);
+      printFailure(`Form submission failed: ${error.message}`);
     }
   };
   checkAuthentication();
