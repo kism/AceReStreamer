@@ -267,7 +267,9 @@ a:link {
 }
 
 a:hover,
-a:focus {
+a:focus,
+.link:hover,
+.link:focus {
   text-decoration: underline;
 }
 
