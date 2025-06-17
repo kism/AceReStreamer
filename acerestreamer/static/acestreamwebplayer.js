@@ -9,7 +9,6 @@ function getStream(streamId) {
     signal: controller.signal,
   })
     .then((response) => {
-      // Check if the request was successful (status code 200)
       if (response.ok) {
         return response.json();
       }
@@ -20,11 +19,11 @@ function getStream(streamId) {
     .catch((error) => {
       clearTimeout(timeoutId);
       if (error.name === "AbortError") {
-        console.error("Fetch request timed out");
+        console.error("getStream Fetch request timed out");
       } else {
-        console.error(`Error: ${error.message}`);
+        console.error(`getStream Error: ${error.message}`);
       }
-      throw error; // Re-throw to allow caller to handle
+      throw error;
     });
 }
 
@@ -52,13 +51,14 @@ function getStreams() {
     .catch((error) => {
       clearTimeout(timeoutId); //Stop the timeout since we only care about the GET timing out
       if (error.name === "AbortError") {
-        console.error("Fetch request timed out");
+        console.error("getStreams Fetch request timed out");
         const streamStatus = document.getElementById("stream-status");
         setStatusClass(streamStatus, "bad");
         streamStatus.innerHTML = "Stream list API FAILURE: Fetch Timeout";
       } else {
-        console.error(`Error: ${error.message}`);
+        console.error(`getStreams Error: ${error.message}`);
       }
+      throw error;
     });
 }
 
@@ -80,10 +80,11 @@ function getAcePool() {
     .catch((error) => {
       clearTimeout(timeoutId); // Stop the timeout since we only care about the GET timing out
       if (error.name === "AbortError") {
-        console.error("Fetch request timed out");
+        console.error("getAcePool Fetch request timed out");
       } else {
-        console.error(`Error: ${error.message}`);
+        console.error(`getAcePool Error: ${error.message}`);
       }
+      throw error;
     });
 }
 
@@ -119,7 +120,7 @@ function setStatusClass(element, status) {
   }
 }
 
-function setOnPageErrorMessage(message) {
+function setOnPageStreamErrorMessage(message) {
   const streamStatus = document.getElementById("stream-status");
   streamStatus.innerHTML = message;
   setStatusClass(streamStatus, "bad");
@@ -129,10 +130,17 @@ function setOnPageErrorMessage(message) {
 
 function checkIfPlaying() {
   const video = document.getElementById("video");
+  const playerStatus = document.getElementById("player-status");
+
   if (!video.paused && !video.ended && video.currentTime > 0 && video.readyState > 2) {
+    playerStatus.innerHTML = "Playing";
+    setStatusClass(playerStatus, "good");
     const streamStatus = document.getElementById("stream-status");
-    streamStatus.innerHTML = "Playing";
     setStatusClass(streamStatus, "good");
+    streamStatus.innerHTML = "Healthy";
+  } else {
+    playerStatus.innerHTML = "Not playing";
+    setStatusClass(playerStatus, "neutral");
   }
 }
 
@@ -148,7 +156,7 @@ function loadStream() {
 
   const streamStatus = document.getElementById("stream-status");
   setStatusClass(streamStatus, "neutral");
-  streamStatus.innerHTML = "Stream loaded...";
+  streamStatus.innerHTML = "Stream loaded";
 
   if (Hls.isSupported()) {
     const hls = new Hls();
@@ -166,12 +174,14 @@ function loadStream() {
       } else if (data.type === Hls.ErrorTypes.MUX_ERROR) {
         errorMessage = "Stream parsing error";
       }
-      setOnPageErrorMessage(errorMessage);
+      setOnPageStreamErrorMessage(errorMessage);
     });
 
     // Wait for HLS to be ready before allowing play
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
-      console.log("HLS manifest parsed, stream ready to play");
+      const streamStatus = document.getElementById("stream-status");
+      streamStatus.innerHTML = "Stream ready";
+      setStatusClass(streamStatus, "good");
     });
 
     hls.loadSource(videoSrc);
@@ -182,11 +192,11 @@ function loadStream() {
     // Add error event listener for Safari
     video.addEventListener("error", (e) => {
       console.error("Video error:", e);
-      setOnPageErrorMessage("Stream loading failed");
+      setOnPageStreamErrorMessage("Stream loading failed");
     });
   } else {
     console.error("This browser does not support HLS playbook.");
-    setOnPageErrorMessage("This browser does not support HLS playbook.");
+    setOnPageStreamErrorMessage("This browser does not support HLS playbook.");
     return;
   }
 }
@@ -219,7 +229,7 @@ function loadPlayStreamFromHash() {
     loadPlayStream(streamId);
   } else {
     console.error("No stream ID loaded...");
-    setOnPageErrorMessage("No stream ID loaded...");
+    setOnPageStreamErrorMessage("No stream ID loaded...");
   }
 }
 
@@ -257,6 +267,7 @@ function resizePlayerMobile() {
 
 function attemptPlayWithRetry(maxAttempts = 3, currentAttempt = 1) {
   const video = document.getElementById("video");
+  const playerStatus = document.getElementById("player-status");
 
   setTimeout(() => {
     video
@@ -267,15 +278,20 @@ function attemptPlayWithRetry(maxAttempts = 3, currentAttempt = 1) {
         // Check if video actually started playing after a brief delay
         setTimeout(() => {
           if (video.paused || video.ended || video.currentTime === 0) {
+            playerStatus.innerHTML = `Play attempt ${currentAttempt} failed - video not playing`;
+            setStatusClass(playerStatus, "bad");
+
             console.log(`Play attempt ${currentAttempt} failed - video not playing`);
             if (currentAttempt < maxAttempts) {
               console.log(`Retrying... (${currentAttempt + 1}/${maxAttempts})`);
               attemptPlayWithRetry(maxAttempts, currentAttempt + 1);
             } else {
               console.error("All play attempts failed");
-              setOnPageErrorMessage("Failed to start video playback after multiple attempts");
+              setOnPageStreamErrorMessage("Failed to start video playback after multiple attempts");
             }
           } else {
+            playerStatus.innerHTML = "Playing";
+            setStatusClass(playerStatus, "good");
             console.log(`Video successfully started playing on attempt ${currentAttempt}`);
           }
         }, 500); // Check after 500ms
@@ -288,7 +304,7 @@ function attemptPlayWithRetry(maxAttempts = 3, currentAttempt = 1) {
           attemptPlayWithRetry(maxAttempts, currentAttempt + 1);
         } else {
           console.error("All play attempts failed with errors");
-          setOnPageErrorMessage("Error playing video after multiple attempts");
+          setOnPageStreamErrorMessage("Error playing video after multiple attempts");
         }
       });
   }, 1000 * currentAttempt); // Increase delay with each attempt
@@ -297,140 +313,144 @@ function attemptPlayWithRetry(maxAttempts = 3, currentAttempt = 1) {
 // region Ace Pool Table
 
 function populateAcePoolTable() {
-  getAcePool().then((acePool) => {
-    const table = document.getElementById("ace-info");
-    table.innerHTML = ""; // Clear the table before adding new data
-    const tr_heading = document.createElement("tr");
-    const th_instance_number = document.createElement("th");
-    th_instance_number.textContent = "#";
-    tr_heading.appendChild(th_instance_number);
-    flashBackgroundColor(th_instance_number);
+  getAcePool()
+    .then((acePool) => {
+      const table = document.getElementById("ace-info");
+      table.innerHTML = ""; // Clear the table before adding new data
+      const tr_heading = document.createElement("tr");
+      const th_instance_number = document.createElement("th");
+      th_instance_number.textContent = "#";
+      tr_heading.appendChild(th_instance_number);
+      flashBackgroundColor(th_instance_number);
 
-    const th_status = document.createElement("th");
-    th_status.textContent = "Status";
-    tr_heading.appendChild(th_status);
-    flashBackgroundColor(th_status);
+      const th_status = document.createElement("th");
+      th_status.textContent = "Status";
+      tr_heading.appendChild(th_status);
+      flashBackgroundColor(th_status);
 
-    const th_playing = document.createElement("th");
-    th_playing.textContent = "Currently Playing";
-    tr_heading.appendChild(th_playing);
-    flashBackgroundColor(th_playing);
+      const th_playing = document.createElement("th");
+      th_playing.textContent = "Currently Playing";
+      tr_heading.appendChild(th_playing);
+      flashBackgroundColor(th_playing);
 
-    table.appendChild(tr_heading);
+      table.appendChild(tr_heading);
 
-    let n = 1;
-    for (const instance of acePool) {
-      console.log(`Instance: ${JSON.stringify(instance)}`);
-      const tr = document.createElement("tr");
+      let n = 1;
+      for (const instance of acePool) {
+        console.log(`Instance: ${JSON.stringify(instance)}`);
+        const tr = document.createElement("tr");
 
-      // Instance number cell
-      const td_instance_number = document.createElement("td");
-      td_instance_number.textContent = `${n}`;
-      n++;
-      tr.appendChild(td_instance_number);
+        // Instance number cell
+        const td_instance_number = document.createElement("td");
+        td_instance_number.textContent = `${n}`;
+        n++;
+        tr.appendChild(td_instance_number);
 
-      // Status cell (Available/Locked In)
-      const td_status = document.createElement("td");
-      let lockedIn = "Available";
-      if (instance.locked_in === true) {
-        // Format the time until unlock
-        const totalSeconds = instance.time_until_unlock;
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
-        timeUntilUnlockFormatted = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+        // Status cell (Available/Locked In)
+        const td_status = document.createElement("td");
+        let lockedIn = "Available";
+        if (instance.locked_in === true) {
+          // Format the time until unlock
+          const totalSeconds = instance.time_until_unlock;
+          const minutes = Math.floor(totalSeconds / 60);
+          const seconds = totalSeconds % 60;
+          timeUntilUnlockFormatted = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 
-        lockedIn = `🔒 Reserved for ${timeUntilUnlockFormatted}`;
+          lockedIn = `🔒 Reserved for ${timeUntilUnlockFormatted}`;
+        }
+        td_status.textContent = lockedIn;
+        tr.appendChild(td_status);
+
+        // Now Playing cell
+        const td_playing = document.createElement("td");
+        if (instance.ace_id !== "") {
+          getStream(instance.ace_id)
+            .then((streamInfo) => {
+              td_playing.textContent = streamInfo.title || "Unknown Stream";
+              td_playing.addEventListener("click", () => {
+                loadPlayStream(instance.ace_id);
+              });
+              td_playing.classList.add("link");
+            })
+            .catch((error) => {});
+        } else {
+          td_playing.textContent = "-";
+        }
+
+        tr.appendChild(td_playing);
+
+        table.appendChild(tr);
       }
-      td_status.textContent = lockedIn;
-      tr.appendChild(td_status);
-
-      // Now Playing cell
-      const td_playing = document.createElement("td");
-      if (instance.ace_id !== "") {
-        getStream(instance.ace_id)
-          .then((streamInfo) => {
-            td_playing.textContent = streamInfo.title || "Unknown Stream";
-            td_playing.addEventListener("click", () => {
-              loadPlayStream(instance.ace_id);
-            });
-            td_playing.classList.add("link");
-          })
-          .catch((error) => {});
-      } else {
-        td_playing.textContent = "-";
-      }
-
-      tr.appendChild(td_playing);
-
-      table.appendChild(tr);
-    }
-  });
+    })
+    .catch((error) => {});
 }
 
 // region Stream Table
 
 function populateStreamTable() {
-  getStreams().then((streams) => {
-    const table = document.getElementById("stream-table");
-    table.innerHTML = ""; // Clear the table before adding new data
-    const tr_heading = document.createElement("tr");
+  getStreams()
+    .then((streams) => {
+      const table = document.getElementById("stream-table");
+      table.innerHTML = ""; // Clear the table before adding new data
+      const tr_heading = document.createElement("tr");
 
-    const th_quality = document.createElement("th");
-    th_quality.textContent = "Quality";
-    tr_heading.appendChild(th_quality);
-    flashBackgroundColor(th_quality);
+      const th_quality = document.createElement("th");
+      th_quality.textContent = "Quality";
+      tr_heading.appendChild(th_quality);
+      flashBackgroundColor(th_quality);
 
-    const th_link = document.createElement("th");
-    th_link.textContent = "Stream";
-    tr_heading.appendChild(th_link);
-    flashBackgroundColor(th_link);
+      const th_link = document.createElement("th");
+      th_link.textContent = "Stream";
+      tr_heading.appendChild(th_link);
+      flashBackgroundColor(th_link);
 
-    const th_source = document.createElement("th");
-    th_source.textContent = "Source";
-    flashBackgroundColor(th_source);
+      const th_source = document.createElement("th");
+      th_source.textContent = "Source";
+      flashBackgroundColor(th_source);
 
-    tr_heading.appendChild(th_source);
-    table.appendChild(tr_heading);
+      tr_heading.appendChild(th_source);
+      table.appendChild(tr_heading);
 
-    // Sort the data by quality in descending order
-    streams.sort((a, b) => b.quality - a.quality);
+      // Sort the data by quality in descending order
+      streams.sort((a, b) => b.quality - a.quality);
 
-    for (const stream of streams) {
-      const tr = document.createElement("tr");
+      for (const stream of streams) {
+        const tr = document.createElement("tr");
 
-      // Quality cell
-      const td_quality = document.createElement("td");
-      td_quality.textContent = `${stream.quality}`;
-      if (stream.quality === -1) {
-        setStatusClass(td_quality, "neutral");
-        td_quality.textContent = "?";
-      } else if (stream.quality < 20) {
-        setStatusClass(td_quality, "bad");
-      } else if (stream.quality >= 20 && stream.quality <= 80) {
-        setStatusClass(td_quality, "neutral");
-      } else if (stream.quality >= 80) {
-        setStatusClass(td_quality, "good");
+        // Quality cell
+        const td_quality = document.createElement("td");
+        td_quality.textContent = `${stream.quality}`;
+        if (stream.quality === -1) {
+          setStatusClass(td_quality, "neutral");
+          td_quality.textContent = "?";
+        } else if (stream.quality < 20) {
+          setStatusClass(td_quality, "bad");
+        } else if (stream.quality >= 20 && stream.quality <= 80) {
+          setStatusClass(td_quality, "neutral");
+        } else if (stream.quality >= 80) {
+          setStatusClass(td_quality, "good");
+        }
+        td_quality.classList.add("quality-code");
+
+        // Link cell
+        td_link = document.createElement("td");
+        const a = document.createElement("a"); // Create a new anchor element
+        a.textContent = `${stream.title}`;
+        a.onclick = () => loadPlayStream(stream.ace_id);
+        td_link.appendChild(a); // Append the anchor element to the table data cell
+
+        // Source Cell
+        td_source = document.createElement("td");
+        td_source.textContent = `${stream.site_name}`;
+
+        // Append to the row
+        tr.appendChild(td_quality);
+        tr.appendChild(td_link);
+        tr.appendChild(td_source);
+        table.appendChild(tr);
       }
-      td_quality.classList.add("quality-code");
-
-      // Link cell
-      td_link = document.createElement("td");
-      const a = document.createElement("a"); // Create a new anchor element
-      a.textContent = `${stream.title}`;
-      a.onclick = () => loadPlayStream(stream.ace_id);
-      td_link.appendChild(a); // Append the anchor element to the table data cell
-
-      // Source Cell
-      td_source = document.createElement("td");
-      td_source.textContent = `${stream.site_name}`;
-
-      // Append to the row
-      tr.appendChild(td_quality);
-      tr.appendChild(td_link);
-      tr.appendChild(td_source);
-      table.appendChild(tr);
-    }
-  });
+    })
+    .catch((error) => {});
 }
 
 // region DOMContentLoaded
@@ -456,10 +476,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log(`Stream info: ${JSON.stringify(streamInfo)}`);
         loadStreamUrl(streamId, streamInfo.title);
       })
-      .catch((error) => {
-        console.error("Failed to get stream info:", error);
-        loadStreamUrl(streamId, streamId); // Fallback to streamId as title
-      });
+      .catch((error) => {});
   }
 
   // Check every second if the video is playing, to populate the status
