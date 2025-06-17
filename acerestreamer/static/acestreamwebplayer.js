@@ -135,9 +135,6 @@ function checkIfPlaying() {
   if (!video.paused && !video.ended && video.currentTime > 0 && video.readyState > 2) {
     playerStatus.innerHTML = "Playing";
     setStatusClass(playerStatus, "good");
-    const streamStatus = document.getElementById("stream-status");
-    setStatusClass(streamStatus, "good");
-    streamStatus.innerHTML = "Healthy";
   } else {
     playerStatus.innerHTML = "Not playing";
     setStatusClass(playerStatus, "neutral");
@@ -182,6 +179,12 @@ function loadStream() {
       const streamStatus = document.getElementById("stream-status");
       streamStatus.innerHTML = "Stream ready";
       setStatusClass(streamStatus, "good");
+    });
+
+    hls.on(Hls.Events.BUFFER_APPENDED, (event, data) => {
+      const streamStatus = document.getElementById("stream-status");
+      setStatusClass(streamStatus, "good");
+      streamStatus.innerHTML = "Healthy";
     });
 
     hls.loadSource(videoSrc);
