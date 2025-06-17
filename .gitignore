@@ -1,6 +1,7 @@
 # This repo
 test_site
-
+hls.min.js
+hls.min.js.map
 
 # Javascript, if we want to use eslint/scss-lintbiome for checking the html/css/javascript
 node_modules
