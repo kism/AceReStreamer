@@ -11,12 +11,11 @@ function getStream(streamId) {
     .then((response) => {
       // Check if the request was successful (status code 200)
       if (response.ok) {
-        return response.json(); // We interoperate the response as json and pass it along...
+        return response.json();
       }
     })
     .then((data) => {
-      // console.log(`Stream data: ${JSON.stringify(data)}`);
-      return data; // Return the data to the caller
+      return data;
     })
     .catch((error) => {
       clearTimeout(timeoutId);
@@ -33,7 +32,7 @@ function getStreams() {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 1000); // 1 second timeout:
 
-  fetch("/api/streams/flat", {
+  return fetch("/api/streams/flat", {
     method: "GET",
     signal: controller.signal,
   })
@@ -43,70 +42,12 @@ function getStreams() {
       }
       const streamStatus = document.getElementById("stream-status");
       setStatusClass(streamStatus, "bad");
-      streamStatus.innerHTML = `API FAILURE ${response.status}`;
+      streamStatus.innerHTML = `Stream list FAILURE ${response.status}`;
 
       throw new Error(`Error fetching data. Status code: ${response.status}`);
     })
     .then((data) => {
-      const table = document.getElementById("stream-table");
-      table.innerHTML = ""; // Clear the table before adding new data
-      const tr_heading = document.createElement("tr");
-
-      const th_quality = document.createElement("th");
-      th_quality.textContent = "Quality";
-      tr_heading.appendChild(th_quality);
-      flashBackgroundColor(th_quality);
-
-      const th_link = document.createElement("th");
-      th_link.textContent = "Stream";
-      tr_heading.appendChild(th_link);
-      flashBackgroundColor(th_link);
-
-      const th_source = document.createElement("th");
-      th_source.textContent = "Source";
-      flashBackgroundColor(th_source);
-
-      tr_heading.appendChild(th_source);
-      table.appendChild(tr_heading);
-
-      // Sort the data by quality in descending order
-      data.sort((a, b) => b.quality - a.quality);
-
-      for (const stream of data) {
-        const tr = document.createElement("tr");
-
-        // Quality cell
-        const td_quality = document.createElement("td");
-        td_quality.textContent = `${stream.quality}`;
-        if (stream.quality === -1) {
-          setStatusClass(td_quality, "neutral");
-          td_quality.textContent = "?";
-        } else if (stream.quality < 20) {
-          setStatusClass(td_quality, "bad");
-        } else if (stream.quality >= 20 && stream.quality <= 80) {
-          setStatusClass(td_quality, "neutral");
-        } else if (stream.quality >= 80) {
-          setStatusClass(td_quality, "good");
-        }
-        td_quality.classList.add("quality-code");
-
-        // Link cell
-        td_link = document.createElement("td");
-        const a = document.createElement("a"); // Create a new anchor element
-        a.textContent = `${stream.title}`;
-        a.onclick = () => loadPlayStream(stream.ace_id);
-        td_link.appendChild(a); // Append the anchor element to the table data cell
-
-        // Source Cell
-        td_source = document.createElement("td");
-        td_source.textContent = `${stream.site_name}`;
-
-        // Append to the row
-        tr.appendChild(td_quality);
-        tr.appendChild(td_link);
-        tr.appendChild(td_source);
-        table.appendChild(tr);
-      }
+      return data;
     })
     .catch((error) => {
       clearTimeout(timeoutId); //Stop the timeout since we only care about the GET timing out
@@ -114,7 +55,32 @@ function getStreams() {
         console.error("Fetch request timed out");
         const streamStatus = document.getElementById("stream-status");
         setStatusClass(streamStatus, "bad");
-        streamStatus.innerHTML = "API FAILURE: Fetch Timeout";
+        streamStatus.innerHTML = "Stream list API FAILURE: Fetch Timeout";
+      } else {
+        console.error(`Error: ${error.message}`);
+      }
+    });
+}
+
+function getAcePool() {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 1000); // 1 second timeout
+  return fetch("/api/ace_pool", {
+    method: "GET",
+    signal: controller.signal,
+  })
+    .then((response) => {
+      if (response.ok) {
+        return response.json();
+      }
+    })
+    .then((data) => {
+      return data;
+    })
+    .catch((error) => {
+      clearTimeout(timeoutId); // Stop the timeout since we only care about the GET timing out
+      if (error.name === "AbortError") {
+        console.error("Fetch request timed out");
       } else {
         console.error(`Error: ${error.message}`);
       }
@@ -328,6 +294,139 @@ function attemptPlayWithRetry(maxAttempts = 3, currentAttempt = 1) {
   }, 1000 * currentAttempt); // Increase delay with each attempt
 }
 
+// region Ace Pool Table
+
+function populateAcePoolTable() {
+  getAcePool().then((acePool) => {
+    const table = document.getElementById("ace-info");
+    table.innerHTML = ""; // Clear the table before adding new data
+    const tr_heading = document.createElement("tr");
+    const th_instance_number = document.createElement("th");
+    th_instance_number.textContent = "#";
+    tr_heading.appendChild(th_instance_number);
+    flashBackgroundColor(th_instance_number);
+
+    const th_status = document.createElement("th");
+    th_status.textContent = "Status";
+    tr_heading.appendChild(th_status);
+    flashBackgroundColor(th_status);
+
+    const th_playing = document.createElement("th");
+    th_playing.textContent = "Now Playing";
+    tr_heading.appendChild(th_playing);
+    flashBackgroundColor(th_playing);
+
+    table.appendChild(tr_heading);
+
+    let n = 1;
+    for (const instance of acePool) {
+      console.log(`Instance: ${JSON.stringify(instance)}`);
+      const tr = document.createElement("tr");
+
+      // Instance number cell
+      const td_instance_number = document.createElement("td");
+      td_instance_number.textContent = `${n}`;
+      n++;
+      tr.appendChild(td_instance_number);
+
+      // Status cell (Available/Locked In)
+      const td_status = document.createElement("td");
+      let lockedIn = "Available";
+      if (instance.locked_in === true) {
+        lockedIn = "🔒 Locked In";
+      }
+      td_status.textContent = lockedIn;
+      tr.appendChild(td_status);
+
+      // Now Playing cell
+      const td_playing = document.createElement("td");
+      if (instance.ace_id !== "") {
+        getStream(instance.ace_id)
+          .then((streamInfo) => {
+            td_playing.textContent = streamInfo.title || "Unknown Stream";
+            td_playing.addEventListener("click", () => {
+              loadPlayStream(instance.ace_id);
+            });
+            td_playing.classList.add("link");
+          })
+          .catch((error) => {});
+      } else {
+        td_playing.textContent = "<Nothing>";
+      }
+
+      tr.appendChild(td_playing);
+
+      table.appendChild(tr);
+    }
+  });
+}
+
+// region Stream Table
+
+function populateStreamTable() {
+  getStreams().then((streams) => {
+    const table = document.getElementById("stream-table");
+    table.innerHTML = ""; // Clear the table before adding new data
+    const tr_heading = document.createElement("tr");
+
+    const th_quality = document.createElement("th");
+    th_quality.textContent = "Quality";
+    tr_heading.appendChild(th_quality);
+    flashBackgroundColor(th_quality);
+
+    const th_link = document.createElement("th");
+    th_link.textContent = "Stream";
+    tr_heading.appendChild(th_link);
+    flashBackgroundColor(th_link);
+
+    const th_source = document.createElement("th");
+    th_source.textContent = "Source";
+    flashBackgroundColor(th_source);
+
+    tr_heading.appendChild(th_source);
+    table.appendChild(tr_heading);
+
+    // Sort the data by quality in descending order
+    streams.sort((a, b) => b.quality - a.quality);
+
+    for (const stream of streams) {
+      const tr = document.createElement("tr");
+
+      // Quality cell
+      const td_quality = document.createElement("td");
+      td_quality.textContent = `${stream.quality}`;
+      if (stream.quality === -1) {
+        setStatusClass(td_quality, "neutral");
+        td_quality.textContent = "?";
+      } else if (stream.quality < 20) {
+        setStatusClass(td_quality, "bad");
+      } else if (stream.quality >= 20 && stream.quality <= 80) {
+        setStatusClass(td_quality, "neutral");
+      } else if (stream.quality >= 80) {
+        setStatusClass(td_quality, "good");
+      }
+      td_quality.classList.add("quality-code");
+
+      // Link cell
+      td_link = document.createElement("td");
+      const a = document.createElement("a"); // Create a new anchor element
+      a.textContent = `${stream.title}`;
+      a.onclick = () => loadPlayStream(stream.ace_id);
+      td_link.appendChild(a); // Append the anchor element to the table data cell
+
+      // Source Cell
+      td_source = document.createElement("td");
+      td_source.textContent = `${stream.site_name}`;
+
+      // Append to the row
+      tr.appendChild(td_quality);
+      tr.appendChild(td_link);
+      tr.appendChild(td_source);
+      table.appendChild(tr);
+    }
+  });
+}
+
 // region DOMContentLoaded
 document.addEventListener("DOMContentLoaded", () => {
   resizePlayerMobile();
@@ -337,8 +436,9 @@ document.addEventListener("DOMContentLoaded", () => {
   setStatusClass(streamStatus, "neutral");
   streamStatus.innerHTML = "Ready to load a stream";
 
-  // Populate stream table
-  getStreams();
+  // Populate tables
+  populateAcePoolTable();
+  populateStreamTable();
 
   // Check the page hash for a stream ID, load it if present
   const streamId = window.location.hash.substring(1);

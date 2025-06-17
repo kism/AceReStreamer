@@ -67,7 +67,6 @@ uv sync --no-group test --no-group type --no-group lint
 - chromecast / airplay support
 - actually fetch from sites in a thread
 - pools api
-- ~~reload player on failure a couple of times~~
 - ace_pool more verbose api
 - ace_pool on info on /stream
 
@@ -107,3 +106,4 @@ see iptv.html.j2
 - ~~caching for pages~~
 - ~~biome~~
 - ~~cache the sources~~
+- ~~reload player on failure a couple of times~~

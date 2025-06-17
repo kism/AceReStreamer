@@ -15,7 +15,7 @@ logger = get_logger(__name__)
 STATIC_DIRECTORY = Path(__file__).parent / "static"
 
 DEFAULT_CACHE_DURATION = 60 * 60 * 24  # 1 day in seconds
-cache = Cache(config={"DEBUG": True, "CACHE_TYPE": "SimpleCache", "CACHE_DEFAULT_TIMEOUT": DEFAULT_CACHE_DURATION})
+cache = Cache(config={"DEBUG": False, "CACHE_TYPE": "SimpleCache", "CACHE_DEFAULT_TIMEOUT": DEFAULT_CACHE_DURATION})
 
 
 class FlaskAceReStreamer(Flask):
