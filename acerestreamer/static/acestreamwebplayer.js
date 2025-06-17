@@ -312,7 +312,7 @@ function populateAcePoolTable() {
     flashBackgroundColor(th_status);
 
     const th_playing = document.createElement("th");
-    th_playing.textContent = "Now Playing";
+    th_playing.textContent = "Currently Playing";
     tr_heading.appendChild(th_playing);
     flashBackgroundColor(th_playing);
 
@@ -333,7 +333,13 @@ function populateAcePoolTable() {
       const td_status = document.createElement("td");
       let lockedIn = "Available";
       if (instance.locked_in === true) {
-        lockedIn = "🔒 Locked In";
+        // Format the time until unlock
+        const totalSeconds = instance.time_until_unlock;
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        timeUntilUnlockFormatted = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+
+        lockedIn = `🔒 Reserved for ${timeUntilUnlockFormatted}`;
       }
       td_status.textContent = lockedIn;
       tr.appendChild(td_status);
@@ -351,7 +357,7 @@ function populateAcePoolTable() {
           })
           .catch((error) => {});
       } else {
-        td_playing.textContent = "<Nothing>";
+        td_playing.textContent = "-";
       }
 
       tr.appendChild(td_playing);
@@ -438,6 +444,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Populate tables
   populateAcePoolTable();
+  setInterval(populateAcePoolTable, 30000);
   populateStreamTable();
 
   // Check the page hash for a stream ID, load it if present

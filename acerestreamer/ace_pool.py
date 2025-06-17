@@ -3,7 +3,7 @@
 from datetime import datetime, timedelta
 
 import requests
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, field_serializer
 
 from .logger import get_logger
 
@@ -26,7 +26,6 @@ class AcePoolEntry(BaseModel):
     healthy: bool = False
     date_started: datetime = datetime(1970, 1, 1, tzinfo=OUR_TIMEZONE)
     last_used: datetime = datetime(1970, 1, 1, tzinfo=OUR_TIMEZONE)
-    locked_in: bool = False  # Only for visibility, do not use in logic
 
     def check_ace_running(self) -> None:
         """Use the AceStream API to check if the instance is running."""
@@ -51,28 +50,45 @@ class AcePoolEntry(BaseModel):
         self.update_last_used()
         self.date_started = datetime.now(tz=OUR_TIMEZONE)
 
-    def check_locked_in(self) -> bool:
-        """Check if the instance is locked in for a certain period."""
-        # If the instance has not been used for a while, it is not locked in, maximum reset time is LOCK_IN_RESET_MAX
+    def get_time_until_unlock(self) -> timedelta:
+        """Get the time until the instance is unlocked."""
         time_now = datetime.now(tz=OUR_TIMEZONE)
         time_since_last_watched: timedelta = time_now - self.last_used
         time_since_date_started: timedelta = time_now - self.date_started
-        required_time_to_unlock = min(LOCK_IN_RESET_MAX, (time_since_date_started - time_since_last_watched))
+        return min(LOCK_IN_RESET_MAX, (time_since_date_started - time_since_last_watched))
 
+    def check_locked_in(self) -> bool:
+        """Check if the instance is locked in for a certain period."""
         if self.ace_id == "":
-            self.locked_in = False
-            return self.locked_in
+            return False
+
+        # If the instance has not been used for a while, it is not locked in, maximum reset time is LOCK_IN_RESET_MAX
+        time_now = datetime.now(tz=OUR_TIMEZONE)
+        time_since_date_started: timedelta = time_now - self.date_started
+        time_since_last_watched: timedelta = time_now - self.last_used
+        required_time_to_unlock = self.get_time_until_unlock()
 
         if time_since_date_started < LOCK_IN_TIME:
-            self.locked_in = False
-            return self.locked_in
+            return False
 
-        if time_since_last_watched <= required_time_to_unlock:
-            self.locked_in = True
-        else:
-            self.locked_in = False
+        if time_since_last_watched <= required_time_to_unlock:  # noqa: SIM103 Clearer to read this way
+            return True
 
-        return self.locked_in
+        return False
+
+
+class AcePoolEntryForAPI(AcePoolEntry):
+    """Nice model with some calculated fields for the API."""
+
+    model_config = ConfigDict(ser_json_timedelta="iso8601")
+
+    locked_in: bool = False
+    time_until_unlock: timedelta = timedelta(seconds=0)
+
+    @field_serializer("time_until_unlock")
+    def serialize_timedelta(self, time_until_unlock: timedelta) -> int:
+        """Serialize the time until unlock as a timestamp."""
+        return time_until_unlock.seconds
 
 
 class AcePool:
@@ -143,3 +159,28 @@ class AcePool:
                 return instance.ace_url
 
         return ""
+
+    def get_instances_nice(self) -> list[AcePoolEntryForAPI]:
+        """Get a list of AcePoolEntryForAPI instances for the API."""
+        instances = []
+
+        for instance in self.ace_instances:
+            locked_in = instance.check_locked_in()
+            time_until_unlock = timedelta(seconds=0)
+            if locked_in:
+                time_until_unlock = instance.get_time_until_unlock()
+
+            instances.append(
+                AcePoolEntryForAPI(
+                    ace_id=instance.ace_id,
+                    ace_content_path=instance.ace_content_path,
+                    ace_url=instance.ace_url,
+                    healthy=instance.healthy,
+                    date_started=instance.date_started,
+                    last_used=instance.last_used,
+                    locked_in=locked_in,
+                    time_until_unlock=time_until_unlock,
+                )
+            )
+
+        return instances

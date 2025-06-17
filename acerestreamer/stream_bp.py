@@ -280,12 +280,7 @@ def api_ace_pool() -> Response | WerkzeugResponse:
         logger.error("Ace pool not initialized.")
         return jsonify({"error": "Ace pool not initialized"}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
-    pool_list = ace_pool.ace_instances
-
-    # Refresh each
-    for entry in pool_list:
-        entry.check_locked_in()
-
+    pool_list = ace_pool.get_instances_nice()
     pool_list_serialized = [entry.model_dump() for entry in pool_list]
 
     response = jsonify(pool_list_serialized)

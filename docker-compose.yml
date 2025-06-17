@@ -6,7 +6,7 @@ services:
     ports:
       - 6878:6878
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:6878/webui/api/service?method=get_version"]
+      test: ["CMD", "wget", "-qO", "-", "http://127.0.0.1:6878/webui/api/service?method=get_version"]
       interval: 60s
       timeout: 10s
       retries: 3
@@ -17,7 +17,7 @@ services:
     ports:
       - 6879:6878
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:6879/webui/api/service?method=get_version"]
+      test: ["CMD", "wget", "-qO", "-", "http://127.0.0.1:6878/webui/api/service?method=get_version"]
       interval: 60s
       timeout: 10s
       retries: 3
@@ -28,7 +28,7 @@ services:
     ports:
       - 6880:6878
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:6880/webui/api/service?method=get_version"]
+      test: ["CMD", "wget", "-qO", "-", "http://127.0.0.1:6878/webui/api/service?method=get_version"]
       interval: 60s
       timeout: 10s
       retries: 3
@@ -39,7 +39,7 @@ services:
     ports:
       - 6881:6878
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:6881/webui/api/service?method=get_version"]
+      test: ["CMD", "wget", "-qO", "-", "http://127.0.0.1:6878/webui/api/service?method=get_version"]
       interval: 60s
       timeout: 10s
       retries: 3
