@@ -1,7 +1,7 @@
 // region API calls
 function getStream(streamId) {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 1000); // 1 second timeout:
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
 
   // GET the hello endpoint that the flask app has
   return fetch(`/api/stream/${streamId}`, {
@@ -30,7 +30,7 @@ function getStream(streamId) {
 
 function getStreams() {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 1000); // 1 second timeout:
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
 
   return fetch("/api/streams/flat", {
     method: "GET",
@@ -64,7 +64,7 @@ function getStreams() {
 
 function getAcePool() {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 1000); // 1 second timeout
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
   return fetch("/api/ace_pool", {
     method: "GET",
     signal: controller.signal,

@@ -1,5 +1,7 @@
 """AceStream pool management module."""
 
+import threading
+import time
 from datetime import datetime, timedelta
 
 import requests
@@ -26,6 +28,7 @@ class AcePoolEntry(BaseModel):
     healthy: bool = False
     date_started: datetime = datetime(1970, 1, 1, tzinfo=OUR_TIMEZONE)
     last_used: datetime = datetime(1970, 1, 1, tzinfo=OUR_TIMEZONE)
+    _keep_alive_active: bool = False
 
     def check_ace_running(self) -> None:
         """Use the AceStream API to check if the instance is running."""
@@ -49,6 +52,8 @@ class AcePoolEntry(BaseModel):
         self.ace_content_path = content_path
         self.update_last_used()
         self.date_started = datetime.now(tz=OUR_TIMEZONE)
+        self._keep_alive_active = False  # Reset
+        self.start_keep_alive()
 
     def get_time_until_unlock(self) -> timedelta:
         """Get the time until the instance is unlocked."""
@@ -75,6 +80,23 @@ class AcePoolEntry(BaseModel):
             return True
 
         return False
+
+    def start_keep_alive(self) -> None:
+        """Ensure the AceStream stream is kept alive."""
+
+        def keep_alive() -> None:
+            refresh_interval = 5
+            url = f"{self.ace_url}/hls/{self.ace_id}"
+            while True:
+                if self.check_locked_in():
+                    logger.debug("Keeping alive")
+                    requests.get(url, timeout=ACESTREAM_API_TIMEOUT)
+                time.sleep(refresh_interval)
+
+        if not self._keep_alive_active:
+            self._keep_alive_active = True
+            threading.Thread(target=keep_alive, daemon=True).start()
+            logger.debug("Started keep alive thread for %s with ace_id %s", self.ace_url, self.ace_id)
 
 
 class AcePoolEntryForAPI(AcePoolEntry):

@@ -67,6 +67,7 @@ uv sync --no-group test --no-group type --no-group lint
 - chromecast / airplay support
 - actually fetch from sites in a thread
 - pools api
+- keep locked in streams alive
 - ace_pool more verbose api
 - ace_pool on info on /stream
 
