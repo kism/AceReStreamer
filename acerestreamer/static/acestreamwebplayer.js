@@ -166,7 +166,7 @@ function checkIfPlaying() {
   const video = document.getElementById("video");
   if (!video.paused && !video.ended && video.currentTime > 0 && video.readyState > 2) {
     const streamStatus = document.getElementById("stream-status");
-    streamStatus.innerHTML = "Playing"; // Hide the status element if the video is playing
+    streamStatus.innerHTML = "Playing";
     setStatusClass(streamStatus, "good");
   }
 }
@@ -267,15 +267,26 @@ function togglePlayerSize() {
   const playerContainer = document.getElementById("player-container");
 
   if (video.style.width === "100%") {
-    video.style.width = "640px"; // Set to original width
-    video.style.height = "360px"; // Set to original height
-    playerContainer.style.width = "640px"; // Set container width
-    playerContainer.style.height = "360px"; // Set container height
+    video.style.width = "640px";
+    video.style.height = "360px";
+    playerContainer.style.width = "640px";
+    playerContainer.style.height = "360px";
   } else {
-    video.style.width = "100%"; // Set to full width
-    video.style.height = "100%"; // Set to full height
-    playerContainer.style.width = "100%"; // Set container width
-    playerContainer.style.height = "100%"; // Set container height
+    video.style.width = "100%";
+    video.style.height = "100%";
+    playerContainer.style.width = "100%";
+    playerContainer.style.height = "100%";
+  }
+}
+
+function resizePlayerMobile() {
+  const video = document.getElementById("video");
+  const playerContainer = document.getElementById("player-container");
+  if (window.innerWidth < 768) {
+    video.style.width = "100%";
+    video.style.height = "100%";
+    playerContainer.style.width = "100%";
+    playerContainer.style.height = "100%";
   }
 }
 
@@ -320,16 +331,18 @@ function attemptPlayWithRetry(maxAttempts = 3, currentAttempt = 1) {
 
 // region DOMContentLoaded
 document.addEventListener("DOMContentLoaded", function () {
+  resizePlayerMobile();
+
+  // Init stream status
   const streamStatus = document.getElementById("stream-status");
   setStatusClass(streamStatus, "neutral");
   streamStatus.innerHTML = "Ready to load a stream";
 
+  // Populate stream table
   getStreams();
 
-  window.addEventListener("loadStream", loadStream);
-
+  // Check the page hash for a stream ID, load it if present
   let streamId = window.location.hash.substring(1);
-
   if (streamId) {
     console.log(`Loading stream on page load: ${streamId}`);
     getStream(streamId)
@@ -343,11 +356,13 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   }
 
-  setInterval(checkIfPlaying, 1000); // Check every second if the video is playing
+  // Check every second if the video is playing, to populate the status
+  setInterval(checkIfPlaying, 1000);
 
+  // Set up the load stream button
   loadStreamButton = document.getElementById("load-stream-button");
   loadStreamButton.onclick = () => {
-    const streamId = document.getElementById("stream-id-input").value; // Get the value from the input field
+    const streamId = document.getElementById("stream-id-input").value;
     if (streamId) {
       loadPlayStream(streamId);
     }
