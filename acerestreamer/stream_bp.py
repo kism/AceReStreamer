@@ -6,12 +6,13 @@ from pathlib import Path
 
 import requests
 from flask import Blueprint, Response, jsonify, redirect, render_template
+from flask_caching import CachedResponse
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from .ace_pool import AcePool
 from .authentication_bp import get_ip_from_request, is_ip_allowed
 from .authentication_helpers import assumed_auth_failure
-from .flask_helpers import get_current_app
+from .flask_helpers import DEFAULT_CACHE_DURATION, cache, get_current_app
 from .html_snippets import get_header_snippet
 from .logger import get_logger
 from .scraper import AceScraper
@@ -50,18 +51,22 @@ def home() -> Response | WerkzeugResponse:
 
 
 @bp.route("/stream")
-def webplayer_stream() -> Response | WerkzeugResponse:
+@cache.cached()
+def webplayer_stream() -> Response | WerkzeugResponse | CachedResponse:
     """Render the webpage for a stream."""
     auth_failure = assumed_auth_failure()
     if auth_failure:
         return auth_failure
 
-    return Response(
-        render_template(
-            "stream.html.j2",
-            rendered_header=get_header_snippet("Ace ReStreamer"),
+    return CachedResponse(  # type: ignore[no-untyped-call] # Missing from flask-caching
+        response=Response(
+            render_template(
+                "stream.html.j2",
+                rendered_header=get_header_snippet("Ace ReStreamer"),
+            ),
+            HTTPStatus.OK,
         ),
-        HTTPStatus.OK,
+        timeout=DEFAULT_CACHE_DURATION,
     )
 
 

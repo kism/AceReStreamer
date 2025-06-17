@@ -73,7 +73,7 @@ uv sync --no-group test --no-group type --no-group lint
 - ace_pool on info on /stream
 - resize video player on page load, maybe mobile only
 - api playground
-- caching for pages
+- ~~caching for pages~~
 
 ### Apps that don't work
 

@@ -37,6 +37,7 @@ def info_guide() -> Response | WerkzeugResponse | CachedResponse:
 
 
 @bp.route("/info/iptv")
+@cache.cached()
 def guide() -> Response | WerkzeugResponse:
     """Render the guide page."""
     auth_failure = assumed_auth_failure()
@@ -57,6 +58,7 @@ def guide() -> Response | WerkzeugResponse:
 
 
 @bp.route("/info/api")
+@cache.cached()
 def api() -> Response | WerkzeugResponse:
     """Render the API information page."""
     auth_failure = assumed_auth_failure()
