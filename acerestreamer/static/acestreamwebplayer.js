@@ -503,39 +503,7 @@ function populateStreamTable() {
 
 // endregion
 
-// region Chromecast
 
-// biome-ignore lint/correctness/noUnusedVariables: HTML uses it
-function castHlsStream(hlsUrl) {
-  const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
-  if (!castSession) {
-    console.warn("No Cast session available");
-    return;
-  }
-
-  const mediaInfo = new chrome.cast.media.MediaInfo(hlsUrl, "application/x-mpegURL");
-
-  const request = new chrome.cast.media.LoadRequest(mediaInfo);
-  castSession.loadMedia(request).then(
-    () => console.log("Cast media loaded successfully"),
-    (error) => console.error("Error loading media:", error)
-  );
-}
-
-function initializeCastApi() {
-  cast.framework.CastContext.getInstance().setOptions({
-    receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
-    autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
-  });
-}
-
-window.__onGCastApiAvailable = (isAvailable) => {
-  if (isAvailable) {
-    initializeCastApi();
-  }
-};
-
-// endregion
 
 // region DOMContentLoaded
 document.addEventListener("DOMContentLoaded", () => {
