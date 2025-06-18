@@ -350,8 +350,8 @@ function attemptPlayWithRetry(maxAttempts = 3, currentAttempt = 1) {
             playerStatus.innerHTML = "Playing";
             setStatusClass(playerStatus, "good");
             console.log(`Video successfully started playing on attempt ${currentAttempt}`);
-            populateAcePoolTable();
             isAttemptingPlay = false; // Reset flag when done
+            populateAcePoolTable();
           }
         }, 500); // Check after 500ms
       })

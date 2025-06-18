@@ -173,6 +173,11 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
         error_short = type(e).__name__
         logger.error("/ace/c/ reverse proxy failure %s", error_short)  # noqa: TRY400 Naa this should be shorter
         return jsonify({"error": "Failed to fetch HLS stream"}, HTTPStatus.INTERNAL_SERVER_ERROR)
+    except requests.Timeout as e:
+        error_short = type(e).__name__
+        logger.error("/ace/c/ reverse proxy timeout %s", error_short)  # noqa: TRY400 Too verbose otherwise
+        return jsonify({"error": "Ace content timeout"}, HTTPStatus.REQUEST_TIMEOUT)
+
     headers = [
         (name, value)
         for (name, value) in resp.raw.headers.items()
