@@ -19,6 +19,8 @@ OUR_TIMEZONE = datetime.now().astimezone().tzinfo
 LOCK_IN_TIME: timedelta = timedelta(minutes=3)
 LOCK_IN_RESET_MAX: timedelta = timedelta(minutes=30)
 
+DEFAULT_DATE = datetime(1970, 1, 1, tzinfo=OUR_TIMEZONE)
+
 
 class AcePoolEntry(BaseModel):
     """Model for an AceStream pool entry."""
@@ -27,8 +29,8 @@ class AcePoolEntry(BaseModel):
     ace_content_path: str = ""
     ace_url: str
     healthy: bool = False
-    date_started: datetime = datetime(1970, 1, 1, tzinfo=OUR_TIMEZONE)
-    last_used: datetime = datetime(1970, 1, 1, tzinfo=OUR_TIMEZONE)
+    date_started: datetime = DEFAULT_DATE
+    last_used: datetime = DEFAULT_DATE
     _keep_alive_active: bool = False
 
     def check_ace_running(self) -> bool:
@@ -52,6 +54,14 @@ class AcePoolEntry(BaseModel):
     def update_last_used(self) -> None:
         """Update the last used timestamp."""
         self.last_used = datetime.now(tz=OUR_TIMEZONE)
+
+    def reset_content(self) -> None:
+        """Reset the content path and ace_id for this instance."""
+        self.ace_id = ""
+        self.ace_content_path = ""
+        self.update_last_used()
+        self.date_started = DEFAULT_DATE
+        self._keep_alive_active = False
 
     def switch_content(self, ace_id: str, content_path: str) -> None:
         """Switch the content path and ace_id for this instance."""
@@ -216,3 +226,12 @@ class AcePool:
             )
 
         return instances
+
+    def clear_instance_by_ace_id(self, ace_id: str) -> bool:
+        """Clear the AceStream instance by ace_id."""
+        for instance in self.ace_instances:
+            if instance.ace_id == ace_id:
+                instance.reset_content()
+                return True
+
+        return False

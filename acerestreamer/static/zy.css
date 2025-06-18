@@ -570,6 +570,12 @@ label > .label-body {
   background-color: #ff0000;
 }
 
+.unlock-button {
+  font-size: 9px;
+  height: 20px;
+  line-height: 18px;
+  margin: 2px 0;
+}
 /* #endregion */
 
 /* #region: Navigation */
