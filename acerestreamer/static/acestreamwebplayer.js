@@ -1,3 +1,7 @@
+// globals
+
+let isAttemptingPlay = false;
+
 // region API calls
 function getStream(streamId) {
   const controller = new AbortController();
@@ -274,6 +278,12 @@ function attemptPlayWithRetry(maxAttempts = 3, currentAttempt = 1) {
   const video = document.getElementById("video");
   const playerStatus = document.getElementById("player-status");
 
+  if (isAttemptingPlay) {
+    console.log("Already attempting to play the video, skipping this attempt.");
+    return;
+  }
+  isAttemptingPlay = true;
+
   setTimeout(() => {
     video
       .play()
@@ -294,12 +304,14 @@ function attemptPlayWithRetry(maxAttempts = 3, currentAttempt = 1) {
             } else {
               console.error("All play attempts failed");
               setOnPageStreamErrorMessage("Failed to start video playback after multiple attempts");
+              isAttemptingPlay = false; // Reset flag when done
             }
           } else {
             playerStatus.innerHTML = "Playing";
             setStatusClass(playerStatus, "good");
             console.log(`Video successfully started playing on attempt ${currentAttempt}`);
             populateAcePoolTable();
+            isAttemptingPlay = false; // Reset flag when done
           }
         }, 500); // Check after 500ms
       })
@@ -312,6 +324,7 @@ function attemptPlayWithRetry(maxAttempts = 3, currentAttempt = 1) {
         } else {
           console.error("All play attempts failed with errors");
           setOnPageStreamErrorMessage("Error playing video after multiple attempts");
+          isAttemptingPlay = false; // Reset flag when done
         }
       });
   }, 1000 * currentAttempt); // Increase delay with each attempt
