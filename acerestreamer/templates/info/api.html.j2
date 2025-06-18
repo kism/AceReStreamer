@@ -99,14 +99,23 @@
         <tr>
             <td>/api/stream/{id}</td>
             <td>GET</td>
-            <td>Get stream by ID</td>
+            <td>Get stream by Ace ID</td>
         </tr>
         <tr>
             <td>/api/ace_pool</td>
             <td>GET</td>
             <td>Get pool of streams</td>
         </tr>
-
+        <tr>
+            <td>/api/ace_pool/{id}</td>
+            <td>GET</td>
+            <td>Get instance of Ace that has Ace ID loaded</td>
+        </tr>
+        <tr>
+            <td>/api/ace_pool/{id}</td>
+            <td>DELETE</td>
+            <td>Mark ace pool member as available, per Ace ID</td>
+        </tr>
     </table>
     <input type="text" id="api-input" placeholder="Enter API endpoint" />
     <button id="do-api-btn">GET</button><code id="api-response-time">Duration: </code>
