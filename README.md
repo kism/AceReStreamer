@@ -66,10 +66,6 @@ uv sync --no-group test --no-group type --no-group lint
   - more on the iptv guide
 - chromecast / airplay support
 - actually fetch from sites in a thread
-- pools api
-- ace_pool more verbose api
-- ace_pool on info on /stream
-- health check the ace pool
 
 ### Apps that don't work
 
@@ -109,3 +105,7 @@ see iptv.html.j2
 - ~~cache the sources~~
 - ~~reload player on failure a couple of times~~
 - ~~keep locked in streams alive~~
+- ~~pools api~~
+- ~~ace_pool more verbose api~~
+- ~~ace_pool on info on /stream~~
+- ~~health check the ace pool~~

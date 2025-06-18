@@ -347,6 +347,11 @@ function populateAcePoolTable() {
       tr_heading.appendChild(th_instance_number);
       flashBackgroundColor(th_instance_number);
 
+      const th_health = document.createElement("th");
+      th_health.textContent = "Health";
+      tr_heading.appendChild(th_health);
+      flashBackgroundColor(th_health);
+
       const th_status = document.createElement("th");
       th_status.textContent = "Status";
       tr_heading.appendChild(th_status);
@@ -368,6 +373,18 @@ function populateAcePoolTable() {
         td_instance_number.textContent = `${n}`;
         n++;
         tr.appendChild(td_instance_number);
+
+        // Health cell
+        const td_health = document.createElement("td");
+        let timeUntilUnlockFormatted = "";
+        if (instance.healthy === false) {
+          setStatusClass(td_health, "bad");
+          td_health.textContent = "Failure";
+        } else {
+          setStatusClass(td_health, "good");
+          td_health.textContent = "Healthy";
+        }
+        tr.appendChild(td_health);
 
         // Status cell (Available/Locked In)
         const td_status = document.createElement("td");
