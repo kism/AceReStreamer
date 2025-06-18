@@ -65,6 +65,7 @@ uv sync --no-group test --no-group type --no-group lint
 - iptv api
   - more on the iptv guide
 - actually fetch from sites in a thread
+- group the fetchers
 
 ### Apps that don't work
 
