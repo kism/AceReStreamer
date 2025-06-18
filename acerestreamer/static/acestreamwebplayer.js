@@ -208,7 +208,15 @@ function loadStream() {
   } else {
     console.error("This browser does not support HLS playbook.");
     setOnPageStreamErrorMessage("This browser does not support HLS playbook.");
-    return;
+  }
+
+  const chromecastButton = document.getElementById("chromecast-button");
+  if (typeof cast !== "undefined" && cast.framework && cast.framework.CastContext) {
+    chromecastButton.style.display = "inline-block"; // Show the Chromecast button
+    chromecastButton.onclick = () => {
+      const hlsUrl = `/hls/${window.location.hash.substring(1)}`;
+      castHlsStream(hlsUrl);
+    };
   }
 }
 
@@ -493,6 +501,42 @@ function populateStreamTable() {
     .catch((_error) => {});
 }
 
+// endregion
+
+// region Chromecast
+
+// biome-ignore lint/correctness/noUnusedVariables: HTML uses it
+function castHlsStream(hlsUrl) {
+  const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+  if (!castSession) {
+    console.warn("No Cast session available");
+    return;
+  }
+
+  const mediaInfo = new chrome.cast.media.MediaInfo(hlsUrl, "application/x-mpegURL");
+
+  const request = new chrome.cast.media.LoadRequest(mediaInfo);
+  castSession.loadMedia(request).then(
+    () => console.log("Cast media loaded successfully"),
+    (error) => console.error("Error loading media:", error)
+  );
+}
+
+function initializeCastApi() {
+  cast.framework.CastContext.getInstance().setOptions({
+    receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+    autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
+  });
+}
+
+window.__onGCastApiAvailable = (isAvailable) => {
+  if (isAvailable) {
+    initializeCastApi();
+  }
+};
+
+// endregion
+
 // region DOMContentLoaded
 document.addEventListener("DOMContentLoaded", () => {
   resizePlayerMobile();
@@ -524,7 +568,6 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(`Loading stream on page load: ${streamId}`);
     getStream(streamId)
       .then((streamInfo) => {
-        console.log(`Stream info: ${JSON.stringify(streamInfo)}`);
         loadStreamUrl(streamId, streamInfo.title);
       })
       .catch((_error) => {});
