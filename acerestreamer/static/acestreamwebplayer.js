@@ -599,7 +599,7 @@ document.addEventListener("DOMContentLoaded", () => {
   populateAcePoolTable();
   setInterval(populateAcePoolTable, 30000);
   populateStreamTable();
-  setInterval(populateAcePoolTable, 95001);
+  setInterval(populateStreamTable, 95001);
 
   // Check if Hls is even defined
   if (typeof Hls === "undefined") {
