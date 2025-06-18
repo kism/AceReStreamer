@@ -50,9 +50,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   apiSubmit.addEventListener("click", () => {
     const apiEndpoint = apiInput.value.trim();
+    const startTime = performance.now();
     if (apiEndpoint) {
       doApiCall(apiEndpoint).then((response) => {
         apiOutput.innerHTML = `<pre>${prettyFormatJson(response)}</pre>`;
+        const endTime = performance.now();
+        const duration = (endTime - startTime).toFixed(2);
+        document.getElementById("api-response-time").textContent = `Duration: ${duration} ms`;
+        console.log(`API call to ${apiEndpoint} took ${duration} ms`);
       });
     } else {
       apiOutput.textContent = "Please enter a valid API endpoint.";

@@ -17,6 +17,7 @@ from .html_snippets import get_header_snippet
 from .logger import get_logger
 from .scraper import AceScraper
 from .scraper_helpers import get_streams_as_iptv
+from .stream_helpers import replace_m3u_sources
 
 logger = get_logger(__name__)  # Create a logger: acerestreamer.this_module_name, inherit config from root logger
 
@@ -137,21 +138,7 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
         ace_scraper.increment_quality(path, -5)
         return jsonify({"error": "Invalid HLS stream", "m3u8": content_str}, HTTPStatus.BAD_REQUEST)
 
-    lines_new = []
-    for line in content_str.splitlines():
-        line_temp = line.strip()
-        if "/ace/c/" in line:
-            for address in current_app.aw_conf.app.ace_addresses:
-                if line_temp.startswith(address):
-                    line_temp = line_temp.replace(address, current_app.config["SERVER_NAME"])
-
-            current_content_identifier = re.search(r"/ace/c/([a-f0-9]+)", line_temp)
-            if current_content_identifier:
-                ace_pool.set_content_path(ace_id=path, content_path=current_content_identifier.group(1))
-
-        lines_new.append(line_temp)
-
-    content_str = "\n".join(lines_new)
+    content_str = replace_m3u_sources(m3u_content=content_str, path=path, ace_pool=ace_pool)
 
     ace_scraper.increment_quality(path, 1)
 

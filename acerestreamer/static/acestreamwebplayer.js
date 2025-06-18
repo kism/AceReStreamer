@@ -152,6 +152,8 @@ function loadStream() {
   const videoSrc = `/hls/${window.location.hash.substring(1)}`;
   console.log(`Loading stream: ${videoSrc}`);
 
+  video.controls = true;
+
   const streamDirectUrl = document.getElementById("stream-url");
   streamDirectUrl.innerHTML = `${window.location.origin}${videoSrc}`;
 

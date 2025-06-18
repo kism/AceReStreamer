@@ -603,6 +603,15 @@ nav ul {
   background-color: None;
 }
 
+/* #endregion */
+
+/* #region: API */
+
 .api-table tr td:first-child {
   font-family: "Fira Code", Consolas, "Lucida Console", monospace;
+}
+
+#api-response-time {
+  margin-left: 10px;
+  margin-right: 10px;
 }
