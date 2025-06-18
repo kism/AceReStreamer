@@ -189,7 +189,7 @@ function loadStream() {
       setStatusClass(streamStatus, "good");
     });
 
-    hls.on(Hls.Events.BUFFER_APPENDED, (event, data) => {
+    hls.on(Hls.Events.BUFFER_APPENDED, (_event, _data) => {
       const streamStatus = document.getElementById("stream-status");
       setStatusClass(streamStatus, "good");
       streamStatus.innerHTML = "Healthy";
@@ -233,6 +233,7 @@ function loadPlayStream(streamID) {
     });
 }
 
+// biome-ignore lint/correctness/noUnusedVariables: HTML uses it
 function loadPlayStreamFromHash() {
   const streamId = window.location.hash.substring(1);
   if (streamId) {
@@ -248,6 +249,7 @@ function loadPlayStreamFromHash() {
 
 // region Video Player
 
+// biome-ignore lint/correctness/noUnusedVariables: HTML uses it
 function togglePlayerSize() {
   const video = document.getElementById("video");
   const playerContainer = document.getElementById("player-container");
@@ -393,7 +395,7 @@ function populateAcePoolTable() {
               });
               td_playing.classList.add("link");
             })
-            .catch((error) => {});
+            .catch((_error) => {});
         } else {
           td_playing.textContent = "-";
         }
@@ -403,7 +405,7 @@ function populateAcePoolTable() {
         table.appendChild(tr);
       }
     })
-    .catch((error) => {});
+    .catch((_error) => {});
 }
 
 // region Stream Table
@@ -471,7 +473,7 @@ function populateStreamTable() {
         table.appendChild(tr);
       }
     })
-    .catch((error) => {});
+    .catch((_error) => {});
 }
 
 // region DOMContentLoaded
@@ -508,7 +510,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log(`Stream info: ${JSON.stringify(streamInfo)}`);
         loadStreamUrl(streamId, streamInfo.title);
       })
-      .catch((error) => {});
+      .catch((_error) => {});
   }
 
   // Check every second if the video is playing, to populate the status

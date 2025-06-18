@@ -6,6 +6,6 @@
     "postinstall": "cp node_modules/hls.js/dist/hls.min.js acerestreamer/static/hls.min.js && cp node_modules/hls.js/dist/hls.min.js.map acerestreamer/static/hls.min.js.map"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.9.4"
+    "@biomejs/biome": "^2.0.0"
   }
 }
