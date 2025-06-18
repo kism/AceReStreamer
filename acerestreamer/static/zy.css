@@ -592,15 +592,17 @@ nav ul {
 
 /* #endregion */
 
-/* #region: Video Controls */
+/* #region: Video  */
+
+#video {
+  width: 640px;
+  height: 360px;
+}
 
 #video-controls {
   border: None;
   background-color: None;
-}
-
-#video-controls td {
-  background-color: None;
+  margin-top: 10px;
 }
 
 /* #endregion */
