@@ -64,7 +64,6 @@ uv sync --no-group test --no-group type --no-group lint
 - vitest?
 - iptv api
   - more on the iptv guide
-- chromecast / airplay support
 - actually fetch from sites in a thread
 
 ### Apps that don't work
@@ -109,3 +108,4 @@ see iptv.html.j2
 - ~~ace_pool more verbose api~~
 - ~~ace_pool on info on /stream~~
 - ~~health check the ace pool~~
+- ~~chromecast / airplay support~~ abandoned chromecast, airplay might work

@@ -262,17 +262,45 @@ function togglePlayerSize() {
   const video = document.getElementById("video");
   const playerContainer = document.getElementById("player-container");
 
-  if (video.style.width === "100%") {
+  // Check if currently in small size (640px width)
+  const isSmallSize = video.style.width === "640px" || video.style.width === "";
+
+  if (isSmallSize) {
+    // Switch to large size, but respect display constraints
+    const maxHeight = window.innerHeight - 100; // Leave margin for UI elements
+    const maxWidth = window.innerWidth - 50; // Leave some side margin
+    const aspectRatio = 16 / 9;
+
+    let targetWidth = maxWidth;
+    let targetHeight = targetWidth / aspectRatio;
+
+    // If height exceeds max, scale down based on height
+    if (targetHeight > maxHeight) {
+      targetHeight = maxHeight;
+      targetWidth = targetHeight * aspectRatio;
+    }
+
+    video.style.width = `${targetWidth}px`;
+    video.style.height = `${targetHeight}px`;
+    playerContainer.style.width = `${targetWidth}px`;
+    playerContainer.style.height = `${targetHeight}px`;
+  } else {
+    // Switch to small size (640x360)
     video.style.width = "640px";
     video.style.height = "360px";
     playerContainer.style.width = "640px";
     playerContainer.style.height = "360px";
-  } else {
-    video.style.width = "100%";
-    video.style.height = "100%";
-    playerContainer.style.width = "100%";
-    playerContainer.style.height = "100%";
   }
+
+  // Scroll to center the player vertically on the page
+  setTimeout(() => {
+    const playerRect = playerContainer.getBoundingClientRect();
+    const scrollTop = window.pageYOffset + playerRect.top - (window.innerHeight - playerRect.height) / 2;
+    window.scrollTo({
+      top: Math.max(0, scrollTop),
+      behavior: "smooth",
+    });
+  }, 100); // Small delay to ensure size changes are applied
 }
 
 function resizePlayerMobile() {
@@ -502,8 +530,6 @@ function populateStreamTable() {
 }
 
 // endregion
-
-
 
 // region DOMContentLoaded
 document.addEventListener("DOMContentLoaded", () => {
