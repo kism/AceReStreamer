@@ -31,17 +31,19 @@ class AcePoolEntry(BaseModel):
     last_used: datetime = datetime(1970, 1, 1, tzinfo=OUR_TIMEZONE)
     _keep_alive_active: bool = False
 
-    def check_ace_running(self) -> None:
+    def check_ace_running(self) -> bool:
         """Use the AceStream API to check if the instance is running."""
         url = f"{self.ace_url}/webui/api/service?method=get_version"
         try:
             response = requests.get(url, timeout=ACESTREAM_API_TIMEOUT)
             response.raise_for_status()
-        except requests.RequestException:
-            logger.exception("Error checking AceStream instance")
+            self.healthy = True
+        except requests.RequestException as e:
+            error_short = type(e).__name__
+            logger.error("Ace Instance %s is not healthy: %s", self.ace_url, error_short)  # noqa: TRY400 Don't need to be verbose
             self.healthy = False
 
-        self.healthy = True
+        return self.healthy
 
     def update_last_used(self) -> None:
         """Update the last used timestamp."""
@@ -86,13 +88,14 @@ class AcePoolEntry(BaseModel):
         """Ensure the AceStream stream is kept alive."""
 
         def keep_alive() -> None:
-            refresh_interval = 5
+            refresh_interval = 30
             url = f"{self.ace_url}/ace/manifest.m3u8?content_id={self.ace_id}"
             while True:
                 if self.check_locked_in():  # If we are locked in, we keep the stream alive
                     with contextlib.suppress(requests.RequestException):
-                        resp = requests.get(url, timeout=ACESTREAM_API_TIMEOUT * 2)
-                        logger.trace("Keep alive response: %s", resp.status_code)
+                        if self.check_ace_running():
+                            resp = requests.get(url, timeout=ACESTREAM_API_TIMEOUT * 2)
+                            logger.trace("Keep alive response: %s", resp.status_code)
                 time.sleep(refresh_interval)
 
         if not self._keep_alive_active:
@@ -134,6 +137,9 @@ class AcePool:
         for instance in self.ace_instances:
             if instance.check_locked_in():
                 continue
+
+            instance.check_ace_running()
+
             if instance.healthy and (instance_to_use is None or instance.last_used < instance_to_use.last_used):
                 instance_to_use = instance
 
