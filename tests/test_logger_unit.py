@@ -5,6 +5,7 @@ import logging
 import pytest
 
 import acerestreamer.logger
+from acerestreamer.logger import _add_file_handler, _set_log_level, setup_logger
 
 
 @pytest.fixture
@@ -24,7 +25,6 @@ def logger():
 
 def test_logging_permissions_error(logger, tmp_path, mocker):
     """Test logging, mock a permission error."""
-    from acerestreamer.logger import _add_file_handler
 
     mock_open_func = mocker.mock_open(read_data="")
     mock_open_func.side_effect = PermissionError("Permission denied")
@@ -38,7 +38,6 @@ def test_logging_permissions_error(logger, tmp_path, mocker):
 
 def test_config_logging_to_dir(logger, tmp_path):
     """TEST: Correct exception is caught when you try log to a folder."""
-    from acerestreamer.logger import _add_file_handler
 
     with pytest.raises(IsADirectoryError):
         _add_file_handler(logger, tmp_path)
@@ -89,7 +88,6 @@ def test_handler_file_added(logger, tmp_path, app):
 )
 def test_set_log_level(log_level_in: str | int, log_level_expected: int, logger):
     """Test if _set_log_level results in correct log_level."""
-    from acerestreamer.logger import _set_log_level
 
     _set_log_level(logger, log_level_in)
     assert logger.getEffectiveLevel() == log_level_expected
@@ -97,7 +95,6 @@ def test_set_log_level(log_level_in: str | int, log_level_expected: int, logger)
 
 def test_no_loggers_supplied():
     """Test if no loggers supplied, root logger is used."""
-    from acerestreamer.logger import setup_logger
 
     # This is just for coverage
     setup_logger(include_root_logger=False)

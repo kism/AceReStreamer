@@ -129,7 +129,7 @@ class AceReStreamerConf(BaseSettings):
 
     def write_config(self, config_location: Path) -> None:
         """Write the current settings to a TOML file."""
-        from . import PROGRAM_NAME, URL, __version__
+        from . import PROGRAM_NAME, URL, __version__  # noqa: PLC0415, RUF100 Avoid circular import
 
         config_location.parent.mkdir(parents=True, exist_ok=True)
 
@@ -164,8 +164,6 @@ class AceReStreamerConf(BaseSettings):
 
 def load_config(config_path: Path) -> AceReStreamerConf:
     """Load the configuration file."""
-    import tomlkit
-
     if not config_path.exists():
         return AceReStreamerConf()
 
