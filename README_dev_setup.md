@@ -43,3 +43,20 @@ python -m http.server -b 127.0.0.1 8000
 ```
 
 Open the link in your browser and browse into the 'htmlcov' directory.
+
+## Profiling
+
+`mkdir profiler`
+
+In `__init__.py` you can enable profiling by uncommenting the following lines:
+
+```python
+from werkzeug.middleware.profiler import ProfilerMiddleware
+app.config["PROFILE"] = True
+app.wsgi_app = ProfilerMiddleware(app.wsgi_app, profile_dir="profiler", sort_by=("cumulative", "time"))
+return app
+```
+
+Then use
+
+`snakeviz profiler`

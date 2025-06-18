@@ -2,6 +2,8 @@
 
 from pprint import pformat
 
+from werkzeug.middleware.profiler import ProfilerMiddleware
+
 from . import authentication_bp, config, info_bp, logger, stream_bp
 from .flask_helpers import FlaskAceReStreamer, cache, check_static_folder, register_error_handlers
 

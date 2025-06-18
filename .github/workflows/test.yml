@@ -26,7 +26,7 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
 
       - name: Install the project
-        run: uv sync --no-group type --no-group lint
+        run: uv sync --no-group type --no-group lint --no-group profile
 
       - name: Test with pytest
         run: uv run pytest --cov-report=xml # xml report needed for codecov, other settings from pyproject.toml
