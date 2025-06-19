@@ -590,6 +590,8 @@ function populateStreamTables() {
 function populateStreamTable(streamsSource) {
   const tableId = `stream-table-${streamsSource.slug}`;
 
+  console.log(`Populating stream table for source: ${streamsSource.slug}`);
+
   getStreamsFromSource(streamsSource.slug)
     .then((streams) => {
       const table = document.getElementById(tableId);
@@ -606,17 +608,13 @@ function populateStreamTable(streamsSource) {
       tr_heading.appendChild(th_link);
       flashBackgroundColor(th_link);
 
-      const th_source = document.createElement("th");
-      th_source.textContent = "Source";
-      flashBackgroundColor(th_source);
-
-      tr_heading.appendChild(th_source);
       table.appendChild(tr_heading);
 
       // Sort the data by quality in descending order
       streams.sort((a, b) => b.quality - a.quality);
 
       for (const stream of streams) {
+        console.log(`Adding stream: ${stream.title} (${stream.quality})`);
         const tr = document.createElement("tr");
 
         // Quality cell
@@ -641,14 +639,9 @@ function populateStreamTable(streamsSource) {
         a.onclick = () => loadPlayStream(stream.ace_id);
         td_link.appendChild(a); // Append the anchor element to the table data cell
 
-        // Source Cell
-        td_source = document.createElement("td");
-        td_source.textContent = `${stream.site_name}`;
-
         // Append to the row
         tr.appendChild(td_quality);
         tr.appendChild(td_link);
-        tr.appendChild(td_source);
         table.appendChild(tr);
       }
     })

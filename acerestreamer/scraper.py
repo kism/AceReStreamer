@@ -98,11 +98,19 @@ class AceScraper:
 
         return streams
 
-    def get_streams_by_source(self, source_slug: str) -> list[FoundAceStream] | None:
+    def get_streams_by_source(self, source_slug: str) -> list[FlatFoundAceStream] | None:
         """Get the found streams for a specific source by its slug."""
         for scraped_streams_listing in self.streams:
             if scraped_streams_listing.site_slug == source_slug:
-                return scraped_streams_listing.stream_list
+                return [
+                    FlatFoundAceStream(
+                        site_name=scraped_streams_listing.site_name,
+                        quality=self._ace_quality.get_quality(stream.ace_id),
+                        title=stream.title,
+                        ace_id=stream.ace_id,
+                    )
+                    for stream in scraped_streams_listing.stream_list
+                ]
 
         logger.warning("No scraper source found with slug: %s", source_slug)
         return None
