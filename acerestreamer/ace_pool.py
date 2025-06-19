@@ -8,13 +8,14 @@ from datetime import datetime, timedelta
 import requests
 from pydantic import BaseModel, field_serializer
 
+from .constants import OUR_TIMEZONE
 from .logger import get_logger
 
 logger = get_logger(__name__)
 
 ACESTREAM_API_TIMEOUT = 3
 
-OUR_TIMEZONE = datetime.now().astimezone().tzinfo
+
 
 LOCK_IN_TIME: timedelta = timedelta(minutes=3)
 LOCK_IN_RESET_MAX: timedelta = timedelta(minutes=30)
