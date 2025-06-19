@@ -76,7 +76,7 @@ see iptv.html.j2
 
 - ~~publish~~
   - ~~streams/flat~~
-  - ~~streams/by_site~~
+  - ~~streams/by_source~~
 - ~~breadcrumb~~
 - ~~less recursion in patient search i think~~
 - ~~scraper list~~

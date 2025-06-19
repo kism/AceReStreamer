@@ -214,20 +214,48 @@ def api_streams_flat() -> Response | WerkzeugResponse:
     return response
 
 
-@bp.route("/api/streams/by_site")
+@bp.route("/api/streams/by_source")
 def api_streams() -> Response | WerkzeugResponse:
     """API endpoint to get the streams."""
     auth_failure = assumed_auth_failure()
     if auth_failure:
         return auth_failure
 
-    streams = ace_scraper.get_streams()
+    streams = ace_scraper.get_streams_by_source()
     streams_serialized = [stream.model_dump() for stream in streams]
 
     response = jsonify(streams_serialized)
     response.status_code = HTTPStatus.OK
     return response
 
+
+@bp.route("/api/sources")
+def api_streams_sources() -> Response | WerkzeugResponse:
+    """API endpoint to get the streams sources."""
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
+    streams = ace_scraper.get_streams_sources()
+    streams_serialized = streams.model_dump()
+
+    response = jsonify(streams_serialized)
+    response.status_code = HTTPStatus.OK
+    return response
+
+@bp.route("/api/sources/flat")
+def api_streams_sources_flat() -> Response | WerkzeugResponse:
+    """API endpoint to get the flat streams sources."""
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
+    streams = ace_scraper.get_streams_sources_flat()
+    streams_serialized = [stream.model_dump() for stream in streams]
+
+    response = jsonify(streams_serialized)
+    response.status_code = HTTPStatus.OK
+    return response
 
 @bp.route("/api/streams/health")
 def api_streams_health() -> Response | WerkzeugResponse:

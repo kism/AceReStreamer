@@ -1,9 +1,12 @@
 """Scraper object."""
 
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Self
+
+from pydantic import BaseModel, model_validator
 
 from .config import AceScrapeConf
+from .helpers import slugify
 from .logger import get_logger
 from .scraper_health import AceQuality
 from .scraper_html import scrape_streams_html_sites
@@ -17,6 +20,22 @@ else:
     ScrapeSiteIPTV = object
 
 logger = get_logger(__name__)
+
+
+class AceScraperSourcesApi(BaseModel):
+    """Represent the sources of the AceScraper, for API use."""
+
+    scrape_interval: int
+    html: list[ScrapeSiteHTML]
+    iptv_m3u8: list[ScrapeSiteIPTV]
+
+
+class AceScraperSourceApi(BaseModel):
+    """Represent a scraper instance, generic for HTML and IPTV sources."""
+
+    name: str
+    slug: str
+    epg: list[str] = []
 
 
 class AceScraper:
@@ -70,7 +89,7 @@ class AceScraper:
             ace_id=ace_id,
         )
 
-    def get_streams(self) -> list[FoundAceStreams]:
+    def get_streams_by_source(self) -> list[FoundAceStreams]:
         """Get the found streams as a list of dicts, ready to be turned into json."""
         streams = list(self.streams)
 
@@ -95,6 +114,18 @@ class AceScraper:
                 )
                 flat_streams.append(new_stream)
         return flat_streams
+
+    def get_streams_sources(self) -> AceScraperSourcesApi:
+        """Get the sources for the scraper."""
+        return AceScraperSourcesApi(
+            html=self.html,
+            iptv_m3u8=self.iptv_m3u8,
+            scrape_interval=self.scrape_interval,
+        )
+
+    def get_streams_sources_flat(self) -> list[AceScraperSourceApi]:
+        """Get the sources for the scraper, as a flat list."""
+        return [AceScraperSourceApi(name=site.name, slug=site.slug) for site in self.html + self.iptv_m3u8]
 
     def get_streams_health(self) -> dict[str, int]:
         """Get the health of the streams."""

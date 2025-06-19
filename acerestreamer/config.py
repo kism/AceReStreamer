@@ -9,6 +9,7 @@ import tomlkit
 from pydantic import BaseModel, model_validator
 from pydantic_settings import BaseSettings
 
+from .helpers import slugify
 from .logger import get_logger
 
 # Logging should be all done at INFO level or higher as the log level hasn't been set yet
@@ -38,6 +39,7 @@ class ScrapeSiteHTML(BaseModel):
     """Model for a site to scrape."""
 
     name: str = "Example"
+    slug: str = ""
     url: str = "https://example.com"
     target_class: str = ""  # Target html class
     check_sibling: bool = False
@@ -52,13 +54,45 @@ class ScrapeSiteHTML(BaseModel):
             raise ValueError(msg)
         return self
 
+    @model_validator(mode="after")
+    def slugify(self) -> Self:
+        """Validate the URL."""
+        if self.slug == "":
+            self.slug = slugify(self.name)
+        else:
+            msg = "Slug should not be set manually, it will be generated from the name."
+            raise ValueError(msg)
+
+        return self
+
 
 class ScrapeSiteIPTV(BaseModel):
     """Model for a site to scrape IPTV streams."""
 
     name: str = "Example IPTV"
+    slug: str = ""
     url: str = "https://example.com/iptv.txt"
     title_filter: TitleFilter = TitleFilter()
+
+    @model_validator(mode="after")
+    def valid_url(self) -> Self:
+        """Validate the URL."""
+        self.url = self.url.strip()
+        if not self.url.startswith("http://") and not self.url.startswith("https://"):
+            msg = f"URL for {self.name} must start with 'http://' or 'https://'"
+            raise ValueError(msg)
+        return self
+
+    @model_validator(mode="after")
+    def slugify(self) -> Self:
+        """Validate the URL."""
+        if self.slug == "":
+            self.slug = slugify(self.name)
+        else:
+            msg = "Slug should not be set manually, it will be generated from the name."
+            raise ValueError(msg)
+
+        return self
 
 
 class AceScrapeConf(BaseModel):
@@ -67,6 +101,20 @@ class AceScrapeConf(BaseModel):
     html: list[ScrapeSiteHTML] = []
     iptv_m3u8: list[ScrapeSiteIPTV] = []
     scrape_interval: int = 7200  # 2 hours
+
+    @model_validator(mode="after")
+    def unique_scraper_site_names(self) -> Self:
+        """Ensure all scraper sites have unique names, via slug."""
+        names_slug = []
+        for site in self.html + self.iptv_m3u8:
+            site_name_slug = slugify(site.name)
+
+            if site_name_slug in names_slug:
+                msg = f"Scraper site name '{site.name}' > '{site_name_slug}' is not unique, please change it."
+                raise ValueError(msg)
+            names_slug.append(site_name_slug)
+
+        return self
 
 
 class AppConf(BaseModel):
