@@ -23,7 +23,7 @@ logger = get_logger(__name__)  # Create a logger: acerestreamer.this_module_name
 
 bp = Blueprint("acerestreamer_scraper", __name__)
 ace_scraper: AceScraper | None = None
-ace_pool: AcePool | None = None
+ace_pool: AcePool = AcePool(ace_addresses=[])
 current_app = get_current_app()
 
 REVERSE_PROXY_EXCLUDED_HEADERS = ["content-encoding", "content-length", "transfer-encoding", "connection", "keep-alive"]
@@ -152,9 +152,6 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    if not ace_pool:
-        return jsonify({"error": "Ace pool not initialized"}, HTTPStatus.INTERNAL_SERVER_ERROR)
-
     path_filtered = re.search(r"^([a-f0-9]+)", path)
     if not path_filtered:
         logger.error("Invalid Ace content path: %s", path)
@@ -278,10 +275,6 @@ def api_ace_pool() -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    if not ace_pool:
-        logger.error("Ace pool not initialized.")
-        return jsonify({"error": "Ace pool not initialized"}, HTTPStatus.INTERNAL_SERVER_ERROR)
-
     pool_list = ace_pool.get_instances_nice()
     pool_list_serialized = [entry.model_dump() for entry in pool_list]
 
@@ -296,10 +289,6 @@ def api_ace_pool_by_id(ace_id: str) -> Response | WerkzeugResponse:
     auth_failure = assumed_auth_failure()
     if auth_failure:
         return auth_failure
-
-    if not ace_pool:
-        logger.error("Ace pool not initialized.")
-        return jsonify({"error": "Ace pool not initialized"}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
     instance_url = ace_pool.get_instance(ace_id)
 

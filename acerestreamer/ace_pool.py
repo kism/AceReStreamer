@@ -210,7 +210,6 @@ class AcePool:
             if instance.ace_content_path == content_path:
                 return instance.ace_url
 
-
         logger.warning("Ace content %s path not linked to instance", content_path)
         return ""
 
