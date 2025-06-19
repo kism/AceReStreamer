@@ -105,11 +105,16 @@ class AcePoolEntry(BaseModel):
             refresh_interval = 30
             url = f"{self.ace_url}/ace/manifest.m3u8?content_id={self.ace_id}"
             while True:
-                if self.check_locked_in():  # If we are locked in, we keep the stream alive
+                # If we are locked in, we keep the stream alive
+                if self.check_locked_in():
                     with contextlib.suppress(requests.RequestException):
                         if self.check_ace_running():
                             resp = requests.get(url, timeout=ACESTREAM_API_TIMEOUT * 2)
                             logger.trace("Keep alive response: %s", resp.status_code)
+                # If we are not locked in, we check if we have been previously locked in, and reset if needed
+                elif self.date_started - datetime.now(tz=OUR_TIMEZONE) > LOCK_IN_RESET_MAX:
+                    logger.debug("Resetting keep alive for %s with ace_id %s", self.ace_url, self.ace_id)
+                    self.reset_content()
                 time.sleep(refresh_interval)
 
         if not self._keep_alive_active:

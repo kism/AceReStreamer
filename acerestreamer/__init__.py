@@ -5,7 +5,7 @@ from pprint import pformat
 from . import authentication_bp, config, info_bp, logger, stream_bp
 from .flask_helpers import FlaskAceReStreamer, cache, check_static_folder, register_error_handlers
 
-__version__ = "0.2.5"  # This is the version of the app, used in pyproject.toml, enforced in a test.
+__version__ = "0.2.6"  # This is the version of the app, used in pyproject.toml, enforced in a test.
 PROGRAM_NAME = "Ace ReStreamer"
 URL = "https://github.com/kism/ace-restreamer"
 
