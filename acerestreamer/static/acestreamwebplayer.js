@@ -1,7 +1,3 @@
-// globals
-
-let isAttemptingPlay = false;
-
 // region API calls
 function getStream(streamId) {
   const controller = new AbortController();
