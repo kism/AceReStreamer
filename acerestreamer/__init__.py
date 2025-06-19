@@ -2,7 +2,7 @@
 
 from pprint import pformat
 
-from . import authentication_bp, config, info_bp, logger, stream_bp
+from . import authentication_bp, config, epg_bp, info_bp, logger, stream_bp
 from .flask_helpers import FlaskAceReStreamer, cache, check_static_folder, register_error_handlers
 
 __version__ = "0.2.7"  # This is the version of the app, used in pyproject.toml, enforced in a test.
@@ -49,10 +49,12 @@ def create_app(
     app.register_blueprint(stream_bp.bp)
     app.register_blueprint(authentication_bp.bp)
     app.register_blueprint(info_bp.bp)
+    app.register_blueprint(epg_bp.bp)
 
     with app.app_context():
         stream_bp.start_scraper()
         authentication_bp.start_allowlist()
+        epg_bp.start_epg_handler()
 
     app.logger.info("Starting Web Server")
     app.logger.info("%s version: %s", PROGRAM_NAME, __version__)
