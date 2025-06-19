@@ -1,6 +1,7 @@
 """Scraper object."""
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from .config import AceScrapeConf
 from .logger import get_logger
@@ -9,22 +10,33 @@ from .scraper_html import scrape_streams_html_sites
 from .scraper_iptv import scrape_streams_iptv_sites
 from .scraper_objects import FlatFoundAceStream, FoundAceStreams
 
+if TYPE_CHECKING:
+    from .config import ScrapeSiteHTML, ScrapeSiteIPTV
+else:
+    ScrapeSiteHTML = object
+    ScrapeSiteIPTV = object
+
 logger = get_logger(__name__)
 
 
 class AceScraper:
     """Scraper object."""
 
-    def __init__(self, ace_scrape_settings: AceScrapeConf, ace_quality_cache_path: Path | None) -> None:
+    def __init__(self, ace_scrape_settings: AceScrapeConf | None, ace_quality_cache_path: Path | None) -> None:
         """Init MyCoolObject."""
         self.streams: list[FoundAceStreams] = []
 
-        self.scrape_interval = ace_scrape_settings.scrape_interval
+        self.scrape_interval = 7200
+        self.html: list[ScrapeSiteHTML] = []
+        self.iptv_m3u8: list[ScrapeSiteIPTV] = []
+
+        if ace_scrape_settings:
+            self.scrape_interval = ace_scrape_settings.scrape_interval
+            self.html = ace_scrape_settings.html
+            self.iptv_m3u8 = ace_scrape_settings.iptv_m3u8
 
         self._ace_quality = AceQuality(ace_quality_cache_path)
 
-        self.html = ace_scrape_settings.html
-        self.iptv_m3u8 = ace_scrape_settings.iptv_m3u8
         self.run_scrape()
         self.print_streams()
 

@@ -22,7 +22,7 @@ from .stream_helpers import replace_m3u_sources
 logger = get_logger(__name__)  # Create a logger: acerestreamer.this_module_name, inherit config from root logger
 
 bp = Blueprint("acerestreamer_scraper", __name__)
-ace_scraper: AceScraper | None = None
+ace_scraper: AceScraper = AceScraper(ace_scrape_settings=None, ace_quality_cache_path=None)
 ace_pool: AcePool = AcePool(ace_addresses=[])
 current_app = get_current_app()
 
@@ -80,10 +80,6 @@ def iptv() -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    if not ace_scraper:
-        logger.error("Scraper object not initialized.")
-        return jsonify({"error": "Scraper not initialized"}, HTTPStatus.INTERNAL_SERVER_ERROR)
-
     streams = ace_scraper.get_streams_flat()
     hls_path = current_app.config["SERVER_NAME"] + "/hls/"
     m3u8 = get_streams_as_iptv(streams, hls_path)
@@ -101,10 +97,6 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
     auth_failure = assumed_auth_failure()
     if auth_failure:
         return auth_failure
-
-    if not ace_scraper:
-        logger.error("Scraper or Pool object not initialized.")
-        return jsonify({"error": "Scraper not initialized"}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
     ace_address = ace_pool.get_instance(path)
 
@@ -200,10 +192,6 @@ def api_stream(ace_id: str) -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    if not ace_scraper:
-        logger.error("Scraper object not initialized.")
-        return jsonify({"error": "Scraper not initialized"}, HTTPStatus.INTERNAL_SERVER_ERROR)
-
     stream = ace_scraper.get_stream_by_ace_id(ace_id)
 
     response = jsonify(stream.model_dump())
@@ -217,10 +205,6 @@ def api_streams_flat() -> Response | WerkzeugResponse:
     auth_failure = assumed_auth_failure()
     if auth_failure:
         return auth_failure
-
-    if not ace_scraper:
-        logger.error("Scraper object not initialized.")
-        return jsonify({"error": "Scraper not initialized"}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
     streams = ace_scraper.get_streams_flat()
     streams_serialized = [stream.model_dump() for stream in streams]
@@ -237,10 +221,6 @@ def api_streams() -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    if not ace_scraper:
-        logger.error("Scraper object not initialized.")
-        return jsonify({"error": "Scraper not initialized"}, HTTPStatus.INTERNAL_SERVER_ERROR)
-
     streams = ace_scraper.get_streams()
     streams_serialized = [stream.model_dump() for stream in streams]
 
@@ -255,10 +235,6 @@ def api_streams_health() -> Response | WerkzeugResponse:
     auth_failure = assumed_auth_failure()
     if auth_failure:
         return auth_failure
-
-    if not ace_scraper:
-        logger.error("Scraper object not initialized.")
-        return jsonify({"error": "Scraper not initialized"}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
     streams = ace_scraper.get_streams_health()
 
