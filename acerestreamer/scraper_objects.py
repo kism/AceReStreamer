@@ -15,6 +15,7 @@ class FoundAceStreams(BaseModel):
     """Model for a list of found AceStreams."""
 
     site_name: str
+    site_slug: str
     stream_list: list[FoundAceStream]
 
 

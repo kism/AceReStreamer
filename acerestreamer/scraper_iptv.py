@@ -81,6 +81,7 @@ def scrape_streams_iptv_site(site: ScrapeSiteIPTV) -> FoundAceStreams | None:
     return (
         FoundAceStreams(
             site_name=site.name,
+            site_slug=site.slug,
             stream_list=streams,
         )
         if streams

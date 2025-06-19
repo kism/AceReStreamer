@@ -101,6 +101,7 @@ def scrape_streams_html_site(site: ScrapeSiteHTML) -> FoundAceStreams | None:
     found_streams = process_candidates(streams_candidates, site)
     return FoundAceStreams(
         site_name=site.name,
+        site_slug=site.slug,
         stream_list=found_streams,
     )
 

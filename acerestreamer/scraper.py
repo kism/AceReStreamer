@@ -10,7 +10,7 @@ from .logger import get_logger
 from .scraper_health import AceQuality
 from .scraper_html import scrape_streams_html_sites
 from .scraper_iptv import scrape_streams_iptv_sites
-from .scraper_objects import FlatFoundAceStream, FoundAceStreams
+from .scraper_objects import FlatFoundAceStream, FoundAceStream, FoundAceStreams
 
 if TYPE_CHECKING:
     from .config import ScrapeSiteHTML, ScrapeSiteIPTV
@@ -88,7 +88,7 @@ class AceScraper:
             ace_id=ace_id,
         )
 
-    def get_streams_by_source(self) -> list[FoundAceStreams]:
+    def get_all_streams_by_source(self) -> list[FoundAceStreams]:
         """Get the found streams as a list of dicts, ready to be turned into json."""
         streams = list(self.streams)
 
@@ -97,6 +97,15 @@ class AceScraper:
                 stream.quality = self._ace_quality.get_quality(stream.ace_id)
 
         return streams
+
+    def get_streams_by_source(self, source_slug: str) -> list[FoundAceStream] | None:
+        """Get the found streams for a specific source by its slug."""
+        for scraped_streams_listing in self.streams:
+            if scraped_streams_listing.site_slug == source_slug:
+                return scraped_streams_listing.stream_list
+
+        logger.warning("No scraper source found with slug: %s", source_slug)
+        return None
 
     def get_streams_flat(self) -> list[FlatFoundAceStream]:
         """Get a list of streams, as a list of dicts."""
@@ -125,6 +134,15 @@ class AceScraper:
     def get_streams_sources_flat(self) -> list[AceScraperSourceApi]:
         """Get the sources for the scraper, as a flat list."""
         return [AceScraperSourceApi(name=site.name, slug=site.slug) for site in self.html + self.iptv_m3u8]
+
+    def get_streams_source(self, slug: str) -> AceScraperSourceApi | None:
+        """Get a source by its slug."""
+        for site in self.html + self.iptv_m3u8:
+            if site.slug == slug:
+                return AceScraperSourceApi(name=site.name, slug=site.slug)
+
+        logger.warning("No scraper source found with slug: %s", slug)
+        return None
 
     def get_streams_health(self) -> dict[str, int]:
         """Get the health of the streams."""

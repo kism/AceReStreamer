@@ -221,13 +221,29 @@ def api_streams() -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    streams = ace_scraper.get_streams_by_source()
+    streams = ace_scraper.get_all_streams_by_source()
     streams_serialized = [stream.model_dump() for stream in streams]
 
     response = jsonify(streams_serialized)
     response.status_code = HTTPStatus.OK
     return response
 
+@bp.route("/api/streams/by_source/<source_slug>")
+def api_streams_by_source(source_slug: str) -> Response | WerkzeugResponse:
+    """API endpoint to get the streams by source slug."""
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
+    streams = ace_scraper.get_streams_by_source(source_slug)
+    if not streams:
+        return jsonify({"error": "No streams found for this source"}, HTTPStatus.NOT_FOUND)
+
+    streams_serialized = [stream.model_dump() for stream in streams]
+
+    response = jsonify(streams_serialized)
+    response.status_code = HTTPStatus.OK
+    return response
 
 @bp.route("/api/sources")
 def api_streams_sources() -> Response | WerkzeugResponse:
@@ -243,6 +259,7 @@ def api_streams_sources() -> Response | WerkzeugResponse:
     response.status_code = HTTPStatus.OK
     return response
 
+
 @bp.route("/api/sources/flat")
 def api_streams_sources_flat() -> Response | WerkzeugResponse:
     """API endpoint to get the flat streams sources."""
@@ -257,7 +274,22 @@ def api_streams_sources_flat() -> Response | WerkzeugResponse:
     response.status_code = HTTPStatus.OK
     return response
 
+
 @bp.route("/api/source/<source_slug>")
+def api_streams_source_by_slug(source_slug: str) -> Response | WerkzeugResponse:
+    """API endpoint to get a specific stream source by slug."""
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
+    source = ace_scraper.get_streams_source(source_slug)
+    if not source:
+        return jsonify({"error": "Source not found"}, HTTPStatus.NOT_FOUND)
+
+    response = jsonify(source.model_dump())
+    response.status_code = HTTPStatus.OK
+    return response
+
 
 @bp.route("/api/streams/health")
 def api_streams_health() -> Response | WerkzeugResponse:
