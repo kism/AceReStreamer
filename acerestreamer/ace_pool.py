@@ -247,24 +247,39 @@ class AcePool:
         return instances
 
     def clear_instance_by_ace_id(self, ace_id: str) -> bool:
-        """Clear the AceStream instance by ace_id."""
-        instances_unlocked = False
-        others_to_unlock = []
+        """Clear an AceStream instance by ace_id.
 
+        Args:
+            ace_id (str): The Ace ID to clear.
+
+        Returns:
+            bool: True if an instance was cleared, False otherwise.
+
+        """
+        instance_unlocked = False
+
+        # This is the weird case, caused by a race condition probably
         for instance in self.ace_instances:
-            if instance.ace_id == ace_id:
-                if instance.check_locked_in():
-                    instance.reset_content()
-                    instances_unlocked = True
-                else:
-                    others_to_unlock.append(instance)
+            if instance.ace_id == ace_id and instance.ace_content_path == "":
+                instance.reset_content()
+                instance_unlocked = True
 
-        if instances_unlocked:
+        if instance_unlocked:
             return True
 
-        if others_to_unlock:
-            for instance in others_to_unlock:
+        # This is probably what the user wants
+        for instance in self.ace_instances:
+            if instance.ace_id == ace_id and instance.check_locked_in():
                 instance.reset_content()
-                instances_unlocked = True
+                instance_unlocked = True
 
-        return instances_unlocked
+        if instance_unlocked:
+            return True
+
+        # Anything that is not locked in
+        for instance in self.ace_instances:
+            if instance.ace_id == ace_id:
+                instance.reset_content()
+                instance_unlocked = True
+
+        return instance_unlocked
