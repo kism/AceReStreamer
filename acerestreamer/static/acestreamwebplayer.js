@@ -1,4 +1,33 @@
 // region API calls
+
+function getStreamsSources() {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+  return fetch("/api/sources/flat", {
+    method: "GET",
+    signal: controller.signal,
+  })
+    .then((response) => {
+      if (response.ok) {
+        return response.json();
+      } else {
+        console.error(`Error fetching streams sources: ${response.status}`);
+      }
+    })
+    .then((data) => {
+      return data;
+    })
+    .catch((error) => {
+      clearTimeout(timeoutId); // Stop the timeout since we only care about the GET timing out
+      if (error.name === "AbortError") {
+        console.error("getStreamsSources Fetch request timed out");
+      } else {
+        console.error(`getStreamsSources Error: ${error.message}`);
+      }
+      throw error;
+    });
+}
+
 function getStream(streamId) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -57,6 +86,35 @@ function getStreams() {
         streamStatus.innerHTML = "Stream list API FAILURE: Fetch Timeout";
       } else {
         console.error(`getStreams Error: ${error.message}`);
+      }
+      throw error;
+    });
+}
+
+function getStreamsFromSource(sourceSlug) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+  return fetch(`/api/streams/by_source/${sourceSlug}`, {
+    method: "GET",
+    signal: controller.signal,
+  })
+    .then((response) => {
+      if (response.ok) {
+        return response.json();
+      } else {
+        console.error(`Error fetching streams from source ${sourceSlug}: ${response.status}`);
+        throw new Error(`Error fetching streams from source ${sourceSlug}: ${response.status}`);
+      }
+    })
+    .then((data) => {
+      return data;
+    })
+    .catch((error) => {
+      clearTimeout(timeoutId); // Stop the timeout since we only care about the GET timing out
+      if (error.name === "AbortError") {
+        console.error("getStreamsFromSource Fetch request timed out");
+      } else {
+        console.error(`getStreamsFromSource Error: ${error.message}`);
       }
       throw error;
     });
@@ -392,7 +450,7 @@ function attemptPlay() {
 // biome-ignore lint/correctness/noUnusedVariables: HTML uses it
 function populateTables() {
   populateAcePoolTable();
-  populateStreamTable();
+  populateStreamTables();
 }
 
 // endregion
@@ -511,11 +569,30 @@ function populateAcePoolTable() {
 }
 
 // region Stream Table
+function populateStreamTables() {
+  getStreamsSources().then((sources) => {
+    const streamTableDiv = document.getElementById("stream-table");
+    streamTableDiv.innerHTML = ""; // Clear the table before adding new data
 
-function populateStreamTable() {
-  getStreams()
+    for (const source of sources) {
+      let tableTitle = document.createElement("h4");
+      tableTitle.textContent = source.name;
+      streamTableDiv.appendChild(tableTitle);
+      let table = document.createElement("table");
+      table.classList.add("stream-table");
+      table.id = `stream-table-${source.slug}`;
+      streamTableDiv.appendChild(table);
+      populateStreamTable(source);
+    }
+  });
+}
+
+function populateStreamTable(streamsSource) {
+  const tableId = `stream-table-${streamsSource.slug}`;
+
+  getStreamsFromSource(streamsSource.slug)
     .then((streams) => {
-      const table = document.getElementById("stream-table");
+      const table = document.getElementById(tableId);
       table.innerHTML = ""; // Clear the table before adding new data
       const tr_heading = document.createElement("tr");
 
@@ -592,8 +669,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Populate tables
   populateAcePoolTable();
   setInterval(populateAcePoolTable, 30000);
-  populateStreamTable();
-  setInterval(populateStreamTable, 95001);
+  populateStreamTables();
+  setInterval(populateStreamTables, 95001);
 
   // Check if Hls is even defined
   if (typeof Hls === "undefined") {
