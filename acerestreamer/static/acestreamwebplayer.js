@@ -420,7 +420,7 @@ function populateAcePoolTable() {
       flashBackgroundColor(th_playing);
 
       const th_unlock = document.createElement("th");
-      th_unlock.textContent = "Unlock";
+      th_unlock.textContent = "Make Available";
       tr_heading.appendChild(th_unlock);
       flashBackgroundColor(th_unlock);
 
@@ -482,23 +482,20 @@ function populateAcePoolTable() {
 
         // Unlock button cell
         const td_unlock = document.createElement("td");
-        if (instance.locked_in === true) {
-          const unlockButton = document.createElement("button");
-          unlockButton.textContent = "Unlock";
-          unlockButton.classList.add("unlock-button");
-          unlockButton.onclick = () => {
-            makeAcePoolInstanceAvailable(instance.ace_id)
-              .then(() => {
-                console.log(`Ace Pool instance ${instance.ace_id} made available`);
-                populateAcePoolTable(); // Refresh the table after unlocking
-              })
-              .catch((_error) => {});
-            populateAcePoolTable();
-          };
-          td_unlock.appendChild(unlockButton);
-        } else {
-          td_unlock.textContent = "N/A";
-        }
+        const unlockButton = document.createElement("button");
+        unlockButton.textContent = "Unlock";
+        unlockButton.classList.add("unlock-button");
+        unlockButton.onclick = () => {
+          makeAcePoolInstanceAvailable(instance.ace_id)
+            .then(() => {
+              console.log(`Ace Pool instance ${instance.ace_id} made available`);
+              populateAcePoolTable(); // Refresh the table after unlocking
+            })
+            .catch((_error) => {});
+          populateAcePoolTable();
+        };
+        td_unlock.appendChild(unlockButton);
+
         tr.appendChild(td_unlock);
 
         table.appendChild(tr);

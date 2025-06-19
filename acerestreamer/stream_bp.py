@@ -110,7 +110,7 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
 
     url = f"{ace_address}/ace/manifest.m3u8?content_id={path}"
 
-    logger.debug("HLS stream requested for path: %s", path)
+    logger.trace("HLS stream requested for path: %s", path)
 
     try:
         resp = requests.get(url, timeout=REVERSE_PROXY_TIMEOUT, stream=True)
@@ -121,7 +121,7 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
         return jsonify({"error": "HLS stream timeout"}, HTTPStatus.REQUEST_TIMEOUT)
     except requests.RequestException as e:
         error_short = type(e).__name__
-        logger.error("/hls/ reverse proxy failure %s", error_short)  # noqa: TRY400 Naa this should be shorter
+        logger.exception("/hls/ reverse proxy failure %s", error_short)  # noqa: TRY400 Naa this should be shorter
         ace_scraper.increment_quality(path, -5)
         return jsonify({"error": "Failed to fetch HLS stream"}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
@@ -165,7 +165,7 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
 
     url = f"{ace_address}/ace/c/{path}"
 
-    logger.debug("Ace content requested for path: %s", path)
+    logger.trace("Ace content requested for path: %s", path)
 
     try:
         resp = requests.get(url, timeout=REVERSE_PROXY_TIMEOUT, stream=True)

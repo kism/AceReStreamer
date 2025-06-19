@@ -57,14 +57,17 @@ class AcePoolEntry(BaseModel):
 
     def reset_content(self) -> None:
         """Reset the content path and ace_id for this instance."""
+        logger.info("Resetting content for Ace ID %s on %s", self.ace_id, self.ace_url)
         self.ace_id = ""
         self.ace_content_path = ""
         self.update_last_used()
         self.date_started = DEFAULT_DATE
         self._keep_alive_active = False
+        self.check_ace_running()
 
     def switch_content(self, ace_id: str, content_path: str) -> None:
         """Switch the content path and ace_id for this instance."""
+        logger.info("Switching content for Ace ID %s on %s", ace_id, self.ace_url)
         self.ace_id = ace_id
         self.ace_content_path = content_path
         self.update_last_used()
@@ -188,6 +191,7 @@ class AcePool:
             if instance.ace_id == ace_id:
                 instance.update_last_used()
                 instance.ace_content_path = content_path
+                logger.info("Set content path for Ace ID %s to %s", ace_id, content_path)
                 return
 
         # If not found, assign it to the next available instance
@@ -234,9 +238,23 @@ class AcePool:
 
     def clear_instance_by_ace_id(self, ace_id: str) -> bool:
         """Clear the AceStream instance by ace_id."""
+        instances_unlocked = False
+        others_to_unlock = []
+
         for instance in self.ace_instances:
             if instance.ace_id == ace_id:
-                instance.reset_content()
-                return True
+                if instance.check_locked_in():
+                    instance.reset_content()
+                    instances_unlocked = True
+                else:
+                    others_to_unlock.append(instance)
 
-        return False
+        if instances_unlocked:
+            return True
+
+        if others_to_unlock:
+            for instance in others_to_unlock:
+                instance.reset_content()
+                instances_unlocked = True
+
+        return instances_unlocked

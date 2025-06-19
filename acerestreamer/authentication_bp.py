@@ -39,7 +39,7 @@ def get_ip_from_request() -> str:
         or ""
     )
 
-    logger.debug("Raw request IP: %s", request_ip_raw)
+    logger.trace("Raw request IP: %s", request_ip_raw)
 
     if isinstance(request_ip_raw, list):
         request_ip_raw = request_ip_raw[0]
@@ -56,7 +56,7 @@ def is_ip_allowed(ip: str) -> bool:
         logger.warning("IP_ALLOW_LIST is not initialized")
         return False
 
-    logger.debug("Checking if IP is allowed: %s", ip)
+    logger.trace("Checking if IP is allowed: %s", ip)
     return ip_allow_list.check(ip)
 
 

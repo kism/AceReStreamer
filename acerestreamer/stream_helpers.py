@@ -11,6 +11,8 @@ current_app = get_current_app()
 def replace_m3u_sources(m3u_content: str, path: str, ace_pool: AcePool) -> str:
     """Replace Ace Stream sources in M3U content with a specified external server URL."""
     lines_new = []
+
+    content_path_known = False
     for line in m3u_content.splitlines():
         line_temp = line.strip()
         if "/ace/c/" in line:
@@ -18,9 +20,13 @@ def replace_m3u_sources(m3u_content: str, path: str, ace_pool: AcePool) -> str:
                 if line_temp.startswith(address):
                     line_temp = line_temp.replace(address, current_app.config["SERVER_NAME"])
 
-            current_content_identifier = re.search(r"/ace/c/([a-f0-9]+)", line_temp)
-            if current_content_identifier:
-                ace_pool.set_content_path(ace_id=path, content_path=current_content_identifier.group(1))
+            if not content_path_known:
+                current_content_identifier = re.search(r"/ace/c/([a-f0-9]+)", line_temp)
+
+                content_path_known = bool(current_content_identifier)
+
+                if current_content_identifier:
+                    ace_pool.set_content_path(ace_id=path, content_path=current_content_identifier.group(1))
 
         lines_new.append(line_temp)
 

@@ -80,7 +80,7 @@ class AceQuality:
         if not check_valid_ace_id(ace_id):
             return
 
-        logger.debug("Setting quality for AceStream %s by %d", ace_id, rating)
+        logger.trace("Setting quality for AceStream %s by %d", ace_id, rating)
         if ace_id not in self.ace_streams:
             self.ace_streams[ace_id] = self.default_quality
 

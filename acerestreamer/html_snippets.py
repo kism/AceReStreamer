@@ -23,7 +23,6 @@ def get_header_snippet(page_title: str) -> str:
     if git_head_log.is_file():
         with git_head_log.open("r") as f:
             last_commit = f.readlines()[-1].strip().split(" ")[0][:7]  # Get the last commit hash, first 7 characters
-            logger.debug(last_commit)
 
     if git_head.is_file():
         with git_head.open("r") as f:
