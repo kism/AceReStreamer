@@ -67,7 +67,6 @@ uv sync --no-group test --no-group type --no-group lint
 - actually fetch from sites in a thread
 - group the fetchers
 - epg
-- ace pool keep alive status
 
 ### Apps that don't work
 
@@ -112,3 +111,4 @@ see iptv.html.j2
 - ~~ace_pool on info on /stream~~
 - ~~health check the ace pool~~
 - ~~chromecast / airplay support~~ abandoned chromecast, airplay might work
+- ~~ace pool keep alive status~~
