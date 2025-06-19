@@ -187,13 +187,21 @@ class AcePool:
 
     def set_content_path(self, ace_id: str, content_path: str) -> None:
         """Set the content path for a specific AceStream instance."""
+        content_path_set = False
         for instance in self.ace_instances:
             if instance.ace_id == ace_id:
-                instance.update_last_used()
-                if instance.ace_content_path == "":
-                    logger.info("Setting content path for Ace ID %s to %s", ace_id, content_path)
-                instance.ace_content_path = content_path
-                return
+                if not content_path_set:
+                    instance.update_last_used()
+                    if instance.ace_content_path == "":
+                        logger.info("Setting content path for Ace ID %s to %s", ace_id, content_path)
+                    instance.ace_content_path = content_path
+                    content_path_set = True
+                else:  # Race condition can set two instances to the same ace_id
+                    logger.warning("Content path for Ace ID %s already set to %s", ace_id, instance.ace_content_path)
+                    instance.reset_content()
+
+        if content_path_set:
+            return
 
         # If not found, assign it to the next available instance
         new_instance = self.get_available_instance()
