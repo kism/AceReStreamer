@@ -57,11 +57,14 @@ class ScrapeSiteHTML(BaseModel):
     @model_validator(mode="after")
     def slugify(self) -> Self:
         """Validate the URL."""
+        name_slug = slugify(self.name)
+
         if self.slug == "":
-            self.slug = slugify(self.name)
-        else:
-            msg = "Slug should not be set manually, it will be generated from the name."
-            raise ValueError(msg)
+            self.slug = name_slug
+        elif self.slug != name_slug:
+            logger.warning("You cannot manually set the slug. It will be generated from the name.")
+
+        self.slug = slugify(self.name)
 
         return self
 
@@ -86,11 +89,14 @@ class ScrapeSiteIPTV(BaseModel):
     @model_validator(mode="after")
     def slugify(self) -> Self:
         """Validate the URL."""
+        name_slug = slugify(self.name)
+
         if self.slug == "":
-            self.slug = slugify(self.name)
-        else:
-            msg = "Slug should not be set manually, it will be generated from the name."
-            raise ValueError(msg)
+            self.slug = name_slug
+        elif self.slug != name_slug:
+            logger.warning("You cannot manually set the slug. It will be generated from the name.")
+
+        self.slug = slugify(self.name)
 
         return self
 
@@ -107,12 +113,10 @@ class AceScrapeConf(BaseModel):
         """Ensure all scraper sites have unique names, via slug."""
         names_slug = []
         for site in self.html + self.iptv_m3u8:
-            site_name_slug = slugify(site.name)
-
-            if site_name_slug in names_slug:
-                msg = f"Scraper site name '{site.name}' > '{site_name_slug}' is not unique, please change it."
+            if site.slug in names_slug:
+                msg = f"Scraper site name '{site.name}' > '{site.slug}' is not unique, please change it."
                 raise ValueError(msg)
-            names_slug.append(site_name_slug)
+            names_slug.append(site.slug)
 
         return self
 

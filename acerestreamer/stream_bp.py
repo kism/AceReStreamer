@@ -257,6 +257,8 @@ def api_streams_sources_flat() -> Response | WerkzeugResponse:
     response.status_code = HTTPStatus.OK
     return response
 
+@bp.route("/api/source/<source_slug>")
+
 @bp.route("/api/streams/health")
 def api_streams_health() -> Response | WerkzeugResponse:
     """API endpoint to get the streams."""
