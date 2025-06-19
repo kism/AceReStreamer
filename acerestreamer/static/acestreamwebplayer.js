@@ -56,41 +56,6 @@ function getStream(streamId) {
     });
 }
 
-function getStreams() {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-  return fetch("/api/streams/flat", {
-    method: "GET",
-    signal: controller.signal,
-  })
-    .then((response) => {
-      if (response.ok) {
-        return response.json();
-      }
-      const streamStatus = document.getElementById("stream-status");
-      setStatusClass(streamStatus, "bad");
-      streamStatus.innerHTML = `Stream list FAILURE ${response.status}`;
-
-      throw new Error(`Error fetching data. Status code: ${response.status}`);
-    })
-    .then((data) => {
-      return data;
-    })
-    .catch((error) => {
-      clearTimeout(timeoutId); //Stop the timeout since we only care about the GET timing out
-      if (error.name === "AbortError") {
-        console.error("getStreams Fetch request timed out");
-        const streamStatus = document.getElementById("stream-status");
-        setStatusClass(streamStatus, "bad");
-        streamStatus.innerHTML = "Stream list API FAILURE: Fetch Timeout";
-      } else {
-        console.error(`getStreams Error: ${error.message}`);
-      }
-      throw error;
-    });
-}
-
 function getStreamsFromSource(sourceSlug) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -575,10 +540,10 @@ function populateStreamTables() {
     streamTableDiv.innerHTML = ""; // Clear the table before adding new data
 
     for (const source of sources) {
-      let tableTitle = document.createElement("h4");
+      const tableTitle = document.createElement("h4");
       tableTitle.textContent = source.name;
       streamTableDiv.appendChild(tableTitle);
-      let table = document.createElement("table");
+      const table = document.createElement("table");
       table.classList.add("stream-table");
       table.id = `stream-table-${source.slug}`;
       streamTableDiv.appendChild(table);
