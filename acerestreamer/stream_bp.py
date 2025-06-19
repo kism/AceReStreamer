@@ -228,6 +228,7 @@ def api_streams() -> Response | WerkzeugResponse:
     response.status_code = HTTPStatus.OK
     return response
 
+
 @bp.route("/api/streams/by_source/<source_slug>")
 def api_streams_by_source(source_slug: str) -> Response | WerkzeugResponse:
     """API endpoint to get the streams by source slug."""
@@ -244,6 +245,7 @@ def api_streams_by_source(source_slug: str) -> Response | WerkzeugResponse:
     response = jsonify(streams_serialized)
     response.status_code = HTTPStatus.OK
     return response
+
 
 @bp.route("/api/sources")
 def api_streams_sources() -> Response | WerkzeugResponse:

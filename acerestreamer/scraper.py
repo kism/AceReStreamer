@@ -10,7 +10,7 @@ from .logger import get_logger
 from .scraper_health import AceQuality
 from .scraper_html import scrape_streams_html_sites
 from .scraper_iptv import scrape_streams_iptv_sites
-from .scraper_objects import FlatFoundAceStream, FoundAceStream, FoundAceStreams
+from .scraper_objects import FlatFoundAceStream, FoundAceStreams
 
 if TYPE_CHECKING:
     from .config import ScrapeSiteHTML, ScrapeSiteIPTV
