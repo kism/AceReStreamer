@@ -102,7 +102,7 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    if not ace_scraper or not ace_pool:
+    if not ace_scraper:
         logger.error("Scraper or Pool object not initialized.")
         return jsonify({"error": "Scraper not initialized"}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
