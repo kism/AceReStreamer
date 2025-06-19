@@ -63,9 +63,9 @@ uv sync --no-group test --no-group type --no-group lint
 - pytest
 - vitest?
 - iptv api
-  - more on the iptv guide
+  - ~~more on the iptv guide~~
+  - per source iptv feeds
 - actually fetch from sites in a thread
-- group the fetchers
 - epg
 
 ### Apps that don't work
@@ -112,3 +112,4 @@ see iptv.html.j2
 - ~~health check the ace pool~~
 - ~~chromecast / airplay support~~ abandoned chromecast, airplay might work
 - ~~ace pool keep alive status~~
+- ~~group the fetchers~~
