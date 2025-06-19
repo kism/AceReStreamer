@@ -31,7 +31,7 @@ class AcePoolEntry(BaseModel):
     healthy: bool = False
     date_started: datetime = DEFAULT_DATE
     last_used: datetime = DEFAULT_DATE
-    _keep_alive_active: bool = False
+    keep_alive_active: bool = False
 
     def check_ace_running(self) -> bool:
         """Use the AceStream API to check if the instance is running."""
@@ -62,7 +62,7 @@ class AcePoolEntry(BaseModel):
         self.ace_content_path = ""
         self.update_last_used()
         self.date_started = DEFAULT_DATE
-        self._keep_alive_active = False
+        self.keep_alive_active = False
         self.check_ace_running()
 
     def switch_content(self, ace_id: str, content_path: str) -> None:
@@ -72,7 +72,7 @@ class AcePoolEntry(BaseModel):
         self.ace_content_path = content_path
         self.update_last_used()
         self.date_started = datetime.now(tz=OUR_TIMEZONE)
-        self._keep_alive_active = False  # Reset
+        self.keep_alive_active = False  # Reset
         self.start_keep_alive()
 
     def get_time_until_unlock(self) -> timedelta:
@@ -120,8 +120,8 @@ class AcePoolEntry(BaseModel):
                     self.reset_content()
                 time.sleep(refresh_interval)
 
-        if not self._keep_alive_active:
-            self._keep_alive_active = True
+        if not self.keep_alive_active:
+            self.keep_alive_active = True
             threading.Thread(target=keep_alive, daemon=True).start()
             logger.debug("Started keep alive thread for %s with ace_id %s", self.ace_url, self.ace_id)
 

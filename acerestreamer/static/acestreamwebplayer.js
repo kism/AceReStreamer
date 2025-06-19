@@ -387,6 +387,16 @@ function attemptPlay() {
   video.play();
 }
 
+// region Tables
+
+// biome-ignore lint/correctness/noUnusedVariables: HTML uses it
+function populateTables() {
+  populateAcePoolTable();
+  populateStreamTable();
+}
+
+// endregion
+
 // region Ace Pool Table
 
 function populateAcePoolTable() {
