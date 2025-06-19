@@ -66,6 +66,7 @@ uv sync --no-group test --no-group type --no-group lint
   - more on the iptv guide
 - actually fetch from sites in a thread
 - group the fetchers
+- epg
 
 ### Apps that don't work
 
