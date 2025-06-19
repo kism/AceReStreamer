@@ -1,9 +1,12 @@
 """Module for handling Electronic Program Guide (EPG) data."""
 
+import gzip
+import io
 from datetime import datetime
 from pathlib import Path
 
 import requests
+from lxml import etree
 
 from .config import EPGInstanceConf
 from .constants import OUR_TIMEZONE
@@ -38,10 +41,11 @@ class EPG:
         if not self._time_to_update():
             return
 
-        data = self._download_data()
-        if data:
-            self.last_updated = datetime.now(tz=OUR_TIMEZONE)
-            self.data = data
+        data_str = self._download_epg()
+
+        self.data = etree.fromstring(data_str)
+
+        self.last_updated = datetime.now(tz=OUR_TIMEZONE)
 
     def _time_to_update(self) -> bool:
         """Check if the EPG data needs to be updated based on the last update time."""
@@ -56,7 +60,7 @@ class EPG:
         time_since_last_update = (datetime.now(tz=OUR_TIMEZONE) - self.last_updated).total_seconds()
         return time_since_last_update > EPG_LIFESPAN_SECONDS
 
-    def _download_data(self) -> bytes:
+    def _download_epg(self) -> str:
         """Download the EPG data from the URL."""
         # Placeholder for actual download logic
         logger.info("Downloading EPG data from %s", self.url)
@@ -75,13 +79,16 @@ class EPG:
             error_short = type(e).__name__
             logger.error("Failed to download EPG data: %s", error_short)  # noqa: TRY400 Short error is good
 
-        return data
+        return data.decode("utf-8") if isinstance(data, bytes) else data
 
     def _un_gz_data(self, data: bytes) -> bytes:
         """Uncompress gzipped EPG data."""
         # Placeholder for actual decompression logic
         logger.info("Uncompressing gzipped EPG data")
-        return data
+
+        buffer = io.BytesIO(data)
+        with gzip.GzipFile(fileobj=buffer, mode="rb") as gz_file:
+            return gz_file.read()
 
     def _check_saved_file_exists(self) -> bool:
         """Check if the saved EPG file exists."""
@@ -101,3 +108,7 @@ class EPGHandler:
         if instance_path:
             for epg in self.epgs:
                 epg.update(instance_path=instance_path)
+
+    def get_epg_names(self) -> list[str]:
+        """Get the names of all EPGs."""
+        return [epg.region_code for epg in self.epgs]
