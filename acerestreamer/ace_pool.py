@@ -67,7 +67,7 @@ class AcePoolEntry(BaseModel):
 
     def switch_content(self, ace_id: str, content_path: str) -> None:
         """Switch the content path and ace_id for this instance."""
-        logger.info("Switching content for Ace ID %s on %s", ace_id, self.ace_url)
+        logger.info("Switching instance %s to ace id %s", self.ace_url, ace_id)
         self.ace_id = ace_id
         self.ace_content_path = content_path
         self.update_last_used()
@@ -190,8 +190,9 @@ class AcePool:
         for instance in self.ace_instances:
             if instance.ace_id == ace_id:
                 instance.update_last_used()
+                if instance.ace_content_path == "":
+                    logger.info("Setting content path for Ace ID %s to %s", ace_id, content_path)
                 instance.ace_content_path = content_path
-                logger.info("Set content path for Ace ID %s to %s", ace_id, content_path)
                 return
 
         # If not found, assign it to the next available instance
@@ -209,6 +210,8 @@ class AcePool:
             if instance.ace_content_path == content_path:
                 return instance.ace_url
 
+
+        logger.warning("Ace content %s path not linked to instance", content_path)
         return ""
 
     def get_instances_nice(self) -> list[AcePoolEntryForAPI]:

@@ -121,7 +121,7 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
         return jsonify({"error": "HLS stream timeout"}, HTTPStatus.REQUEST_TIMEOUT)
     except requests.RequestException as e:
         error_short = type(e).__name__
-        logger.exception("/hls/ reverse proxy failure %s", error_short)  # noqa: TRY400 Naa this should be shorter
+        logger.error("/hls/ reverse proxy failure %s", error_short)  # noqa: TRY400 Naa this should be shorter
         ace_scraper.increment_quality(path, -5)
         return jsonify({"error": "Failed to fetch HLS stream"}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
@@ -162,6 +162,11 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
     ace_content_path_filtered = path_filtered.group(1)
 
     ace_address = ace_pool.get_instance_by_content_path(ace_content_path_filtered)
+
+    if not ace_address:
+        response = jsonify({"error": "Ace content not ready"}, HTTPStatus.SERVICE_UNAVAILABLE)
+        response.headers["Retry-After"] = "10"
+        return response
 
     url = f"{ace_address}/ace/c/{path}"
 
