@@ -497,7 +497,7 @@ label > .label-body {
 }
 
 /* #region: Stream List */
-#stream-table {
+.stream-table {
   border-collapse: collapse; /* This removes gaps between cells */
 }
 
