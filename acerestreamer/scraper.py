@@ -1,12 +1,11 @@
 """Scraper object."""
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel
 
 from .config import AceScrapeConf
-from .helpers import slugify
 from .logger import get_logger
 from .scraper_health import AceQuality
 from .scraper_html import scrape_streams_html_sites
