@@ -169,6 +169,14 @@ class NginxConf(BaseModel):
     ip_allow_list_path: Path | str = ""
 
 
+class EPGInstanceConf(BaseModel):
+    """EPG (Electronic Program Guide) configuration definition."""
+
+    region_code: str = "UK"
+    format: str = "xml.gz"
+    url: str = "https://www.open-epg.com/files/unitedkingdom1.xml.gz"
+
+
 class AceReStreamerConf(BaseSettings):
     """Settings loaded from a TOML file."""
 
@@ -178,6 +186,7 @@ class AceReStreamerConf(BaseSettings):
     nginx: NginxConf | None = None  # Nginx configuration is optional
     logging: LoggingConf = LoggingConf()
     scraper: AceScrapeConf = AceScrapeConf()
+    epgs: list[EPGInstanceConf] = [EPGInstanceConf()]
 
     def write_config(self, config_location: Path) -> None:
         """Write the current settings to a TOML file."""
