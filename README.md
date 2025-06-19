@@ -67,6 +67,7 @@ uv sync --no-group test --no-group type --no-group lint
 - actually fetch from sites in a thread
 - group the fetchers
 - epg
+- ace pool keep alive status
 
 ### Apps that don't work
 
