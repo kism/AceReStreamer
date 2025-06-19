@@ -177,10 +177,52 @@ function checkIfPlaying() {
 
 // region Stream handling
 
+async function checkVideoSrcAvailability(videoSrc, maxRetries = 5) {
+  let msg = "";
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+      const response = await fetch(videoSrc, {
+        method: "GET",
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        return true;
+      }
+
+      msg = `${attempt}/${maxRetries}: Stream source unavailable with status ${response.status}`;
+      console.warn(msg);
+      setOnPageStreamErrorMessage(msg);
+    } catch (error) {
+      msg = `${attempt}/${maxRetries}: ${error.message}`;
+      console.warn(msg);
+      setOnPageStreamErrorMessage(msg);
+    }
+
+    // Wait before retrying (except on the last attempt)
+    if (attempt < maxRetries) {
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+    }
+  }
+
+  console.error(`Video source unavailable after ${maxRetries} attempts`);
+  return false;
+}
+
 function loadStream() {
   const video = document.getElementById("video");
   const videoSrc = `/hls/${window.location.hash.substring(1)}`;
   console.log(`Loading stream: ${videoSrc}`);
+
+  if (!checkVideoSrcAvailability(videoSrc)) {
+    setOnPageStreamErrorMessage("Stream source is not available");
+    return;
+  }
 
   video.controls = true;
 
@@ -201,7 +243,7 @@ function loadStream() {
 
       if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
         errorMessage = "Network error: Ace doen't have the stream segment";
-        attemptPlayWithRetry();
+        attemptPlay();
       } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
         errorMessage = "Media error: Stream not ready";
       } else if (data.type === Hls.ErrorTypes.MUX_ERROR) {
@@ -262,12 +304,12 @@ function loadPlayStream(streamID) {
       loadStreamUrl(streamID, streamInfo.title);
 
       // Try to play with retry logic
-      attemptPlayWithRetry();
+      attemptPlay();
     })
     .catch((error) => {
       console.error("Failed to get stream info:", error);
       loadStreamUrl(streamID, streamID);
-      attemptPlayWithRetry();
+      attemptPlay();
     });
 }
 
@@ -344,60 +386,9 @@ function resizePlayerMobile() {
   }
 }
 
-function attemptPlayWithRetry(maxAttempts = 3, currentAttempt = 1) {
+function attemptPlay() {
   const video = document.getElementById("video");
-  const playerStatus = document.getElementById("player-status");
-
-  if (isAttemptingPlay) {
-    console.log("Already attempting to play the video, skipping this attempt.");
-    return;
-  }
-  isAttemptingPlay = true;
-
-  setTimeout(() => {
-    video
-      .play()
-      .then(() => {
-        console.log(`Play attempt ${currentAttempt} initiated`);
-        setStatusClass(playerStatus, "neutral");
-        playerStatus.innerHTML = `Attempting to play... (${currentAttempt}/${maxAttempts})`;
-
-        // Check if video actually started playing after a brief delay
-        setTimeout(() => {
-          if (video.paused || video.ended || video.currentTime === 0) {
-            setStatusClass(playerStatus, "bad");
-
-            console.log(`Play attempt ${currentAttempt} failed - video not playing`);
-            if (currentAttempt < maxAttempts) {
-              console.log(`Retrying... (${currentAttempt + 1}/${maxAttempts})`);
-              attemptPlayWithRetry(maxAttempts, currentAttempt + 1);
-            } else {
-              console.error("All play attempts failed");
-              setOnPageStreamErrorMessage("Failed to start video playback after multiple attempts");
-              isAttemptingPlay = false; // Reset flag when done
-            }
-          } else {
-            playerStatus.innerHTML = "Playing";
-            setStatusClass(playerStatus, "good");
-            console.log(`Video successfully started playing on attempt ${currentAttempt}`);
-            isAttemptingPlay = false; // Reset flag when done
-            populateAcePoolTable();
-          }
-        }, 500); // Check after 500ms
-      })
-      .catch((error) => {
-        console.error(`Play attempt ${currentAttempt} error:`, error);
-
-        if (currentAttempt < maxAttempts) {
-          console.log(`Retrying after error... (${currentAttempt + 1}/${maxAttempts})`);
-          attemptPlayWithRetry(maxAttempts, currentAttempt + 1);
-        } else {
-          console.error("All play attempts failed with errors");
-          setOnPageStreamErrorMessage("Error playing video after multiple attempts");
-          isAttemptingPlay = false; // Reset flag when done
-        }
-      });
-  }, 1000 * currentAttempt); // Increase delay with each attempt
+  video.play();
 }
 
 // region Ace Pool Table
