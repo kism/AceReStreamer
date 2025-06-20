@@ -2,6 +2,8 @@
 
 import gzip
 import io
+import threading
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -119,19 +121,34 @@ class EPGHandler:
         """Initialize the EPGHandler with a list of URLs."""
         self.epgs: list[EPG] = []
         self.merged_epg: etree._Element | None = None
+        self.instance_path = instance_path
 
         for epg_conf in epg_conf_list:
             self.epgs.append(EPG(epg_conf=epg_conf))
 
-        if instance_path:
-            for epg in self.epgs:
-                epg.update(instance_path=instance_path)
+        self.update_epgs()
 
         logger.info("Initialised EPGHandler with %d EPG configurations", len(epg_conf_list))
 
     def get_epg_names(self) -> list[str]:
         """Get the names of all EPGs."""
         return [epg.region_code for epg in self.epgs]
+
+    def update_epgs(self) -> None:
+        """Update all EPGs with the current instance path."""
+
+        def epg_update_thread() -> None:
+            """Thread function to update EPGs."""
+            while True:
+                if self.instance_path is not None:
+                    for epg in self.epgs:
+                        try:
+                            epg.update(instance_path=self.instance_path)
+                        except Exception:
+                            logger.exception("Failed to update EPG %s", epg.region_code)
+                time.sleep(EPG_LIFESPAN_SECONDS)
+
+        threading.Thread(target=epg_update_thread, name="EPGUpdateThread", daemon=True).start()
 
     def get_merged_epg(self) -> str:
         """Get the merged EPG data from all configured EPGs."""

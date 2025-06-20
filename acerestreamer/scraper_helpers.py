@@ -155,3 +155,4 @@ def check_title_allowed(title: str, title_filter: TitleFilter) -> bool:
         return any(word.lower() in title for word in title_filter.include_words)
 
     return True
+

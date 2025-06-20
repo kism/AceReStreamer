@@ -2,9 +2,11 @@
 
 import requests
 from bs4 import BeautifulSoup, Tag
+from .scraper_cache import ScraperCache
 
 from .config import ScrapeSiteHTML
 from .logger import get_logger
+from .scraper_cache import ScraperCache
 from .scraper_helpers import (
     STREAM_TITLE_MAX_LENGTH,
     candidates_regex_cleanup,
@@ -33,19 +35,25 @@ def scrape_streams_html_sites(sites: list[ScrapeSiteHTML]) -> list[FoundAceStrea
 
 def scrape_streams_html_site(site: ScrapeSiteHTML) -> FoundAceStreams | None:
     """Scrape the streams from the configured sites."""
+    scraper_cache = ScraperCache()
     streams_candidates: list[CandidateAceStream] = []
 
-    logger.debug("Scraping streams from site: %s", site)
-    try:
-        response = requests.get(site.url, timeout=10)
-        response.raise_for_status()
-        response.encoding = "utf-8"  # Ensure the response is decoded correctly
-    except requests.RequestException as e:
-        error_short = type(e).__name__
-        logger.error("Error scraping site %s, %s", site.url, error_short)  # noqa: TRY400 Naa this should be shorter
-        return None
+    scraped_site_str = scraper_cache.load_from_cache(site.url)
 
-    soup = BeautifulSoup(response.text, "html.parser")
+    if not scraper_cache.is_cache_valid(site.url):
+        logger.debug("Scraping streams from site: %s", site)
+        try:
+            response = requests.get(site.url, timeout=10)
+            response.raise_for_status()
+            response.encoding = "utf-8"  # Ensure the response is decoded correctly
+            scraped_site_str = response.text
+            scraper_cache.save_to_cache(site.url, scraped_site_str)
+        except requests.RequestException as e:
+            error_short = type(e).__name__
+            logger.error("Error scraping site %s, %s", site.url, error_short)  # noqa: TRY400 Naa this should be shorter
+            return None
+
+    soup = BeautifulSoup(scraped_site_str, "html.parser")
 
     for link in soup.find_all("a", href=True):
         # Appease mypy
@@ -156,7 +164,7 @@ def process_candidates(candidates: list[CandidateAceStream], site: ScrapeSiteHTM
             )
         )
 
-    logger.debug("Streams: \n%s", "\n".join([f"{stream.title} - {stream.ace_id}" for stream in found_streams]))
+    logger.debug("Found %d streams on site %s", len(found_streams), site.name)
 
     return found_streams
 

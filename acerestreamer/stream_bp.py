@@ -22,7 +22,7 @@ from .stream_helpers import replace_m3u_sources
 logger = get_logger(__name__)  # Create a logger: acerestreamer.this_module_name, inherit config from root logger
 
 bp = Blueprint("acerestreamer_scraper", __name__)
-ace_scraper: AceScraper = AceScraper(ace_scrape_settings=None, ace_quality_cache_path=None)
+ace_scraper: AceScraper = AceScraper(ace_scrape_settings=None, instance_path=None)
 ace_pool: AcePool = AcePool(ace_addresses=[])
 current_app = get_current_app()
 
@@ -35,8 +35,7 @@ def start_scraper() -> None:
     global ace_scraper  # noqa: PLW0603 Necessary evil as far as I can tell, could move to all objects but eh...
     global ace_pool  # noqa: PLW0603 Necessary evil as far as I can tell, could move to all objects but eh...
 
-    scraper_cache = Path(current_app.instance_path) / "ace_quality_cache.json"
-    ace_scraper = AceScraper(current_app.aw_conf.scraper, scraper_cache)
+    ace_scraper = AceScraper(current_app.aw_conf.scraper, Path(current_app.instance_path))
 
     ace_pool = AcePool(current_app.aw_conf.app.ace_addresses)
 

@@ -40,8 +40,10 @@ class AceScraperSourceApi(BaseModel):
 class AceScraper:
     """Scraper object."""
 
-    def __init__(self, ace_scrape_settings: AceScrapeConf | None, ace_quality_cache_path: Path | None) -> None:
+    def __init__(self, ace_scrape_settings: AceScrapeConf | None, instance_path: Path | None) -> None:
         """Init MyCoolObject."""
+        self._ace_quality_cache_path = instance_path / "ace_quality_cache.json" if instance_path else None
+
         self.streams: list[FoundAceStreams] = []
 
         self.scrape_interval = 7200
@@ -53,7 +55,7 @@ class AceScraper:
             self.html = ace_scrape_settings.html
             self.iptv_m3u8 = ace_scrape_settings.iptv_m3u8
 
-        self._ace_quality = AceQuality(ace_quality_cache_path)
+        self._ace_quality = AceQuality(self._ace_quality_cache_path)
 
         self.run_scrape()
         self.print_streams()
