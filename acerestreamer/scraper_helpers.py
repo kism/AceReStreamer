@@ -1,6 +1,7 @@
 """Helper functions for scrapers."""
 
 import re
+from pathlib import Path
 
 from .config import TitleFilter
 from .logger import get_logger
@@ -11,6 +12,44 @@ logger = get_logger(__name__)
 STREAM_TITLE_MAX_LENGTH = 50
 ACE_ID_LENGTH = 40
 ACE_URL_PREFIXES = ["http://127.0.0.1:6878/ace/getstream?id=", "acestream://"]
+
+
+class M3UNameReplacer:
+    """Cache for M3U text replacements."""
+
+    def __init__(self) -> None:
+        """Initialize the cache."""
+        self.cache: dict[str, str] = {}
+
+    def do_replacements(self, name: str, instance_path: Path) -> str:
+        """Perform replacements in the M3U content."""
+        if self.cache == {}:
+            self._load_cache(instance_path)
+
+        for key, value in self.cache.items():
+            if key in name:
+                logger.debug("Replacing '%s' with '%s' in '%s'", key, value, name)
+                name = name.replace(key, value)
+
+        return name
+
+    def _load_cache(self, instance_path: Path) -> None:
+        """Load M3U replacements from the instance path."""
+        m3u_path = instance_path / "m3u_replacements.csv"
+        if m3u_path.exists():
+            with m3u_path.open("r", encoding="utf-8") as file:
+                for line in file:
+                    line_tmp = line.strip()
+                    if not line_tmp or line_tmp.startswith("#"):
+                        continue
+                    parts = line_tmp.split(",")
+                    if len(parts) == 2:
+                        self.cache[parts[0].strip()] = parts[1].strip()
+        else:
+            m3u_path.touch()
+
+
+m3u_replacer = M3UNameReplacer()
 
 
 def cleanup_candidate_title(title: str) -> str:
@@ -40,15 +79,26 @@ def candidates_regex_cleanup(candidate_titles: list[str], regex: str) -> list[st
     return new_candidate_titles
 
 
-def get_streams_as_iptv(streams: list[FlatFoundAceStream], base_url_hls: str) -> str:
+def get_streams_as_iptv(streams: list[FlatFoundAceStream], hls_path: str, instance_path: Path) -> str:
     """Get the found streams as an IPTV M3U8 string."""
     m3u8_content = "#EXTM3U\n"
 
     for stream in streams:
         logger.debug(stream)
         if stream.quality > 0:
-            m3u8_content += f'#EXTINF:-1 infohash="{stream.ace_id}",{stream.title}\n'
-            m3u8_content += f"{base_url_hls}{stream.ace_id}\n"
+            # Country codes are 2 characters between square brackets, e.g. [US]
+            stream_title_normalized = m3u_replacer.do_replacements(stream.title, instance_path)
+
+            country_code_regex = re.search(r"\[([A-Z]{2})\]", stream_title_normalized)
+            tvg_id = 'tvg-id=""'
+
+            if country_code_regex and isinstance(country_code_regex.group(1), str):
+                country_code = country_code_regex.group(1)
+                stream_title_no_cc = stream_title_normalized.replace(f"[{country_code}]", "").strip()
+                tvg_id = f'tvg-id="{stream_title_no_cc}.{country_code.lower()}"'
+
+            m3u8_content += f"#EXTINF:-1 {tvg_id},{stream_title_normalized}\n"
+            m3u8_content += f"{hls_path}{stream.ace_id}\n"
 
     return m3u8_content
 
