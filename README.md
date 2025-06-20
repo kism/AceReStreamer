@@ -67,6 +67,7 @@ uv sync --no-group test --no-group type --no-group lint
   - per source iptv feeds
 - actually fetch from sites in a thread
 - epg
+- get content_id from ace/manifest.m3u8 yeah? It redirects
 
 ### Apps that don't work
 

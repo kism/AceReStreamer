@@ -24,6 +24,7 @@ dependencies = [
 [dependency-groups]
 type = [
     "mypy",
+    "lxml-stubs>=0.5.1",
     "types-colorama>=0.4.15.20240311",
     "types-requests>=2.32.0.20250602",
 ]
@@ -35,7 +36,6 @@ test = [
     "pytest-random-order",
     "detect-test-pollution",
 ]
-
 profile = ["snakeviz"]
 
 [tool.uv]

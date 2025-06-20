@@ -26,12 +26,13 @@ class EPG:
         self.format = epg_conf.format
         self._extracted_format = self.format.replace(".gz", "")  # Remove .gz for internal use
         self.region_code = epg_conf.region_code
-        self.last_updated = datetime.now(tz=OUR_TIMEZONE)
-        self.data: bytes | None = None
+        self.last_updated: datetime | None = None
+        self.data: etree._Element | None = None
         self.saved_file_path: Path | None = None
 
     def update(self, instance_path: Path) -> None:
         """Update the EPG data from the configured URL."""
+        downloaded_file = False
         directory_path = instance_path / "epg"
         if not directory_path.is_dir():
             logger.info("Creating EPG directory at %s", directory_path)
@@ -39,18 +40,27 @@ class EPG:
 
         self.saved_file_path = directory_path / f"{self.region_code}.{self._extracted_format}"
         if not self._time_to_update():
-            return
+            logger.info("EPG data for %s is up-to-date, no need to update", self.region_code)
+            if self.saved_file_path.is_file():
+                data_bytes = self.saved_file_path.read_bytes()
+            else:
+                logger.error("Entered impossible state: EPG data is not up-to-date but no saved file exists")
+        else:
+            data_bytes = self._download_epg()
+            downloaded_file = True
 
-        data_str = self._download_epg()
-
-        self.data = etree.fromstring(data_str)
-
+        self.data = etree.fromstring(data_bytes)
         self.last_updated = datetime.now(tz=OUR_TIMEZONE)
+
+        if downloaded_file:
+            self._write_to_file(data_bytes)  # Write to file after, so empty file is not created if download fails
+            logger.info("EPG data for %s updated successfully", self.region_code)
 
     def _time_to_update(self) -> bool:
         """Check if the EPG data needs to be updated based on the last update time."""
         if self.last_updated is None:
-            if self._check_saved_file_exists():
+            logger.debug("Last updated time is None, will update EPG data")
+            if self.saved_file_path is not None and self.saved_file_path.is_file():
                 # Stat the existing file to get its last modified time
                 mtime = self.saved_file_path.stat().st_mtime
                 self.last_updated = datetime.fromtimestamp(mtime, tz=OUR_TIMEZONE)
@@ -58,9 +68,11 @@ class EPG:
                 return True
 
         time_since_last_update = (datetime.now(tz=OUR_TIMEZONE) - self.last_updated).total_seconds()
+        logger.debug("Time since last update for %s: %d seconds", self.region_code, time_since_last_update)
+
         return time_since_last_update > EPG_LIFESPAN_SECONDS
 
-    def _download_epg(self) -> str:
+    def _download_epg(self) -> bytes:
         """Download the EPG data from the URL."""
         # Placeholder for actual download logic
         logger.info("Downloading EPG data from %s", self.url)
@@ -79,7 +91,7 @@ class EPG:
             error_short = type(e).__name__
             logger.error("Failed to download EPG data: %s", error_short)  # noqa: TRY400 Short error is good
 
-        return data.decode("utf-8") if isinstance(data, bytes) else data
+        return data
 
     def _un_gz_data(self, data: bytes) -> bytes:
         """Uncompress gzipped EPG data."""
@@ -90,9 +102,14 @@ class EPG:
         with gzip.GzipFile(fileobj=buffer, mode="rb") as gz_file:
             return gz_file.read()
 
-    def _check_saved_file_exists(self) -> bool:
-        """Check if the saved EPG file exists."""
-        return bool(self.saved_file_path and self.saved_file_path.is_file())
+    def _write_to_file(self, data: bytes) -> None:
+        """Write the EPG data to a file."""
+        if self.saved_file_path:
+            logger.info("Writing EPG data to %s", self.saved_file_path)
+            with self.saved_file_path.open("wb") as file:
+                file.write(data)
+        else:
+            logger.error("No saved file path defined for EPG data")
 
 
 class EPGHandler:
@@ -108,6 +125,8 @@ class EPGHandler:
         if instance_path:
             for epg in self.epgs:
                 epg.update(instance_path=instance_path)
+
+        logger.info("Initialised EPGHandler with %d EPG configurations", len(epg_conf_list))
 
     def get_epg_names(self) -> list[str]:
         """Get the names of all EPGs."""
