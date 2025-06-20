@@ -48,7 +48,7 @@ def guide() -> Response | WerkzeugResponse:
         response=Response(
             render_template(
                 "iptv.html.j2",
-                iptv_main_url=current_app.aw_conf.flask.SERVER_NAME + "/iptv",
+                server_base_url=current_app.aw_conf.flask.SERVER_NAME,
                 rendered_header=get_header_snippet("Ace ReStreamer Guide"),
             ),
             status=HTTPStatus.OK,

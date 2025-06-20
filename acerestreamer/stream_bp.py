@@ -81,7 +81,7 @@ def iptv() -> Response | WerkzeugResponse:
 
     streams = ace_scraper.get_streams_flat()
     hls_path = current_app.config["SERVER_NAME"] + "/hls/"
-    m3u8 = get_streams_as_iptv(streams=streams, hls_path=hls_path, instance_path=Path(current_app.instance_path))
+    m3u8 = get_streams_as_iptv(streams=streams, hls_path=hls_path)
 
     return Response(
         m3u8,

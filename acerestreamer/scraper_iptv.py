@@ -5,7 +5,13 @@ import requests
 from .config import ScrapeSiteIPTV
 from .logger import get_logger
 from .scraper_cache import scraper_cache
-from .scraper_helpers import check_title_allowed, check_valid_ace_id, check_valid_ace_url, extract_ace_id_from_url
+from .scraper_helpers import (
+    check_title_allowed,
+    check_valid_ace_id,
+    check_valid_ace_url,
+    cleanup_candidate_title,
+    extract_ace_id_from_url,
+)
 from .scraper_objects import FoundAceStream, FoundAceStreams
 
 logger = get_logger(__name__)
@@ -73,6 +79,8 @@ def scrape_streams_iptv_site(site: ScrapeSiteIPTV) -> FoundAceStreams | None:
                 logger.warning("Invalid Ace ID found in candidate: %s, skipping", ace_id)
                 ace_id = ""
                 continue
+
+        title = cleanup_candidate_title(title)
 
         if title != "" and ace_id != "":
             found_streams.append(

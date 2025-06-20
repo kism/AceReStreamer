@@ -17,14 +17,21 @@ ACE_URL_PREFIXES = ["http://127.0.0.1:6878/ace/getstream?id=", "acestream://"]
 class M3UNameReplacer:
     """Cache for M3U text replacements."""
 
-    def __init__(self) -> None:
+    def __init__(self, instance_path: Path | None = None) -> None:
         """Initialize the cache."""
         self.cache: dict[str, str] = {}
+        self.instance_path = instance_path
+        if instance_path:
+            self._load_cache()
 
-    def do_replacements(self, name: str, instance_path: Path) -> str:
+    def do_replacements(self, name: str) -> str:
         """Perform replacements in the M3U content."""
+        if not self.instance_path:
+            logger.warning("No instance path set, cannot perform M3U replacements.")
+            return name
+
         if self.cache == {}:
-            self._load_cache(instance_path)
+            self._load_cache()
 
         for key, value in self.cache.items():
             if key in name:
@@ -33,11 +40,15 @@ class M3UNameReplacer:
 
         return name
 
-    def _load_cache(self, instance_path: Path) -> None:
+    def _load_cache(self) -> None:
         """Load M3U replacements from the instance path."""
+        if not self.instance_path:
+            logger.warning("No instance path set, cannot perform M3U replacements.")
+            return
+
         desired_cell_count = 2  # CSV is just my key,value pairs
 
-        m3u_path = instance_path / "m3u_replacements.csv"
+        m3u_path = self.instance_path / "m3u_replacements.csv"
         if m3u_path.exists():
             with m3u_path.open("r", encoding="utf-8") as file:
                 for line in file:
@@ -54,6 +65,12 @@ class M3UNameReplacer:
 m3u_replacer = M3UNameReplacer()
 
 
+def start_m3u_replacer(instance_path: str) -> None:
+    """Start the M3U replacer with the instance path."""
+    global m3u_replacer  # noqa: PLW0603 aaaaa
+    m3u_replacer = M3UNameReplacer(Path(instance_path))
+
+
 def cleanup_candidate_title(title: str) -> str:
     """Cleanup the candidate title."""
     title = title.strip()
@@ -62,8 +79,10 @@ def cleanup_candidate_title(title: str) -> str:
         title = title.removeprefix(prefix)
 
     title = title.split("\n")[0].strip()  # Remove any newlines
-    # Remove any ace 40 digit hex ids from the title
-    return re.sub(r"\b[0-9a-fA-F]{40}\b", "", title).strip()
+    title = re.sub(r"\b[0-9a-fA-F]{40}\b", "", title).strip() # Remove any ace 40 digit hex ids from the title
+    title = m3u_replacer.do_replacements(title)
+    return title.strip()
+
 
 
 def candidates_regex_cleanup(candidate_titles: list[str], regex: str) -> list[str]:
@@ -81,7 +100,7 @@ def candidates_regex_cleanup(candidate_titles: list[str], regex: str) -> list[st
     return new_candidate_titles
 
 
-def get_streams_as_iptv(streams: list[FlatFoundAceStream], hls_path: str, instance_path: Path) -> str:
+def get_streams_as_iptv(streams: list[FlatFoundAceStream], hls_path: str) -> str:
     """Get the found streams as an IPTV M3U8 string."""
     m3u8_content = "#EXTM3U\n"
 
@@ -89,17 +108,15 @@ def get_streams_as_iptv(streams: list[FlatFoundAceStream], hls_path: str, instan
         logger.debug(stream)
         if stream.quality > 0:
             # Country codes are 2 characters between square brackets, e.g. [US]
-            stream_title_normalized = m3u_replacer.do_replacements(stream.title, instance_path)
-
-            country_code_regex = re.search(r"\[([A-Z]{2})\]", stream_title_normalized)
+            country_code_regex = re.search(r"\[([A-Z]{2})\]", stream.title)
             tvg_id = 'tvg-id=""'
 
             if country_code_regex and isinstance(country_code_regex.group(1), str):
                 country_code = country_code_regex.group(1)
-                stream_title_no_cc = stream_title_normalized.replace(f"[{country_code}]", "").strip()
+                stream_title_no_cc = stream.title.replace(f"[{country_code}]", "").strip()
                 tvg_id = f'tvg-id="{stream_title_no_cc}.{country_code.lower()}"'
 
-            m3u8_content += f"#EXTINF:-1 {tvg_id},{stream_title_normalized}\n"
+            m3u8_content += f"#EXTINF:-1 {tvg_id},{stream.title}\n"
             m3u8_content += f"{hls_path}{stream.ace_id}\n"
 
     return m3u8_content

@@ -14,7 +14,7 @@ from .logger import get_logger
 logger = get_logger(__name__)
 
 ACESTREAM_API_TIMEOUT = 3
-LOCK_IN_TIME: timedelta = timedelta(minutes=3)
+LOCK_IN_TIME: timedelta = timedelta(minutes=1)
 LOCK_IN_RESET_MAX: timedelta = timedelta(minutes=30)
 DEFAULT_DATE = datetime(1970, 1, 1, tzinfo=OUR_TIMEZONE)
 
@@ -72,12 +72,16 @@ class AcePoolEntry(BaseModel):
         self.keep_alive_active = False  # Reset
         self.start_keep_alive()
 
-    def get_time_until_unlock(self) -> timedelta:
+    def get_required_time_until_unlock(self) -> timedelta:
         """Get the time until the instance is unlocked."""
         time_now = datetime.now(tz=OUR_TIMEZONE)
         time_since_last_watched: timedelta = time_now - self.last_used
         time_since_date_started: timedelta = time_now - self.date_started
         return min(LOCK_IN_RESET_MAX, (time_since_date_started - time_since_last_watched))
+
+    def get_time_until_unlock(self) -> timedelta:
+        """Get the time until the instance is unlocked."""
+        return self.last_used + self.get_required_time_until_unlock() - datetime.now(tz=OUR_TIMEZONE)
 
     def check_locked_in(self) -> bool:
         """Check if the instance is locked in for a certain period."""
@@ -88,7 +92,7 @@ class AcePoolEntry(BaseModel):
         time_now = datetime.now(tz=OUR_TIMEZONE)
         time_since_date_started: timedelta = time_now - self.date_started
         time_since_last_watched: timedelta = time_now - self.last_used
-        required_time_to_unlock = self.get_time_until_unlock()
+        required_time_to_unlock = self.get_required_time_until_unlock()
 
         if time_since_date_started < LOCK_IN_TIME:
             return False
@@ -112,6 +116,7 @@ class AcePoolEntry(BaseModel):
                             resp = requests.get(url, timeout=ACESTREAM_API_TIMEOUT * 2)
                             logger.trace("Keep alive response: %s", resp.status_code)
                 # If we are not locked in, we check if we have been previously locked in, and reset if needed
+                # This might need to be moved to a separate thread, streams keep lingering
                 elif self.date_started - datetime.now(tz=OUR_TIMEZONE) > LOCK_IN_RESET_MAX:
                     logger.debug("Resetting keep alive for %s with ace_id %s", self.ace_url, self.ace_id)
                     self.reset_content()

@@ -2,7 +2,7 @@
 
 from pprint import pformat
 
-from . import authentication_bp, config, epg_bp, info_bp, logger, scraper_cache, stream_bp
+from . import authentication_bp, config, epg_bp, info_bp, logger, scraper_cache, stream_bp, scraper_helpers
 from .flask_helpers import FlaskAceReStreamer, cache, check_static_folder, register_error_handlers
 
 __version__ = "0.2.7"  # This is the version of the app, used in pyproject.toml, enforced in a test.
@@ -53,6 +53,7 @@ def create_app(
 
     with app.app_context():
         scraper_cache.start_scraper_cache(instance_path=app.instance_path)
+        scraper_helpers.start_m3u_replacer(instance_path=app.instance_path)
         stream_bp.start_scraper()
         authentication_bp.start_allowlist()
         epg_bp.start_epg_handler()

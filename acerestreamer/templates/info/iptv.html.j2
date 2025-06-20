@@ -21,12 +21,19 @@
 <body>
     {{ rendered_header }}
     <p>Point your IPTV app at one of, some apps only accept the .m3u or .m3u8 extensions:
-        <code class="code-block">{{ iptv_main_url }}</code>
-        <code class="code-block">{{ iptv_main_url }}.m3u</code>
-        <code class="code-block">{{ iptv_main_url }}.m3u8</code>
+        <code class="code-block">{{ server_base_url }}/iptv</code>
+        <code class="code-block">{{ server_base_url }}/iptv.m3u</code>
+        <code class="code-block">{{ server_base_url }}/iptv.m3u8</code>
         The channel list will only provide
         entries with a quality greater than zero.
     </p>
+    <p>EPG is available at, this should cover the default values:
+        <code class="code-block">{{ server_base_url }}/epg</code>
+        <code class="code-block">{{ server_base_url }}/epg.xml</code>
+        <code class="code-block">{{ server_base_url }}/xmltv</code>
+        <code class="code-block">{{ server_base_url }}/xmltv.php</code>
+    </p>
+
     <p>Some apps will only work if this site is on https.</p>
     <h3>Recommended Apps</h3>
     <p>Many apps are made to be players for their subscription IPTV services, and on the side offer loading external
@@ -87,7 +94,8 @@
             <td>Android TV</td>
             <td>TV IRL</td>
             <td><a href="https://play.google.com/store/apps/details?id=by.stari4ek.tvirl">Google Play</a></td>
-            <td>Only use on Sony, TCL or other integrated Android TV devices.<br>Integrates with the regular TV listings.<br> User
+            <td>Only use on Sony, TCL or other integrated Android TV devices.<br>Integrates with the regular TV
+                listings.<br> User
                 interface is weird.</td>
         </tr>
     </table>
