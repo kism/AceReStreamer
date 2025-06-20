@@ -59,6 +59,7 @@ class AcePoolEntry(BaseModel):
         self.ace_content_path = ""
         self.update_last_used()
         self.date_started = DEFAULT_DATE
+        self.last_used = DEFAULT_DATE
         self.keep_alive_active = False
         self.check_ace_running()
 
@@ -102,6 +103,13 @@ class AcePoolEntry(BaseModel):
 
         return False
 
+    def reset_if_stale(self) -> None:
+        """Check if the instance is stale and reset it if necessary."""
+        if self.date_started - datetime.now(tz=OUR_TIMEZONE) > LOCK_IN_RESET_MAX:
+            logger.debug("Resetting keep alive for %s with ace_id %s", self.ace_url, self.ace_id)
+            self.reset_content()
+            return
+
     def start_keep_alive(self) -> None:
         """Ensure the AceStream stream is kept alive."""
 
@@ -115,12 +123,7 @@ class AcePoolEntry(BaseModel):
                         if self.check_ace_running():
                             resp = requests.get(url, timeout=ACESTREAM_API_TIMEOUT * 2)
                             logger.trace("Keep alive response: %s", resp.status_code)
-                # If we are not locked in, we check if we have been previously locked in, and reset if needed
-                # This might need to be moved to a separate thread, streams keep lingering
-                elif self.date_started - datetime.now(tz=OUR_TIMEZONE) > LOCK_IN_RESET_MAX:
-                    logger.debug("Resetting keep alive for %s with ace_id %s", self.ace_url, self.ace_id)
-                    self.reset_content()
-                    return
+
                 time.sleep(refresh_interval)
 
         if not self.keep_alive_active:
@@ -286,3 +289,16 @@ class AcePool:
                 instance_unlocked = True
 
         return instance_unlocked
+
+    def ace_poolboy(self) -> None:
+        """Run the AcePoolboy to clean up instances."""
+
+        def ace_poolboy_thread() -> None:
+            """Thread to clean up instances."""
+            logger.info("Starting AcePoolboy thread to clean up instances")
+            while True:
+                time.sleep(10)
+                for instance in self.ace_instances:
+                    instance.reset_if_stale()
+
+        threading.Thread(target=ace_poolboy_thread, daemon=True).start()
