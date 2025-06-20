@@ -104,9 +104,9 @@ class ScrapeSiteIPTV(BaseModel):
 class AceScrapeConf(BaseModel):
     """Settings for scraping AceStreams."""
 
+    user_agent: str = ""  # This is load bearing, if you remove this field, pydantic won't validate the model
     html: list[ScrapeSiteHTML] = []
     iptv_m3u8: list[ScrapeSiteIPTV] = []
-    scrape_interval: int = 7200  # 2 hours
 
     @model_validator(mode="after")
     def unique_scraper_site_names(self) -> Self:
@@ -186,7 +186,7 @@ class AceReStreamerConf(BaseSettings):
     nginx: NginxConf | None = None  # Nginx configuration is optional
     logging: LoggingConf = LoggingConf()
     scraper: AceScrapeConf = AceScrapeConf()
-    epgs: list[EPGInstanceConf] = [EPGInstanceConf()]
+    epgs: list[EPGInstanceConf] = []
 
     def write_config(self, config_location: Path) -> None:
         """Write the current settings to a TOML file."""

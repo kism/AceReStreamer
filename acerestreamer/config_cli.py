@@ -74,7 +74,7 @@ def generate_app_config_file(
         if overwrite
         else f"Generating configuration file at {app_config_path}"
     )
-    _check_config_path(app_config_path, ".toml", expect_config=overwrite, overwrite=overwrite)
+    _check_config_path(app_config_path, ".toml", expect_config=False, overwrite=overwrite)
 
     logger.info(msg)
 

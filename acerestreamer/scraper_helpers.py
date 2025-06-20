@@ -35,6 +35,8 @@ class M3UNameReplacer:
 
     def _load_cache(self, instance_path: Path) -> None:
         """Load M3U replacements from the instance path."""
+        desired_cell_count = 2  # CSV is just my key,value pairs
+
         m3u_path = instance_path / "m3u_replacements.csv"
         if m3u_path.exists():
             with m3u_path.open("r", encoding="utf-8") as file:
@@ -43,7 +45,7 @@ class M3UNameReplacer:
                     if not line_tmp or line_tmp.startswith("#"):
                         continue
                     parts = line_tmp.split(",")
-                    if len(parts) == 2:
+                    if len(parts) == desired_cell_count:
                         self.cache[parts[0].strip()] = parts[1].strip()
         else:
             m3u_path.touch()
@@ -155,4 +157,3 @@ def check_title_allowed(title: str, title_filter: TitleFilter) -> bool:
         return any(word.lower() in title for word in title_filter.include_words)
 
     return True
-

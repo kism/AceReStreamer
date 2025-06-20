@@ -26,7 +26,6 @@ level = "INFO"
 path = ""
 
 [scraper]
-scrape_interval = 7200
 [[scraper.html]]
 name = "Scrape Site Page 1"
 url = "http://localhost:8999/site1/index.html"

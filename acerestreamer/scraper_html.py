@@ -1,12 +1,13 @@
 """Helper functions and functions for searching in beautiful soup tags."""
 
+from datetime import timedelta
+
 import requests
 from bs4 import BeautifulSoup, Tag
-from .scraper_cache import ScraperCache
 
 from .config import ScrapeSiteHTML
 from .logger import get_logger
-from .scraper_cache import ScraperCache
+from .scraper_cache import scraper_cache
 from .scraper_helpers import (
     STREAM_TITLE_MAX_LENGTH,
     candidates_regex_cleanup,
@@ -35,12 +36,12 @@ def scrape_streams_html_sites(sites: list[ScrapeSiteHTML]) -> list[FoundAceStrea
 
 def scrape_streams_html_site(site: ScrapeSiteHTML) -> FoundAceStreams | None:
     """Scrape the streams from the configured sites."""
-    scraper_cache = ScraperCache()
     streams_candidates: list[CandidateAceStream] = []
+    cache_max_age = timedelta(hours=1)  # HTML Sources we need to scrape more often
 
     scraped_site_str = scraper_cache.load_from_cache(site.url)
 
-    if not scraper_cache.is_cache_valid(site.url):
+    if not scraper_cache.is_cache_valid(site.url, cache_max_age):
         logger.debug("Scraping streams from site: %s", site)
         try:
             response = requests.get(site.url, timeout=10)

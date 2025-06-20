@@ -1,5 +1,7 @@
 """Scraper object."""
 
+import threading
+import time
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -20,11 +22,12 @@ else:
 
 logger = get_logger(__name__)
 
+SCRAPE_INTERVAL = 60 * 60  # Default scrape interval in seconds (1 hour)
+
 
 class AceScraperSourcesApi(BaseModel):
     """Represent the sources of the AceScraper, for API use."""
 
-    scrape_interval: int
     html: list[ScrapeSiteHTML]
     iptv_m3u8: list[ScrapeSiteIPTV]
 
@@ -46,35 +49,42 @@ class AceScraper:
 
         self.streams: list[FoundAceStreams] = []
 
-        self.scrape_interval = 7200
         self.html: list[ScrapeSiteHTML] = []
         self.iptv_m3u8: list[ScrapeSiteIPTV] = []
 
         if ace_scrape_settings:
-            self.scrape_interval = ace_scrape_settings.scrape_interval
             self.html = ace_scrape_settings.html
             self.iptv_m3u8 = ace_scrape_settings.iptv_m3u8
 
         self._ace_quality = AceQuality(self._ace_quality_cache_path)
 
-        self.run_scrape()
-        self.print_streams()
+        if self._ace_quality_cache_path:
+            self.run_scrape()
 
     def run_scrape(self) -> None:
         """Run the scraper to find AceStreams."""
-        logger.info("Running AceStream scraper...")
 
-        self.streams.extend(
-            scrape_streams_html_sites(
-                sites=self.html,
-            )
-        )
+        def run_scrape_thread() -> None:
+            """Thread function to run the scraper."""
+            while True:
+                logger.info("Running AceStream scraper...")
 
-        self.streams.extend(
-            scrape_streams_iptv_sites(
-                sites=self.iptv_m3u8,
-            )
-        )
+                self.streams.extend(
+                    scrape_streams_html_sites(
+                        sites=self.html,
+                    )
+                )
+
+                self.streams.extend(
+                    scrape_streams_iptv_sites(
+                        sites=self.iptv_m3u8,
+                    )
+                )
+
+                self.print_streams()
+                time.sleep(SCRAPE_INTERVAL)
+
+        threading.Thread(target=run_scrape_thread, name="AceScraperThread", daemon=True).start()
 
     def get_stream_by_ace_id(self, ace_id: str) -> FlatFoundAceStream:
         """Get a stream by its Ace ID, will use the first found matching FlatFoundAceStream by ace_id."""
@@ -138,7 +148,6 @@ class AceScraper:
         return AceScraperSourcesApi(
             html=self.html,
             iptv_m3u8=self.iptv_m3u8,
-            scrape_interval=self.scrape_interval,
         )
 
     def get_streams_sources_flat(self) -> list[AceScraperSourceApi]:

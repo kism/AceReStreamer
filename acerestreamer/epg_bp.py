@@ -36,7 +36,6 @@ def get_epgs() -> Response | WerkzeugResponse:
 @bp.route("/epg", methods=["GET"])
 @bp.route("/epg.xml", methods=["GET"])
 @bp.route("/xmltv", methods=["GET"])
-@bp.route("/xmltv.xml", methods=["GET"])
 @bp.route("/xmltv.php", methods=["GET"])
 def get_epg() -> Response | WerkzeugResponse:
     """Get the merged EPG data."""

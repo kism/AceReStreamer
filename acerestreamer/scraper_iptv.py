@@ -4,7 +4,7 @@ import requests
 
 from .config import ScrapeSiteIPTV
 from .logger import get_logger
-from .scraper_cache import ScraperCache
+from .scraper_cache import scraper_cache
 from .scraper_helpers import check_title_allowed, check_valid_ace_id, check_valid_ace_url, extract_ace_id_from_url
 from .scraper_objects import FoundAceStream, FoundAceStreams
 
@@ -25,7 +25,6 @@ def scrape_streams_iptv_sites(sites: list[ScrapeSiteIPTV]) -> list[FoundAceStrea
 
 def scrape_streams_iptv_site(site: ScrapeSiteIPTV) -> FoundAceStreams | None:
     """Scrape the streams from the configured IPTV sites."""
-    scraper_cache = ScraperCache()
     found_streams: list[FoundAceStream] = []
 
     scraped_site_str = scraper_cache.load_from_cache(site.url)
