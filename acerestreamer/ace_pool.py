@@ -108,9 +108,7 @@ class AcePoolEntry(BaseModel):
         if not self.ace_id and not self.ace_content_path:
             return
 
-        condition_one = datetime.now(tz=OUR_TIMEZONE) - self.date_started > timedelta(
-            seconds=1
-        )  # at least 1s since it was started
+        condition_one = datetime.now(tz=OUR_TIMEZONE) - self.date_started > LOCK_IN_TIME
         condition_two = not self.check_locked_in()  # And it is not locked in
         condition_three = self.get_required_time_until_unlock() < timedelta(
             seconds=1
