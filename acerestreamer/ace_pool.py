@@ -14,7 +14,7 @@ from .logger import get_logger
 logger = get_logger(__name__)
 
 ACESTREAM_API_TIMEOUT = 3
-LOCK_IN_TIME: timedelta = timedelta(minutes=3)
+LOCK_IN_TIME: timedelta = timedelta(minutes=1)
 LOCK_IN_RESET_MAX: timedelta = timedelta(minutes=30)
 DEFAULT_DATE = datetime(1970, 1, 1, tzinfo=OUR_TIMEZONE)
 
@@ -105,8 +105,28 @@ class AcePoolEntry(BaseModel):
 
     def reset_if_stale(self) -> None:
         """Check if the instance is stale and reset it if necessary."""
-        if self.date_started - datetime.now(tz=OUR_TIMEZONE) > LOCK_IN_RESET_MAX:
-            logger.debug("Resetting keep alive for %s with ace_id %s", self.ace_url, self.ace_id)
+        if not self.ace_id and not self.ace_content_path:
+            return
+
+        condition_one = datetime.now(tz=OUR_TIMEZONE) - self.date_started > timedelta(
+            seconds=1
+        )  # at least 1s since it was started
+        condition_two = not self.check_locked_in()  # And it is not locked in
+        condition_three = self.get_required_time_until_unlock() < timedelta(
+            seconds=1
+        )  # The time to unlock is 0 seconds
+
+        logger.warning(
+            "Checking if instance %s with ace_id %s is stale: condition_one=%s, condition_two=%s, condition_three=%s",
+            self.ace_url,
+            self.ace_id,
+            condition_one,
+            condition_two,
+            condition_three,
+        )
+
+        if condition_one and condition_two and condition_three:
+            logger.info("Resetting keep alive for %s with ace_id %s", self.ace_url, self.ace_id)
             self.reset_content()
             return
 
@@ -137,11 +157,17 @@ class AcePoolEntryForAPI(AcePoolEntry):
 
     locked_in: bool = False
     time_until_unlock: timedelta = timedelta(seconds=0)
+    time_running: timedelta = timedelta(seconds=0)
 
     @field_serializer("time_until_unlock")
-    def serialize_timedelta(self, time_until_unlock: timedelta) -> int:
+    def serialize_time_until_unlock(self, time_until_unlock: timedelta) -> int:
         """Serialize the time until unlock as a timestamp."""
         return time_until_unlock.seconds
+
+    @field_serializer("time_running")
+    def serialize_time_running(self, time_running: timedelta) -> int:
+        """Serialize the time running as a timestamp."""
+        return time_running.seconds
 
 
 class AcePool:
@@ -153,6 +179,8 @@ class AcePool:
         for instance in self.ace_instances:
             instance.check_ace_running()
             instance.check_locked_in()
+
+        self.ace_poolboy()
 
     def get_available_instance(self) -> AcePoolEntry | None:
         """Get the next available AceStream instance URL."""
@@ -237,6 +265,10 @@ class AcePool:
             if locked_in:
                 time_until_unlock = instance.get_time_until_unlock()
 
+            total_time_running = timedelta(seconds=0)
+            if instance.ace_id != "":
+                total_time_running = datetime.now(tz=OUR_TIMEZONE) - instance.date_started
+
             instances.append(
                 AcePoolEntryForAPI(
                     ace_id=instance.ace_id,
@@ -247,6 +279,7 @@ class AcePool:
                     last_used=instance.last_used,
                     locked_in=locked_in,
                     time_until_unlock=time_until_unlock,
+                    time_running=total_time_running,
                 )
             )
 

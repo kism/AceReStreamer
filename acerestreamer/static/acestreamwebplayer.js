@@ -218,7 +218,11 @@ async function checkVideoSrcAvailability(videoSrc, maxRetries = 5) {
       console.warn(msg);
       setOnPageStreamErrorMessage(msg);
     } catch (error) {
-      msg = `${attempt}/${maxRetries}: ${error.message}`;
+      if (error.name === "AbortError") {
+        msg = `Attempt: ${attempt}/${maxRetries}: Getting stream source timed out`;
+      } else {
+        msg = `Attempt: ${attempt}/${maxRetries}: ${error.message}`;
+      }
       console.warn(msg);
       setOnPageStreamErrorMessage(msg);
     }
