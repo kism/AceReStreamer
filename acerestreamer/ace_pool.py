@@ -112,7 +112,7 @@ class AcePoolEntry(BaseModel):
         condition_two = not self.check_locked_in()  # And it is not locked in
         condition_three = self.get_required_time_until_unlock() < timedelta(
             seconds=1
-        )  # The time to unlock is 0 seconds
+        )  # The time to unlock is 0 seconds, never true?
 
         logger.warning(
             "Checking if instance %s with ace_id %s is stale: condition_one=%s, condition_two=%s, condition_three=%s",
