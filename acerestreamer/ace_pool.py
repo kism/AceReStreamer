@@ -115,6 +115,7 @@ class AcePoolEntry(BaseModel):
                 elif self.date_started - datetime.now(tz=OUR_TIMEZONE) > LOCK_IN_RESET_MAX:
                     logger.debug("Resetting keep alive for %s with ace_id %s", self.ace_url, self.ace_id)
                     self.reset_content()
+                    return
                 time.sleep(refresh_interval)
 
         if not self.keep_alive_active:

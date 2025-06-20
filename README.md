@@ -59,17 +59,16 @@ uv sync --no-group test --no-group type --no-group lint
 ### Features
 
 - /health endpoint
-- api reference
 - pytest
 - vitest?
 - iptv api
   - ~~more on the iptv guide~~
   - per source iptv feeds
-- actually fetch from sites in a thread
 - epg
   - ~~implement~~
   - ~~merge~~
-  - fetch on a schedule
+  - ~~fetch on a schedule~~
+  - epg api
 - get content_id from ace/manifest.m3u8 yeah? It redirects
 - keep alive
   - fix weird keepalive clear issue, maybe do a governor thread
@@ -119,3 +118,5 @@ see iptv.html.j2
 - ~~chromecast / airplay support~~ abandoned chromecast, airplay might work
 - ~~ace pool keep alive status~~
 - ~~group the fetchers~~
+- ~~actually fetch from sites in a thread~~
+- ~~api reference~~
