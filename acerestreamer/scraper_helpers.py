@@ -79,10 +79,9 @@ def cleanup_candidate_title(title: str) -> str:
         title = title.removeprefix(prefix)
 
     title = title.split("\n")[0].strip()  # Remove any newlines
-    title = re.sub(r"\b[0-9a-fA-F]{40}\b", "", title).strip() # Remove any ace 40 digit hex ids from the title
+    title = re.sub(r"\b[0-9a-fA-F]{40}\b", "", title).strip()  # Remove any ace 40 digit hex ids from the title
     title = m3u_replacer.do_replacements(title)
     return title.strip()
-
 
 
 def candidates_regex_cleanup(candidate_titles: list[str], regex: str) -> list[str]:
