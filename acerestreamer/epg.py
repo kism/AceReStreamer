@@ -118,6 +118,7 @@ class EPGHandler:
     def __init__(self, epg_conf_list: list[EPGInstanceConf], instance_path: Path | None = None) -> None:
         """Initialize the EPGHandler with a list of URLs."""
         self.epgs: list[EPG] = []
+        self.merged_epg: etree._Element | None = None
 
         for epg_conf in epg_conf_list:
             self.epgs.append(EPG(epg_conf=epg_conf))
@@ -131,3 +132,19 @@ class EPGHandler:
     def get_epg_names(self) -> list[str]:
         """Get the names of all EPGs."""
         return [epg.region_code for epg in self.epgs]
+
+    def get_merged_epg(self) -> str:
+        """Get the merged EPG data from all configured EPGs."""
+        if self.merged_epg is not None:
+            pass
+        else:
+            logger.info("Merging EPG data from %d sources", len(self.epgs))
+            merged_data = etree.Element("tv")
+
+            for epg in self.epgs:
+                if epg.data is not None:
+                    merged_data.extend(epg.data)
+
+            self.merged_epg = merged_data
+
+        return etree.tostring(self.merged_epg, encoding="unicode")

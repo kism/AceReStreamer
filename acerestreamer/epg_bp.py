@@ -31,3 +31,21 @@ def get_epgs() -> Response | WerkzeugResponse:
         return auth_failure
 
     return jsonify(epg_handler.get_epg_names())
+
+
+@bp.route("/epg", methods=["GET"])
+@bp.route("/epg.xml", methods=["GET"])
+@bp.route("/xmltv", methods=["GET"])
+@bp.route("/xmltv.xml", methods=["GET"])
+@bp.route("/xmltv.php", methods=["GET"])
+def get_epg() -> Response | WerkzeugResponse:
+    """Get the merged EPG data."""
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
+    merged_epg = epg_handler.get_merged_epg()
+
+    response = Response(merged_epg, mimetype="application/xml")
+    response.headers["Content-Disposition"] = 'attachment; filename="merged_epg.xml"'
+    return response
