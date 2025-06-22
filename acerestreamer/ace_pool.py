@@ -115,17 +115,6 @@ class AcePoolEntry(BaseModel):
         # We have gone past the required time to unlock
         condition_three = self.get_time_until_unlock() < timedelta(seconds=1)
 
-        logger.warning(
-            "Checking if instance %s with ace_id %s is stale: condition_one=%s, condition_two=%s, condition_three=%s",
-            self.ace_url,
-            self.ace_id,
-            condition_one,
-            condition_two,
-            condition_three,
-        )
-
-        logger.warning("required_time_until_unlock: %s", self.get_time_until_unlock())
-
         if condition_one and condition_two and condition_three:
             logger.info("Resetting keep alive for %s with ace_id %s", self.ace_url, self.ace_id)
             self.reset_content()
