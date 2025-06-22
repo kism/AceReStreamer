@@ -64,4 +64,9 @@ def create_app(
     register_error_handlers(app)
     cache.init_app(app)
 
+
+    from werkzeug.middleware.profiler import ProfilerMiddleware
+    app.config["PROFILE"] = True
+    app.wsgi_app = ProfilerMiddleware(app.wsgi_app, profile_dir="profiler", sort_by=("cumulative", "time"))
     return app
+

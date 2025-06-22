@@ -11,7 +11,13 @@ logger = get_logger(__name__)
 
 STREAM_TITLE_MAX_LENGTH = 50
 ACE_ID_LENGTH = 40
-ACE_URL_PREFIXES = ["http://127.0.0.1:6878/ace/getstream?id=", "acestream://"]
+ACE_URL_PREFIXES = [
+    "acestream://",
+    "http://127.0.0.1:6878/ace/getstream?id=",
+    "http://127.0.0.1:6878/ace/getstream?content_id=",
+    "http://127.0.0.1:6878/ace/manifest.m38u?id=",
+    "http://127.0.0.1:6878/ace/manifest.m38u?content_id=",  # Side note, this is the good one
+]
 
 
 class M3UNameReplacer:
