@@ -108,11 +108,12 @@ class AcePoolEntry(BaseModel):
         if not self.ace_id and not self.ace_content_path:
             return
 
+        # We have locked in at one point
         condition_one = datetime.now(tz=OUR_TIMEZONE) - self.date_started > LOCK_IN_TIME
-        condition_two = not self.check_locked_in()  # And it is not locked in
-        condition_three = self.get_required_time_until_unlock() < timedelta(
-            seconds=1
-        )  # The time to unlock is 0 seconds, never true?
+        # We are not locked in
+        condition_two = not self.check_locked_in()
+        # We have gone past the required time to unlock
+        condition_three = self.get_time_until_unlock() < timedelta(seconds=1)
 
         logger.warning(
             "Checking if instance %s with ace_id %s is stale: condition_one=%s, condition_two=%s, condition_three=%s",
@@ -122,6 +123,8 @@ class AcePoolEntry(BaseModel):
             condition_two,
             condition_three,
         )
+
+        logger.warning("required_time_until_unlock: %s", self.get_time_until_unlock())
 
         if condition_one and condition_two and condition_three:
             logger.info("Resetting keep alive for %s with ace_id %s", self.ace_url, self.ace_id)
