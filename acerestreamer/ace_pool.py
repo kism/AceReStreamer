@@ -122,25 +122,24 @@ class AcePoolEntry(BaseModel):
 
     def start_keep_alive(self) -> None:
         """Ensure the AceStream stream is kept alive."""
-        pass # lmao keep alive broke everything
 
-        # def keep_alive() -> None:
-        #     refresh_interval = 30
-        #     url = f"{self.ace_url}/ace/manifest.m3u8?content_id={self.ace_id}"
-        #     while True:
-        #         # If we are locked in, we keep the stream alive
-        #         if self.check_locked_in():
-        #             with contextlib.suppress(requests.RequestException):
-        #                 if self.check_ace_running():
-        #                     resp = requests.get(url, timeout=ACESTREAM_API_TIMEOUT * 2)
-        #                     logger.trace("Keep alive response: %s", resp.status_code)
+        def keep_alive() -> None: # TODO FIXME THIS RUINS EVERYTHING
+            refresh_interval = 30
+            url = f"{self.ace_url}/ace/manifest.m3u8?content_id={self.ace_id}"
+            while True:
+                # If we are locked in, we keep the stream alive
+                if self.check_locked_in():
+                    with contextlib.suppress(requests.RequestException):
+                        if self.check_ace_running():
+                            resp = requests.get(url, timeout=ACESTREAM_API_TIMEOUT * 2)
+                            logger.trace("Keep alive response: %s", resp.status_code)
 
-        #         time.sleep(refresh_interval)
+                time.sleep(refresh_interval)
 
-        # if not self.keep_alive_active:
-        #     self.keep_alive_active = True
-        #     threading.Thread(target=keep_alive, daemon=True).start()
-        #     logger.debug("Started keep alive thread for %s with ace_id %s", self.ace_url, self.ace_id)
+        if not self.keep_alive_active:
+            self.keep_alive_active = True
+            threading.Thread(target=keep_alive, daemon=True).start()
+            logger.debug("Started keep alive thread for %s with ace_id %s", self.ace_url, self.ace_id)
 
 
 class AcePoolEntryForAPI(AcePoolEntry):
