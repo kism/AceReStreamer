@@ -229,7 +229,7 @@ class AcePool:
             if n not in instance_numbers:
                 return n
 
-        for instance in self.ace_instances.copy().values():
+        for instance in self.ace_instances.copy().values(): # TODO: Pick the used-the-least instance
             if not instance.check_locked_in():
                 logger.info("Found available AceStream instance: %s, reclaiming it.", instance.ace_pid)
                 ace_pid = instance.ace_pid
