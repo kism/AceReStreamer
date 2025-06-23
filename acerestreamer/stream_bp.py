@@ -148,22 +148,9 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    path_filtered = re.search(r"^([a-f0-9]+)", path)
-    if not path_filtered:
-        logger.error("Invalid Ace content path: %s", path)
-        return jsonify({"error": "Invalid Ace content path"}, HTTPStatus.BAD_REQUEST)
-    ace_content_path_filtered = path_filtered.group(1)
+    url = f"{current_app.aw_conf.app.ace_address}/ace/c/{path}"
 
-    ace_address = ace_pool.get_instance_base_url_by_content_path(ace_content_path_filtered)
-
-    if not ace_address:
-        response = jsonify({"error": "Ace content not ready"}, HTTPStatus.SERVICE_UNAVAILABLE)
-        response.headers["Retry-After"] = "10"
-        return response
-
-    url = f"{ace_address}/ace/c/{path}"
-
-    logger.trace("Ace content requested for path: %s", path)
+    logger.trace("Ace content requested for url: %s", url)
 
     try:
         resp = requests.get(url, timeout=REVERSE_PROXY_TIMEOUT, stream=True)

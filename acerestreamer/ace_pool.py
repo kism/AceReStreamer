@@ -42,7 +42,7 @@ class AcePoolEntry(BaseModel):
             self.ace_address += "/"
         self.ace_hls_m3u8_url = f"{self.ace_address}ace/manifest.m3u8?content_id={self.ace_id}&pid={self.ace_pid}"
 
-        self.check_ace_running() # Weird place but I need to figure out __init__ with pydantic
+        self.check_ace_running()  # Weird place but I need to figure out __init__ with pydantic
 
         return self
 
@@ -212,8 +212,6 @@ class AcePool:
             ace_address=self.ace_address,
         )
 
-
-
         self.ace_instances.append(new_instance)
 
         return new_instance.ace_hls_m3u8_url
@@ -241,15 +239,6 @@ class AcePool:
         if new_instance is None:
             logger.error("Cannot set_content_path.")
             return
-
-    def get_instance_base_url_by_content_path(self, content_path: str) -> str:
-        """Get the AceStream instance HLS URL by content path."""
-        for instance in self.ace_instances:
-            if instance.ace_content_path == content_path:
-                return instance.ace_address
-
-        logger.warning("Ace content %s path not linked to instance", content_path)
-        return ""
 
     def get_instances_nice(self) -> list[AcePoolEntryForAPI]:
         """Get a list of AcePoolEntryForAPI instances for the API."""
