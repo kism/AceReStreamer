@@ -6,13 +6,13 @@ import requests
 from bs4 import BeautifulSoup, Tag
 
 from .config import ScrapeSiteHTML
+from .helpers import check_valid_ace_id
 from .logger import get_logger
 from .scraper_cache import scraper_cache
 from .scraper_helpers import (
     STREAM_TITLE_MAX_LENGTH,
     candidates_regex_cleanup,
     check_title_allowed,
-    check_valid_ace_id,
     check_valid_ace_url,
     cleanup_candidate_title,
     extract_ace_id_from_url,

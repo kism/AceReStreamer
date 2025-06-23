@@ -10,7 +10,6 @@ from .scraper_objects import FlatFoundAceStream
 logger = get_logger(__name__)
 
 STREAM_TITLE_MAX_LENGTH = 50
-ACE_ID_LENGTH = 40
 ACE_URL_PREFIXES = [
     "acestream://",
     "http://127.0.0.1:6878/ace/getstream?id=",
@@ -125,19 +124,6 @@ def get_streams_as_iptv(streams: list[FlatFoundAceStream], hls_path: str) -> str
             m3u8_content += f"{hls_path}{stream.ace_id}\n"
 
     return m3u8_content
-
-
-def check_valid_ace_id(ace_id: str) -> bool:
-    """Check if the AceStream ID is valid."""
-    if len(ace_id) != ACE_ID_LENGTH:
-        logger.warning("AceStream ID is not the expected length (%d), skipping: %s", ACE_ID_LENGTH, ace_id)
-        return False
-
-    if not re.match(r"^[0-9a-fA-F]+$", ace_id):
-        logger.warning("AceStream ID contains invalid characters: %s", ace_id)
-        return False
-
-    return True
 
 
 def extract_ace_id_from_url(url: str) -> str:
