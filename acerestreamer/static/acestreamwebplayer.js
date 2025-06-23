@@ -460,7 +460,7 @@ function populateAcePoolTable() {
       table.appendChild(tr_heading);
 
       let n = 1;
-      for (const instance of acePool) {
+      for (const instance of acePool.ace_instances) {
         const tr = document.createElement("tr");
 
         // Instance number cell

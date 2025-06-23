@@ -1,6 +1,5 @@
 """Main Stream Site Blueprint."""
 
-import re
 from http import HTTPStatus
 from pathlib import Path
 
@@ -30,16 +29,24 @@ REVERSE_PROXY_EXCLUDED_HEADERS = ["content-encoding", "content-length", "transfe
 REVERSE_PROXY_TIMEOUT = 10  # Very high but alas
 
 
+# region Scraper
 def start_scraper() -> None:
     """Method to 'configure' this module. Needs to be called under `with app.app_context():` from __init__.py."""
     global ace_scraper  # noqa: PLW0603 Necessary evil as far as I can tell, could move to all objects but eh...
     global ace_pool  # noqa: PLW0603 Necessary evil as far as I can tell, could move to all objects but eh...
 
-    ace_scraper = AceScraper(current_app.aw_conf.scraper, Path(current_app.instance_path))
+    ace_scraper = AceScraper(
+        current_app.aw_conf.scraper,
+        Path(current_app.instance_path),
+    )
 
-    ace_pool = AcePool(current_app.aw_conf.app.ace_address)
+    ace_pool = AcePool(
+        ace_address=current_app.aw_conf.app.ace_address,
+        max_size=current_app.aw_conf.app.ace_max_streams,
+    )
 
 
+# region /
 @bp.route("/")
 def home() -> Response | WerkzeugResponse:
     """Render the home page, redirect to stream if IP is allowed."""
@@ -50,6 +57,7 @@ def home() -> Response | WerkzeugResponse:
     return redirect("/login")
 
 
+# region /stream
 @bp.route("/stream")
 @cache.cached()
 def webplayer_stream() -> Response | WerkzeugResponse | CachedResponse:
@@ -70,6 +78,7 @@ def webplayer_stream() -> Response | WerkzeugResponse | CachedResponse:
     )
 
 
+# region /iptv
 @bp.route("/iptv")
 @bp.route("/iptv.m3u")
 @bp.route("/iptv.m3u8")
@@ -90,6 +99,7 @@ def iptv() -> Response | WerkzeugResponse:
     )
 
 
+# region /hls
 @bp.route("/hls/<path:path>")
 def hls_stream(path: str) -> Response | WerkzeugResponse:
     """Reverse proxy the HLS from Ace."""
@@ -134,13 +144,14 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
         ace_scraper.increment_quality(path, -5)
         return jsonify({"error": "Invalid HLS stream", "m3u8": content_str}, HTTPStatus.BAD_REQUEST)
 
-    content_str = replace_m3u_sources(m3u_content=content_str, path=path, ace_pool=ace_pool)
+    content_str = replace_m3u_sources(m3u_content=content_str)
 
     ace_scraper.increment_quality(path, 1)
 
     return Response(content_str, resp.status_code, headers)
 
 
+# region /ace/c/
 @bp.route("/ace/c/<path:path>")
 def ace_content(path: str) -> Response | WerkzeugResponse:
     """Reverse proxy the Ace content."""
@@ -177,6 +188,7 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
     return response
 
 
+# region /api/stream(s)
 @bp.route("/api/stream/<path:ace_id>")
 def api_stream(ace_id: str) -> Response | WerkzeugResponse:
     """API endpoint to get a specific stream by Ace ID."""
@@ -239,6 +251,22 @@ def api_streams_by_source(source_slug: str) -> Response | WerkzeugResponse:
     return response
 
 
+@bp.route("/api/streams/health")
+def api_streams_health() -> Response | WerkzeugResponse:
+    """API endpoint to get the streams."""
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
+    streams = ace_scraper.get_streams_health()
+
+    response = jsonify(streams)
+    response.status_code = HTTPStatus.OK
+
+    return response
+
+
+# region /api/source(s)
 @bp.route("/api/sources")
 def api_streams_sources() -> Response | WerkzeugResponse:
     """API endpoint to get the streams sources."""
@@ -285,21 +313,7 @@ def api_streams_source_by_slug(source_slug: str) -> Response | WerkzeugResponse:
     return response
 
 
-@bp.route("/api/streams/health")
-def api_streams_health() -> Response | WerkzeugResponse:
-    """API endpoint to get the streams."""
-    auth_failure = assumed_auth_failure()
-    if auth_failure:
-        return auth_failure
-
-    streams = ace_scraper.get_streams_health()
-
-    response = jsonify(streams)
-    response.status_code = HTTPStatus.OK
-
-    return response
-
-
+# region /api/ace_pool
 @bp.route("/api/ace_pool")
 def api_ace_pool() -> Response | WerkzeugResponse:
     """API endpoint to get the Ace pool."""
@@ -308,7 +322,7 @@ def api_ace_pool() -> Response | WerkzeugResponse:
         return auth_failure
 
     pool_list = ace_pool.get_instances_nice()
-    pool_list_serialized = [entry.model_dump() for entry in pool_list]
+    pool_list_serialized = pool_list.model_dump()
 
     response = jsonify(pool_list_serialized)
     response.status_code = HTTPStatus.OK

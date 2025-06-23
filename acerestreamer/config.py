@@ -55,8 +55,8 @@ class ScrapeSiteHTML(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def slugify(self) -> Self:
-        """Validate the URL."""
+    def generate_slug(self) -> Self:
+        """Generate a slug from the name."""
         name_slug = slugify(self.name)
 
         if self.slug == "":
@@ -87,8 +87,8 @@ class ScrapeSiteIPTV(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def slugify(self) -> Self:
-        """Validate the URL."""
+    def generate_slug(self) -> Self:
+        """Generate a slug from the name."""
         name_slug = slugify(self.name)
 
         if self.slug == "":
@@ -126,6 +126,7 @@ class AppConf(BaseModel):
 
     password: str = ""
     ace_address: str = "http://localhost:6878"
+    ace_max_streams: int = 4
 
     @model_validator(mode="after")
     def valid_ace_address(self) -> Self:
@@ -135,6 +136,29 @@ class AppConf(BaseModel):
             msg = f"ace_address '{ace_address_temp}' must start with 'http://'"
             raise ValueError(msg)
         self.ace_address = ace_address_temp
+        return self
+
+    @model_validator(mode="after")
+    def validate_max_streams(self) -> Self:
+        """Validate the max streams."""
+        n_min_streams = 1
+        n_high_streams = 10
+        n_very_high_streams = 20
+
+        if self.ace_max_streams < n_min_streams:
+            msg = f"ace_max_streams '{self.ace_max_streams}' must be at least {n_min_streams}"
+            raise ValueError(msg)
+
+        if self.ace_max_streams > n_high_streams:
+            logger.warning(
+                "You have set ace_max_streams to a high value (%d), this may cause performance issues.",
+                self.ace_max_streams,
+            )
+        elif self.ace_max_streams > n_very_high_streams:
+            logger.warning(
+                "You have set ace_max_streams to a VERY high value (%d), this will likely cause performance issues.",
+                self.ace_max_streams,
+            )
         return self
 
 

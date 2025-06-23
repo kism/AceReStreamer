@@ -24,7 +24,7 @@ logger = get_logger(__name__)
 
 SCRAPE_INTERVAL = 60 * 60  # Default scrape interval in seconds (1 hour)
 
-
+# region API Models
 class AceScraperSourcesApi(BaseModel):
     """Represent the sources of the AceScraper, for API use."""
 
@@ -43,6 +43,7 @@ class AceScraperSourceApi(BaseModel):
 class AceScraper:
     """Scraper object."""
 
+    # region Initialization
     def __init__(self, ace_scrape_settings: AceScrapeConf | None, instance_path: Path | None) -> None:
         """Init MyCoolObject."""
         self._ace_quality_cache_path = instance_path / "ace_quality_cache.json" if instance_path else None
@@ -61,6 +62,7 @@ class AceScraper:
         if self._ace_quality_cache_path:
             self.run_scrape()
 
+    # region Scrape
     def run_scrape(self) -> None:
         """Run the scraper to find AceStreams."""
 
@@ -86,6 +88,7 @@ class AceScraper:
 
         threading.Thread(target=run_scrape_thread, name="AceScraperThread", daemon=True).start()
 
+    # region GET
     def get_stream_by_ace_id(self, ace_id: str) -> FlatFoundAceStream:
         """Get a stream by its Ace ID, will use the first found matching FlatFoundAceStream by ace_id."""
         streams = self.get_streams_flat()
@@ -167,10 +170,12 @@ class AceScraper:
         """Get the health of the streams."""
         return self._ace_quality.ace_streams
 
+    # region Quality
     def increment_quality(self, ace_id: str, rating: int) -> None:
         """Increment the quality of a stream by ace_id."""
         self._ace_quality.increment_quality(ace_id, rating)
 
+    # region Helpers
     def print_streams(self) -> None:
         """Print the found streams."""
         if not self.streams:
