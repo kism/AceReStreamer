@@ -100,7 +100,7 @@ class AcePoolEntry(BaseModel):
         time_since_last_watched: timedelta = time_now - self.last_used
         required_time_to_unlock = self.get_required_time_until_unlock()
 
-        if self.check_running_long_enough_to_lock_in():
+        if not self.check_running_long_enough_to_lock_in():
             return False
 
         if time_since_last_watched <= required_time_to_unlock:  # noqa: SIM103 Clearer to read this way
