@@ -4,9 +4,10 @@ import contextlib
 import threading
 import time
 from datetime import datetime, timedelta
+from typing import Self
 
 import requests
-from pydantic import BaseModel, field_serializer
+from pydantic import BaseModel, field_serializer, model_validator
 
 from .constants import OUR_TIMEZONE
 from .helpers import check_valid_ace_id
@@ -20,31 +21,42 @@ LOCK_IN_RESET_MAX: timedelta = timedelta(minutes=30)
 DEFAULT_DATE = datetime(1970, 1, 1, tzinfo=OUR_TIMEZONE)
 
 
+# region AcePoolEntry
 class AcePoolEntry(BaseModel):
     """Model for an AceStream pool entry."""
 
-    ace_id: str = ""
+    ace_pid: int
+    ace_id: str
     ace_content_path: str = ""
-    ace_url: str
+    ace_address: str
     healthy: bool = False
     date_started: datetime = DEFAULT_DATE
     last_used: datetime = DEFAULT_DATE
     keep_alive_active: bool = False
+    ace_hls_m3u8_url: str = ""
+
+    @model_validator(mode="after")
+    def generate_hls_m3u8_url(self) -> Self:
+        """Generate the HLS M3U8 URL for the AceStream instance."""
+        if not self.ace_address.endswith("/"):
+            self.ace_address += "/"
+        self.ace_hls_m3u8_url = f"{self.ace_address}ace/manifest.m3u8?content_id={self.ace_id}&pid={self.ace_pid}"
+        return self
 
     def check_ace_running(self) -> bool:
         """Use the AceStream API to check if the instance is running."""
-        url = f"{self.ace_url}/webui/api/service?method=get_version"
+        url = f"{self.ace_address}/webui/api/service?method=get_version"
         try:
             response = requests.get(url, timeout=ACESTREAM_API_TIMEOUT)
             response.raise_for_status()
             self.healthy = True
         except requests.RequestException as e:
             error_short = type(e).__name__
-            logger.error("Ace Instance %s is not healthy: %s", self.ace_url, error_short)  # noqa: TRY400 Don't need to be verbose
+            logger.error("Ace Instance %s is not healthy: %s", self.ace_address, error_short)  # noqa: TRY400 Don't need to be verbose
             self.healthy = False
         except Exception as e:  # noqa: BLE001 Last resort
             error_short = type(e).__name__
-            logger.error("Ace Instance %s is not healthy for a weird reason: %s", self.ace_url, e)  # noqa: TRY400 Don't need to be verbose
+            logger.error("Ace Instance %s is not healthy for a weird reason: %s", self.ace_address, e)  # noqa: TRY400 Don't need to be verbose
             self.healthy = False
 
         return self.healthy
@@ -52,25 +64,6 @@ class AcePoolEntry(BaseModel):
     def update_last_used(self) -> None:
         """Update the last used timestamp."""
         self.last_used = datetime.now(tz=OUR_TIMEZONE)
-
-    def reset_content(self) -> None:
-        """Reset the content path and ace_id for this instance."""
-        logger.info("Resetting content for Ace ID %s on %s", self.ace_id, self.ace_url)
-        self.ace_id = ""
-        self.ace_content_path = ""
-        self.update_last_used()
-        self.date_started = DEFAULT_DATE
-        self.last_used = DEFAULT_DATE
-        self.check_ace_running()
-
-    def switch_content(self, ace_id: str, content_path: str) -> None:
-        """Switch the content path and ace_id for this instance."""
-        logger.info("Switching instance %s to ace id %s", self.ace_url, ace_id)
-        self.ace_id = ace_id
-        self.ace_content_path = content_path
-        self.update_last_used()
-        self.date_started = datetime.now(tz=OUR_TIMEZONE)
-        self.start_keep_alive()
 
     def get_required_time_until_unlock(self) -> timedelta:
         """Get the time until the instance is unlocked."""
@@ -85,16 +78,10 @@ class AcePoolEntry(BaseModel):
 
     def check_running_long_enough_to_lock_in(self) -> bool:
         """Check if the instance has been running long enough to be locked in."""
-        if self.ace_id == "":
-            return False
-
         return datetime.now(tz=OUR_TIMEZONE) - self.date_started > LOCK_IN_TIME
 
     def check_locked_in(self) -> bool:
         """Check if the instance is locked in for a certain period."""
-        if self.ace_id == "":
-            return False
-
         # If the instance has not been used for a while, it is not locked in, maximum reset time is LOCK_IN_RESET_MAX
         time_now = datetime.now(tz=OUR_TIMEZONE)
         time_since_last_watched: timedelta = time_now - self.last_used
@@ -108,11 +95,8 @@ class AcePoolEntry(BaseModel):
 
         return False  # This is the same as self.get_time_until_unlock() < timedelta(seconds=1)
 
-    def reset_if_stale(self) -> None:
+    def check_if_stale(self) -> bool:
         """Check if the instance is stale and reset it if necessary."""
-        if not self.ace_id and not self.ace_content_path:
-            return
-
         # We have locked in at one point
         condition_one = self.check_running_long_enough_to_lock_in()
         # We are not locked in
@@ -121,9 +105,10 @@ class AcePoolEntry(BaseModel):
         condition_three = self.get_time_until_unlock() < timedelta(seconds=1)
 
         if condition_one and condition_two and condition_three:
-            logger.info("Resetting keep alive for %s with ace_id %s", self.ace_url, self.ace_id)
-            self.reset_content()
-            return
+            logger.info("Resetting keep alive for %s with ace_id %s", self.ace_address, self.ace_id)
+            return True
+
+        return False
 
     def start_keep_alive(self) -> None:
         """Ensure the AceStream stream is kept alive."""
@@ -135,33 +120,31 @@ class AcePoolEntry(BaseModel):
                 time.sleep(refresh_interval)
 
                 if not self.ace_id:
-                    logger.trace("Not keeping alive %s, no ace id set", self.ace_url)
+                    logger.trace("Not keeping alive %s, no ace id set", self.ace_address)
                     continue
 
                 if not check_valid_ace_id(self.ace_id):  # This has it's own logging warning
                     continue
 
-                url = f"{self.ace_url}/ace/manifest.m3u8?content_id={self.ace_id}"
-
                 # If we are locked in, we keep the stream alive
                 if self.check_locked_in():
                     with contextlib.suppress(requests.RequestException):
                         if self.check_ace_running():
-                            logger.info("keep_alive %s", url)
-                            resp = requests.get(url, timeout=ACESTREAM_API_TIMEOUT * 2)
+                            logger.info("keep_alive %s", self.ace_hls_m3u8_url)
+                            resp = requests.get(self.ace_hls_m3u8_url, timeout=ACESTREAM_API_TIMEOUT * 2)
                             logger.trace("Keep alive response: %s", resp.status_code)
                 else:
-                    logger.debug("Not keeping alive %s, not locked in", self.ace_url)
+                    logger.debug("Not keeping alive %s, not locked in", self.ace_address)
 
-                if not self.keep_alive_active: # Hopefully unreachable
-                    logger.warning("Stopping keep alive thread for %s with ace_id %s", self.ace_url, self.ace_id)
+                if not self.keep_alive_active:  # Hopefully unreachable
+                    logger.warning("Stopping keep alive thread for %s with ace_id %s", self.ace_address, self.ace_id)
                     logger.warning("This should not happen")
                     return
 
         if not self.keep_alive_active:
             self.keep_alive_active = True
             threading.Thread(target=keep_alive, daemon=True).start()
-            logger.debug("Started keep alive thread for %s", self.ace_url)
+            logger.debug("Started keep alive thread for %s", self.ace_address)
 
 
 class AcePoolEntryForAPI(AcePoolEntry):
@@ -182,54 +165,53 @@ class AcePoolEntryForAPI(AcePoolEntry):
         return time_running.seconds
 
 
+# region AcePool
 class AcePool:
     """A pool of AceStream instances to distribute requests across."""
 
-    def __init__(self, ace_addresses: list[str]) -> None:
-        """Initialize the AcePool with a list of AceStream addresses."""
-        self.ace_instances = [AcePoolEntry(ace_url=address) for address in ace_addresses]
-        for instance in self.ace_instances:
-            instance.check_ace_running()
-            instance.check_locked_in()
-
+    def __init__(self, ace_address: str = "", max_size: int = 4) -> None:
+        """Initialize the AcePool."""
+        self.ace_address = ace_address
+        self.ace_instances: list[AcePoolEntry] = []
+        self.max_size = max_size
         self.ace_poolboy()
 
-    def get_available_instance(self) -> AcePoolEntry | None:
+    def get_available_instance_number(self) -> int | None:
         """Get the next available AceStream instance URL."""
-        if not self.ace_instances:
+        if len(self.ace_instances) == self.max_size:
+            logger.warning("AceStream pool is full, no available instance found.")
             return None
 
-        instance_to_use = None
+        instance_numbers = [instance.ace_pid for instance in self.ace_instances]
 
-        # Iterate through the instances to find the one that was used the longest time ago
-        for instance in self.ace_instances:
-            if instance.check_locked_in():
-                continue
+        for n in range(1, self.max_size + 1):
+            if n not in instance_numbers:
+                return n
 
-            instance.check_ace_running()
-
-            if instance.healthy and (instance_to_use is None or instance.last_used < instance_to_use.last_used):
-                instance_to_use = instance
-
-        return instance_to_use if instance_to_use else None
+        logger.warning("Something weird happened, no available instance number found.")
+        return None
 
     def get_instance(self, ace_id: str) -> str | None:
         """Find the AceStream instance URL for a given ace_id."""
         for instance in self.ace_instances:
             if instance.ace_id == ace_id:
                 instance.check_locked_in()  # Just to update the status, should be removed later
-                return instance.ace_url
+                return instance.ace_address
 
-        # If not found, return the next available instance in a round-robin fashion
-        instance_to_claim: AcePoolEntry | None = self.get_available_instance()
-
-        if instance_to_claim is None:
-            logger.error("No available AceStream instance found.")
+        new_instance_number = self.get_available_instance_number()
+        if new_instance_number is None:
+            logger.error("No available AceStream instance number found.")
             return None
 
-        instance_to_claim.switch_content(ace_id, "")
+        new_instance = AcePoolEntry(
+            ace_pid=new_instance_number,
+            ace_id=ace_id,
+            ace_address=self.ace_address,
+        )
 
-        return instance_to_claim.ace_url
+        self.ace_instances.append(new_instance)
+
+        return new_instance.ace_hls_m3u8_url
 
     def set_content_path(self, ace_id: str, content_path: str) -> None:
         """Set the content path for a specific AceStream instance."""
@@ -244,28 +226,25 @@ class AcePool:
                     content_path_set = True
                 else:  # Race condition can set two instances to the same ace_id
                     logger.warning("Content path for Ace ID %s already set to %s", ace_id, instance.ace_content_path)
-                    instance.reset_content()
+                    self.ace_instances.remove(instance)
 
         if content_path_set:
             return
 
         # If not found, assign it to the next available instance
-        new_instance = self.get_available_instance()
+        new_instance = self.get_available_instance_number()
         if new_instance is None:
-            logger.error("No available AceStream instance to set content path.")
+            logger.error("Cannot set_content_path.")
             return
 
-        if new_instance is not None:
-            new_instance.switch_content(ace_id, content_path)
-
-    def get_instance_by_content_path(self, content_path: str) -> str:
+    def get_instance_by_content_path(self, content_path: str) -> int:
         """Get the AceStream instance URL by content path."""
         for instance in self.ace_instances:
             if instance.ace_content_path == content_path:
-                return instance.ace_url
+                return instance.ace_pid
 
         logger.warning("Ace content %s path not linked to instance", content_path)
-        return ""
+        return -1
 
     def get_instances_nice(self) -> list[AcePoolEntryForAPI]:
         """Get a list of AcePoolEntryForAPI instances for the API."""
@@ -283,9 +262,10 @@ class AcePool:
 
             instances.append(
                 AcePoolEntryForAPI(
+                    ace_pid=instance.ace_pid,
                     ace_id=instance.ace_id,
                     ace_content_path=instance.ace_content_path,
-                    ace_url=instance.ace_url,
+                    ace_address=instance.ace_address,
                     healthy=instance.healthy,
                     date_started=instance.date_started,
                     last_used=instance.last_used,
@@ -313,7 +293,7 @@ class AcePool:
         # This is the weird case, caused by a race condition probably
         for instance in self.ace_instances:
             if instance.ace_id == ace_id and instance.ace_content_path == "":
-                instance.reset_content()
+                self.ace_instances.remove(instance)
                 instance_unlocked = True
 
         if instance_unlocked:
@@ -322,7 +302,7 @@ class AcePool:
         # This is probably what the user wants
         for instance in self.ace_instances:
             if instance.ace_id == ace_id and instance.check_locked_in():
-                instance.reset_content()
+                self.ace_instances.remove(instance)
                 instance_unlocked = True
 
         if instance_unlocked:
@@ -331,7 +311,7 @@ class AcePool:
         # Anything that is not locked in
         for instance in self.ace_instances:
             if instance.ace_id == ace_id:
-                instance.reset_content()
+                self.ace_instances.remove(instance)
                 instance_unlocked = True
 
         return instance_unlocked
@@ -345,6 +325,7 @@ class AcePool:
             while True:
                 time.sleep(10)
                 for instance in self.ace_instances:
-                    instance.reset_if_stale()
+                    if instance.check_if_stale():
+                        self.ace_instances.remove(instance)
 
         threading.Thread(target=ace_poolboy_thread, daemon=True).start()

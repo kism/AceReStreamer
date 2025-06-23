@@ -16,9 +16,8 @@ def replace_m3u_sources(m3u_content: str, path: str, ace_pool: AcePool) -> str:
     for line in m3u_content.splitlines():
         line_temp = line.strip()
         if "/ace/c/" in line:
-            for address in current_app.aw_conf.app.ace_addresses:
-                if line_temp.startswith(address):
-                    line_temp = line_temp.replace(address, current_app.config["SERVER_NAME"])
+            if line_temp.startswith(current_app.aw_conf.app.ace_address):
+                line_temp = line_temp.replace(current_app.aw_conf.app.ace_address, current_app.config["SERVER_NAME"])
 
             if not content_path_known:
                 current_content_identifier = re.search(r"/ace/c/([a-f0-9]+)", line_temp)

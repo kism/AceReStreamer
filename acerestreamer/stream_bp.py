@@ -23,7 +23,7 @@ logger = get_logger(__name__)  # Create a logger: acerestreamer.this_module_name
 
 bp = Blueprint("acerestreamer_scraper", __name__)
 ace_scraper: AceScraper = AceScraper(ace_scrape_settings=None, instance_path=None)
-ace_pool: AcePool = AcePool(ace_addresses=[])
+ace_pool: AcePool = AcePool()
 current_app = get_current_app()
 
 REVERSE_PROXY_EXCLUDED_HEADERS = ["content-encoding", "content-length", "transfer-encoding", "connection", "keep-alive"]
@@ -37,7 +37,7 @@ def start_scraper() -> None:
 
     ace_scraper = AceScraper(current_app.aw_conf.scraper, Path(current_app.instance_path))
 
-    ace_pool = AcePool(current_app.aw_conf.app.ace_addresses)
+    ace_pool = AcePool(current_app.aw_conf.app.ace_address)
 
 
 @bp.route("/")
@@ -97,14 +97,17 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    ace_address = ace_pool.get_instance(path)
+    instance_ace_hls_m3u8_url = ace_pool.get_instance(path)
 
-    url = f"{ace_address}/ace/manifest.m3u8?content_id={path}"
+    if not instance_ace_hls_m3u8_url:
+        msg = f"Can't server hls_stream, Ace pool is full: {path}"
+        logger.error(msg, path)
+        return jsonify({"error": msg}, HTTPStatus.SERVICE_UNAVAILABLE)
 
-    logger.trace("HLS stream requested for path: %s", path)
+    logger.trace("HLS stream requested for path: %s", instance_ace_hls_m3u8_url)
 
     try:
-        resp = requests.get(url, timeout=REVERSE_PROXY_TIMEOUT, stream=True)
+        resp = requests.get(instance_ace_hls_m3u8_url, timeout=REVERSE_PROXY_TIMEOUT, stream=True)
     except requests.Timeout as e:
         error_short = type(e).__name__
         logger.error("/hls/ reverse proxy timeout %s", error_short)  # noqa: TRY400 Too verbose otherwise
