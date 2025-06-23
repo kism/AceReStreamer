@@ -33,7 +33,6 @@ class AcePoolEntryForAPI(BaseModel):
     healthy: bool
     last_used: datetime
     date_started: datetime
-    keep_alive_active: bool
     ace_hls_m3u8_url: str
 
     @field_serializer("time_until_unlock")
@@ -265,7 +264,6 @@ class AcePool:
                     locked_in=locked_in,
                     time_until_unlock=time_until_unlock,
                     time_running=total_time_running,
-                    keep_alive_active=instance.keep_alive_active,
                     ace_hls_m3u8_url=instance.ace_hls_m3u8_url,
                 )
             )
