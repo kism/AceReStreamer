@@ -222,17 +222,19 @@ class AcePool:
 
     def get_available_instance_number(self) -> int | None:
         """Get the next available AceStream instance URL."""
-        if len(self.ace_instances) == self.max_size:
-            logger.warning("AceStream pool is full, no available instance found.")
-            return None
-
         instance_numbers = [instance.ace_pid for instance in self.ace_instances.values()]
 
         for n in range(1, self.max_size + 1):  # Minimum instance number is 1, per the API
             if n not in instance_numbers:
                 return n
 
-        logger.warning("Something weird happened, no available instance number found.")
+        for instance in self.ace_instances.values():
+            if not instance.check_locked_in():
+                ace_pid = instance.ace_pid
+                del self.ace_instances[instance.ace_id]
+                return ace_pid
+
+        logger.warning("Ace pool is full, could not get available instance.")
         return None
 
     def get_instance(self, ace_id: str) -> str | None:
