@@ -229,7 +229,7 @@ class AcePool:
             if n not in instance_numbers:
                 return n
 
-        for instance in self.ace_instances.values():
+        for instance in self.ace_instances.copy().values():
             if not instance.check_locked_in():
                 ace_pid = instance.ace_pid
                 del self.ace_instances[instance.ace_id]
@@ -320,7 +320,7 @@ class AcePool:
             logger.info("Starting AcePoolboy thread to clean up instances")
             while True:
                 time.sleep(10)
-                for instance in self.ace_instances.values():
+                for instance in self.ace_instances.copy().values():
                     if instance.check_if_stale():
                         logger.warning(
                             "ace_poolboy_thread: Resetting instance %s with ace_id %s",
