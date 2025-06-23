@@ -3,11 +3,11 @@
 import requests
 
 from .config import ScrapeSiteIPTV
+from .helpers import check_valid_ace_id
 from .logger import get_logger
 from .scraper_cache import scraper_cache
 from .scraper_helpers import (
     check_title_allowed,
-    check_valid_ace_id,
     check_valid_ace_url,
     cleanup_candidate_title,
     extract_ace_id_from_url,

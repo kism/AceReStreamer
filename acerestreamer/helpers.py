@@ -2,6 +2,12 @@
 
 import re
 
+from .logger import get_logger
+
+logger = get_logger(__name__)
+
+ACE_ID_LENGTH = 40
+
 
 def slugify(file_name: str | bytes) -> str:
     """Convert a file name into a URL-safe slug format.
@@ -21,3 +27,16 @@ def slugify(file_name: str | bytes) -> str:
 
     # Remove prefix and suffix whitespace, replace anything left as a hyphen
     return file_name.strip().replace(" ", "-")
+
+
+def check_valid_ace_id(ace_id: str) -> bool:
+    """Check if the AceStream ID is valid."""
+    if len(ace_id) != ACE_ID_LENGTH:
+        logger.warning("AceStream ID is not the expected length (%d), skipping: %s", ACE_ID_LENGTH, ace_id)
+        return False
+
+    if not re.match(r"^[0-9a-fA-F]+$", ace_id):
+        logger.warning("AceStream ID contains invalid characters: %s", ace_id)
+        return False
+
+    return True

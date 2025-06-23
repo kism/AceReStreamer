@@ -9,12 +9,13 @@ import requests
 from pydantic import BaseModel, field_serializer
 
 from .constants import OUR_TIMEZONE
+from .helpers import check_valid_ace_id
 from .logger import get_logger
 
 logger = get_logger(__name__)
 
 ACESTREAM_API_TIMEOUT = 3
-LOCK_IN_TIME: timedelta = timedelta(minutes=1)
+LOCK_IN_TIME: timedelta = timedelta(minutes=3)
 LOCK_IN_RESET_MAX: timedelta = timedelta(minutes=30)
 DEFAULT_DATE = datetime(1970, 1, 1, tzinfo=OUR_TIMEZONE)
 
@@ -60,7 +61,6 @@ class AcePoolEntry(BaseModel):
         self.update_last_used()
         self.date_started = DEFAULT_DATE
         self.last_used = DEFAULT_DATE
-        self.keep_alive_active = False
         self.check_ace_running()
 
     def switch_content(self, ace_id: str, content_path: str) -> None:
@@ -70,7 +70,6 @@ class AcePoolEntry(BaseModel):
         self.ace_content_path = content_path
         self.update_last_used()
         self.date_started = datetime.now(tz=OUR_TIMEZONE)
-        self.keep_alive_active = False  # Reset
         self.start_keep_alive()
 
     def get_required_time_until_unlock(self) -> timedelta:
@@ -84,6 +83,13 @@ class AcePoolEntry(BaseModel):
         """Get the time until the instance is unlocked."""
         return self.last_used + self.get_required_time_until_unlock() - datetime.now(tz=OUR_TIMEZONE)
 
+    def check_running_long_enough_to_lock_in(self) -> bool:
+        """Check if the instance has been running long enough to be locked in."""
+        if self.ace_id == "":
+            return False
+
+        return datetime.now(tz=OUR_TIMEZONE) - self.date_started > LOCK_IN_TIME
+
     def check_locked_in(self) -> bool:
         """Check if the instance is locked in for a certain period."""
         if self.ace_id == "":
@@ -91,17 +97,16 @@ class AcePoolEntry(BaseModel):
 
         # If the instance has not been used for a while, it is not locked in, maximum reset time is LOCK_IN_RESET_MAX
         time_now = datetime.now(tz=OUR_TIMEZONE)
-        time_since_date_started: timedelta = time_now - self.date_started
         time_since_last_watched: timedelta = time_now - self.last_used
         required_time_to_unlock = self.get_required_time_until_unlock()
 
-        if time_since_date_started < LOCK_IN_TIME:
+        if self.check_running_long_enough_to_lock_in():
             return False
 
         if time_since_last_watched <= required_time_to_unlock:  # noqa: SIM103 Clearer to read this way
             return True
 
-        return False
+        return False  # This is the same as self.get_time_until_unlock() < timedelta(seconds=1)
 
     def reset_if_stale(self) -> None:
         """Check if the instance is stale and reset it if necessary."""
@@ -109,7 +114,7 @@ class AcePoolEntry(BaseModel):
             return
 
         # We have locked in at one point
-        condition_one = datetime.now(tz=OUR_TIMEZONE) - self.date_started > LOCK_IN_TIME
+        condition_one = self.check_running_long_enough_to_lock_in()
         # We are not locked in
         condition_two = not self.check_locked_in()
         # We have gone past the required time to unlock
@@ -122,25 +127,40 @@ class AcePoolEntry(BaseModel):
 
     def start_keep_alive(self) -> None:
         """Ensure the AceStream stream is kept alive."""
-        pass # lmao keep alive broke everything
 
-        # def keep_alive() -> None:
-        #     refresh_interval = 30
-        #     url = f"{self.ace_url}/ace/manifest.m3u8?content_id={self.ace_id}"
-        #     while True:
-        #         # If we are locked in, we keep the stream alive
-        #         if self.check_locked_in():
-        #             with contextlib.suppress(requests.RequestException):
-        #                 if self.check_ace_running():
-        #                     resp = requests.get(url, timeout=ACESTREAM_API_TIMEOUT * 2)
-        #                     logger.trace("Keep alive response: %s", resp.status_code)
+        def keep_alive() -> None:
+            refresh_interval = 30
 
-        #         time.sleep(refresh_interval)
+            while True:
+                time.sleep(refresh_interval)
 
-        # if not self.keep_alive_active:
-        #     self.keep_alive_active = True
-        #     threading.Thread(target=keep_alive, daemon=True).start()
-        #     logger.debug("Started keep alive thread for %s with ace_id %s", self.ace_url, self.ace_id)
+                if not check_valid_ace_id(self.ace_id):
+                    if not self.ace_id:
+                        logger.debug("Not keeping alive %s, no ace id set", self.ace_url)
+                    else:
+                        logger.warning("Not keeping alive %s, invalid ace id", self.ace_url)
+                    continue
+
+                url = f"{self.ace_url}/ace/manifest.m3u8?content_id={self.ace_id}"
+
+                # If we are locked in, we keep the stream alive
+                if self.check_locked_in():
+                    with contextlib.suppress(requests.RequestException):
+                        if self.check_ace_running():
+                            logger.info("keep_alive %s", url)
+                            resp = requests.get(url, timeout=ACESTREAM_API_TIMEOUT * 2)
+                            logger.trace("Keep alive response: %s", resp.status_code)
+                else:
+                    logger.debug("Not keeping alive %s, not locked in", self.ace_url)
+
+                if not self.keep_alive_active:
+                    logger.debug("Stopping keep alive thread for %s with ace_id %s", self.ace_url, self.ace_id)
+                    return
+
+        if not self.keep_alive_active:
+            self.keep_alive_active = True
+            threading.Thread(target=keep_alive, daemon=True).start()
+            logger.debug("Started keep alive thread for %s", self.ace_url)
 
 
 class AcePoolEntryForAPI(AcePoolEntry):
