@@ -41,6 +41,9 @@ class AcePoolEntry(BaseModel):
         if not self.ace_address.endswith("/"):
             self.ace_address += "/"
         self.ace_hls_m3u8_url = f"{self.ace_address}ace/manifest.m3u8?content_id={self.ace_id}&pid={self.ace_pid}"
+
+        self.check_ace_running() # Weird place but I need to figure out __init__ with pydantic
+
         return self
 
     def check_ace_running(self) -> bool:
@@ -196,7 +199,7 @@ class AcePool:
         for instance in self.ace_instances:
             if instance.ace_id == ace_id:
                 instance.check_locked_in()  # Just to update the status, should be removed later
-                return instance.ace_address
+                return instance.ace_hls_m3u8_url
 
         new_instance_number = self.get_available_instance_number()
         if new_instance_number is None:
@@ -208,6 +211,8 @@ class AcePool:
             ace_id=ace_id,
             ace_address=self.ace_address,
         )
+
+
 
         self.ace_instances.append(new_instance)
 
@@ -237,14 +242,14 @@ class AcePool:
             logger.error("Cannot set_content_path.")
             return
 
-    def get_instance_by_content_path(self, content_path: str) -> int:
-        """Get the AceStream instance URL by content path."""
+    def get_instance_base_url_by_content_path(self, content_path: str) -> str:
+        """Get the AceStream instance HLS URL by content path."""
         for instance in self.ace_instances:
             if instance.ace_content_path == content_path:
-                return instance.ace_pid
+                return instance.ace_address
 
         logger.warning("Ace content %s path not linked to instance", content_path)
-        return -1
+        return ""
 
     def get_instances_nice(self) -> list[AcePoolEntryForAPI]:
         """Get a list of AcePoolEntryForAPI instances for the API."""

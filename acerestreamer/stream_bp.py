@@ -108,6 +108,7 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
 
     try:
         resp = requests.get(instance_ace_hls_m3u8_url, timeout=REVERSE_PROXY_TIMEOUT, stream=True)
+        resp.raise_for_status()
     except requests.Timeout as e:
         error_short = type(e).__name__
         logger.error("/hls/ reverse proxy timeout %s", error_short)  # noqa: TRY400 Too verbose otherwise
@@ -129,6 +130,7 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
 
     if "#EXTM3U" not in content_str:
         logger.error("Invalid HLS stream received for path: %s", path)
+        logger.debug("Content received: %s", content_str[:1000])
         ace_scraper.increment_quality(path, -5)
         return jsonify({"error": "Invalid HLS stream", "m3u8": content_str}, HTTPStatus.BAD_REQUEST)
 
@@ -152,7 +154,7 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
         return jsonify({"error": "Invalid Ace content path"}, HTTPStatus.BAD_REQUEST)
     ace_content_path_filtered = path_filtered.group(1)
 
-    ace_address = ace_pool.get_instance_by_content_path(ace_content_path_filtered)
+    ace_address = ace_pool.get_instance_base_url_by_content_path(ace_content_path_filtered)
 
     if not ace_address:
         response = jsonify({"error": "Ace content not ready"}, HTTPStatus.SERVICE_UNAVAILABLE)
@@ -165,6 +167,7 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
 
     try:
         resp = requests.get(url, timeout=REVERSE_PROXY_TIMEOUT, stream=True)
+        resp.raise_for_status()
     except requests.RequestException as e:
         error_short = type(e).__name__
         logger.error("/ace/c/ reverse proxy failure %s", error_short)  # noqa: TRY400 Naa this should be shorter

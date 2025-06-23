@@ -583,7 +583,6 @@ function populateStreamTable(streamsSource) {
       streams.sort((a, b) => b.quality - a.quality);
 
       for (const stream of streams) {
-        console.log(`Adding stream: ${stream.title} (${stream.quality})`);
         const tr = document.createElement("tr");
 
         // Quality cell
