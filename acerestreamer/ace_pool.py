@@ -70,6 +70,7 @@ class AcePoolEntry(BaseModel):
         self.last_used = datetime.now(tz=OUR_TIMEZONE)
 
         self.check_ace_running()  # Check if the AceStream instance is running, this updates the healthy status
+        self.start_keep_alive()  # Start the keep alive thread
         return self
 
     def check_ace_running(self) -> bool:
@@ -254,7 +255,6 @@ class AcePool:
             ace_id=ace_id,
             ace_address=self.ace_address,
         )
-        new_instance.start_keep_alive()  # TODO, FIGURE OUT __init__ with pydantic
 
         self.ace_instances[ace_id] = new_instance
 
