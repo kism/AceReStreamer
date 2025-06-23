@@ -153,8 +153,9 @@ class AcePoolEntry(BaseModel):
                 else:
                     logger.debug("Not keeping alive %s, not locked in", self.ace_url)
 
-                if not self.keep_alive_active:
-                    logger.debug("Stopping keep alive thread for %s with ace_id %s", self.ace_url, self.ace_id)
+                if not self.keep_alive_active: # Hopefully unreachable
+                    logger.warning("Stopping keep alive thread for %s with ace_id %s", self.ace_url, self.ace_id)
+                    logger.warning("This should not happen")
                     return
 
         if not self.keep_alive_active:
@@ -291,6 +292,7 @@ class AcePool:
                     locked_in=locked_in,
                     time_until_unlock=time_until_unlock,
                     time_running=total_time_running,
+                    keep_alive_active=instance.keep_alive_active,
                 )
             )
 
