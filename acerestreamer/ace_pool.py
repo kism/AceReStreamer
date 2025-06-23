@@ -323,7 +323,7 @@ class AcePool:
                 time.sleep(10)
                 for instance in self.ace_instances.copy().values():
                     if instance.check_if_stale():
-                        logger.warning(
+                        logger.info(
                             "ace_poolboy_thread: Resetting instance %s with ace_id %s",
                             instance.ace_pid,
                             instance.ace_id,
