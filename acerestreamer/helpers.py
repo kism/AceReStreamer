@@ -32,7 +32,9 @@ def slugify(file_name: str | bytes) -> str:
 def check_valid_ace_id(ace_id: str) -> bool:
     """Check if the AceStream ID is valid."""
     if len(ace_id) != ACE_ID_LENGTH:
-        logger.warning("AceStream ID is not the expected length (%d), skipping: %s", ACE_ID_LENGTH, ace_id)
+        logger.warning(
+            "AceStream ID is not the expected length %d != %d , skipping: %s", ACE_ID_LENGTH, len(ace_id), ace_id
+        )
         return False
 
     if not re.match(r"^[0-9a-fA-F]+$", ace_id):

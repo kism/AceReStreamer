@@ -134,11 +134,11 @@ class AcePoolEntry(BaseModel):
             while True:
                 time.sleep(refresh_interval)
 
-                if not check_valid_ace_id(self.ace_id):
-                    if not self.ace_id:
-                        logger.debug("Not keeping alive %s, no ace id set", self.ace_url)
-                    else:
-                        logger.warning("Not keeping alive %s, invalid ace id", self.ace_url)
+                if not self.ace_id:
+                    logger.trace("Not keeping alive %s, no ace id set", self.ace_url)
+                    continue
+
+                if not check_valid_ace_id(self.ace_id):  # This has it's own logging warning
                     continue
 
                 url = f"{self.ace_url}/ace/manifest.m3u8?content_id={self.ace_id}"

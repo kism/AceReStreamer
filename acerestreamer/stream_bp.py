@@ -104,7 +104,6 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
     logger.trace("HLS stream requested for path: %s", path)
 
     try:
-        logger.info("HLS %s", url)
         resp = requests.get(url, timeout=REVERSE_PROXY_TIMEOUT, stream=True)
     except requests.Timeout as e:
         error_short = type(e).__name__
@@ -162,7 +161,6 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
     logger.trace("Ace content requested for path: %s", path)
 
     try:
-        logger.info("ace_content %s", url)
         resp = requests.get(url, timeout=REVERSE_PROXY_TIMEOUT, stream=True)
     except requests.RequestException as e:
         error_short = type(e).__name__
