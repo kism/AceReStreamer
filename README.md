@@ -69,9 +69,11 @@ uv sync --no-group test --no-group type --no-group lint
   - ~~merge~~
   - ~~fetch on a schedule~~
   - epg api
-- get content_id from ace/manifest.m3u8 yeah? It redirects
-- keep alive
-  - fix weird keepalive clear issue, maybe do a governor thread
+- ~~get content_id from ace/manifest.m3u8 yeah? It redirects~~
+- ~~keep alive~~
+  - ~~fix weird keepalive clear issue, maybe do a governor thread~~
+- ~~use the pid= in the m3u8 GETs~~
+- free up instance if it hasn't ever locked in, and it hasn't used in whatever
 
 ### Apps that don't work
 
