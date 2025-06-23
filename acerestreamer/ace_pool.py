@@ -225,12 +225,13 @@ class AcePool:
         """Get the next available AceStream instance URL."""
         instance_numbers = [instance.ace_pid for instance in self.ace_instances.values()]
 
-        for n in range(1, self.max_size + 1):  # Minimum instance number is 1, per the API
+        for n in range(1, self.max_size):  # Minimum instance number is 1, per the API
             if n not in instance_numbers:
                 return n
 
         for instance in self.ace_instances.copy().values():
             if not instance.check_locked_in():
+                logger.info("Found available AceStream instance: %s, reclaiming it.", instance.ace_pid)
                 ace_pid = instance.ace_pid
                 del self.ace_instances[instance.ace_id]
                 return ace_pid
