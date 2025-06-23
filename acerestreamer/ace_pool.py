@@ -109,6 +109,12 @@ class AcePoolEntry(BaseModel):
         """Check if the instance has been running long enough to be locked in."""
         return datetime.now(tz=OUR_TIMEZONE) - self.date_started > LOCK_IN_TIME
 
+    def check_unused_longer_than_lock_in_reset(self) -> bool:
+        """Check if the instance has been unused longer than the lock-in reset time."""
+        time_now = datetime.now(tz=OUR_TIMEZONE)
+        time_since_last_watched: timedelta = time_now - self.last_used
+        return time_since_last_watched > LOCK_IN_RESET_MAX
+
     def check_locked_in(self) -> bool:
         """Check if the instance is locked in for a certain period."""
         # If the instance has not been used for a while, it is not locked in, maximum reset time is LOCK_IN_RESET_MAX
@@ -126,21 +132,33 @@ class AcePoolEntry(BaseModel):
 
     def check_if_stale(self) -> bool:
         """Check if the instance is stale and reset it if necessary."""
-        # We have locked in at one point
+        # If we have locked in at one point
         condition_one = self.check_running_long_enough_to_lock_in()
-        # We are not locked in
+        # If we are not locked in
         condition_two = not self.check_locked_in()
-        # We have gone past the required time to unlock
+        # If we have gone past the required time to unlock
         condition_three = self.get_time_until_unlock() < timedelta(seconds=1)
+        # If it has been unused longer than the lock-in reset time
+        condition_four = self.check_unused_longer_than_lock_in_reset()
 
         if condition_one and condition_two and condition_three:
             logger.debug(
-                "ace_pid %d with ace_id %s is stale. one=%s, two=%s, three=%s",
+                "Old ace_pid %d with ace_id %s is stale. one=%s, two=%s, three=%s",
                 self.ace_pid,
                 self.ace_id,
                 condition_one,
                 condition_two,
                 condition_three,
+            )
+            return True
+
+        if not condition_one and condition_four:
+            logger.debug(
+                "New-ish and unused ace_pid %d with ace_id %s is stale. one=%s, four=%s",
+                self.ace_pid,
+                self.ace_id,
+                condition_one,
+                condition_four,
             )
             return True
 
