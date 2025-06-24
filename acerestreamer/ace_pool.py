@@ -4,10 +4,9 @@ import contextlib
 import threading
 import time
 from datetime import datetime, timedelta
-from typing import Self
 
 import requests
-from pydantic import BaseModel, field_serializer, model_validator
+from pydantic import BaseModel, field_serializer
 
 from .config import AppConf
 from .constants import OUR_TIMEZONE
@@ -48,26 +47,20 @@ class AcePoolEntryForAPI(BaseModel):
         return time_running.seconds
 
 
-class AcePoolEntry(BaseModel):
+class AcePoolEntry:
     """Model for an AceStream pool entry."""
 
-    ace_pid: int
-    ace_id: str
-    ace_address: str
-    transcode_audio: bool
-    date_started: datetime = DEFAULT_DATE_STARTED
-    last_used: datetime = DEFAULT_DATE_STARTED
-    keep_alive_active: bool = False
-    ace_hls_m3u8_url: str = ""
+    def __init__(self, ace_pid: int, ace_address: str, ace_id: str, *, transcode_audio: bool) -> None:
+        """Initialize an AceStream pool entry."""
+        self.ace_pid = ace_pid
+        self.ace_id = ace_id
+        self.ace_address = ace_address
 
-    @model_validator(mode="after")
-    def init(self) -> Self:
-        """Replacement for __init__ to get the object initialized."""
         if not self.ace_address.endswith("/"):
             self.ace_address += "/"
         self.ace_hls_m3u8_url = (
             f"{self.ace_address}ace/manifest.m3u8?content_id={self.ace_id}"
-            f"&transcode_ac3={str(self.transcode_audio).lower()}"
+            f"&transcode_ac3={str(transcode_audio).lower()}"
             f"&pid={self.ace_pid}"
         )
 
@@ -75,8 +68,8 @@ class AcePoolEntry(BaseModel):
         self.date_started = datetime.now(tz=OUR_TIMEZONE)
         self.last_used = datetime.now(tz=OUR_TIMEZONE)
 
-        self.start_keep_alive()  # Start the keep alive thread
-        return self
+        self.keep_alive_active = False
+        self.start_keep_alive()
 
     def update_last_used(self) -> None:
         """Update the last used timestamp."""
