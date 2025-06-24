@@ -623,3 +623,14 @@ nav ul {
   margin-left: 10px;
   margin-right: 10px;
 }
+
+/* #endregion */
+
+/* #region: Ace Info */
+
+#ace-info td,
+#ace-pool-info td {
+  text-align: center;
+}
+
+/* #endregion */

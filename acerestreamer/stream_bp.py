@@ -41,8 +41,7 @@ def start_scraper() -> None:
     )
 
     ace_pool = AcePool(
-        ace_address=current_app.aw_conf.app.ace_address,
-        max_size=current_app.aw_conf.app.ace_max_streams,
+        app_config=current_app.aw_conf.app,
     )
 
 

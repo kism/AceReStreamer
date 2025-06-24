@@ -1,5 +1,4 @@
-// region API calls
-
+// region API/getStreamsSources
 function getStreamsSources() {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -28,6 +27,7 @@ function getStreamsSources() {
     });
 }
 
+// region API/getStream
 function getStream(streamId) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -56,6 +56,7 @@ function getStream(streamId) {
     });
 }
 
+// region API/getStreamsFromSource
 function getStreamsFromSource(sourceSlug) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -85,6 +86,7 @@ function getStreamsFromSource(sourceSlug) {
     });
 }
 
+// region API/getAcePool
 function getAcePool() {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -111,6 +113,7 @@ function getAcePool() {
     });
 }
 
+// region API/makeAcePoolInstanceAvailable
 function makeAcePoolInstanceAvailable(aceId) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -326,7 +329,6 @@ function loadPlayStream(streamID) {
     .then((streamInfo) => {
       loadStreamUrl(streamID, streamInfo.title);
 
-      // Try to play with retry logic
       attemptPlay();
     })
     .catch((error) => {
@@ -418,123 +420,171 @@ function attemptPlay() {
 
 // biome-ignore lint/correctness/noUnusedVariables: HTML uses it
 function populateTables() {
-  populateAcePoolTable();
+  populateAceInfoTables();
   populateStreamTables();
+}
+
+function populateAceInfoTables() {
+  getAcePool()
+    .then((acePool) => {
+      populateAceInfoTable(acePool);
+      populateAcePoolTable(acePool.ace_instances);
+    })
+    .catch((_error) => {
+      console.error(`Failed to fetch Ace Pool data: ${_error}`);
+    });
 }
 
 // endregion
 
-// region Ace Pool Table
+// region Tables/Ace Info
+function populateAceInfoTable(acePool) {
+  const aceInfoTable = document.getElementById("ace-info");
+  aceInfoTable.innerHTML = ""; // Clear the table before adding new data
+  const tr_heading = document.createElement("tr");
+  const th_ace_version = document.createElement("th");
+  th_ace_version.textContent = "Version";
+  tr_heading.appendChild(th_ace_version);
+  flashBackgroundColor(th_ace_version);
 
-function populateAcePoolTable() {
-  getAcePool()
-    .then((acePool) => {
-      const table = document.getElementById("ace-info");
-      table.innerHTML = ""; // Clear the table before adding new data
-      const tr_heading = document.createElement("tr");
-      const th_instance_number = document.createElement("th");
-      th_instance_number.textContent = "#";
-      tr_heading.appendChild(th_instance_number);
-      flashBackgroundColor(th_instance_number);
+  const th_ace_instances = document.createElement("th");
+  th_ace_instances.textContent = "Streams";
+  tr_heading.appendChild(th_ace_instances);
+  flashBackgroundColor(th_ace_instances);
 
-      const th_health = document.createElement("th");
-      th_health.textContent = "Health";
-      tr_heading.appendChild(th_health);
-      flashBackgroundColor(th_health);
+  const th_ace_transcode_audio = document.createElement("th");
+  th_ace_transcode_audio.textContent = "Transcode Audio";
+  tr_heading.appendChild(th_ace_transcode_audio);
+  flashBackgroundColor(th_ace_transcode_audio);
 
-      const th_status = document.createElement("th");
-      th_status.textContent = "Status";
-      tr_heading.appendChild(th_status);
-      flashBackgroundColor(th_status);
+  const th_ace_pool_healthy = document.createElement("th");
+  th_ace_pool_healthy.textContent = "Health";
+  tr_heading.appendChild(th_ace_pool_healthy);
+  flashBackgroundColor(th_ace_pool_healthy);
 
-      const th_playing = document.createElement("th");
-      th_playing.textContent = "Currently Playing";
-      tr_heading.appendChild(th_playing);
-      flashBackgroundColor(th_playing);
+  aceInfoTable.appendChild(tr_heading);
 
-      const th_unlock = document.createElement("th");
-      th_unlock.textContent = "Make Available";
-      tr_heading.appendChild(th_unlock);
-      flashBackgroundColor(th_unlock);
+  const tr = document.createElement("tr");
+  // Ace version cell
+  const td_ace_version = document.createElement("td");
+  td_ace_version.textContent = acePool.ace_version;
+  tr.appendChild(td_ace_version);
 
-      table.appendChild(tr_heading);
+  // Ace instances cell
+  const td_ace_instances = document.createElement("td");
+  td_ace_instances.textContent = `${acePool.ace_instances.length}/${acePool.max_size}`;
+  tr.appendChild(td_ace_instances);
 
-      let n = 1;
-      for (const instance of acePool.ace_instances) {
-        const tr = document.createElement("tr");
+  // Ace transcode audio cell
+  const td_ace_transcode_audio = document.createElement("td");
+  if (acePool.transcode_audio === true) {
+    td_ace_transcode_audio.textContent = "Enabled";
+  } else {
+    td_ace_transcode_audio.textContent = "Disabled";
+  }
+  tr.appendChild(td_ace_transcode_audio);
 
-        // Instance number cell
-        const td_instance_number = document.createElement("td");
-        td_instance_number.textContent = `${n}`;
-        n++;
-        tr.appendChild(td_instance_number);
+  // Ace pool health cell
+  const td_ace_pool_healthy = document.createElement("td");
+  if (acePool.healthy === false) {
+    setStatusClass(td_ace_pool_healthy, "bad");
+    td_ace_pool_healthy.textContent = "Failure";
+  } else {
+    setStatusClass(td_ace_pool_healthy, "good");
+    td_ace_pool_healthy.textContent = "Healthy";
+  }
+  tr.appendChild(td_ace_pool_healthy);
 
-        // Health cell
-        const td_health = document.createElement("td");
-        let timeUntilUnlockFormatted = "";
-        if (instance.healthy === false) {
-          setStatusClass(td_health, "bad");
-          td_health.textContent = "Failure";
-        } else {
-          setStatusClass(td_health, "good");
-          td_health.textContent = "Healthy";
-        }
-        tr.appendChild(td_health);
+  aceInfoTable.appendChild(tr);
+}
+// region Tables/Ace Pool
 
-        // Status cell (Available/Locked In)
-        const td_status = document.createElement("td");
-        let lockedIn = "Available";
-        if (instance.locked_in === true) {
-          // Format the time until unlock
-          const totalSeconds = instance.time_until_unlock;
-          const minutes = Math.floor(totalSeconds / 60);
-          const seconds = totalSeconds % 60;
-          timeUntilUnlockFormatted = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+function populateAcePoolTable(aceInstances) {
+  const poolTable = document.getElementById("ace-pool-info");
+  poolTable.innerHTML = ""; // Clear the table before adding new data
+  const tr_heading = document.createElement("tr");
+  const th_instance_number = document.createElement("th");
+  th_instance_number.textContent = "#";
+  tr_heading.appendChild(th_instance_number);
+  flashBackgroundColor(th_instance_number);
 
-          lockedIn = `🔒 Reserved for ${timeUntilUnlockFormatted}`;
-        }
-        td_status.textContent = lockedIn;
-        tr.appendChild(td_status);
+  const th_status = document.createElement("th");
+  th_status.textContent = "Status";
+  tr_heading.appendChild(th_status);
+  flashBackgroundColor(th_status);
 
-        // Now Playing cell
-        const td_playing = document.createElement("td");
-        if (instance.ace_id !== "") {
-          getStream(instance.ace_id)
-            .then((streamInfo) => {
-              td_playing.textContent = streamInfo.title || "Unknown Stream";
-              td_playing.addEventListener("click", () => {
-                loadPlayStream(instance.ace_id);
-              });
-              td_playing.classList.add("link");
-            })
-            .catch((_error) => {});
-        } else {
-          td_playing.textContent = "-";
-        }
-        tr.appendChild(td_playing);
+  const th_playing = document.createElement("th");
+  th_playing.textContent = "Currently Playing";
+  tr_heading.appendChild(th_playing);
+  flashBackgroundColor(th_playing);
 
-        // Unlock button cell
-        const td_unlock = document.createElement("td");
-        const unlockButton = document.createElement("button");
-        unlockButton.textContent = "Unlock";
-        unlockButton.classList.add("unlock-button");
-        unlockButton.onclick = () => {
-          makeAcePoolInstanceAvailable(instance.ace_id)
-            .then(() => {
-              console.log(`Ace Pool instance ${instance.ace_id} made available`);
-              populateAcePoolTable(); // Refresh the table after unlocking
-            })
-            .catch((_error) => {});
-          populateAcePoolTable();
-        };
-        td_unlock.appendChild(unlockButton);
+  const th_unlock = document.createElement("th");
+  th_unlock.textContent = "Make Available";
+  tr_heading.appendChild(th_unlock);
+  flashBackgroundColor(th_unlock);
 
-        tr.appendChild(td_unlock);
+  poolTable.appendChild(tr_heading);
 
-        table.appendChild(tr);
-      }
-    })
-    .catch((_error) => {});
+  for (const instance of aceInstances) {
+    const tr = document.createElement("tr");
+
+    // Instance number cell
+    const td_instance_number = document.createElement("td");
+    td_instance_number.textContent = `${instance.ace_pid}`;
+    tr.appendChild(td_instance_number);
+
+    // Status cell (Available/Locked In)
+    const td_status = document.createElement("td");
+    let lockedIn = "Available";
+    if (instance.locked_in === true) {
+      // Format the time until unlock
+      const totalSeconds = instance.time_until_unlock;
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      timeUntilUnlockFormatted = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+
+      lockedIn = `🔒 Reserved for ${timeUntilUnlockFormatted}`;
+    }
+    td_status.textContent = lockedIn;
+    tr.appendChild(td_status);
+
+    // Now Playing cell
+    const td_playing = document.createElement("td");
+    if (instance.ace_id !== "") {
+      getStream(instance.ace_id)
+        .then((streamInfo) => {
+          td_playing.textContent = streamInfo.title || "Unknown Stream";
+          td_playing.addEventListener("click", () => {
+            loadPlayStream(instance.ace_id);
+          });
+          td_playing.classList.add("link");
+        })
+        .catch((_error) => {});
+    } else {
+      td_playing.textContent = "-";
+    }
+    tr.appendChild(td_playing);
+
+    // Unlock button cell
+    const td_unlock = document.createElement("td");
+    const unlockButton = document.createElement("button");
+    unlockButton.textContent = "Unlock";
+    unlockButton.classList.add("unlock-button");
+    unlockButton.onclick = () => {
+      makeAcePoolInstanceAvailable(instance.ace_id)
+        .then(() => {
+          console.log(`Ace Pool instance ${instance.ace_id} made available`);
+          populateAcePoolTables(); // Refresh the table after unlocking
+        })
+        .catch((_error) => {});
+      populateAcePoolTables();
+    };
+    td_unlock.appendChild(unlockButton);
+
+    tr.appendChild(td_unlock);
+
+    poolTable.appendChild(tr);
+  }
 }
 
 // region Stream Table
@@ -558,8 +608,6 @@ function populateStreamTables() {
 
 function populateStreamTable(streamsSource) {
   const tableId = `stream-table-${streamsSource.slug}`;
-
-  console.log(`Populating stream table for source: ${streamsSource.slug}`);
 
   getStreamsFromSource(streamsSource.slug)
     .then((streams) => {
@@ -628,10 +676,10 @@ document.addEventListener("DOMContentLoaded", () => {
   streamStatus.innerHTML = "Ready to load a stream";
 
   // Populate tables
-  populateAcePoolTable();
-  setInterval(populateAcePoolTable, 30000);
+  populateAceInfoTables();
+  setInterval(populateAceInfoTables, 30000);
   populateStreamTables();
-  setInterval(populateStreamTables, 95001);
+  setInterval(populateStreamTables, 95007);
 
   // Check if Hls is even defined
   if (typeof Hls === "undefined") {

@@ -9,6 +9,7 @@ from typing import Self
 import requests
 from pydantic import BaseModel, field_serializer, model_validator
 
+from .config import AppConf
 from .constants import OUR_TIMEZONE
 from .helpers import check_valid_ace_id
 from .logger import get_logger
@@ -51,6 +52,7 @@ class AcePoolEntry(BaseModel):
     ace_pid: int
     ace_id: str
     ace_address: str
+    transcode_audio: bool
     date_started: datetime = DEFAULT_DATE_STARTED
     last_used: datetime = DEFAULT_DATE_STARTED
     keep_alive_active: bool = False
@@ -61,7 +63,11 @@ class AcePoolEntry(BaseModel):
         """Replacement for __init__ to get the object initialized."""
         if not self.ace_address.endswith("/"):
             self.ace_address += "/"
-        self.ace_hls_m3u8_url = f"{self.ace_address}ace/manifest.m3u8?content_id={self.ace_id}&pid={self.ace_pid}"
+        self.ace_hls_m3u8_url = (
+            f"{self.ace_address}ace/manifest.m3u8?content_id={self.ace_id}"
+            f"&transcode_ac3={str(self.transcode_audio).lower()}"
+            f"&pid={self.ace_pid}"
+        )
 
         # Required to ensure that this actually gets the current time
         self.date_started = datetime.now(tz=OUR_TIMEZONE)
@@ -163,11 +169,10 @@ class AcePoolEntry(BaseModel):
                 # If we are locked in, we keep the stream alive
                 if self.check_locked_in():
                     with contextlib.suppress(requests.RequestException):
-                        logger.info("keep_alive %s", self.ace_hls_m3u8_url)
                         resp = requests.get(self.ace_hls_m3u8_url, timeout=ACESTREAM_API_TIMEOUT * 2)
-                        logger.trace("Keep alive response: %s", resp.status_code)
+                        logger.debug("Keep alive, response: %s", resp.status_code)
                 else:
-                    logger.trace("Not keeping alive %s, not locked in", self.ace_address)
+                    logger.debug("Not keeping alive %s, not locked in", self.ace_address)
 
                 if not self.keep_alive_active:  # Hopefully unreachable
                     logger.warning("Stopping keep alive thread for %s with ace_id %s", self.ace_address, self.ace_id)
@@ -184,22 +189,48 @@ class AcePoolEntry(BaseModel):
 class AcePoolForApi(BaseModel):
     """Model for the AcePool API response."""
 
+    ace_version: str
     ace_address: str
     max_size: int
     healthy: bool
+    transcode_audio: bool
     ace_instances: list[AcePoolEntryForAPI]
 
 
 class AcePool:
     """A pool of AceStream instances to distribute requests across."""
 
-    def __init__(self, ace_address: str = "", max_size: int = 4) -> None:
+    def __init__(self, app_config: AppConf | None = None) -> None:
         """Initialize the AcePool."""
-        self.ace_address = ace_address
+        self.ace_address = app_config.ace_address if app_config else ""
+        self.max_size = app_config.ace_max_streams if app_config else 0
+        self.transcode_audio = app_config.transcode_audio if app_config else False
         self.ace_instances: dict[str, AcePoolEntry] = {}
-        self.max_size = max_size
         self.healthy = False
-        self.ace_poolboy()
+        self.ace_version = "unknown"
+        if app_config:
+            self.populate_ace_version()
+            self.ace_poolboy()
+
+    def populate_ace_version(self) -> None:
+        """Get the AceStream version from the API."""
+        version_url = f"{self.ace_address}/webui/api/service?method=get_version"
+        try:
+            response = requests.get(version_url, timeout=ACESTREAM_API_TIMEOUT)
+            response.raise_for_status()
+            version_data = response.json()
+
+        except requests.RequestException as e:
+            error_short = type(e).__name__
+            logger.error("Failed to get AceStream version from %s: %s", self.ace_address, error_short)  # noqa: TRY400
+            self.ace_version = "unknown"
+            return
+
+        try:
+            self.ace_version = version_data["result"]["version"]
+            logger.info("AceStream version %s found at %s", self.ace_version, self.ace_address)
+        except KeyError:
+            logger.exception("Failed to parse AceStream version from %s: %s", self.ace_address, version_data)
 
     def check_ace_running(self) -> bool:
         """Use the AceStream API to check if the instance is running."""
@@ -258,6 +289,7 @@ class AcePool:
             ace_pid=new_instance_number,
             ace_id=ace_id,
             ace_address=self.ace_address,
+            transcode_audio=self.transcode_audio,
         )
 
         self.ace_instances[ace_id] = new_instance
@@ -296,6 +328,8 @@ class AcePool:
             max_size=self.max_size,
             ace_instances=instances,
             healthy=self.healthy,
+            ace_version=self.ace_version,
+            transcode_audio=self.transcode_audio,
         )
 
     def clear_instance_by_ace_id(self, ace_id: str) -> bool:
@@ -321,7 +355,7 @@ class AcePool:
 
         def ace_poolboy_thread() -> None:
             """Thread to clean up instances."""
-            logger.info("Starting AcePoolboy thread to clean up instances")
+            logger.info("Starting ace_poolboy_thread to clean up instances")
             while True:
                 self.check_ace_running()
                 time.sleep(10)

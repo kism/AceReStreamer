@@ -126,6 +126,7 @@ class AppConf(BaseModel):
 
     password: str = ""
     ace_address: str = "http://localhost:6878"
+    transcode_audio: bool = True
     ace_max_streams: int = 4
 
     @model_validator(mode="after")
