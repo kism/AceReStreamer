@@ -495,6 +495,9 @@ function populateAceInfoTable(acePool) {
   // Ace instances cell
   const td_ace_instances = document.createElement("td");
   td_ace_instances.textContent = `${acePool.ace_instances.length}/${acePool.max_size}`;
+  if (acePool.ace_instances.length >= acePool.max_size) {
+    setStatusClass(td_ace_instances, "bad");
+  }
   tr.appendChild(td_ace_instances);
 
   // Ace transcode audio cell
