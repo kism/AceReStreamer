@@ -110,7 +110,7 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
 
     if not instance_ace_hls_m3u8_url:
         msg = f"Can't server hls_stream, Ace pool is full: {path}"
-        logger.error(msg, path)
+        logger.error("HLS stream error: %s", msg)
         return jsonify({"error": msg}, HTTPStatus.SERVICE_UNAVAILABLE)
 
     logger.trace("HLS stream requested for path: %s", instance_ace_hls_m3u8_url)
@@ -345,7 +345,7 @@ def api_ace_pool_by_id(ace_id: str) -> Response | WerkzeugResponse:
         return jsonify({"ace_url": instance_url}, HTTPStatus.OK)
 
     if request.method == "DELETE":
-        ace_pool.clear_instance_by_ace_id(ace_id)  # Assume success since we validated above
+        ace_pool.remove_instance_by_ace_id(ace_id)  # Assume success since we validated above
         return jsonify({"message": "Ace ID removed successfully"}, HTTPStatus.OK)
 
     return jsonify({"error": "Method not allowed"}, HTTPStatus.METHOD_NOT_ALLOWED)

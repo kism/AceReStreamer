@@ -21,6 +21,8 @@ LOCK_IN_TIME: timedelta = timedelta(minutes=3)
 LOCK_IN_RESET_MAX: timedelta = timedelta(minutes=30)
 DEFAULT_DATE_STARTED: datetime = datetime(1970, 1, 1, tzinfo=OUR_TIMEZONE)  # Default date for AceStream instances
 
+KEEP_ALIVE_THREADS: dict[int, threading.Thread] = {}
+
 
 # region AcePoolEntry
 class AcePoolEntryForAPI(BaseModel):
@@ -156,7 +158,8 @@ class AcePoolEntry(BaseModel):
         def keep_alive() -> None:
             refresh_interval = 30
 
-            while True:
+            while self.keep_alive_active:
+
                 time.sleep(refresh_interval)
 
                 if not self.ace_id:
@@ -169,21 +172,27 @@ class AcePoolEntry(BaseModel):
                 # If we are locked in, we keep the stream alive
                 if self.check_locked_in():
                     with contextlib.suppress(requests.RequestException):
+                        if not self.keep_alive_active:  # Beat the race condition
+                            return
                         resp = requests.get(self.ace_hls_m3u8_url, timeout=ACESTREAM_API_TIMEOUT * 2)
                         logger.debug("Keep alive, response: %s", resp.status_code)
                 else:
                     logger.debug("Not keeping alive %s, not locked in", self.ace_address)
 
-                if not self.keep_alive_active:  # Hopefully unreachable
-                    logger.warning("Stopping keep alive thread for %s with ace_id %s", self.ace_address, self.ace_id)
-                    logger.warning("This should not happen")
-                    return
-
         if not self.keep_alive_active:
             self.keep_alive_active = True
-            threading.Thread(target=keep_alive, daemon=True).start()
-            logger.debug("Started keep alive thread for ace pid %s", self.ace_pid)
 
+            if self.ace_pid in KEEP_ALIVE_THREADS:
+                KEEP_ALIVE_THREADS[self.ace_pid].join(timeout=1)
+            KEEP_ALIVE_THREADS[self.ace_pid] = threading.Thread(target=keep_alive, daemon=True)
+            KEEP_ALIVE_THREADS[self.ace_pid].start()
+
+            logger.info(
+                "Keep alive loop total for pid: %s with ace_id %s, total threads: %d",
+                self.ace_pid,
+                self.ace_id,
+                len(KEEP_ALIVE_THREADS),
+            )
 
 # region AcePool
 class AcePoolForApi(BaseModel):
@@ -250,6 +259,21 @@ class AcePool:
 
         return self.healthy
 
+    def remove_instance_by_ace_id(self, ace_id: str) -> bool:
+        """Remove an AceStream instance from the pool by ace_id."""
+        if ace_id in self.ace_instances:
+            logger.info("Removing AceStream instance with ace_id %s", ace_id)
+            with contextlib.suppress(KeyError):
+                instance_to_remove = self.ace_instances[ace_id]
+                instance_to_remove.keep_alive_active = False  # This should stop the thread
+                KEEP_ALIVE_THREADS[instance_to_remove.ace_pid].join(
+                    timeout=1
+                )  # This also ensures the thread is stopped
+                del self.ace_instances[ace_id]
+            return True
+
+        return False
+
     def get_available_instance_number(self) -> int | None:
         """Get the next available AceStream instance URL."""
         instance_numbers = [instance.ace_pid for instance in self.ace_instances.values()]
@@ -267,10 +291,7 @@ class AcePool:
 
             logger.info("Found available AceStream instance: %s, reclaiming it.", best_instance.ace_pid)
             ace_pid = best_instance.ace_pid
-            try:
-                del self.ace_instances[best_instance.ace_id]
-            except KeyError:
-                logger.warning("Maybe a race condition reclaiming instance %s, it was not found in the pool.", ace_pid)
+            self.remove_instance_by_ace_id(best_instance.ace_id)
             return ace_pid
 
         logger.warning("Ace pool is full, could not get available instance.")
@@ -334,25 +355,6 @@ class AcePool:
             ace_version=self.ace_version,
             transcode_audio=self.transcode_audio,
         )
-
-    def clear_instance_by_ace_id(self, ace_id: str) -> bool:
-        """Clear an AceStream instance by ace_id.
-
-        Args:
-            ace_id (str): The Ace ID to clear.
-
-        Returns:
-            bool: True if an instance was cleared, False otherwise.
-
-        """
-        instance_unlocked = False
-
-        if ace_id in self.ace_instances:
-            with contextlib.suppress(KeyError):
-                del self.ace_instances[ace_id]
-            instance_unlocked = True
-
-        return instance_unlocked
 
     def ace_poolboy(self) -> None:
         """Run the AcePoolboy to clean up instances."""
