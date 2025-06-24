@@ -159,7 +159,6 @@ class AcePoolEntry(BaseModel):
             refresh_interval = 30
 
             while self.keep_alive_active:
-
                 time.sleep(refresh_interval)
 
                 if not self.ace_id:
@@ -193,6 +192,7 @@ class AcePoolEntry(BaseModel):
                 self.ace_id,
                 len(KEEP_ALIVE_THREADS),
             )
+
 
 # region AcePool
 class AcePoolForApi(BaseModel):

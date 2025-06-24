@@ -7,7 +7,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
 from . import __version__
-from .config import AceReStreamerConf, NginxConf, ScrapeSiteHTML, ScrapeSiteIPTV, load_config
+from .config import AceReStreamerConf, EPGInstanceConf, NginxConf, ScrapeSiteHTML, ScrapeSiteIPTV, load_config
 from .logger import LOG_LEVELS, get_logger, setup_logger
 
 logger = get_logger(__name__)
@@ -80,15 +80,27 @@ def generate_app_config_file(
 
     config = AceReStreamerConf()
     if app_config_path.is_file():  # If we are here, we are overwriting
-        config = load_config(app_config_path)
+        try:
+            logger.info("Loading existing configuration from %s", app_config_path)
+            config = load_config(app_config_path)
+        except Exception:  # noqa: BLE001 Naa, we are generating config
+            logger.error("Failed to load existing configuration")  # noqa: TRY400 Naa, we are generating config
+            logger.info("Generating a new configuration file instead.")
 
     if "html" in generate_options:
         logger.info("Including HTML scraper in the configuration.")
+        config.scraper.html.clear()
         config.scraper.html.append(ScrapeSiteHTML())
 
     if "iptv" in generate_options:
         logger.info("Including IPTV M3U8 scraper in the configuration.")
+        config.scraper.iptv_m3u8.clear()
         config.scraper.iptv_m3u8.append(ScrapeSiteIPTV())
+
+    if "epg" in generate_options:
+        logger.info("Including EPG scraper in the configuration.")
+        config.epgs.clear()
+        config.epgs.append(EPGInstanceConf())
 
     if "nginx" in generate_options:
         logger.info("Including Nginx configuration in the configuration.")

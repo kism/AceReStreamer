@@ -6,14 +6,13 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
-    {# No longer works due to pooling, can fix later #}
-    {# location /ace/c/ {
+    location /ace/c/ {
         proxy_pass {{ ace_server_address }};
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         include {{ ip_allow_list_path }};
-    } #}
+    }
     listen [::]:443 ssl ipv6only=off;
 
     ssl_certificate {{ cert_path }};

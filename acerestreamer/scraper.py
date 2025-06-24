@@ -24,6 +24,7 @@ logger = get_logger(__name__)
 
 SCRAPE_INTERVAL = 60 * 60  # Default scrape interval in seconds (1 hour)
 
+
 # region API Models
 class AceScraperSourcesApi(BaseModel):
     """Represent the sources of the AceScraper, for API use."""

@@ -38,7 +38,7 @@ class TitleFilter(BaseModel):
 class ScrapeSiteHTML(BaseModel):
     """Model for a site to scrape."""
 
-    name: str = "Example"
+    name: str = "Example HTML"
     slug: str = ""
     url: str = "https://example.com"
     target_class: str = ""  # Target html class
@@ -50,7 +50,7 @@ class ScrapeSiteHTML(BaseModel):
         """Validate the URL."""
         self.url = self.url.strip()
         if not self.url.startswith("http://") and not self.url.startswith("https://"):
-            msg = f"URL for {self.name} must start with 'http://' or 'https://'"
+            msg = f"Error loading config: URL for {self.name} must start with 'http://' or 'https://'"
             raise ValueError(msg)
         return self
 
@@ -82,7 +82,7 @@ class ScrapeSiteIPTV(BaseModel):
         """Validate the URL."""
         self.url = self.url.strip()
         if not self.url.startswith("http://") and not self.url.startswith("https://"):
-            msg = f"URL for {self.name} must start with 'http://' or 'https://'"
+            msg = f"Error loading config: URL for {self.name} must start with 'http://' or 'https://'"
             raise ValueError(msg)
         return self
 
@@ -114,7 +114,10 @@ class AceScrapeConf(BaseModel):
         names_slug = []
         for site in self.html + self.iptv_m3u8:
             if site.slug in names_slug:
-                msg = f"Scraper site name '{site.name}' > '{site.slug}' is not unique, please change it."
+                msg = (
+                    f"Error loading config: Scraper site name '{site.name}' > '{site.slug}'"
+                    " is not unique, please change it."
+                )
                 raise ValueError(msg)
             names_slug.append(site.slug)
 
@@ -229,7 +232,9 @@ class AceReStreamerConf(BaseSettings):
         if existing_data != config_data:  # The new object will be valid, so we back up the old one
             local_tz = datetime.datetime.now().astimezone().tzinfo
             time_str = datetime.datetime.now(tz=local_tz).strftime("%Y-%m-%d_%H%M%S")
-            backup_file = config_location.parent / f"{config_location.stem}_{time_str}{config_location.suffix}.bak"
+            config_backup_dir = config_location.parent / "config_backups"
+            config_backup_dir.mkdir(parents=True, exist_ok=True)
+            backup_file = config_backup_dir / f"{config_location.stem}_{time_str}{config_location.suffix}.bak"
             logger.warning("Validation has changed the config file, backing up the old one to %s", backup_file)
             with backup_file.open("w") as f:
                 f.write(tomlkit.dumps(existing_data))
