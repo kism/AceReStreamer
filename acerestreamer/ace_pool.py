@@ -30,7 +30,6 @@ class AcePoolEntryForAPI(BaseModel):
     time_running: timedelta = timedelta(seconds=0)
     ace_pid: int
     ace_id: str
-    healthy: bool
     last_used: datetime
     date_started: datetime
     ace_hls_m3u8_url: str
@@ -187,6 +186,7 @@ class AcePoolForApi(BaseModel):
 
     ace_address: str
     max_size: int
+    healthy: bool
     ace_instances: list[AcePoolEntryForAPI]
 
 
@@ -200,7 +200,6 @@ class AcePool:
         self.max_size = max_size
         self.healthy = False
         self.ace_poolboy()
-
 
     def check_ace_running(self) -> bool:
         """Use the AceStream API to check if the instance is running."""
@@ -220,7 +219,6 @@ class AcePool:
 
         return self.healthy
 
-
     def get_available_instance_number(self) -> int | None:
         """Get the next available AceStream instance URL."""
         instance_numbers = [instance.ace_pid for instance in self.ace_instances.values()]
@@ -229,12 +227,17 @@ class AcePool:
             if n not in instance_numbers:
                 return n
 
-        for instance in self.ace_instances.copy().values(): # TODO: Pick the used-the-least instance
-            if not instance.check_locked_in():
-                logger.info("Found available AceStream instance: %s, reclaiming it.", instance.ace_pid)
-                ace_pid = instance.ace_pid
-                del self.ace_instances[instance.ace_id]
-                return ace_pid
+        shortlist_instances_to_reclaim = [  # We will try to reclaim a non-locked-in instance
+            instance for instance in self.ace_instances.values() if not instance.check_locked_in()
+        ]
+
+        if shortlist_instances_to_reclaim:
+            best_instance = min(shortlist_instances_to_reclaim, key=lambda x: x.last_used)
+
+            logger.info("Found available AceStream instance: %s, reclaiming it.", best_instance.ace_pid)
+            ace_pid = best_instance.ace_pid
+            del self.ace_instances[best_instance.ace_id]
+            return ace_pid
 
         logger.warning("Ace pool is full, could not get available instance.")
         return None
@@ -279,7 +282,6 @@ class AcePool:
                 AcePoolEntryForAPI(
                     ace_pid=instance.ace_pid,
                     ace_id=instance.ace_id,
-                    healthy=instance.healthy,
                     date_started=instance.date_started,
                     last_used=instance.last_used,
                     locked_in=locked_in,
@@ -293,6 +295,7 @@ class AcePool:
             ace_address=self.ace_address,
             max_size=self.max_size,
             ace_instances=instances,
+            healthy=self.healthy,
         )
 
     def clear_instance_by_ace_id(self, ace_id: str) -> bool:
