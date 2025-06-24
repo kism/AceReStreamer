@@ -12,15 +12,34 @@ logger = get_logger(__name__)
 class AllowList:
     """A simple allow list for IP addresses."""
 
-    def __init__(self, allowlist_path: Path | None, nginx_allowlist_path: Path | None) -> None:
+    def __init__(self) -> None:
         """Initialize the allow list with a path to the allow list file."""
-        self.allowlist_path = allowlist_path
-        self.nginx_allowlist_path = nginx_allowlist_path
-        self._nginx_bin_path: Path | None = _find_nginx_bin_path()
-
+        self.allowlist_path: Path | None = None
+        self.nginx_allowlist_path: Path | None = None
+        self._nginx_bin_path: Path | None = None
         self.allowlist_ips: list[str] = []
-        self.load()
+
+    def load(self, instance_path: Path | str, nginx_allowlist_path: Path | str | None) -> None:
+        """Load the allow list from a file."""
+        if isinstance(instance_path, str):
+            instance_path = Path(instance_path)
+
+        if isinstance(nginx_allowlist_path, str):
+            nginx_allowlist_path = Path(nginx_allowlist_path)
+
+        self.allowlist_path = instance_path / "allowed_ips.json"
+        self.nginx_allowlist_path = nginx_allowlist_path
+        self._nginx_bin_path = _find_nginx_bin_path()
+
         self._ensure_correct_ips()
+
+        if self.allowlist_path.exists():
+            with self.allowlist_path.open("r") as f:
+                try:
+                    self.allowlist_ips = json.load(f)
+                except json.JSONDecodeError:
+                    logger.error("Failed to decode JSON from allow list file, resetting")  # noqa: TRY400
+
         self.save()
 
     def _ensure_correct_ips(self) -> None:
@@ -50,25 +69,13 @@ class AllowList:
         """Check if an IP address is in the allow list."""
         return ip in self.allowlist_ips
 
-    def load(self) -> None:
-        """Load the allow list from a file."""
-        if not self.allowlist_path:
-            return
-
-        if self.allowlist_path.exists():
-            with self.allowlist_path.open("r") as f:
-                try:
-                    self.allowlist_ips = json.load(f)
-                except json.JSONDecodeError:
-                    logger.error("Failed to decode JSON from allow list file, resetting")  # noqa: TRY400
-
     def save(self) -> None:
         """Save the allow list to a file."""
-        if self.allowlist_path:
+        if self.allowlist_path is not None:
             with self.allowlist_path.open("w") as f:
                 json.dump(self.allowlist_ips, f)
 
-        if self.nginx_allowlist_path:
+        if self.nginx_allowlist_path is not None:
             with self.nginx_allowlist_path.open("w") as f:
                 for ip in self.allowlist_ips:
                     f.write(f"allow {ip};\n")

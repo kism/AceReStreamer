@@ -55,7 +55,10 @@ def create_app(
         scraper_cache.start_scraper_cache(instance_path=app.instance_path)
         scraper_helpers.start_m3u_replacer(instance_path=app.instance_path)
         stream_bp.start_scraper()
-        authentication_bp.start_allowlist()
+        authentication_bp.ip_allow_list.load(
+            instance_path=app.instance_path,
+            nginx_allowlist_path=app.aw_conf.nginx.ip_allow_list_path if app.aw_conf.nginx else None,
+        )
         epg_bp.start_epg_handler()
 
     app.logger.info("Starting Web Server")

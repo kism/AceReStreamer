@@ -17,17 +17,9 @@ logger = get_logger(__name__)  # Create a logger: acerestreamer.this_module_name
 bp = Blueprint("acerestreamer_auth", __name__)
 
 current_app = get_current_app()
-ip_allow_list: None | AllowList = None
+ip_allow_list: AllowList = AllowList()
 
 STATIC_PATH = Path(__file__).parent / "static"
-
-
-def start_allowlist() -> None:
-    """Initialize the allow list from the configuration."""
-    global ip_allow_list  # noqa: PLW0603
-    allowlist_path = Path(current_app.instance_path) / "allowed_ips.json"
-    nginx_allowlist_path = Path(current_app.aw_conf.nginx.ip_allow_list_path) if current_app.aw_conf.nginx else None
-    ip_allow_list = AllowList(allowlist_path, nginx_allowlist_path)
 
 
 def get_ip_from_request() -> str:
@@ -52,10 +44,6 @@ def get_ip_from_request() -> str:
 
 def is_ip_allowed(ip: str) -> bool:
     """Check if the IP address is allowed."""
-    if not ip_allow_list:
-        logger.warning("IP_ALLOW_LIST is not initialized")
-        return False
-
     logger.trace("Checking if IP is allowed: %s", ip)
     return ip_allow_list.check(ip)
 
@@ -63,9 +51,6 @@ def is_ip_allowed(ip: str) -> bool:
 @bp.route("/api/authenticate", methods=["GET", "POST"])
 def authenticate() -> Response | WerkzeugResponse:
     """Authenticate the user."""
-    if not ip_allow_list:
-        return Response("Not initialized", HTTPStatus.INTERNAL_SERVER_ERROR)
-
     if request.method == "POST":
         password = request.form.get("password", "").strip()
 
@@ -108,7 +93,4 @@ def authenticate() -> Response | WerkzeugResponse:
 @bp.route("/login")
 def login() -> Response | WerkzeugResponse:
     """Render the login page."""
-    if not ip_allow_list:
-        return Response("Not initialized", HTTPStatus.INTERNAL_SERVER_ERROR)
-
     return send_file(STATIC_PATH / "login.html")
