@@ -254,7 +254,7 @@ class AcePool:
         """Get the next available AceStream instance URL."""
         instance_numbers = [instance.ace_pid for instance in self.ace_instances.values()]
 
-        for n in range(1, self.max_size):  # Minimum instance number is 1, per the API
+        for n in range(1, self.max_size + 1):  # Minimum instance number is 1, per the API
             if n not in instance_numbers:
                 return n
 
@@ -267,7 +267,10 @@ class AcePool:
 
             logger.info("Found available AceStream instance: %s, reclaiming it.", best_instance.ace_pid)
             ace_pid = best_instance.ace_pid
-            del self.ace_instances[best_instance.ace_id]
+            try:
+                del self.ace_instances[best_instance.ace_id]
+            except KeyError:
+                logger.warning("Maybe a race condition reclaiming instance %s, it was not found in the pool.", ace_pid)
             return ace_pid
 
         logger.warning("Ace pool is full, could not get available instance.")
@@ -345,7 +348,8 @@ class AcePool:
         instance_unlocked = False
 
         if ace_id in self.ace_instances:
-            del self.ace_instances[ace_id]
+            with contextlib.suppress(KeyError):
+                del self.ace_instances[ace_id]
             instance_unlocked = True
 
         return instance_unlocked
@@ -366,6 +370,7 @@ class AcePool:
                             instance.ace_pid,
                             instance.ace_id,
                         )
-                        del self.ace_instances[instance.ace_id]
+                        with contextlib.suppress(KeyError):
+                            del self.ace_instances[instance.ace_id]
 
         threading.Thread(target=ace_poolboy_thread, daemon=True).start()
