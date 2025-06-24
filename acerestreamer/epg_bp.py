@@ -18,7 +18,7 @@ epg_handler = EPGHandler(epg_conf_list=[])
 
 def start_epg_handler() -> None:
     """Start the EPG handler with the provided URLs."""
-    global epg_handler  # noqa: PLW0603 Hard to avoid
+    global epg_handler
     instance_path = Path(current_app.instance_path)
     epg_handler = EPGHandler(epg_conf_list=current_app.aw_conf.epgs, instance_path=instance_path)
 

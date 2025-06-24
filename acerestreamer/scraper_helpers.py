@@ -72,7 +72,7 @@ m3u_replacer = M3UNameReplacer()
 
 def start_m3u_replacer(instance_path: str) -> None:
     """Start the M3U replacer with the instance path."""
-    global m3u_replacer  # noqa: PLW0603 aaaaa
+    global m3u_replacer
     m3u_replacer = M3UNameReplacer(Path(instance_path))
 
 

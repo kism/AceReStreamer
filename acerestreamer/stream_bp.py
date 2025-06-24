@@ -32,8 +32,8 @@ REVERSE_PROXY_TIMEOUT = 10  # Very high but alas
 # region Scraper
 def start_scraper() -> None:
     """Method to 'configure' this module. Needs to be called under `with app.app_context():` from __init__.py."""
-    global ace_scraper  # noqa: PLW0603 Necessary evil as far as I can tell, could move to all objects but eh...
-    global ace_pool  # noqa: PLW0603 Necessary evil as far as I can tell, could move to all objects but eh...
+    global ace_scraper
+    global ace_pool
 
     ace_scraper = AceScraper(
         current_app.aw_conf.scraper,

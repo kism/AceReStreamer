@@ -65,5 +65,5 @@ scraper_cache = ScraperCache()
 
 def start_scraper_cache(instance_path: str) -> None:
     """Initialize the scraper cache with the given instance path."""
-    global scraper_cache  # noqa: PLW0603 aaaaaa
+    global scraper_cache
     scraper_cache = ScraperCache(Path(instance_path))
