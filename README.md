@@ -122,3 +122,4 @@ see iptv.html.j2
   - ~~fix weird keepalive clear issue, maybe do a governor thread~~
 - ~~use the pid= in the m3u8 GETs~~
 - ~~free up instance if it hasn't ever locked in, and it hasn't used in whatever~~
+- ~~fix threading issues~~

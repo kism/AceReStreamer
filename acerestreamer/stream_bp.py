@@ -120,12 +120,12 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
         resp.raise_for_status()
     except requests.Timeout as e:
         error_short = type(e).__name__
-        logger.error("/hls/ reverse proxy timeout %s", error_short)  # noqa: TRY400 Too verbose otherwise
+        logger.error("reverse proxy timeout /hls/ %s", error_short)  # noqa: TRY400 Too verbose otherwise
         ace_scraper.increment_quality(path, -5)
         return jsonify({"error": "HLS stream timeout"}, HTTPStatus.REQUEST_TIMEOUT)
     except requests.RequestException as e:
         error_short = type(e).__name__
-        logger.error("/hls/ reverse proxy failure %s", error_short)  # noqa: TRY400 Naa this should be shorter
+        logger.error("reverse proxy failure /hls/ %s %s %s", error_short, e.errno, e.strerror)  # noqa: TRY400 Naa this should be shorter
         ace_scraper.increment_quality(path, -5)
         return jsonify({"error": "Failed to fetch HLS stream"}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
@@ -171,7 +171,7 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
         return jsonify({"error": "Failed to fetch HLS stream"}, HTTPStatus.INTERNAL_SERVER_ERROR)
     except requests.Timeout as e:
         error_short = type(e).__name__
-        logger.error("/ace/c/ reverse proxy timeout %s", error_short)  # noqa: TRY400 Too verbose otherwise
+        logger.error("/ace/c/ reverse proxy timeout %s %s %s", error_short, e.errno, e.strerror)  # noqa: TRY400 Too verbose otherwise
         return jsonify({"error": "Ace content timeout"}, HTTPStatus.REQUEST_TIMEOUT)
 
     headers = [
