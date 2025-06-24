@@ -52,7 +52,6 @@ class AcePoolEntry(BaseModel):
     ace_pid: int
     ace_id: str
     ace_address: str
-    healthy: bool = False
     date_started: datetime = DEFAULT_DATE_STARTED
     last_used: datetime = DEFAULT_DATE_STARTED
     keep_alive_active: bool = False
@@ -69,27 +68,8 @@ class AcePoolEntry(BaseModel):
         self.date_started = datetime.now(tz=OUR_TIMEZONE)
         self.last_used = datetime.now(tz=OUR_TIMEZONE)
 
-        self.check_ace_running()  # Check if the AceStream instance is running, this updates the healthy status
         self.start_keep_alive()  # Start the keep alive thread
         return self
-
-    def check_ace_running(self) -> bool:
-        """Use the AceStream API to check if the instance is running."""
-        url = f"{self.ace_address}/webui/api/service?method=get_version"
-        try:
-            response = requests.get(url, timeout=ACESTREAM_API_TIMEOUT)
-            response.raise_for_status()
-            self.healthy = True
-        except requests.RequestException as e:
-            error_short = type(e).__name__
-            logger.error("Ace Instance %s is not healthy: %s", self.ace_address, error_short)  # noqa: TRY400 Don't need to be verbose
-            self.healthy = False
-        except Exception as e:  # noqa: BLE001 Last resort
-            error_short = type(e).__name__
-            logger.error("Ace Instance %s is not healthy for a weird reason: %s", self.ace_address, e)  # noqa: TRY400 Don't need to be verbose
-            self.healthy = False
-
-        return self.healthy
 
     def update_last_used(self) -> None:
         """Update the last used timestamp."""
@@ -184,10 +164,9 @@ class AcePoolEntry(BaseModel):
                 # If we are locked in, we keep the stream alive
                 if self.check_locked_in():
                     with contextlib.suppress(requests.RequestException):
-                        if self.check_ace_running():
-                            logger.info("keep_alive %s", self.ace_hls_m3u8_url)
-                            resp = requests.get(self.ace_hls_m3u8_url, timeout=ACESTREAM_API_TIMEOUT * 2)
-                            logger.trace("Keep alive response: %s", resp.status_code)
+                        logger.info("keep_alive %s", self.ace_hls_m3u8_url)
+                        resp = requests.get(self.ace_hls_m3u8_url, timeout=ACESTREAM_API_TIMEOUT * 2)
+                        logger.trace("Keep alive response: %s", resp.status_code)
                 else:
                     logger.trace("Not keeping alive %s, not locked in", self.ace_address)
 
@@ -219,7 +198,28 @@ class AcePool:
         self.ace_address = ace_address
         self.ace_instances: dict[str, AcePoolEntry] = {}
         self.max_size = max_size
+        self.healthy = False
         self.ace_poolboy()
+
+
+    def check_ace_running(self) -> bool:
+        """Use the AceStream API to check if the instance is running."""
+        url = f"{self.ace_address}/webui/api/service?method=get_version"
+        try:
+            response = requests.get(url, timeout=ACESTREAM_API_TIMEOUT)
+            response.raise_for_status()
+            self.healthy = True
+        except requests.RequestException as e:
+            error_short = type(e).__name__
+            logger.error("Ace Instance %s is not healthy: %s", self.ace_address, error_short)  # noqa: TRY400 Don't need to be verbose
+            self.healthy = False
+        except Exception as e:  # noqa: BLE001 Last resort
+            error_short = type(e).__name__
+            logger.error("Ace Instance %s is not healthy for a weird reason: %s", self.ace_address, e)  # noqa: TRY400 Don't need to be verbose
+            self.healthy = False
+
+        return self.healthy
+
 
     def get_available_instance_number(self) -> int | None:
         """Get the next available AceStream instance URL."""
@@ -320,6 +320,7 @@ class AcePool:
             """Thread to clean up instances."""
             logger.info("Starting AcePoolboy thread to clean up instances")
             while True:
+                self.check_ace_running()
                 time.sleep(10)
                 for instance in self.ace_instances.copy().values():
                     if instance.check_if_stale():
