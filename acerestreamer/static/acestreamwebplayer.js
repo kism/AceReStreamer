@@ -318,10 +318,23 @@ function loadStream() {
   }
 }
 
-function loadStreamUrl(streamId, streamName) {
+function loadStreamUrl(streamId, streamName = "") {
   window.location.hash = streamId; // Set the URL in the hash
-  document.getElementById("stream-name").innerText = streamName;
+
+  const streamNameElement = document.getElementById("stream-name");
+  if (streamName === "") {
+    streamNameElement.innerHTML = streamId;
+  } else {
+    streamNameElement.innerHTML = streamName;
+  }
+
   loadStream();
+
+  if (streamId !== streamName && streamName !== "") {
+    document.title = `${streamName}`;
+  } else {
+    document.title = `AceRestreamer`;
+  }
 }
 
 function loadPlayStream(streamID) {
@@ -333,7 +346,7 @@ function loadPlayStream(streamID) {
     })
     .catch((error) => {
       console.error("Failed to get stream info:", error);
-      loadStreamUrl(streamID, streamID);
+      loadStreamUrl(streamID);
       attemptPlay();
     });
 }
@@ -543,7 +556,7 @@ function populateAcePoolTable(aceInstances) {
       const seconds = totalSeconds % 60;
       timeUntilUnlockFormatted = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 
-      lockedIn = `🔒 Reserved for ${timeUntilUnlockFormatted}`;
+      lockedIn = `🔒 Locked for ${timeUntilUnlockFormatted}`;
     }
     td_status.textContent = lockedIn;
     tr.appendChild(td_status);
