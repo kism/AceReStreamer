@@ -1,3 +1,6 @@
+// region Global Variables
+let currentlyShouldBeFetchingM3U8 = false;
+
 // region API/getStreamsSources
 function getStreamsSources() {
   const controller = new AbortController();
@@ -200,9 +203,14 @@ function checkIfPlaying() {
 // region Stream handling
 
 async function checkVideoSrcAvailability(videoSrc, maxRetries = 5) {
+  currentlyShouldBeFetchingM3U8 = true;
   let msg = "";
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
+      if (currentlyShouldBeFetchingM3U8 === false) {
+        console.warn("Stream source check aborted due to new request");
+        return false;
+      }
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3000);
 
@@ -214,6 +222,7 @@ async function checkVideoSrcAvailability(videoSrc, maxRetries = 5) {
       clearTimeout(timeoutId);
 
       if (response.ok) {
+        currentlyShouldBeFetchingM3U8 = false;
         return true;
       }
 
@@ -515,6 +524,14 @@ function populateAceInfoTable(acePool) {
 function populateAcePoolTable(aceInstances) {
   const poolTable = document.getElementById("ace-pool-info");
   poolTable.innerHTML = ""; // Clear the table before adding new data
+
+  if (aceInstances.length === 0) {
+    poolTable.style.display = "none";
+    return;
+  }
+
+  poolTable.style.display = "table";
+
   const tr_heading = document.createElement("tr");
   const th_instance_number = document.createElement("th");
   th_instance_number.textContent = "#";
@@ -584,13 +601,14 @@ function populateAcePoolTable(aceInstances) {
     unlockButton.textContent = "Unlock";
     unlockButton.classList.add("unlock-button");
     unlockButton.onclick = () => {
+      currentlyShouldBeFetchingM3U8 = false;
       makeAcePoolInstanceAvailable(instance.ace_id)
         .then(() => {
           console.log(`Ace Pool instance ${instance.ace_id} made available`);
-          populateAcePoolTables(); // Refresh the table after unlocking
+          populateAceInfoTables(); // Refresh the table after unlocking
         })
         .catch((_error) => {});
-      populateAcePoolTables();
+      populateAceInfoTables();
     };
     td_unlock.appendChild(unlockButton);
 
@@ -604,16 +622,29 @@ function populateAcePoolTable(aceInstances) {
 function populateStreamTables() {
   getStreamsSources().then((sources) => {
     const streamTableDiv = document.getElementById("stream-table");
-    streamTableDiv.innerHTML = ""; // Clear the table before adding new data
+
+    // Create a document fragment to build new content
+    const fragment = document.createDocumentFragment();
 
     for (const source of sources) {
       const tableTitle = document.createElement("h4");
       tableTitle.textContent = source.name;
-      streamTableDiv.appendChild(tableTitle);
+      fragment.appendChild(tableTitle);
+
       const table = document.createElement("table");
       table.classList.add("stream-table");
       table.id = `stream-table-${source.slug}`;
-      streamTableDiv.appendChild(table);
+      fragment.appendChild(table);
+    }
+
+    // Only replace if the structure has actually changed
+    if (streamTableDiv.children.length !== sources.length * 2) {
+      streamTableDiv.innerHTML = "";
+      streamTableDiv.appendChild(fragment);
+    }
+
+    // Now populate each table (this will update content without structure changes)
+    for (const source of sources) {
       populateStreamTable(source);
     }
   });
