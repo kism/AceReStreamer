@@ -1,5 +1,5 @@
 // region Global Variables
-let currentlyShouldBeFetchingM3U8 = false;
+let currentlyFetchingM3U8 = "";
 
 // region API/getStreamsSources
 function getStreamsSources() {
@@ -203,11 +203,11 @@ function checkIfPlaying() {
 // region Stream handling
 
 async function checkVideoSrcAvailability(videoSrc, maxRetries = 5) {
-  currentlyShouldBeFetchingM3U8 = true;
+  currentlyFetchingM3U8 = videoSrc;
   let msg = "";
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      if (currentlyShouldBeFetchingM3U8 === false) {
+      if (currentlyFetchingM3U8 !== videoSrc) {
         console.warn("Stream source check aborted due to new request");
         return false;
       }
@@ -222,7 +222,7 @@ async function checkVideoSrcAvailability(videoSrc, maxRetries = 5) {
       clearTimeout(timeoutId);
 
       if (response.ok) {
-        currentlyShouldBeFetchingM3U8 = false;
+        currentlyFetchingM3U8 = "";
         return true;
       }
 
@@ -601,7 +601,7 @@ function populateAcePoolTable(aceInstances) {
     unlockButton.textContent = "Unlock";
     unlockButton.classList.add("unlock-button");
     unlockButton.onclick = () => {
-      currentlyShouldBeFetchingM3U8 = false;
+      currentlyFetchingM3U8 = "";
       makeAcePoolInstanceAvailable(instance.ace_id)
         .then(() => {
           console.log(`Ace Pool instance ${instance.ace_id} made available`);
