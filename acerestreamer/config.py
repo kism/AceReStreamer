@@ -112,14 +112,22 @@ class AceScrapeConf(BaseModel):
     def unique_scraper_site_names(self) -> Self:
         """Ensure all scraper sites have unique names, via slug."""
         names_slug = []
+        found_duplicate = []
         for site in self.html + self.iptv_m3u8:
             if site.slug in names_slug:
-                msg = (
-                    f"Error loading config: Scraper site name '{site.name}' > '{site.slug}'"
-                    " is not unique, please change it."
-                )
-                raise ValueError(msg)
+                msg = f"  '{site.name}' -> '{site.slug}'"
+                found_duplicate.append(msg)
             names_slug.append(site.slug)
+
+        if found_duplicate:
+            msg = "Config: Duplicate scraper site names found, please ensure each site has a unique name.\n"
+            msg += "Found duplicates:\n"
+            msg += "\n".join(found_duplicate)
+            msg += "\nComplete list of sites:\n"
+            for site in self.html + self.iptv_m3u8:
+                msg += f"  '{site.name}' -> '{site.slug}'\n"
+
+            raise ValueError(msg)
 
         return self
 
