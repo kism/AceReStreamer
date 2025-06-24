@@ -18,7 +18,6 @@ logger = get_logger(__name__)
 ACESTREAM_API_TIMEOUT = 3
 LOCK_IN_TIME: timedelta = timedelta(minutes=3)
 LOCK_IN_RESET_MAX: timedelta = timedelta(minutes=30)
-DEFAULT_DATE_STARTED: datetime = datetime(1970, 1, 1, tzinfo=OUR_TIMEZONE)  # Default date for AceStream instances
 
 KEEP_ALIVE_THREADS: dict[int, threading.Thread] = {}
 
