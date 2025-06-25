@@ -49,6 +49,7 @@ class AcePoolEntry:
 
     def __init__(self, ace_pid: int, ace_address: str, ace_id: str, *, transcode_audio: bool) -> None:
         """Initialize an AceStream pool entry."""
+        self._keep_alive_run_once = False
         self.ace_pid = ace_pid
         self.ace_id = ace_id
         self.ace_address = ace_address
@@ -144,6 +145,10 @@ class AcePoolEntry:
         """The keep_alive method, should be called by poolboy thread."""
         # If we are locked in, we keep the stream alive
         # Also check if the ace_id is valid, as a failsafe
+        if not self._keep_alive_run_once:
+            logger.info("Keeping alive ace_pid %d with ace_id %s", self.ace_pid, self.ace_id)
+            self._keep_alive_run_once = True
+
         if self.check_locked_in() and check_valid_ace_id(self.ace_id):
             with contextlib.suppress(requests.RequestException):
                 resp = requests.get(self.ace_hls_m3u8_url, timeout=ACESTREAM_API_TIMEOUT * 2)
@@ -223,10 +228,12 @@ class AcePool:
 
         return self.healthy
 
-    def remove_instance_by_ace_id(self, ace_id: str) -> bool:
+    def remove_instance_by_ace_id(self, ace_id: str, caller: str = "") -> bool:
         """Remove an AceStream instance from the pool by ace_id."""
+        if caller != "":
+            caller = f"{caller}: "
         if ace_id in self.ace_instances:
-            logger.info("Removing AceStream instance with ace_id %s", ace_id)
+            logger.info("%sRemoving AceStream instance with ace_id %s", caller, ace_id)
             with contextlib.suppress(KeyError):
                 del self.ace_instances[ace_id]
             return True
@@ -250,7 +257,7 @@ class AcePool:
 
             logger.info("Found available AceStream instance: %s, reclaiming it.", best_instance.ace_pid)
             ace_pid = best_instance.ace_pid
-            self.remove_instance_by_ace_id(best_instance.ace_id)
+            self.remove_instance_by_ace_id(best_instance.ace_id, caller="get_available_instance_number")
             return ace_pid
 
         logger.warning("Ace pool is full, could not get available instance.")
@@ -327,17 +334,14 @@ class AcePool:
                 instances_to_remove: list[str] = []
 
                 for instance in self.ace_instances.values():
-                    # If the instance is not stale, we try keep it alive, it might not be locked in yet though
-                    if not instance.check_if_stale():
-                        instance.keep_alive()
-                    else:
+                    # If the instance is stale, remove it
+                    if instance.check_if_stale():
                         instances_to_remove.append(instance.ace_id)
+                    else:  # Otherwise, try keep it alive, will only keep_alive if it's locked in
+                        instance.keep_alive()
 
-                for ace_id in instances_to_remove:
-                    if self.remove_instance_by_ace_id(ace_id):
-                        logger.info("ace_poolboy remove instance ace_id %s", ace_id)
-                    else:
-                        logger.warning("ace_poolboy failed to remove instance ace_id=%s", ace_id)
+                for ace_id in instances_to_remove:  # Separate loop to avoid modifying the dict while iterating
+                    self.remove_instance_by_ace_id(ace_id, caller="ace_poolboy")
 
         if not self._ace_poolboy_running:
             self._ace_poolboy_running = True
