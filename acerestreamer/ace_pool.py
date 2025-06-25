@@ -111,7 +111,8 @@ class AcePoolEntry:
         return False  # This is the same as self.get_time_until_unlock() < timedelta(seconds=1)
 
     def check_if_stale(self) -> bool:
-        """Check if the instance is stale and reset it if necessary."""
+        """Check if the instance is stale, if so stop the keep_alive thread."""
+        stale = False
         # If we have locked in at one point
         condition_one = self.check_running_long_enough_to_lock_in()
         # If we are not locked in
@@ -130,7 +131,8 @@ class AcePoolEntry:
                 condition_two,
                 condition_three,
             )
-            return True
+            self.keep_alive_active = False
+            stale = True
 
         if not condition_one and condition_four:
             logger.debug(
@@ -140,25 +142,33 @@ class AcePoolEntry:
                 condition_one,
                 condition_four,
             )
-            return True
+            self.keep_alive_active = False
+            stale = True
 
-        return False
+        if stale:
+            logger.info(
+                "AcePoolEntry %s with pid %d is stale, removing it from the pool.",
+                self.ace_id,
+                self.ace_pid,
+            )
+            self.reclaim_keep_alive_thread()
 
-    def _reclaim_keep_alive_thread(self) -> None:
+        return stale
+
+    def reclaim_keep_alive_thread(self) -> None:
         """Reclaim the keep alive thread if it is not alive."""
         if self.ace_pid in KEEP_ALIVE_THREADS:
-            for _ in range(3):
-                if KEEP_ALIVE_THREADS[self.ace_pid].is_alive():  # Avoid race condition
+            for _ in range(3):  # Avoid race condition, we can't join() a thread that is not alive
+                if KEEP_ALIVE_THREADS[self.ace_pid].is_alive():
                     break
                 time.sleep(1)
 
-            if not KEEP_ALIVE_THREADS[self.ace_pid].is_alive():
+            if not KEEP_ALIVE_THREADS[self.ace_pid].is_alive():  # if its still not alive, weird
                 logger.warning(
                     "AcePoolEntry keep_alive, want to join() but thread not alive. "
-                    "Removing reference, hopefully the thread will time out."
+                    "The reference will end up replaced, hopefully the thread will time out."
                 )
-                with contextlib.suppress(KeyError):
-                    del KEEP_ALIVE_THREADS[self.ace_pid]
+                return
 
             KEEP_ALIVE_THREADS[self.ace_pid].join(timeout=1)
             logger.info("AcePoolEntry keep_alive, joined thread for pid: %s with ace_id: %s", self.ace_pid, self.ace_id)
@@ -186,18 +196,15 @@ class AcePoolEntry:
                             return
                         resp = requests.get(self.ace_hls_m3u8_url, timeout=ACESTREAM_API_TIMEOUT * 2)
                         logger.trace("Keep alive, response: %s", resp.status_code)
-                elif self.check_if_stale():
-                    logger.info(
-                        "Ending keep_alive internally, stale instance %s with ace_id %s", self.ace_pid, self.ace_id
-                    )
-                    self.keep_alive_active = False
                 else:
                     logger.trace("Not keeping alive %s, not locked in", self.ace_address)
+
+                self.check_if_stale()  # This will reset the keep_alive_active flag if the instance is stale
 
         if not self.keep_alive_active:
             self.keep_alive_active = True
 
-            self._reclaim_keep_alive_thread()
+            self.reclaim_keep_alive_thread()
 
             KEEP_ALIVE_THREADS[self.ace_pid] = threading.Thread(target=keep_alive, daemon=True)
             KEEP_ALIVE_THREADS[self.ace_pid].start()
@@ -241,7 +248,6 @@ class AcePool:
         self.max_size = app_config.ace_max_streams
         self.transcode_audio = app_config.transcode_audio
         self.populate_ace_version()
-        self.ace_poolboy()
 
     def populate_ace_version(self) -> None:
         """Get the AceStream version from the API."""
@@ -287,10 +293,8 @@ class AcePool:
             logger.info("Removing AceStream instance with ace_id %s", ace_id)
             with contextlib.suppress(KeyError):
                 instance_to_remove = self.ace_instances[ace_id]
-                instance_to_remove.keep_alive_active = False  # This should stop the thread
-                KEEP_ALIVE_THREADS[instance_to_remove.ace_pid].join(
-                    timeout=1
-                )  # This also ensures the thread is stopped
+                instance_to_remove.keep_alive_active = False
+                instance_to_remove.reclaim_keep_alive_thread()
                 del self.ace_instances[ace_id]
             return True
 
@@ -377,26 +381,3 @@ class AcePool:
             ace_version=self.ace_version,
             transcode_audio=self.transcode_audio,
         )
-
-    def ace_poolboy(self) -> None:
-        """Run the AcePoolboy to clean up instances."""
-
-        def ace_poolboy_thread() -> None:
-            """Thread to clean up instances."""
-            while True:
-                self.check_ace_running()
-                time.sleep(10)
-                for instance in self.ace_instances.copy().values():
-                    if instance.check_if_stale():
-                        logger.info(
-                            "ace_poolboy_thread: Resetting instance %s with ace_id %s",
-                            instance.ace_pid,
-                            instance.ace_id,
-                        )
-                        with contextlib.suppress(KeyError):
-                            del self.ace_instances[instance.ace_id]
-
-        if not self._ace_poolboy_running:
-            self._ace_poolboy_running = True
-            logger.info("Starting ace_poolboy_thread")
-        threading.Thread(target=ace_poolboy_thread, daemon=True).start()
