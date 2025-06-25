@@ -38,6 +38,7 @@ MAX_LOG_LEVEL_INT = 50
 FILE_HANDLER_MAX_BYTES = 1000000  # 1MB
 FILE_HANDLER_BACKUP_COUNT = 5
 
+
 class ColorFormatter(logging.Formatter):
     """Formatter for coloring the log messages, this is ONLY for console output."""
 
