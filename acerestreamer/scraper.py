@@ -80,18 +80,21 @@ class AceScraper:
             while True:
                 logger.info("Running AceStream scraper...")
 
-                self.streams.extend(
+                new_streams = []
+
+                new_streams.extend(
                     scrape_streams_html_sites(
                         sites=self.html,
                     )
                 )
 
-                self.streams.extend(
+                new_streams.extend(
                     scrape_streams_iptv_sites(
                         sites=self.iptv_m3u8,
                     )
                 )
 
+                self.streams = new_streams
                 self.print_streams()
                 time.sleep(SCRAPE_INTERVAL)
 
