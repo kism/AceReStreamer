@@ -23,21 +23,15 @@ class ScraperCache:
 
     def load_from_cache(self, url: str) -> str:
         """Load the content from cache if available."""
-        if not self.cache_path:
-            return ""
-
-        cache_path = self.cache_path / f"{slugify(url)}.txt"
-        if cache_path.exists():
-            with cache_path.open("r", encoding="utf-8") as file:
+        load_path = self._get_cache_file_path(url)
+        if load_path.exists():
+            with load_path.open("r", encoding="utf-8") as file:
                 return file.read()
         return ""
 
     def is_cache_valid(self, url: str, cache_max_age: timedelta = timedelta(days=1)) -> bool:
         """Check if the cache for the given URL is valid."""
-        if not self.cache_path:
-            return False
-
-        cache_path = self.cache_path / f"{slugify(url)}.txt"
+        cache_path = self._get_cache_file_path(url)
         if cache_path.exists():
             time_now = datetime.now(tz=OUR_TIMEZONE)
             file_mod_time = datetime.fromtimestamp(cache_path.stat().st_mtime, tz=OUR_TIMEZONE)
@@ -49,13 +43,16 @@ class ScraperCache:
 
     def save_to_cache(self, url: str, content: str) -> None:
         """Save the content to cache."""
-        if not self.cache_path:
-            return
-
-        save_path = self.cache_path / f"{slugify(url)}.txt"
-        save_path.parent.mkdir(parents=True, exist_ok=True)  # Ensure the cache directory exists
+        save_path = self._get_cache_file_path(url)
         with save_path.open("w", encoding="utf-8") as file:
             file.write(content)
+
+    def _get_cache_file_path(self, url: str) -> Path:
+        """Get the cache file path for a given URL."""
+        if not self.cache_path:
+            msg = "Cache path is not set. Call load_config() first."
+            raise ValueError(msg)
+        return self.cache_path / f"{slugify(url)}.txt"
 
 
 scraper_cache = ScraperCache()

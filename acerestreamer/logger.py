@@ -32,6 +32,11 @@ LOG_FORMAT = "%(asctime)s:%(levelname)s:%(name)s:%(message)s"  # This is the log
 LOG_FORMAT_CONSOLE = "%(levelname)s:%(message)s"
 TRACE_LEVEL_NUM = 5
 
+MIN_LOG_LEVEL_INT = 0
+MAX_LOG_LEVEL_INT = 50
+
+FILE_HANDLER_MAX_BYTES = 1000000  # 1MB
+FILE_HANDLER_BACKUP_COUNT = 5
 
 class ColorFormatter(logging.Formatter):
     """Formatter for coloring the log messages, this is ONLY for console output."""
@@ -82,9 +87,6 @@ logger = cast("CustomLogger", logging.getLogger(__name__))
 # The issue is that waitress, werkzeug (any any other modules that log) will log separately.
 # The aim is, remove the default handler from the flask App and create one on the root logger to apply config to all.
 
-MIN_LOG_LEVEL_INT = 0
-MAX_LOG_LEVEL_INT = 50
-
 
 class LoggingConf(BaseModel):
     """Logging configuration definition."""
@@ -96,8 +98,10 @@ class LoggingConf(BaseModel):
     def validate_vars(self) -> Self:
         """Validate the logging level."""
         if isinstance(self.level, int):
-            if self.level < MIN_LOG_LEVEL_INT or self.level > MIN_LOG_LEVEL_INT:
-                msg = f"Invalid logging level {self.level}, must be between 0 and 50."
+            if self.level < MIN_LOG_LEVEL_INT or self.level > MAX_LOG_LEVEL_INT:
+                msg = (
+                    f"Invalid logging level {self.level}, must be between {MIN_LOG_LEVEL_INT} and {MAX_LOG_LEVEL_INT}."
+                )
                 logger.warning(msg)
                 logger.warning("Defaulting logging level to 'INFO'.")
                 self.level = "INFO"
@@ -197,16 +201,10 @@ def _set_log_level(in_logger: logging.Logger, log_level: int | str) -> None:
     """Set the log level of the logger."""
     if isinstance(log_level, str):
         log_level = log_level.upper()
-        if log_level not in LOG_LEVELS:
-            in_logger.setLevel("INFO")
-            logger.warning(
-                "❗ Invalid logging level: %s, defaulting to INFO",
-                log_level,
-            )
-        else:
-            in_logger.setLevel(log_level)
-            logger.trace("Set log level: %s", log_level)
-            logger.debug("Set log level: %s", log_level)
+
+        in_logger.setLevel(log_level)
+        logger.trace("Set log level: %s", log_level)
+        logger.debug("Set log level: %s", log_level)
     else:
         in_logger.setLevel(log_level)
 
@@ -214,10 +212,9 @@ def _set_log_level(in_logger: logging.Logger, log_level: int | str) -> None:
 def _add_file_handler(in_logger: logging.Logger, log_path: Path) -> None:
     """Add a file handler to the logger."""
     try:
-        file_handler = RotatingFileHandler(log_path, maxBytes=1000000, backupCount=5)
-    except IsADirectoryError as exc:
-        err = "You are trying to log to a directory, try a file"
-        raise IsADirectoryError(err) from exc
+        file_handler = RotatingFileHandler(
+            log_path, maxBytes=FILE_HANDLER_MAX_BYTES, backupCount=FILE_HANDLER_BACKUP_COUNT
+        )
     except PermissionError as exc:
         err = f"The user running this does not have access to the file: {log_path}"
         raise PermissionError(err) from exc

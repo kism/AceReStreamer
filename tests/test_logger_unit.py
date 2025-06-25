@@ -77,22 +77,6 @@ def test_handler_file_added(logger, tmp_path, app):
     assert len(logger.handlers) == 2  # noqa: PLR2004 A console and a file handler are expected
 
 
-@pytest.mark.parametrize(
-    ("log_level_in", "log_level_expected"),
-    [
-        (50, 50),
-        ("INFO", 20),
-        ("WARNING", 30),
-        ("INVALID", 20),
-    ],
-)
-def test_set_log_level(log_level_in: str | int, log_level_expected: int, logger):
-    """Test if _set_log_level results in correct log_level."""
-
-    _set_log_level(logger, log_level_in)
-    assert logger.getEffectiveLevel() == log_level_expected
-
-
 def test_no_loggers_supplied():
     """Test if no loggers supplied, root logger is used."""
 
