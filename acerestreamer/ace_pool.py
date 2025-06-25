@@ -145,13 +145,13 @@ class AcePoolEntry:
             self.keep_alive_active = False
             stale = True
 
-        if stale:
+        if stale and self.keep_alive_active:
             logger.info(
                 "AcePoolEntry %s with pid %d is stale, removing it from the pool.",
                 self.ace_id,
                 self.ace_pid,
             )
-            self.keep_alive_active = False  # Do not try kill the thread you are in
+            self.keep_alive_active = False  # Remember .join() the thread you are in, you will get a RuntimeError
 
         return stale
 
@@ -164,11 +164,9 @@ class AcePoolEntry:
             while self.keep_alive_active:
                 time.sleep(refresh_interval)
 
-                if not check_valid_ace_id(self.ace_id):  # This has it's own logging warning
-                    continue
-
                 # If we are locked in, we keep the stream alive
-                if self.check_locked_in():
+                # Also check if the ace_id is valid, as a failsafe
+                if self.check_locked_in() and check_valid_ace_id(self.ace_id):
                     with contextlib.suppress(requests.RequestException):
                         if not self.keep_alive_active:  # Beat the race condition
                             return
@@ -179,35 +177,38 @@ class AcePoolEntry:
 
                 self.check_if_stale()  # This will reset the keep_alive_active flag if the instance is stale
 
-        self.keep_alive_active = True
+        if not self.keep_alive_active:
+            self.keep_alive_active = True
 
-        # Remove old keep_alive thread if it exists, never try join() yourself, so we do it before starting a new one
-        if self.ace_pid in KEEP_ALIVE_THREADS:
-            for _ in range(3):  # Avoid race condition, we can't join() a thread that is not alive
-                if KEEP_ALIVE_THREADS[self.ace_pid].is_alive():
-                    break
-                time.sleep(1)
+            # Remove old keep_alive thread if it exists, never try join() yourself, so we do it before starting a new one
+            if self.ace_pid in KEEP_ALIVE_THREADS:
+                for _ in range(3):  # Avoid race condition, we can't join() a thread that is not alive
+                    if KEEP_ALIVE_THREADS[self.ace_pid].is_alive():
+                        break
+                    time.sleep(1)
 
-            if not KEEP_ALIVE_THREADS[self.ace_pid].is_alive():  # if its still not alive, weird
-                logger.warning(
-                    "AcePoolEntry keep_alive, want to join() but thread not alive. "
-                    "The reference will end up replaced, hopefully the thread will time out."
+                if not KEEP_ALIVE_THREADS[self.ace_pid].is_alive():  # if its still not alive, weird
+                    logger.warning(
+                        "AcePoolEntry keep_alive, want to join() but thread not alive. "
+                        "The reference will end up replaced, hopefully the thread will time out."
+                    )
+                    return
+
+                KEEP_ALIVE_THREADS[self.ace_pid].join(timeout=1)
+                logger.info(
+                    "AcePoolEntry keep_alive, joined thread for pid: %s with ace_id: %s", self.ace_pid, self.ace_id
                 )
-                return
 
-            KEEP_ALIVE_THREADS[self.ace_pid].join(timeout=1)
-            logger.info("AcePoolEntry keep_alive, joined thread for pid: %s with ace_id: %s", self.ace_pid, self.ace_id)
+            # Actually start the keep alive thread
+            KEEP_ALIVE_THREADS[self.ace_pid] = threading.Thread(target=keep_alive, daemon=True)
+            KEEP_ALIVE_THREADS[self.ace_pid].start()
 
-        # Actually start the keep alive thread
-        KEEP_ALIVE_THREADS[self.ace_pid] = threading.Thread(target=keep_alive, daemon=True)
-        KEEP_ALIVE_THREADS[self.ace_pid].start()
-
-        logger.info(
-            "Keep alive loop total for pid: %s with ace_id %s, total threads: %d",
-            self.ace_pid,
-            self.ace_id,
-            len(KEEP_ALIVE_THREADS),
-        )
+            logger.info(
+                "Keep alive loop total for pid: %s with ace_id %s, total threads: %d",
+                self.ace_pid,
+                self.ace_id,
+                len(KEEP_ALIVE_THREADS),
+            )
 
 
 # region AcePool
