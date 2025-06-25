@@ -5,7 +5,7 @@ import logging
 import pytest
 
 import acerestreamer.logger
-from acerestreamer.logger import _add_file_handler, _set_log_level, setup_logger
+from acerestreamer.logger import _add_file_handler, setup_logger
 
 
 @pytest.fixture

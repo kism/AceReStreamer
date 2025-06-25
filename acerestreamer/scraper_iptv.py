@@ -31,8 +31,9 @@ def scrape_streams_iptv_sites(sites: list[ScrapeSiteIPTV]) -> list[FoundAceStrea
 
 def _parse_extinf_line(line: str, title_filter: TitleFilter) -> str:
     """Parse EXTINF line and return title if valid."""
+    extinf_parts = 2
     parts = line.split(",", 1)  # Split on first comma only
-    if len(parts) != 2:
+    if len(parts) != extinf_parts:
         logger.warning("Malformed EXTINF line: %s", line)
         return ""
 
