@@ -45,14 +45,22 @@ class AceScraper:
     """Scraper object."""
 
     # region Initialization
-    def __init__(self, ace_scrape_settings: AceScrapeConf | None, instance_path: Path | None) -> None:
-        """Init MyCoolObject."""
-        self._ace_quality_cache_path = instance_path / "ace_quality_cache.json" if instance_path else None
+    def __init__(self) -> None:
+        """Init the scraper."""
+        self._ace_quality_cache_path: Path | None = None
 
         self.streams: list[FoundAceStreams] = []
 
         self.html: list[ScrapeSiteHTML] = []
         self.iptv_m3u8: list[ScrapeSiteIPTV] = []
+
+        self._ace_quality = AceQuality(self._ace_quality_cache_path)
+
+    def load_config(self, ace_scrape_settings: AceScrapeConf | None, instance_path: Path | str | None = None) -> None:
+        """Load the configuration for the scraper."""
+        if isinstance(instance_path, str):
+            instance_path = Path(instance_path)
+        self._ace_quality_cache_path = instance_path / "ace_quality_cache.json" if instance_path else None
 
         if ace_scrape_settings:
             self.html = ace_scrape_settings.html

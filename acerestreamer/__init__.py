@@ -51,15 +51,24 @@ def create_app(
     app.register_blueprint(info_bp.bp)
     app.register_blueprint(epg_bp.bp)
 
-    with app.app_context():
-        scraper_cache.start_scraper_cache(instance_path=app.instance_path)
-        scraper_helpers.start_m3u_replacer(instance_path=app.instance_path)
-        stream_bp.start_scraper()
-        authentication_bp.ip_allow_list.load(
-            instance_path=app.instance_path,
-            nginx_allowlist_path=app.aw_conf.nginx.ip_allow_list_path if app.aw_conf.nginx else None,
-        )
-        epg_bp.start_epg_handler()
+    # Start the objects
+    scraper_cache.scraper_cache.load_config(instance_path=app.instance_path)
+    scraper_helpers.m3u_replacer.load_config(instance_path=app.instance_path)
+    stream_bp.ace_scraper.load_config(
+        ace_scrape_settings=app.aw_conf.scraper,
+        instance_path=app.instance_path,
+    )
+    stream_bp.ace_pool.load_config(
+        app_config=app.aw_conf.app,
+    )
+    authentication_bp.ip_allow_list.load_config(
+        instance_path=app.instance_path,
+        nginx_allowlist_path=app.aw_conf.nginx.ip_allow_list_path if app.aw_conf.nginx else None,
+    )
+    epg_bp.epg_handler.load_config(
+        epg_conf_list=app.aw_conf.epgs,
+        instance_path=app.instance_path,
+    )
 
     app.logger.info("Starting Web Server")
     app.logger.info("%s version: %s", PROGRAM_NAME, __version__)

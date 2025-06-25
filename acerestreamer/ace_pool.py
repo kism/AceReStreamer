@@ -209,9 +209,15 @@ class AcePool:
         self.ace_instances: dict[str, AcePoolEntry] = {}
         self.healthy = False
         self.ace_version = "unknown"
-        if app_config:
-            self.populate_ace_version()
-            self.ace_poolboy()
+        self._ace_poolboy_running = False
+
+    def load_config(self, app_config: AppConf) -> None:
+        """Load the configuration for the AcePool."""
+        self.ace_address = app_config.ace_address
+        self.max_size = app_config.ace_max_streams
+        self.transcode_audio = app_config.transcode_audio
+        self.populate_ace_version()
+        self.ace_poolboy()
 
     def populate_ace_version(self) -> None:
         """Get the AceStream version from the API."""
@@ -353,7 +359,6 @@ class AcePool:
 
         def ace_poolboy_thread() -> None:
             """Thread to clean up instances."""
-            logger.info("Starting ace_poolboy_thread to clean up instances")
             while True:
                 self.check_ace_running()
                 time.sleep(10)
@@ -367,4 +372,7 @@ class AcePool:
                         with contextlib.suppress(KeyError):
                             del self.ace_instances[instance.ace_id]
 
+        if not self._ace_poolboy_running:
+            self._ace_poolboy_running = True
+            logger.info("Starting ace_poolboy_thread")
         threading.Thread(target=ace_poolboy_thread, daemon=True).start()

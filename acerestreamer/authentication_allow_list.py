@@ -19,7 +19,7 @@ class AllowList:
         self._nginx_bin_path: Path | None = None
         self.allowlist_ips: list[str] = []
 
-    def load(self, instance_path: Path | str, nginx_allowlist_path: Path | str | None) -> None:
+    def load_config(self, instance_path: Path | str, nginx_allowlist_path: Path | str | None) -> None:
         """Load the allow list from a file."""
         if isinstance(instance_path, str):
             instance_path = Path(instance_path)

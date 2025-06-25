@@ -1,7 +1,6 @@
 """Main Stream Site Blueprint."""
 
 from http import HTTPStatus
-from pathlib import Path
 
 import requests
 from flask import Blueprint, Response, jsonify, redirect, render_template, request
@@ -21,28 +20,12 @@ from .stream_helpers import replace_m3u_sources
 logger = get_logger(__name__)  # Create a logger: acerestreamer.this_module_name, inherit config from root logger
 
 bp = Blueprint("acerestreamer_scraper", __name__)
-ace_scraper: AceScraper = AceScraper(ace_scrape_settings=None, instance_path=None)
+ace_scraper: AceScraper = AceScraper()
 ace_pool: AcePool = AcePool()
 current_app = get_current_app()
 
 REVERSE_PROXY_EXCLUDED_HEADERS = ["content-encoding", "content-length", "transfer-encoding", "connection", "keep-alive"]
 REVERSE_PROXY_TIMEOUT = 10  # Very high but alas
-
-
-# region Scraper
-def start_scraper() -> None:
-    """Method to 'configure' this module. Needs to be called under `with app.app_context():` from __init__.py."""
-    global ace_scraper
-    global ace_pool
-
-    ace_scraper = AceScraper(
-        current_app.aw_conf.scraper,
-        Path(current_app.instance_path),
-    )
-
-    ace_pool = AcePool(
-        app_config=current_app.aw_conf.app,
-    )
 
 
 # region /

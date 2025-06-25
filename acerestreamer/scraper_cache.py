@@ -13,19 +13,20 @@ current_app = get_current_app()
 class ScraperCache:
     """Cache management for the AceReStreamer scraper."""
 
-    def __init__(
-        self, instance_path: Path | None = None
-    ) -> None:  # This is a hack, but one day i'll restructure (lies)
+    def __init__(self) -> None:
         """Initialize the cache directory."""
-        self._ready = False
-        if instance_path is not None:
-            self.cache_path = instance_path / "scraper_cache"
-            self.cache_path.mkdir(parents=True, exist_ok=True)
-            self._ready = True
+        self.cache_path: Path | None = None
+
+    def load_config(self, instance_path: Path | str) -> None:
+        """Load the configuration for the scraper cache."""
+        if isinstance(instance_path, str):
+            instance_path = Path(instance_path)
+        self.cache_path = instance_path / "scraper_cache"
+        self.cache_path.mkdir(parents=True, exist_ok=True)
 
     def load_from_cache(self, url: str) -> str:
         """Load the content from cache if available."""
-        if not self._ready:
+        if not self.cache_path:
             return ""
 
         cache_path = self.cache_path / f"{slugify(url)}.txt"
@@ -36,7 +37,7 @@ class ScraperCache:
 
     def is_cache_valid(self, url: str, cache_max_age: timedelta = timedelta(days=1)) -> bool:
         """Check if the cache for the given URL is valid."""
-        if not self._ready:
+        if not self.cache_path:
             return False
 
         cache_path = self.cache_path / f"{slugify(url)}.txt"
@@ -51,19 +52,13 @@ class ScraperCache:
 
     def save_to_cache(self, url: str, content: str) -> None:
         """Save the content to cache."""
-        if not self._ready:
+        if not self.cache_path:
             return
 
-        cache_path = self.cache_path / f"{slugify(url)}.txt"
-        cache_path.parent.mkdir(parents=True, exist_ok=True)  # Ensure the cache directory exists
-        with cache_path.open("w", encoding="utf-8") as file:
+        save_path = self.cache_path / f"{slugify(url)}.txt"
+        save_path.parent.mkdir(parents=True, exist_ok=True)  # Ensure the cache directory exists
+        with save_path.open("w", encoding="utf-8") as file:
             file.write(content)
 
 
 scraper_cache = ScraperCache()
-
-
-def start_scraper_cache(instance_path: str) -> None:
-    """Initialize the scraper cache with the given instance path."""
-    global scraper_cache
-    scraper_cache = ScraperCache(Path(instance_path))

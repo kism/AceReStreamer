@@ -117,10 +117,17 @@ class EPG:
 class EPGHandler:
     """Handler for EPG (Electronic Program Guide) data."""
 
-    def __init__(self, epg_conf_list: list[EPGInstanceConf], instance_path: Path | None = None) -> None:
+    def __init__(self) -> None:
         """Initialize the EPGHandler with a list of URLs."""
         self.epgs: list[EPG] = []
         self.merged_epg: etree._Element | None = None
+        self.instance_path: Path | None = None
+
+    def load_config(self, epg_conf_list: list[EPGInstanceConf], instance_path: Path | str | None = None) -> None:
+        """Load EPG configurations."""
+        if isinstance(instance_path, str):
+            instance_path = Path(instance_path)
+
         self.instance_path = instance_path
 
         for epg_conf in epg_conf_list:

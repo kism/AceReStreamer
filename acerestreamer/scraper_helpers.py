@@ -1,10 +1,10 @@
 """Helper functions for scrapers."""
 
 import re
-from pathlib import Path
 
 from .config import TitleFilter
 from .logger import get_logger
+from .scraper_m3u_name_replacer import M3UNameReplacer
 from .scraper_objects import FlatFoundAceStream
 
 logger = get_logger(__name__)
@@ -19,61 +19,7 @@ ACE_URL_PREFIXES = [
 ]
 
 
-class M3UNameReplacer:
-    """Cache for M3U text replacements."""
-
-    def __init__(self, instance_path: Path | None = None) -> None:
-        """Initialize the cache."""
-        self.cache: dict[str, str] = {}
-        self.instance_path = instance_path
-        if instance_path:
-            self._load_cache()
-
-    def do_replacements(self, name: str) -> str:
-        """Perform replacements in the M3U content."""
-        if not self.instance_path:
-            logger.warning("No instance path set, cannot perform M3U replacements.")
-            return name
-
-        if self.cache == {}:
-            self._load_cache()
-
-        for key, value in self.cache.items():
-            if key in name:
-                logger.debug("Replacing '%s' with '%s' in '%s'", key, value, name)
-                name = name.replace(key, value)
-
-        return name
-
-    def _load_cache(self) -> None:
-        """Load M3U replacements from the instance path."""
-        if not self.instance_path:
-            logger.warning("No instance path set, cannot perform M3U replacements.")
-            return
-
-        desired_cell_count = 2  # CSV is just my key,value pairs
-
-        m3u_path = self.instance_path / "m3u_replacements.csv"
-        if m3u_path.exists():
-            with m3u_path.open("r", encoding="utf-8") as file:
-                for line in file:
-                    line_tmp = line.strip()
-                    if not line_tmp or line_tmp.startswith("#"):
-                        continue
-                    parts = line_tmp.split(",")
-                    if len(parts) == desired_cell_count:
-                        self.cache[parts[0].strip()] = parts[1].strip()
-        else:
-            m3u_path.touch()
-
-
 m3u_replacer = M3UNameReplacer()
-
-
-def start_m3u_replacer(instance_path: str) -> None:
-    """Start the M3U replacer with the instance path."""
-    global m3u_replacer
-    m3u_replacer = M3UNameReplacer(Path(instance_path))
 
 
 def cleanup_candidate_title(title: str) -> str:

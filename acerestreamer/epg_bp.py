@@ -1,7 +1,5 @@
 """Blueprint for EPG Endpoints."""
 
-from pathlib import Path
-
 from flask import Blueprint, Response, jsonify
 from werkzeug.wrappers import Response as WerkzeugResponse
 
@@ -13,14 +11,7 @@ current_app = get_current_app()
 
 bp = Blueprint("acerestreamer_epg", __name__)
 
-epg_handler = EPGHandler(epg_conf_list=[])
-
-
-def start_epg_handler() -> None:
-    """Start the EPG handler with the provided URLs."""
-    global epg_handler
-    instance_path = Path(current_app.instance_path)
-    epg_handler = EPGHandler(epg_conf_list=current_app.aw_conf.epgs, instance_path=instance_path)
+epg_handler = EPGHandler()
 
 
 @bp.route("/api/epgs", methods=["GET"])
