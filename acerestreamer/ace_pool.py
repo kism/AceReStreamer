@@ -166,9 +166,9 @@ class AcePoolEntry:
                         if not self.keep_alive_active:  # Beat the race condition
                             return
                         resp = requests.get(self.ace_hls_m3u8_url, timeout=ACESTREAM_API_TIMEOUT * 2)
-                        logger.debug("Keep alive, response: %s", resp.status_code)
+                        logger.trace("Keep alive, response: %s", resp.status_code)
                 else:
-                    logger.debug("Not keeping alive %s, not locked in", self.ace_address)
+                    logger.trace("Not keeping alive %s, not locked in", self.ace_address)
 
         if not self.keep_alive_active:
             self.keep_alive_active = True
