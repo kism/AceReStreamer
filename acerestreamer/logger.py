@@ -4,9 +4,10 @@ import logging
 import typing
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import cast
+from typing import Self, cast
 
 from colorama import Fore, init
+from pydantic import BaseModel, model_validator
 
 init(autoreset=True)
 
@@ -81,6 +82,43 @@ logger = cast("CustomLogger", logging.getLogger(__name__))
 # The issue is that waitress, werkzeug (any any other modules that log) will log separately.
 # The aim is, remove the default handler from the flask App and create one on the root logger to apply config to all.
 
+MIN_LOG_LEVEL_INT = 0
+MAX_LOG_LEVEL_INT = 50
+
+
+class LoggingConf(BaseModel):
+    """Logging configuration definition."""
+
+    level: str | int = "INFO"
+    path: Path | str = ""
+
+    @model_validator(mode="after")
+    def validate_vars(self) -> Self:
+        """Validate the logging level."""
+        if isinstance(self.level, int):
+            if self.level < MIN_LOG_LEVEL_INT or self.level > MIN_LOG_LEVEL_INT:
+                msg = f"Invalid logging level {self.level}, must be between 0 and 50."
+                logger.warning(msg)
+                logger.warning("Defaulting logging level to 'INFO'.")
+                self.level = "INFO"
+        else:
+            self.level = self.level.strip().upper()
+            if self.level not in LOG_LEVELS:
+                msg = f"Invalid logging level '{self.level}', must be one of {', '.join(LOG_LEVELS)}"
+                logger.warning(msg)
+                logger.warning("Defaulting logging level to 'INFO'.")
+                self.level = "INFO"
+
+        if isinstance(self.path, str) and self.path != "":
+            tmp_path = Path(self.path)
+            if tmp_path.is_dir():
+                logger.error("Logging path '%s' is a directory, disabling logging to file.", tmp_path)
+                self.path = ""
+            else:
+                self.path = tmp_path
+
+        return self
+
 
 # Pass in the whole app object to make it obvious we are configuring the logger object within the app object.
 def setup_logger(
@@ -100,6 +138,9 @@ def setup_logger(
         include_root_logger: Include the root logger in the configuration, false for testing.
         console_only: If true, load the settings for CLI mode.
     """
+    # This object does the validation
+    logging_conf = LoggingConf(level=log_level, path=log_path)
+
     if in_loggers is None:  # Fun python things
         in_loggers = []
 
@@ -111,11 +152,11 @@ def setup_logger(
         if not _has_console_handler(in_logger):
             _add_console_handler(in_logger, console_only=console_only)
 
-        _set_log_level(in_logger, log_level)
+        _set_log_level(in_logger, logging_conf.level)
 
         # If we are logging to a file
-        if not _has_file_handler(in_logger) and not isinstance(log_path, str):
-            _add_file_handler(in_logger, log_path)
+        if not _has_file_handler(in_logger) and not isinstance(logging_conf.path, str):
+            _add_file_handler(in_logger, logging_conf.path)
 
         # Configure modules that are external and have their own loggers
         logging.getLogger("waitress").setLevel(logging.INFO)  # Prod web server, info has useful info.

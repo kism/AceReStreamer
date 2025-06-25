@@ -261,7 +261,6 @@ function loadStream() {
     return;
   }
 
-
   video.controls = true;
 
   const streamDirectUrl = document.getElementById("stream-url");

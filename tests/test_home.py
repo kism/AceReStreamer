@@ -4,6 +4,8 @@ from http import HTTPStatus
 
 import pytest
 
+from acerestreamer.flask_helpers import aw_conf
+
 
 def test_home(client):
     """Test the hello API endpoint. This one uses the fixture in conftest.py."""
@@ -28,7 +30,7 @@ def test_login(client, path):
 
 def test_password(client, app):
     """Test that the password works."""
-    app.aw_conf.app.password = "testpassword"
+    aw_conf.app.password = "testpassword"
     response = client.get("/stream")
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     client.post(

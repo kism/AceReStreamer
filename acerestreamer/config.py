@@ -10,7 +10,7 @@ from pydantic import BaseModel, model_validator
 from pydantic_settings import BaseSettings
 
 from .helpers import slugify
-from .logger import LOG_LEVELS, get_logger
+from .logger import LoggingConf, get_logger
 
 # Logging should be all done at INFO level or higher as the log level hasn't been set yet
 # Modules should all setup logging like this so the log messages include the modules name.
@@ -171,31 +171,6 @@ class AppConf(BaseModel):
                 "You have set ace_max_streams to a VERY high value (%d), this will likely cause performance issues.",
                 self.ace_max_streams,
             )
-        return self
-
-
-class LoggingConf(BaseModel):
-    """Logging configuration definition."""
-
-    level: str = "INFO"
-    path: Path | str = ""
-
-    @model_validator(mode="after")
-    def validate_vars(self) -> Self:
-        """Validate the logging level."""
-        self.level = self.level.strip().upper()
-        if self.level not in LOG_LEVELS:
-            msg = f"Invalid logging level '{self.level}', must be one of {', '.join(LOG_LEVELS)}"
-            raise ValueError(msg)
-
-        if isinstance(self.path, str) and self.path != "":
-            tmp_path = Path(self.path)
-            if tmp_path.is_dir():
-                logger.error("Logging path '%s' is a directory, disabling logging to file.", tmp_path)
-                self.path = ""
-            else:
-                self.path = tmp_path
-
         return self
 
 
