@@ -200,8 +200,7 @@ function checkIfPlaying() {
   }
 }
 
-// region Stream handling
-
+// region Stream/checkVideoSrcAvailability
 async function checkVideoSrcAvailability(videoSrc, maxRetries = 5) {
   currentlyFetchingM3U8 = videoSrc;
   let msg = "";
@@ -223,6 +222,7 @@ async function checkVideoSrcAvailability(videoSrc, maxRetries = 5) {
 
       if (response.ok) {
         currentlyFetchingM3U8 = "";
+        populateAceInfoTables();
         return true;
       }
 
@@ -246,9 +246,11 @@ async function checkVideoSrcAvailability(videoSrc, maxRetries = 5) {
   }
 
   console.error(`Video source unavailable after ${maxRetries} attempts`);
+  populateAceInfoTables();
   return false;
 }
 
+// region Stream/loadStream
 function loadStream() {
   const video = document.getElementById("video");
   const videoSrc = `/hls/${window.location.hash.substring(1)}`;
@@ -258,6 +260,7 @@ function loadStream() {
     setOnPageStreamErrorMessage("Stream source is not available");
     return;
   }
+
 
   video.controls = true;
 
@@ -327,6 +330,7 @@ function loadStream() {
   }
 }
 
+// region Stream/loadStreamUrl
 function loadStreamUrl(streamId, streamName = "") {
   window.location.hash = streamId; // Set the URL in the hash
 
@@ -346,6 +350,7 @@ function loadStreamUrl(streamId, streamName = "") {
   }
 }
 
+// region Stream/loadPlayStream
 function loadPlayStream(streamID) {
   getStream(streamID)
     .then((streamInfo) => {
@@ -360,6 +365,7 @@ function loadPlayStream(streamID) {
     });
 }
 
+// region Stream/loadPlayStreamFromHash
 // biome-ignore lint/correctness/noUnusedVariables: HTML uses it
 function loadPlayStreamFromHash() {
   const streamId = window.location.hash.substring(1);
@@ -372,10 +378,7 @@ function loadPlayStreamFromHash() {
   }
 }
 
-// endregion
-
-// region Video Player
-
+// region Video/TogglePlayerSize
 // biome-ignore lint/correctness/noUnusedVariables: HTML uses it
 function togglePlayerSize() {
   const video = document.getElementById("video");
@@ -422,6 +425,7 @@ function togglePlayerSize() {
   }, 100); // Small delay to ensure size changes are applied
 }
 
+// region Video/resizePlayerMobile
 function resizePlayerMobile() {
   const video = document.getElementById("video");
   const playerContainer = document.getElementById("player-container");
@@ -433,19 +437,20 @@ function resizePlayerMobile() {
   }
 }
 
+// region Video/attemptPlay
 function attemptPlay() {
   const video = document.getElementById("video");
   video.play();
 }
 
-// region Tables
-
+// region Table/populateTables
 // biome-ignore lint/correctness/noUnusedVariables: HTML uses it
 function populateTables() {
   populateAceInfoTables();
   populateStreamTables();
 }
 
+// region Table/populateAceInfoTables
 function populateAceInfoTables() {
   getAcePool()
     .then((acePool) => {
@@ -457,9 +462,7 @@ function populateAceInfoTables() {
     });
 }
 
-// endregion
-
-// region Tables/Ace Info
+// region Table/populateAceInfoTable
 function populateAceInfoTable(acePool) {
   const aceInfoTable = document.getElementById("ace-info");
   aceInfoTable.innerHTML = ""; // Clear the table before adding new data
@@ -503,7 +506,7 @@ function populateAceInfoTable(acePool) {
   // Ace transcode audio cell
   const td_ace_transcode_audio = document.createElement("td");
   if (acePool.transcode_audio === true) {
-    td_ace_transcode_audio.textContent = "Enabled";
+    td_ace_transcode_audio.textContent = "Allegedly Enabled";
   } else {
     td_ace_transcode_audio.textContent = "Disabled";
   }
@@ -522,8 +525,8 @@ function populateAceInfoTable(acePool) {
 
   aceInfoTable.appendChild(tr);
 }
-// region Tables/Ace Pool
 
+// region Table/populateAcePoolTable
 function populateAcePoolTable(aceInstances) {
   const poolTable = document.getElementById("ace-pool-info");
   poolTable.innerHTML = ""; // Clear the table before adding new data
@@ -621,7 +624,7 @@ function populateAcePoolTable(aceInstances) {
   }
 }
 
-// region Stream Table
+// region Table/populateStreamTables
 function populateStreamTables() {
   getStreamsSources().then((sources) => {
     const streamTableDiv = document.getElementById("stream-table");
@@ -653,6 +656,7 @@ function populateStreamTables() {
   });
 }
 
+// region Table/populateStreamTable
 function populateStreamTable(streamsSource) {
   const tableId = `stream-table-${streamsSource.slug}`;
 
@@ -710,8 +714,6 @@ function populateStreamTable(streamsSource) {
     })
     .catch((_error) => {});
 }
-
-// endregion
 
 // region DOMContentLoaded
 document.addEventListener("DOMContentLoaded", () => {
