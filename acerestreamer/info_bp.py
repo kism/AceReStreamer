@@ -7,12 +7,12 @@ from flask_caching import CachedResponse
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from .authentication_helpers import assumed_auth_failure
-from .flask_helpers import DEFAULT_CACHE_DURATION, cache, get_current_app
+from .flask_helpers import DEFAULT_CACHE_DURATION, aw_conf, cache
 from .html_snippets import get_header_snippet
 from .logger import get_logger
 
 bp = Blueprint("acerestreamer_info", __name__, template_folder="templates/info")
-current_app = get_current_app()
+
 logger = get_logger(__name__)
 
 
@@ -48,7 +48,7 @@ def guide() -> Response | WerkzeugResponse:
         response=Response(
             render_template(
                 "iptv.html.j2",
-                server_base_url=current_app.aw_conf.flask.SERVER_NAME,
+                server_base_url=aw_conf.flask.SERVER_NAME,
                 rendered_header=get_header_snippet("Ace ReStreamer Guide"),
             ),
             status=HTTPStatus.OK,

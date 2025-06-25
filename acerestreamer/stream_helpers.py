@@ -1,8 +1,8 @@
 """Helpers for Stream Parsing."""
 
-from .flask_helpers import get_current_app
+from flask import current_app
 
-current_app = get_current_app()
+from .flask_helpers import aw_conf
 
 
 def replace_m3u_sources(m3u_content: str) -> str:
@@ -11,8 +11,8 @@ def replace_m3u_sources(m3u_content: str) -> str:
 
     for line in m3u_content.splitlines():
         line_temp = line.strip()
-        if "/ace/c/" in line and line_temp.startswith(current_app.aw_conf.app.ace_address):
-            line_temp = line_temp.replace(current_app.aw_conf.app.ace_address, current_app.config["SERVER_NAME"])
+        if "/ace/c/" in line and line_temp.startswith(aw_conf.app.ace_address):
+            line_temp = line_temp.replace(aw_conf.app.ace_address, current_app.config["SERVER_NAME"])
 
         lines_new.append(line_temp)
 

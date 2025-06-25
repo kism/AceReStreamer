@@ -70,7 +70,7 @@ class EPG:
                 return True
 
         time_since_last_update = datetime.now(tz=OUR_TIMEZONE) - self.last_updated
-        logger.debug("Time since last update for %s: %d seconds", self.region_code, time_since_last_update)
+        logger.debug("Time since last update for %s: %d seconds", self.region_code, time_since_last_update.seconds)
 
         return time_since_last_update > EPG_LIFESPAN
 

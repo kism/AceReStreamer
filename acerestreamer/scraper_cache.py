@@ -4,10 +4,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from .constants import OUR_TIMEZONE
-from .flask_helpers import get_current_app
 from .helpers import slugify
-
-current_app = get_current_app()
 
 
 class ScraperCache:

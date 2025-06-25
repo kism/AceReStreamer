@@ -3,14 +3,14 @@
 from http import HTTPStatus
 
 import requests
-from flask import Blueprint, Response, jsonify, redirect, render_template, request
+from flask import Blueprint, Response, current_app, jsonify, redirect, render_template, request
 from flask_caching import CachedResponse
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from .ace_pool import AcePool
 from .authentication_bp import get_ip_from_request, is_ip_allowed
 from .authentication_helpers import assumed_auth_failure
-from .flask_helpers import DEFAULT_CACHE_DURATION, cache, get_current_app
+from .flask_helpers import DEFAULT_CACHE_DURATION, aw_conf, cache
 from .html_snippets import get_header_snippet
 from .logger import get_logger
 from .scraper import AceScraper
@@ -22,7 +22,7 @@ logger = get_logger(__name__)  # Create a logger: acerestreamer.this_module_name
 bp = Blueprint("acerestreamer_scraper", __name__)
 ace_scraper: AceScraper = AceScraper()
 ace_pool: AcePool = AcePool()
-current_app = get_current_app()
+
 
 REVERSE_PROXY_EXCLUDED_HEADERS = ["content-encoding", "content-length", "transfer-encoding", "connection", "keep-alive"]
 REVERSE_PROXY_TIMEOUT = 10  # Very high but alas
@@ -141,7 +141,7 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    url = f"{current_app.aw_conf.app.ace_address}/ace/c/{path}"
+    url = f"{aw_conf.app.ace_address}/ace/c/{path}"
 
     logger.trace("Ace content requested for url: %s", url)
 

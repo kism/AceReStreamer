@@ -8,7 +8,7 @@ from flask import Blueprint, Response, jsonify, redirect, request, send_file
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from .authentication_allow_list import AllowList
-from .flask_helpers import get_current_app
+from .flask_helpers import aw_conf
 from .logger import get_logger
 
 logger = get_logger(__name__)  # Create a logger: acerestreamer.this_module_name, inherit config from root logger
@@ -16,7 +16,6 @@ logger = get_logger(__name__)  # Create a logger: acerestreamer.this_module_name
 # Register this module (__name__) as available to the blueprints of acerestreamer, I think https://flask.palletsprojects.com/en/3.0.x/blueprints/
 bp = Blueprint("acerestreamer_auth", __name__)
 
-current_app = get_current_app()
 ip_allow_list: AllowList = AllowList()
 
 STATIC_PATH = Path(__file__).parent / "static"
@@ -56,7 +55,7 @@ def authenticate() -> Response | WerkzeugResponse:
 
         # This authentication is so cooked, but by doing this I avoid a string compare / timing attacks
         if hmac.compare_digest(
-            current_app.aw_conf.app.password,
+            aw_conf.app.password,
             password,
         ):
             ip = get_ip_from_request()
@@ -70,7 +69,7 @@ def authenticate() -> Response | WerkzeugResponse:
                 return response
 
             return redirect(
-                f"{current_app.aw_conf.flask.SERVER_NAME}/stream",
+                f"{aw_conf.flask.SERVER_NAME}/stream",
                 code=HTTPStatus.FOUND,
             )
 

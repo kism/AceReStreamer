@@ -5,9 +5,6 @@ from werkzeug.wrappers import Response as WerkzeugResponse
 
 from .authentication_helpers import assumed_auth_failure
 from .epg import EPGHandler
-from .flask_helpers import get_current_app
-
-current_app = get_current_app()
 
 bp = Blueprint("acerestreamer_epg", __name__)
 
