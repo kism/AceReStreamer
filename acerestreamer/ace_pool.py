@@ -144,6 +144,25 @@ class AcePoolEntry:
 
         return False
 
+    def _reclaim_keep_alive_thread(self) -> None:
+        """Reclaim the keep alive thread if it is not alive."""
+        if self.ace_pid in KEEP_ALIVE_THREADS:
+            for _ in range(3):
+                if KEEP_ALIVE_THREADS[self.ace_pid].is_alive():  # Avoid race condition
+                    break
+                time.sleep(1)
+
+            if not KEEP_ALIVE_THREADS[self.ace_pid].is_alive():
+                logger.warning(
+                    "AcePoolEntry keep_alive, want to join() but thread not alive. "
+                    "Removing reference, hopefully the thread will time out."
+                )
+                with contextlib.suppress(KeyError):
+                    del KEEP_ALIVE_THREADS[self.ace_pid]
+
+            KEEP_ALIVE_THREADS[self.ace_pid].join(timeout=1)
+            logger.info("AcePoolEntry keep_alive, joined thread for pid: %s with ace_id: %s", self.ace_pid, self.ace_id)
+
     def start_keep_alive(self) -> None:
         """Ensure the AceStream stream is kept alive."""
 
@@ -167,24 +186,19 @@ class AcePoolEntry:
                             return
                         resp = requests.get(self.ace_hls_m3u8_url, timeout=ACESTREAM_API_TIMEOUT * 2)
                         logger.trace("Keep alive, response: %s", resp.status_code)
+                elif self.check_if_stale():
+                    logger.info(
+                        "Ending keep_alive internally, stale instance %s with ace_id %s", self.ace_pid, self.ace_id
+                    )
+                    self.keep_alive_active = False
                 else:
                     logger.trace("Not keeping alive %s, not locked in", self.ace_address)
 
         if not self.keep_alive_active:
             self.keep_alive_active = True
 
-            if self.ace_pid in KEEP_ALIVE_THREADS:
-                for _ in range(3):
-                    if KEEP_ALIVE_THREADS[self.ace_pid].is_alive(): # Avoid race condition
-                        break
-                    time.sleep(1)
+            self._reclaim_keep_alive_thread()
 
-                if not KEEP_ALIVE_THREADS[self.ace_pid].is_alive():
-                    logger.warning("AcePoolEntry keep_alive, want to join() but thread not alive, removing it.")
-                    with contextlib.suppress(KeyError):
-                        del KEEP_ALIVE_THREADS[self.ace_pid]
-
-                KEEP_ALIVE_THREADS[self.ace_pid].join(timeout=1)
             KEEP_ALIVE_THREADS[self.ace_pid] = threading.Thread(target=keep_alive, daemon=True)
             KEEP_ALIVE_THREADS[self.ace_pid].start()
 
