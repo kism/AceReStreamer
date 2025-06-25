@@ -4,7 +4,7 @@ import gzip
 import io
 import threading
 import time
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import requests
@@ -16,7 +16,7 @@ from .logger import get_logger
 
 logger = get_logger(__name__)
 
-EPG_LIFESPAN_SECONDS = 24 * 60 * 60  # 24 hours in seconds
+EPG_LIFESPAN = timedelta(days=1)
 
 
 class EPG:
@@ -69,10 +69,10 @@ class EPG:
             else:
                 return True
 
-        time_since_last_update = (datetime.now(tz=OUR_TIMEZONE) - self.last_updated).total_seconds()
+        time_since_last_update = datetime.now(tz=OUR_TIMEZONE) - self.last_updated
         logger.debug("Time since last update for %s: %d seconds", self.region_code, time_since_last_update)
 
-        return time_since_last_update > EPG_LIFESPAN_SECONDS
+        return time_since_last_update > EPG_LIFESPAN
 
     def _download_epg(self) -> bytes:
         """Download the EPG data from the URL."""
@@ -122,6 +122,7 @@ class EPGHandler:
         self.epgs: list[EPG] = []
         self.merged_epg: etree._Element | None = None
         self.instance_path: Path | None = None
+        self._last_merge_time: datetime = datetime.fromtimestamp(0, tz=UTC)  # Arbitrary old time
 
     def load_config(self, epg_conf_list: list[EPGInstanceConf], instance_path: Path | str | None = None) -> None:
         """Load EPG configurations."""
@@ -153,14 +154,19 @@ class EPGHandler:
                             epg.update(instance_path=self.instance_path)
                         except Exception:
                             logger.exception("Failed to update EPG %s", epg.region_code)
-                time.sleep(EPG_LIFESPAN_SECONDS)
+                time.sleep(EPG_LIFESPAN.total_seconds())
 
         threading.Thread(target=epg_update_thread, name="EPGUpdateThread", daemon=True).start()
 
     def get_merged_epg(self) -> str:
         """Get the merged EPG data from all configured EPGs."""
-        if self.merged_epg is not None:
-            pass
+        time_since_last_merge: timedelta = datetime.now(tz=OUR_TIMEZONE) - self._last_merge_time
+        min_time_between_merges: timedelta = timedelta(minutes=20)
+
+        if self.merged_epg is not None and time_since_last_merge < min_time_between_merges:
+            logger.trace(
+                "Returning cached merged EPG data, last merge was %d seconds ago", time_since_last_merge.total_seconds()
+            )
         else:
             logger.info("Merging EPG data from %d sources", len(self.epgs))
             merged_data = etree.Element("tv")
@@ -170,5 +176,6 @@ class EPGHandler:
                     merged_data.extend(epg.data)
 
             self.merged_epg = merged_data
+            self._last_merge_time = datetime.now(tz=OUR_TIMEZONE)
 
         return etree.tostring(self.merged_epg, encoding="unicode")
