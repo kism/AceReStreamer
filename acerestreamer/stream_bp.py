@@ -1,5 +1,6 @@
 """Main Stream Site Blueprint."""
 
+import threading
 from http import HTTPStatus
 
 import requests
@@ -332,3 +333,14 @@ def api_ace_pool_by_id(ace_id: str) -> Response | WerkzeugResponse:
         return jsonify({"message": "Ace ID removed successfully"}, HTTPStatus.OK)
 
     return jsonify({"error": "Method not allowed"}, HTTPStatus.METHOD_NOT_ALLOWED)
+
+
+@bp.route("/api/health")
+def api_health() -> Response | WerkzeugResponse:
+    """API endpoint to check the health of the service."""
+    threads_enumerated = threading.enumerate()
+    thread_list = [{"name": thread.name, "is_alive": thread.is_alive()} for thread in threads_enumerated]
+    threads = {"threads": thread_list}
+    response = jsonify(threads)
+    response.status_code = HTTPStatus.OK
+    return response

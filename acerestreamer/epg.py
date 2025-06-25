@@ -156,7 +156,7 @@ class EPGHandler:
                             logger.exception("Failed to update EPG %s", epg.region_code)
                 time.sleep(EPG_LIFESPAN.total_seconds())
 
-        threading.Thread(target=epg_update_thread, name="EPGUpdateThread", daemon=True).start()
+        threading.Thread(target=epg_update_thread, name="EPGHandler: update_epgs", daemon=True).start()
 
     def get_merged_epg(self) -> str:
         """Get the merged EPG data from all configured EPGs."""

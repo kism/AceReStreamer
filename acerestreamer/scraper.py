@@ -98,7 +98,7 @@ class AceScraper:
                 self.print_streams()
                 time.sleep(SCRAPE_INTERVAL)
 
-        threading.Thread(target=run_scrape_thread, name="AceScraperThread", daemon=True).start()
+        threading.Thread(target=run_scrape_thread, name="AceScraper: run_scrape", daemon=True).start()
 
     # region GET
     def get_stream_by_ace_id(self, ace_id: str) -> FlatFoundAceStream:

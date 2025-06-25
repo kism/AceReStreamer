@@ -200,7 +200,9 @@ class AcePoolEntry:
                 )
 
             # Actually start the keep alive thread
-            KEEP_ALIVE_THREADS[self.ace_pid] = threading.Thread(target=keep_alive, daemon=True)
+            KEEP_ALIVE_THREADS[self.ace_pid] = threading.Thread(
+                target=keep_alive, name=f"AcePool: keep_alive pid={self.ace_pid}", daemon=True
+            )
             KEEP_ALIVE_THREADS[self.ace_pid].start()
 
             logger.info(
@@ -385,17 +387,23 @@ class AcePool:
             while True:
                 self.check_ace_running()
                 time.sleep(10)
-                for instance in self.ace_instances.copy().values():
-                    if instance.check_if_stale():
+                instances_to_kill: list[int] = []
+                for instance in self.ace_instances.values():
+                    if instance.check_if_stale():  # This will stop the thread
                         logger.info(
                             "ace_poolboy_thread: Resetting instance %s with ace_id %s",
                             instance.ace_pid,
                             instance.ace_id,
                         )
+                        instances_to_kill.append(instance.ace_pid)
+
+                # Again with .copy() since we are deleting items
+                for instance in self.ace_instances.copy().values():
+                    if instance.check_if_stale():
                         with contextlib.suppress(KeyError):
                             del self.ace_instances[instance.ace_id]
 
         if not self._ace_poolboy_running:
             self._ace_poolboy_running = True
             logger.info("Starting ace_poolboy_thread")
-        threading.Thread(target=ace_poolboy_thread, daemon=True).start()
+        threading.Thread(target=ace_poolboy_thread, name="AcePool: ace_poolboy", daemon=True).start()
