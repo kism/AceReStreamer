@@ -16,9 +16,15 @@ Install uv <https://docs.astral.sh/uv/getting-started/installation/>
 Run ace stream, I use docker
 
 ```bash
-docker run -t -p 6878:6878 ghcr.io/martinbjeldbak/acestream-http-proxy
-# Or maybe it's better to also allow the torrent port?
-docker run -t -p 6878:6878 -p 8621:8621 ghcr.io/martinbjeldbak/acestream-http-proxy
+docker run -t -p 127.0.0.1:6878:6878 ghcr.io/martinbjeldbak/acestream-http-proxy
+# Or if you are in a situation without UPnP, you will need to port forward 8621
+docker run -t -p 127.0.0.1:6878:6878 -p 8621:8621 ghcr.io/martinbjeldbak/acestream-http-proxy
+```
+
+Or even better, use docker compose
+
+```bash
+docker compose up -d
 ```
 
 ### Get node_modules
