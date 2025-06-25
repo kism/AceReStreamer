@@ -4,19 +4,21 @@ import threading
 from http import HTTPStatus
 
 import requests
-from flask import Blueprint, Response, current_app, jsonify, redirect, render_template, request
+from flask import Blueprint, Response, jsonify, redirect, render_template, request
 from flask_caching import CachedResponse
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from .ace_pool import AcePool
 from .authentication_bp import get_ip_from_request, is_ip_allowed
 from .authentication_helpers import assumed_auth_failure
-from .flask_helpers import DEFAULT_CACHE_DURATION, aw_conf, cache
+from .flask_helpers import DEFAULT_CACHE_DURATION, cache, get_current_app
 from .html_snippets import get_header_snippet
 from .logger import get_logger
 from .scraper import AceScraper
 from .scraper_helpers import get_streams_as_iptv
 from .stream_helpers import replace_m3u_sources
+
+current_app = get_current_app()
 
 logger = get_logger(__name__)  # Create a logger: acerestreamer.this_module_name, inherit config from root logger
 
@@ -142,7 +144,7 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    url = f"{aw_conf.app.ace_address}/ace/c/{path}"
+    url = f"{current_app.aw_conf.app.ace_address}/ace/c/{path}"
 
     logger.trace("Ace content requested for url: %s", url)
 

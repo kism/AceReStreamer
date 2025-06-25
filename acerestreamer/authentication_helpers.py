@@ -5,15 +5,17 @@ from http import HTTPStatus
 from flask import Response, abort
 
 from .authentication_bp import get_ip_from_request, is_ip_allowed
-from .flask_helpers import STATIC_DIRECTORY, aw_conf
+from .flask_helpers import STATIC_DIRECTORY, get_current_app
 from .logger import get_logger
+
+current_app = get_current_app()
 
 logger = get_logger(__name__)  # Create a logger: acerestreamer.authentication_helpers, inherit config from root logger
 
 
 def assumed_auth_failure() -> None | Response:
     """Check if the IP is allowed."""
-    if not aw_conf.app.password:
+    if not current_app.aw_conf.app.password:
         return None
 
     if is_ip_allowed(get_ip_from_request()):

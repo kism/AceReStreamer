@@ -2,11 +2,12 @@
 
 from http import HTTPStatus
 from pathlib import Path
+from typing import Any, cast
 
-from flask import Flask, Response, send_file
+from flask import Flask, Response, current_app, send_file
 from flask_caching import Cache
 
-from .config import AceReStreamerConf, load_config
+from .config import load_config
 from .logger import get_logger
 
 logger = get_logger(__name__)
@@ -17,16 +18,19 @@ DEFAULT_CACHE_DURATION = 60 * 60 * 24  # 1 day in seconds
 cache = Cache(config={"DEBUG": False, "CACHE_TYPE": "SimpleCache", "CACHE_DEFAULT_TIMEOUT": DEFAULT_CACHE_DURATION})
 
 
-aw_conf: AceReStreamerConf = AceReStreamerConf()
+class FlaskAceReStreamer(Flask):
+    """Extend flask to add out config object to the app object."""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:  # noqa: ANN401
+        """Extend flask to add out config object to the app object."""
+        super().__init__(*args, **kwargs)
+        self.aw_conf = load_config(Path(self.instance_path) / "config.toml")
+        self.aw_conf.write_config(Path(self.instance_path) / "config.toml")
 
 
-def load_configuration(instance_path: str | Path) -> AceReStreamerConf:
-    """Load the configuration in-context."""
-    global aw_conf  # noqa: PLW0603 # One day i'll avoid this
-    if isinstance(instance_path, str):
-        instance_path = Path(instance_path)
-    aw_conf = load_config(config_path=(instance_path) / "config.toml")
-    return aw_conf
+def get_current_app() -> FlaskAceReStreamer:
+    """Get the current app object."""
+    return cast("FlaskAceReStreamer", current_app)
 
 
 def check_static_folder(static_folder: str | Path | None) -> None:

@@ -8,8 +8,10 @@ from flask import Blueprint, Response, jsonify, redirect, request, send_file
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from .authentication_allow_list import AllowList
-from .flask_helpers import aw_conf
+from .flask_helpers import get_current_app
 from .logger import get_logger
+
+current_app = get_current_app()
 
 logger = get_logger(__name__)  # Create a logger: acerestreamer.this_module_name, inherit config from root logger
 
@@ -55,7 +57,7 @@ def authenticate() -> Response | WerkzeugResponse:
 
         # This authentication is so cooked, but by doing this I avoid a string compare / timing attacks
         if hmac.compare_digest(
-            aw_conf.app.password,
+            current_app.aw_conf.app.password,
             password,
         ):
             ip = get_ip_from_request()
@@ -69,7 +71,7 @@ def authenticate() -> Response | WerkzeugResponse:
                 return response
 
             return redirect(
-                f"{aw_conf.flask.SERVER_NAME}/stream",
+                f"{current_app.aw_conf.flask.SERVER_NAME}/stream",
                 code=HTTPStatus.FOUND,
             )
 

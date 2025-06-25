@@ -1,11 +1,19 @@
 """Flask webapp acerestreamer."""
 
+from pathlib import Path
 from pprint import pformat
 
-from flask import Flask
-
-from . import authentication_bp, config, epg_bp, info_bp, logger, scraper_cache, scraper_helpers, stream_bp
-from .flask_helpers import cache, check_static_folder, load_configuration, register_error_handlers
+from . import (
+    authentication_bp,
+    config,
+    epg_bp,
+    info_bp,
+    logger,
+    scraper_cache,
+    scraper_helpers,
+    stream_bp,
+)
+from .flask_helpers import FlaskAceReStreamer, cache, check_static_folder, register_error_handlers
 
 __version__ = "0.3.1"  # This is the version of the app, used in pyproject.toml, enforced in a test.
 PROGRAM_NAME = "Ace ReStreamer"
@@ -15,9 +23,9 @@ URL = "https://github.com/kism/ace-restreamer"
 def create_app(
     test_config: config.AceReStreamerConf | None = None,
     instance_path: str | None = None,
-) -> Flask:
+) -> FlaskAceReStreamer:
     """Create and configure an instance of the Flask application."""
-    app = Flask(__name__, instance_path=instance_path)
+    app = FlaskAceReStreamer(__name__, instance_relative_config=True, instance_path=instance_path)
     app.logger.handlers.clear()
 
     logger.setup_logger(in_loggers=[])  # Setup flask logger with defaults
@@ -27,23 +35,25 @@ def create_app(
             msg = "When testing supply both test_config and instance_path!"
             app.logger.critical(msg)
             raise ValueError(msg)
-        aw_conf = test_config
+        app.aw_conf = test_config
     else:
-        aw_conf = load_configuration(instance_path=app.instance_path)
+        app.logger.info("Loading real configuration from instance path: %s", app.instance_path)
+        config_path = Path(app.instance_path) / "config.toml"
+        app.aw_conf = config.load_config(config_path)
 
     check_static_folder(app.static_folder)
 
     app.logger.debug("Instance path is: %s", app.instance_path)
 
     logger.setup_logger(  # Setup logger with config
-        log_level=aw_conf.logging.level,
-        log_path=aw_conf.logging.path,
+        log_level=app.aw_conf.logging.level,
+        log_path=app.aw_conf.logging.path,
         in_loggers=[],
     )
     app.logger = logger.get_logger(__name__)
 
     # Flask config, at the root of the config object.
-    app.config.from_mapping(aw_conf.flask.model_dump())
+    app.config.from_mapping(app.aw_conf.flask.model_dump())
 
     # Do some debug logging of config
     app_config_str = ">>>\nFlask config:"
@@ -61,18 +71,18 @@ def create_app(
     scraper_cache.scraper_cache.load_config(instance_path=app.instance_path)
     scraper_helpers.m3u_replacer.load_config(instance_path=app.instance_path)
     stream_bp.ace_scraper.load_config(
-        ace_scrape_settings=aw_conf.scraper,
+        ace_scrape_settings=app.aw_conf.scraper,
         instance_path=app.instance_path,
     )
     stream_bp.ace_pool.load_config(
-        app_config=aw_conf.app,
+        app_config=app.aw_conf.app,
     )
     authentication_bp.ip_allow_list.load_config(
         instance_path=app.instance_path,
-        nginx_allowlist_path=aw_conf.nginx.ip_allow_list_path if aw_conf.nginx else None,
+        nginx_allowlist_path=app.aw_conf.nginx.ip_allow_list_path if app.aw_conf.nginx else None,
     )
     epg_bp.epg_handler.load_config(
-        epg_conf_list=aw_conf.epgs,
+        epg_conf_list=app.aw_conf.epgs,
         instance_path=app.instance_path,
     )
 
