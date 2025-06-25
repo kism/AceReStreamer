@@ -204,7 +204,7 @@ class AcePoolEntry:
             KEEP_ALIVE_THREADS[self.ace_pid].start()
 
             logger.info(
-                "Keep alive loop total for pid: %s with ace_id %s, total threads: %d",
+                "Keep alive started for pid: %s with ace_id %s, total threads: %d",
                 self.ace_pid,
                 self.ace_id,
                 len(KEEP_ALIVE_THREADS),
