@@ -338,6 +338,10 @@ def api_ace_pool_by_id(ace_id: str) -> Response | WerkzeugResponse:
 @bp.route("/api/health")
 def api_health() -> Response | WerkzeugResponse:
     """API endpoint to check the health of the service."""
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
     threads_enumerated = threading.enumerate()
     thread_list = [{"name": thread.name, "is_alive": thread.is_alive()} for thread in threads_enumerated]
     threads = {"threads": thread_list}
