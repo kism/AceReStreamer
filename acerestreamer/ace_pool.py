@@ -174,6 +174,16 @@ class AcePoolEntry:
             self.keep_alive_active = True
 
             if self.ace_pid in KEEP_ALIVE_THREADS:
+                for _ in range(3):
+                    if KEEP_ALIVE_THREADS[self.ace_pid].is_alive(): # Avoid race condition
+                        break
+                    time.sleep(1)
+
+                if not KEEP_ALIVE_THREADS[self.ace_pid].is_alive():
+                    logger.warning("AcePoolEntry keep_alive, want to join() but thread not alive, removing it.")
+                    with contextlib.suppress(KeyError):
+                        del KEEP_ALIVE_THREADS[self.ace_pid]
+
                 KEEP_ALIVE_THREADS[self.ace_pid].join(timeout=1)
             KEEP_ALIVE_THREADS[self.ace_pid] = threading.Thread(target=keep_alive, daemon=True)
             KEEP_ALIVE_THREADS[self.ace_pid].start()
