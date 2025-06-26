@@ -126,9 +126,20 @@ class AceQuality:
         def check_missing_quality_thread(base_url: str) -> None:
             self.currently_checking_quality = True
 
+            ace_streams_never_worked = len(
+                [  # We also check if the quality is zero, since maybe it started working
+                    ace_id
+                    for ace_id, quality in self.ace_streams.items()
+                    if not quality.has_ever_worked or quality.quality == 0
+                ]
+            )
+
+            # Don't enumerate here, and don't bother with list comprehension tbh
+            n = 0
             for ace_id, quality in self.ace_streams.items():
-                if not quality.has_ever_worked:
-                    logger.info("Checking Ace ID %s", ace_id)
+                if not quality.has_ever_worked or quality.quality == 0:
+                    n += 1
+                    logger.info("Checking Ace ID %s (%d/%d)", ace_id, n, ace_streams_never_worked)
 
                     for _ in range(3):
                         with contextlib.suppress(requests.Timeout, requests.ConnectionError):
