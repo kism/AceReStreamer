@@ -5,16 +5,16 @@ from pprint import pformat
 
 from . import (
     _obj_instances,
+    ace_pool_api_bp,
     authentication_bp,
     config,
     epg_bp,
+    health_api_bp,
     info_bp,
     iptv_bp,
     logger,
-    stream_bp,
-    ace_pool_api_bp,
     scraper_api_bp,
-    health_api_bp,
+    stream_bp,
 )
 from .flask_helpers import FlaskAceReStreamer, cache, check_static_folder, register_error_handlers
 

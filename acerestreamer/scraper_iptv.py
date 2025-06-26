@@ -81,6 +81,7 @@ def _parse_m3u_content(content: str, site: ScrapeSiteIPTV) -> list[FoundAceStrea
 def _get_site_content(site: ScrapeSiteIPTV) -> str | None:
     """Get site content from cache or by scraping."""
     from ._obj_instances import scraper_cache  # noqa: PLC0415 # Avoid circular import
+
     cached_content = scraper_cache.load_from_cache(site.url)
 
     if scraper_cache.is_cache_valid(site.url):
