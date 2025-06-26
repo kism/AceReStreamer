@@ -10,10 +10,10 @@ from pathlib import Path
 import requests
 from lxml import etree
 
+from ._obj_instances import ace_scraper
 from .config import EPGInstanceConf
 from .constants import OUR_TIMEZONE
 from .logger import get_logger
-from .stream_bp import ace_scraper
 
 logger = get_logger(__name__)
 

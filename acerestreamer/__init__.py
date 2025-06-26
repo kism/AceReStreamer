@@ -4,13 +4,12 @@ from pathlib import Path
 from pprint import pformat
 
 from . import (
+    _obj_instances,
     authentication_bp,
     config,
     epg_bp,
     info_bp,
     logger,
-    scraper_cache,
-    scraper_helpers,
     stream_bp,
 )
 from .flask_helpers import FlaskAceReStreamer, cache, check_static_folder, register_error_handlers
@@ -68,20 +67,20 @@ def create_app(
     app.register_blueprint(epg_bp.bp)
 
     # Start the objects
-    scraper_cache.scraper_cache.load_config(instance_path=app.instance_path)
-    scraper_helpers.m3u_replacer.load_config(instance_path=app.instance_path)
-    stream_bp.ace_scraper.load_config(
+    _obj_instances.scraper_cache.load_config(instance_path=app.instance_path)
+    _obj_instances.m3u_replacer.load_config(instance_path=app.instance_path)
+    _obj_instances.ace_scraper.load_config(
         ace_scrape_settings=app.aw_conf.scraper,
         instance_path=app.instance_path,
     )
-    stream_bp.ace_pool.load_config(
+    _obj_instances.ace_pool.load_config(
         app_config=app.aw_conf.app,
     )
-    authentication_bp.ip_allow_list.load_config(
+    _obj_instances.ip_allow_list.load_config(
         instance_path=app.instance_path,
         nginx_allowlist_path=app.aw_conf.nginx.ip_allow_list_path if app.aw_conf.nginx else None,
     )
-    epg_bp.epg_handler.load_config(
+    _obj_instances.epg_handler.load_config(
         epg_conf_list=app.aw_conf.epgs,
         instance_path=app.instance_path,
     )

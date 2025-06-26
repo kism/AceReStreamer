@@ -8,13 +8,12 @@ from flask import Blueprint, Response, jsonify, redirect, render_template, reque
 from flask_caching import CachedResponse
 from werkzeug.wrappers import Response as WerkzeugResponse
 
-from .ace_pool import AcePool
+from ._obj_instances import ace_pool, ace_scraper
 from .authentication_bp import get_ip_from_request, is_ip_allowed
 from .authentication_helpers import assumed_auth_failure
 from .flask_helpers import DEFAULT_CACHE_DURATION, cache, get_current_app
 from .html_snippets import get_header_snippet
 from .logger import get_logger
-from .scraper import AceScraper
 from .scraper_helpers import get_streams_as_iptv
 from .stream_helpers import replace_m3u_sources
 
@@ -23,8 +22,7 @@ current_app = get_current_app()
 logger = get_logger(__name__)  # Create a logger: acerestreamer.this_module_name, inherit config from root logger
 
 bp = Blueprint("acerestreamer_scraper", __name__)
-ace_scraper: AceScraper = AceScraper()
-ace_pool: AcePool = AcePool()
+
 
 REVERSE_PROXY_EXCLUDED_HEADERS = ["content-encoding", "content-length", "transfer-encoding", "connection", "keep-alive"]
 REVERSE_PROXY_TIMEOUT = 10  # Very high but alas

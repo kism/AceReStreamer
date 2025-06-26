@@ -7,7 +7,7 @@ from pathlib import Path
 from flask import Blueprint, Response, jsonify, redirect, request, send_file
 from werkzeug.wrappers import Response as WerkzeugResponse
 
-from .authentication_allow_list import AllowList
+from ._obj_instances import ip_allow_list
 from .flask_helpers import get_current_app
 from .logger import get_logger
 
@@ -18,7 +18,6 @@ logger = get_logger(__name__)  # Create a logger: acerestreamer.this_module_name
 # Register this module (__name__) as available to the blueprints of acerestreamer, I think https://flask.palletsprojects.com/en/3.0.x/blueprints/
 bp = Blueprint("acerestreamer_auth", __name__)
 
-ip_allow_list: AllowList = AllowList()
 
 STATIC_PATH = Path(__file__).parent / "static"
 

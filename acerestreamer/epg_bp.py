@@ -3,12 +3,10 @@
 from flask import Blueprint, Response, jsonify
 from werkzeug.wrappers import Response as WerkzeugResponse
 
+from ._obj_instances import epg_handler
 from .authentication_helpers import assumed_auth_failure
-from .epg import EPGHandler
 
 bp = Blueprint("acerestreamer_epg", __name__)
-
-epg_handler = EPGHandler()
 
 
 @bp.route("/api/epgs", methods=["GET"])
