@@ -145,14 +145,17 @@ class AcePoolEntry:
         """The keep_alive method, should be called by poolboy thread."""
         # If we are locked in, we keep the stream alive
         # Also check if the ace_id is valid, as a failsafe
-        if not self._keep_alive_run_once:
-            logger.info("Keeping alive ace_pid %d with ace_id %s", self.ace_pid, self.ace_id)
-            self._keep_alive_run_once = True
+
 
         if self.check_locked_in() and check_valid_ace_id(self.ace_id):
             with contextlib.suppress(requests.RequestException):
+                if not self._keep_alive_run_once:
+                    logger.info("Keeping alive ace_pid %d with ace_id %s", self.ace_pid, self.ace_id)
+                    self._keep_alive_run_once = True
                 resp = requests.get(self.ace_hls_m3u8_url, timeout=ACESTREAM_API_TIMEOUT * 2)
                 logger.trace("Keep alive, response: %s", resp.status_code)
+
+
         else:
             logger.trace("Not keeping alive %s, not locked in", self.ace_address)
 
