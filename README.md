@@ -80,6 +80,8 @@ uv sync --no-group test --no-group type --no-group lint
 - try out yaml for config file
 - channel logos
 - maybe get all the instances ace_scraper and such into `__init__.py`
+- administrative account
+- bootstrap-able from the web interface
 
 ### Apps that don't work
 
