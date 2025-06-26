@@ -3,21 +3,20 @@
 from pathlib import Path
 from pprint import pformat
 
-from . import (
-    _obj_instances,
-    ace_pool_api_bp,
-    authentication_bp,
-    config,
-    epg_bp,
-    health_api_bp,
-    info_bp,
-    iptv_bp,
-    logger,
-    scraper_api_bp,
-    stream_api_bp,
-    stream_bp,
-)
-from .flask_helpers import FlaskAceReStreamer, cache, check_static_folder, register_error_handlers
+from acerestreamer import instances
+from acerestreamer.blueprints.api import ace_pool as ace_pool_api_bp
+from acerestreamer.blueprints.api import auth as auth_api_bp
+from acerestreamer.blueprints.api import health as health_api_bp
+from acerestreamer.blueprints.api import scraper as scraper_api_bp
+from acerestreamer.blueprints.api import streams as stream_api_bp
+from acerestreamer.blueprints.web import auth as auth_bp
+from acerestreamer.blueprints.web import epg as epg_bp
+from acerestreamer.blueprints.web import info as info_bp
+from acerestreamer.blueprints.web import iptv as iptv_bp
+from acerestreamer.blueprints.web import streams as stream_bp
+from acerestreamer.config import models as config
+from acerestreamer.utils import logger
+from acerestreamer.utils.flask_helpers import FlaskAceReStreamer, cache, check_static_folder, register_error_handlers
 
 __version__ = "0.3.2"  # This is the version of the app, used in pyproject.toml, enforced in a test.
 PROGRAM_NAME = "Ace ReStreamer"
@@ -67,30 +66,31 @@ def create_app(
     app.logger.trace(app_config_str)
 
     app.register_blueprint(stream_bp.bp)
-    app.register_blueprint(authentication_bp.bp)
+    app.register_blueprint(auth_bp.bp)
     app.register_blueprint(info_bp.bp)
     app.register_blueprint(epg_bp.bp)
     app.register_blueprint(iptv_bp.bp)
     app.register_blueprint(ace_pool_api_bp.bp)
+    app.register_blueprint(auth_api_bp.bp)
     app.register_blueprint(scraper_api_bp.bp)
     app.register_blueprint(health_api_bp.bp)
     app.register_blueprint(stream_api_bp.bp)
 
     # Start the objects
-    _obj_instances.scraper_cache.load_config(instance_path=app.instance_path)
-    _obj_instances.m3u_replacer.load_config(instance_path=app.instance_path)
-    _obj_instances.ace_scraper.load_config(
+    instances.scraper_cache.load_config(instance_path=app.instance_path)
+    instances.m3u_replacer.load_config(instance_path=app.instance_path)
+    instances.ace_scraper.load_config(
         ace_scrape_settings=app.aw_conf.scraper,
         instance_path=app.instance_path,
     )
-    _obj_instances.ace_pool.load_config(
+    instances.ace_pool.load_config(
         app_config=app.aw_conf.app,
     )
-    _obj_instances.ip_allow_list.load_config(
+    instances.ip_allow_list.load_config(
         instance_path=app.instance_path,
         nginx_allowlist_path=app.aw_conf.nginx.ip_allow_list_path if app.aw_conf.nginx else None,
     )
-    _obj_instances.epg_handler.load_config(
+    instances.epg_handler.load_config(
         epg_conf_list=app.aw_conf.epgs,
         instance_path=app.instance_path,
     )

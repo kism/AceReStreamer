@@ -1,0 +1,13 @@
+"""Instances of various objects used throughout the application."""
+
+from acerestreamer.services.ace_pool import AcePool
+from acerestreamer.services.authentication import AllowList
+from acerestreamer.services.epg import EPGHandler
+from acerestreamer.services.scraper import AceScraper, M3UNameReplacer, ScraperCache
+
+scraper_cache = ScraperCache()
+m3u_replacer = M3UNameReplacer()
+ace_pool = AcePool()
+ace_scraper = AceScraper()
+ip_allow_list = AllowList()
+epg_handler = EPGHandler()
