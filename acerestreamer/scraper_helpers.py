@@ -60,11 +60,9 @@ def get_streams_as_iptv(streams: list[FlatFoundAceStream], hls_path: str) -> str
 
     for stream in streams:
         logger.debug(stream)
-        if stream.quality > 0:
+        if stream.has_ever_worked:
             # Country codes are 2 characters between square brackets, e.g. [US]
             tvg_id = f'tvg-id="{stream.tvg_id}"'
-
-
 
             m3u8_content += f"#EXTINF:-1 {tvg_id},{stream.title}\n"
             m3u8_content += f"{hls_path}{stream.ace_id}\n"
