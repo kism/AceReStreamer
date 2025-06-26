@@ -107,7 +107,7 @@ class AceQuality:
         if ace_id not in self.ace_streams:
             self.ace_streams[ace_id] = Quality()
 
-        if not self.ace_streams[ace_id].has_ever_worked:
+        if not self.ace_streams[ace_id].has_ever_worked and rating > 0:
             rating = self.quality_on_first_success
 
         if rating > 0:
