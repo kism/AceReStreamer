@@ -14,8 +14,8 @@ from . import (
     iptv_bp,
     logger,
     scraper_api_bp,
-    stream_bp,
     stream_api_bp,
+    stream_bp,
 )
 from .flask_helpers import FlaskAceReStreamer, cache, check_static_folder, register_error_handlers
 
