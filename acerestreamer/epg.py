@@ -10,7 +10,6 @@ from pathlib import Path
 import requests
 from lxml import etree
 
-from ._obj_instances import ace_scraper
 from .config import EPGInstanceConf
 from .constants import OUR_TIMEZONE
 from .logger import get_logger
@@ -203,6 +202,8 @@ class EPGHandler:
 
     def condense_epgs(self) -> None:
         """Get a condensed version of the merged EPG data."""
+        from ._obj_instances import ace_scraper  # noqa: PLC0415 Avoid circular import
+
         time_since_last_condense: timedelta = datetime.now(tz=OUR_TIMEZONE) - self._last_condense_time
         time_to_update: bool = time_since_last_condense > MIN_TIME_BETWEEN_EPG_PROCESSING
 

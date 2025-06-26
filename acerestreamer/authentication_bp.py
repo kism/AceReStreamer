@@ -13,7 +13,7 @@ from .logger import get_logger
 
 current_app = get_current_app()
 
-logger = get_logger(__name__)  # Create a logger: acerestreamer.this_module_name, inherit config from root logger
+logger = get_logger(__name__)
 
 # Register this module (__name__) as available to the blueprints of acerestreamer, I think https://flask.palletsprojects.com/en/3.0.x/blueprints/
 bp = Blueprint("acerestreamer_auth", __name__)

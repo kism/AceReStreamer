@@ -53,6 +53,3 @@ class ScraperCache:
             msg = "Cache path is not set. Call load_config() first."
             raise ValueError(msg)
         return self.cache_path / f"{slugify(url)}.txt"
-
-
-scraper_cache = ScraperCache()

@@ -5,10 +5,12 @@ from pprint import pformat
 
 from . import (
     _obj_instances,
+    api_bp,
     authentication_bp,
     config,
     epg_bp,
     info_bp,
+    iptv_bp,
     logger,
     stream_bp,
 )
@@ -65,6 +67,8 @@ def create_app(
     app.register_blueprint(authentication_bp.bp)
     app.register_blueprint(info_bp.bp)
     app.register_blueprint(epg_bp.bp)
+    app.register_blueprint(api_bp.bp)
+    app.register_blueprint(iptv_bp.bp)
 
     # Start the objects
     _obj_instances.scraper_cache.load_config(instance_path=app.instance_path)

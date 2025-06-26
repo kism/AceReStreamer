@@ -5,10 +5,10 @@ from datetime import timedelta
 import requests
 from bs4 import BeautifulSoup, Tag
 
+from ._obj_instances import scraper_cache
 from .config import ScrapeSiteHTML
 from .helpers import check_valid_ace_id
 from .logger import get_logger
-from .scraper_cache import scraper_cache
 from .scraper_helpers import (
     STREAM_TITLE_MAX_LENGTH,
     candidates_regex_cleanup,

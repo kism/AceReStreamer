@@ -2,10 +2,10 @@
 
 import requests
 
+from ._obj_instances import scraper_cache
 from .config import ScrapeSiteIPTV, TitleFilter
 from .helpers import check_valid_ace_id
 from .logger import get_logger
-from .scraper_cache import scraper_cache
 from .scraper_helpers import (
     check_title_allowed,
     check_valid_ace_url,

@@ -29,7 +29,7 @@ class Quality(BaseModel):
 class AceQuality:
     """For tracking quality of Streams."""
 
-    default_quality: int = -1 # Unknown quality
+    default_quality: int = -1  # Unknown quality
     quality_on_first_success: int = 20
     min_quality: int = 0
     max_quality: int = 99
