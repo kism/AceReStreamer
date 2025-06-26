@@ -5,7 +5,6 @@ from datetime import timedelta
 import requests
 from bs4 import BeautifulSoup, Tag
 
-from ._obj_instances import scraper_cache
 from .config import ScrapeSiteHTML
 from .helpers import check_valid_ace_id
 from .logger import get_logger
@@ -37,6 +36,7 @@ def scrape_streams_html_sites(sites: list[ScrapeSiteHTML]) -> list[FoundAceStrea
 
 def scrape_streams_html_site(site: ScrapeSiteHTML) -> FoundAceStreams | None:
     """Scrape the streams from the configured sites."""
+    from ._obj_instances import scraper_cache  # noqa: PLC0415 Avoid circular import
     streams_candidates: list[CandidateAceStream] = []
     cache_max_age = timedelta(hours=1)  # HTML Sources we need to scrape more often
 

@@ -62,7 +62,7 @@ class EPG:
     def _time_to_update(self) -> bool:
         """Check if the EPG data needs to be updated based on the last update time."""
         if self.last_updated is None:
-            logger.debug("Last updated time is None, will update EPG data")
+            logger.debug("%s: Last updated time is None, will update EPG data", self.region_code)
             if self.saved_file_path is not None and self.saved_file_path.is_file():
                 # Stat the existing file to get its last modified time
                 mtime = self.saved_file_path.stat().st_mtime
