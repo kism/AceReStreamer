@@ -2,8 +2,8 @@
 
 import contextlib
 import json
-import time
 import threading
+import time
 from pathlib import Path
 
 import requests
@@ -29,7 +29,7 @@ class Quality(BaseModel):
 class AceQuality:
     """For tracking quality of Streams."""
 
-    default_quality: int = -1
+    default_quality: int = -1 # Unknown quality
     quality_on_first_success: int = 20
     min_quality: int = 0
     max_quality: int = 99
@@ -107,10 +107,9 @@ class AceQuality:
         if ace_id not in self.ace_streams:
             self.ace_streams[ace_id] = Quality()
 
-        if not self.ace_streams[ace_id].has_ever_worked and rating > 0:
-            rating = self.quality_on_first_success
-
-        if rating > 0:
+        if rating > 0 and not self.ace_streams[ace_id].has_ever_worked:
+            # Only need max if someone edited the json, I might do something with it later
+            rating = max(self.quality_on_first_success, self.ace_streams[ace_id].quality)
             self.ace_streams[ace_id].has_ever_worked = True
 
         self.ace_streams[ace_id].quality += rating
