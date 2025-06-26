@@ -16,6 +16,7 @@ from .scraper_helpers import (
     check_valid_ace_url,
     cleanup_candidate_title,
     extract_ace_id_from_url,
+    get_tvg_id_from_title,
 )
 from .scraper_objects import CandidateAceStream, FoundAceStream, FoundAceStreams
 
@@ -158,10 +159,13 @@ def process_candidates(candidates: list[CandidateAceStream], site: ScrapeSiteHTM
             logger.warning("Invalid Ace ID found in candidate: %s, skipping", url_no_uri)
             continue
 
+        tvg_id = get_tvg_id_from_title(title)
+
         found_streams.append(
             FoundAceStream(
                 title=title,
                 ace_id=url_no_uri,
+                tvg_id=tvg_id,
             )
         )
 

@@ -8,6 +8,7 @@ class FoundAceStream(BaseModel):
 
     title: str
     ace_id: str
+    tvg_id: str
     quality: int = -1
 
 
@@ -33,3 +34,5 @@ class FlatFoundAceStream(BaseModel):
     quality: int
     title: str
     ace_id: str
+    tvg_id: str
+    has_ever_worked: bool

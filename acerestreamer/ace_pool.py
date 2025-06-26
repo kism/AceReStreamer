@@ -181,7 +181,6 @@ class AcePool:
         self.healthy = False
         self.ace_version = "unknown"
         self._ace_poolboy_running = False
-        self.ace_poolboy()
 
     def load_config(self, app_config: AppConf) -> None:
         """Load the configuration for the AcePool."""
@@ -189,6 +188,7 @@ class AcePool:
         self.max_size = app_config.ace_max_streams
         self.transcode_audio = app_config.transcode_audio
         self.populate_ace_version()
+        self.ace_poolboy()
 
     def populate_ace_version(self) -> None:
         """Get the AceStream version from the API."""
@@ -212,6 +212,9 @@ class AcePool:
 
     def check_ace_running(self) -> bool:
         """Use the AceStream API to check if the instance is running."""
+        if not self.ace_address:
+            return False
+
         url = f"{self.ace_address}/webui/api/service?method=get_version"
         try:
             response = requests.get(url, timeout=ACESTREAM_API_TIMEOUT)

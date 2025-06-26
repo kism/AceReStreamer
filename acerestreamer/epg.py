@@ -13,10 +13,12 @@ from lxml import etree
 from .config import EPGInstanceConf
 from .constants import OUR_TIMEZONE
 from .logger import get_logger
+from .stream_bp import ace_scraper
 
 logger = get_logger(__name__)
 
 EPG_LIFESPAN = timedelta(days=1)
+MIN_TIME_BETWEEN_EPG_PROCESSING = timedelta(minutes=20)
 
 
 class EPG:
@@ -29,7 +31,7 @@ class EPG:
         self._extracted_format = self.format.replace(".gz", "")  # Remove .gz for internal use
         self.region_code = epg_conf.region_code
         self.last_updated: datetime | None = None
-        self.data: etree._Element | None = None
+        self.data: bytes | None = None
         self.saved_file_path: Path | None = None
 
     def update(self, instance_path: Path) -> None:
@@ -51,7 +53,7 @@ class EPG:
             data_bytes = self._download_epg()
             downloaded_file = True
 
-        self.data = etree.fromstring(data_bytes)
+        self.data = data_bytes
         self.last_updated = datetime.now(tz=OUR_TIMEZONE)
 
         if downloaded_file:
@@ -121,8 +123,10 @@ class EPGHandler:
         """Initialize the EPGHandler with a list of URLs."""
         self.epgs: list[EPG] = []
         self.merged_epg: etree._Element | None = None
+        self.condensed_epg: etree._Element | None = None
         self.instance_path: Path | None = None
         self._last_merge_time: datetime = datetime.fromtimestamp(0, tz=UTC)  # Arbitrary old time
+        self._last_condense_time: datetime = datetime.fromtimestamp(0, tz=UTC)  # Arbitrary old time
 
     def load_config(self, epg_conf_list: list[EPGInstanceConf], instance_path: Path | str | None = None) -> None:
         """Load EPG configurations."""
@@ -147,6 +151,7 @@ class EPGHandler:
 
         def epg_update_thread() -> None:
             """Thread function to update EPGs."""
+            logger.info("Starting EPG update thread")
             while True:
                 if self.instance_path is not None:
                     for epg in self.epgs:
@@ -154,28 +159,98 @@ class EPGHandler:
                             epg.update(instance_path=self.instance_path)
                         except Exception:
                             logger.exception("Failed to update EPG %s", epg.region_code)
-                time.sleep(EPG_LIFESPAN.total_seconds())
+
+                    self.merge_epgs()
+                    self.condense_epgs()
+                    time.sleep(EPG_LIFESPAN.total_seconds())
+
+                time.sleep(10)  # Sleep to avoid busy waiting
 
         threading.Thread(target=epg_update_thread, name="EPGHandler: update_epgs", daemon=True).start()
 
+    def merge_epgs(self) -> None:
+        """Merge all EPG data into a single XML structure."""
+        time_since_last_merge: timedelta = datetime.now(tz=OUR_TIMEZONE) - self._last_merge_time
+        time_to_update: bool = time_since_last_merge > MIN_TIME_BETWEEN_EPG_PROCESSING
+
+        if self.merged_epg is not None and not time_to_update:
+            return
+
+        logger.info("Merging EPG data from %d sources", len(self.epgs))
+        merged_data = etree.Element("tv")
+
+        for epg in self.epgs:
+            if epg.data is not None:
+                merged_data.extend(
+                    etree.fromstring(epg.data)  # Parse the EPG data and extend the merged_data
+                )
+            else:
+                logger.warning("EPG data for %s is None, skipping", epg.region_code)
+
+        self.merged_epg = merged_data
+        self._last_merge_time = datetime.now(tz=OUR_TIMEZONE)
+        logger.debug("EPG data merged successfully")
+
     def get_merged_epg(self) -> str:
         """Get the merged EPG data from all configured EPGs."""
-        time_since_last_merge: timedelta = datetime.now(tz=OUR_TIMEZONE) - self._last_merge_time
-        min_time_between_merges: timedelta = timedelta(minutes=20)
+        self.merge_epgs()
 
-        if self.merged_epg is not None and time_since_last_merge < min_time_between_merges:
-            logger.trace(
-                "Returning cached merged EPG data, last merge was %d seconds ago", time_since_last_merge.total_seconds()
-            )
-        else:
-            logger.info("Merging EPG data from %d sources", len(self.epgs))
-            merged_data = etree.Element("tv")
-
-            for epg in self.epgs:
-                if epg.data is not None:
-                    merged_data.extend(epg.data)
-
-            self.merged_epg = merged_data
-            self._last_merge_time = datetime.now(tz=OUR_TIMEZONE)
+        if self.merged_epg is None:
+            logger.error("No EPG data available to merge")
+            return ""
 
         return etree.tostring(self.merged_epg, encoding="unicode")
+
+    def condense_epgs(self) -> None:
+        """Get a condensed version of the merged EPG data."""
+        time_since_last_condense: timedelta = datetime.now(tz=OUR_TIMEZONE) - self._last_condense_time
+        time_to_update: bool = time_since_last_condense > MIN_TIME_BETWEEN_EPG_PROCESSING
+
+        if self.condensed_epg is not None and not time_to_update:
+            return
+
+        if self.merged_epg is None:
+            self.merge_epgs()
+
+        if self.merged_epg is None:
+            logger.error("No merged EPG data available to condense")
+            return
+
+        set_of_tvg_ids: set[str] = {stream.tvg_id for stream in ace_scraper.get_streams_flat() if stream.tvg_id}
+        if not set_of_tvg_ids:
+            logger.warning("No TVG IDs found in the current streams, skipping EPG condensation")
+            return
+
+        condensed_data = etree.Element("tv")
+        merged_epg_copy = etree.ElementTree(self.merged_epg)
+        for channel in merged_epg_copy.findall("channel"):
+            tvg_id = channel.get("id")
+            if tvg_id in set_of_tvg_ids:
+                condensed_data.append(channel)
+
+        for programme in merged_epg_copy.findall("programme"):
+            tvg_id = programme.get("channel")
+            if tvg_id in set_of_tvg_ids:
+                condensed_data.append(programme)
+
+        logger.info(
+            "Condensed EPG data created with %d channels and %d programmes",
+            len(condensed_data.findall("channel")),
+            len(condensed_data.findall("programme")),
+        )
+
+        self.condensed_epg = condensed_data
+        self._last_condense_time = datetime.now(tz=OUR_TIMEZONE)
+
+    def get_condensed_epg(self) -> str:
+        """Get the condensed EPG data."""
+        logger.warning("get_condensed_epg called, merging and condensing EPG data")
+        self.merge_epgs()
+        logger.warning("get_condensed_epg called, condensing EPG data")
+        self.condense_epgs()
+
+        if self.condensed_epg is None:
+            logger.error("No condensed EPG data available")
+            return ""
+
+        return etree.tostring(self.condensed_epg, encoding="unicode")

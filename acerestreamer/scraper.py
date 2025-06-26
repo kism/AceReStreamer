@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from .config import AceScrapeConf
 from .logger import get_logger
-from .scraper_health import AceQuality
+from .scraper_health import AceQuality, Quality
 from .scraper_html import scrape_streams_html_sites
 from .scraper_iptv import scrape_streams_iptv_sites
 from .scraper_objects import FlatFoundAceStream, FoundAceStreams
@@ -113,6 +113,8 @@ class AceScraper:
             quality=self._ace_quality.default_quality,
             title=ace_id,
             ace_id=ace_id,
+            tvg_id="",
+            has_ever_worked=False,
         )
 
     def get_all_streams_by_source(self) -> list[FoundAceStreams]:
@@ -121,7 +123,7 @@ class AceScraper:
 
         for found_stream in streams:
             for stream in found_stream.stream_list:
-                stream.quality = self._ace_quality.get_quality(stream.ace_id)
+                stream.quality = self._ace_quality.get_quality(stream.ace_id).quality
 
         return streams
 
@@ -132,9 +134,11 @@ class AceScraper:
                 return [
                     FlatFoundAceStream(
                         site_name=scraped_streams_listing.site_name,
-                        quality=self._ace_quality.get_quality(stream.ace_id),
+                        quality=self._ace_quality.get_quality(stream.ace_id).quality,
                         title=stream.title,
                         ace_id=stream.ace_id,
+                        tvg_id=stream.tvg_id,
+                        has_ever_worked=self._ace_quality.get_quality(stream.ace_id).has_ever_worked,
                     )
                     for stream in scraped_streams_listing.stream_list
                 ]
@@ -151,9 +155,11 @@ class AceScraper:
             for stream in found_stream["stream_list"]:
                 new_stream: FlatFoundAceStream = FlatFoundAceStream(
                     site_name=found_stream["site_name"],
-                    quality=self._ace_quality.get_quality(stream["ace_id"]),
+                    quality=self._ace_quality.get_quality(stream["ace_id"]).quality,
+                    has_ever_worked=self._ace_quality.get_quality(stream["ace_id"]).has_ever_worked,
                     title=stream["title"],
                     ace_id=stream["ace_id"],
+                    tvg_id=stream["tvg_id"],
                 )
                 flat_streams.append(new_stream)
         return flat_streams
@@ -178,7 +184,7 @@ class AceScraper:
         logger.warning("No scraper source found with slug: %s", slug)
         return None
 
-    def get_streams_health(self) -> dict[str, int]:
+    def get_streams_health(self) -> dict[str, Quality]:
         """Get the health of the streams."""
         return self._ace_quality.ace_streams
 
@@ -186,6 +192,15 @@ class AceScraper:
     def increment_quality(self, ace_id: str, rating: int) -> None:
         """Increment the quality of a stream by ace_id."""
         self._ace_quality.increment_quality(ace_id, rating)
+
+    def check_missing_quality(self) -> bool:
+        """Check the quality of all streams."""
+        if self._ace_quality.currently_checking_quality:
+            return False
+
+        self._ace_quality.check_missing_quality()
+
+        return True
 
     # region Helpers
     def print_streams(self) -> None:

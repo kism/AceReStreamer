@@ -26,7 +26,6 @@ bp = Blueprint("acerestreamer_scraper", __name__)
 ace_scraper: AceScraper = AceScraper()
 ace_pool: AcePool = AcePool()
 
-
 REVERSE_PROXY_EXCLUDED_HEADERS = ["content-encoding", "content-length", "transfer-encoding", "connection", "keep-alive"]
 REVERSE_PROXY_TIMEOUT = 10  # Very high but alas
 
@@ -244,9 +243,25 @@ def api_streams_health() -> Response | WerkzeugResponse:
         return auth_failure
 
     streams = ace_scraper.get_streams_health()
+    streams_dict = {ace_id: quality.model_dump() for ace_id, quality in streams.items()}
 
-    response = jsonify(streams)
+    response = jsonify(streams_dict)
     response.status_code = HTTPStatus.OK
+
+    return response
+
+
+@bp.route("/api/streams/health/check_all", methods=["POST"])
+def api_streams_health_check_all() -> Response | WerkzeugResponse:
+    """API endpoint to attempt to check all streams health."""
+    started = ace_scraper.check_missing_quality()
+
+    if started:
+        response = jsonify({"message": "Health check started"})
+        response.status_code = HTTPStatus.ACCEPTED
+    else:
+        response = jsonify({"error": "Health check already running"})
+        response.status_code = HTTPStatus.CONFLICT
 
     return response
 

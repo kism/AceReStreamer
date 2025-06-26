@@ -11,6 +11,7 @@ from .scraper_helpers import (
     check_valid_ace_url,
     cleanup_candidate_title,
     extract_ace_id_from_url,
+    get_tvg_id_from_title,
 )
 from .scraper_objects import FoundAceStream, FoundAceStreams
 
@@ -48,12 +49,13 @@ def _parse_extinf_line(line: str, title_filter: TitleFilter) -> str:
 def _create_ace_stream_from_url(url: str, title: str) -> FoundAceStream | None:
     """Create FoundAceStream from URL and title if valid."""
     ace_id = extract_ace_id_from_url(url)
+    tvg_id = get_tvg_id_from_title(title)
 
     if not check_valid_ace_id(ace_id):
         logger.warning("Invalid Ace ID found in candidate: %s, skipping", ace_id)
         return None
 
-    return FoundAceStream(title=title, ace_id=ace_id)
+    return FoundAceStream(title=title, ace_id=ace_id, tvg_id=tvg_id)
 
 
 def _parse_m3u_content(content: str, site: ScrapeSiteIPTV) -> list[FoundAceStream]:

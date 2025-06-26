@@ -62,18 +62,24 @@ def get_streams_as_iptv(streams: list[FlatFoundAceStream], hls_path: str) -> str
         logger.debug(stream)
         if stream.quality > 0:
             # Country codes are 2 characters between square brackets, e.g. [US]
-            country_code_regex = COUNTRY_CODE_PATTERN.search(stream.title)
-            tvg_id = 'tvg-id=""'
+            tvg_id = f'tvg-id="{stream.tvg_id}"'
 
-            if country_code_regex and isinstance(country_code_regex.group(1), str):
-                country_code = country_code_regex.group(1)
-                stream_title_no_cc = stream.title.replace(f"[{country_code}]", "").strip()
-                tvg_id = f'tvg-id="{stream_title_no_cc}.{country_code.lower()}"'
+
 
             m3u8_content += f"#EXTINF:-1 {tvg_id},{stream.title}\n"
             m3u8_content += f"{hls_path}{stream.ace_id}\n"
 
     return m3u8_content
+
+
+def get_tvg_id_from_title(title: str) -> str:
+    """Extract the TVG ID from the title."""
+    country_code_regex = COUNTRY_CODE_PATTERN.search(title)
+    if country_code_regex and isinstance(country_code_regex.group(1), str):
+        country_code = country_code_regex.group(1)
+        title_no_cc = title.replace(f"[{country_code}]", "").strip()
+        return f"{title_no_cc}.{country_code.lower()}"
+    return ""
 
 
 def extract_ace_id_from_url(url: str) -> str:

@@ -31,8 +31,23 @@ def get_epg() -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    merged_epg = epg_handler.get_merged_epg()
+    condensed_epg = epg_handler.get_condensed_epg()
 
-    response = Response(merged_epg, mimetype="application/xml")
-    response.headers["Content-Disposition"] = 'attachment; filename="merged_epg.xml"'
+    response = Response(condensed_epg, mimetype="application/xml")
+    response.headers["Content-Disposition"] = 'attachment; filename="condensed_epg.xml"'
+    return response
+
+
+@bp.route("/epg_full", methods=["GET"])
+@bp.route("/epg_full.xml", methods=["GET"])
+def get_full_epg() -> Response | WerkzeugResponse:
+    """Get the full EPG data."""
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
+    get_merged_epg = epg_handler.get_merged_epg()
+
+    response = Response(get_merged_epg, mimetype="application/xml")
+    response.headers["Content-Disposition"] = 'attachment; filename="full_epg.xml"'
     return response

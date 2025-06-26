@@ -76,8 +76,10 @@ uv sync --no-group test --no-group type --no-group lint
   - ~~fetch on a schedule~~
   - epg api
   - filtered epg, e.g. only serve an epg for streams that are available
+  - correct epg xml metadata
 - try out yaml for config file
 - channel logos
+- maybe get all the instances ace_scraper and such into `__init__.py`
 
 ### Apps that don't work
 
