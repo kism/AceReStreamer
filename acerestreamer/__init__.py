@@ -15,6 +15,7 @@ from . import (
     logger,
     scraper_api_bp,
     stream_bp,
+    stream_api_bp,
 )
 from .flask_helpers import FlaskAceReStreamer, cache, check_static_folder, register_error_handlers
 
@@ -73,6 +74,7 @@ def create_app(
     app.register_blueprint(ace_pool_api_bp.bp)
     app.register_blueprint(scraper_api_bp.bp)
     app.register_blueprint(health_api_bp.bp)
+    app.register_blueprint(stream_api_bp.bp)
 
     # Start the objects
     _obj_instances.scraper_cache.load_config(instance_path=app.instance_path)
