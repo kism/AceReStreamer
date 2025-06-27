@@ -7,7 +7,7 @@ from flask import Blueprint, Response, jsonify, redirect, request
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.instances import ip_allow_list
-from acerestreamer.services.authentication import get_ip_from_request, is_ip_allowed
+from acerestreamer.services.authentication import get_ip_from_request
 from acerestreamer.utils.flask_helpers import get_current_app
 from acerestreamer.utils.logger import get_logger
 
@@ -50,7 +50,7 @@ def authenticate() -> Response | WerkzeugResponse:
     # Get the current authentication
     if request.method == "GET":
         ip = get_ip_from_request()
-        if not is_ip_allowed(ip):
+        if not ip_allow_list.check(ip):
             response = jsonify({"status": "error", "message": "Unauthenticated"})
             response.status_code = HTTPStatus.UNAUTHORIZED
             return response
