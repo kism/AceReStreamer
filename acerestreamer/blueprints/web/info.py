@@ -8,12 +8,15 @@ from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.services.authentication import assumed_auth_failure
 from acerestreamer.utils import get_header_snippet
+from acerestreamer.utils.constants import TEMPLATES_DIRECTORY
 from acerestreamer.utils.flask_helpers import DEFAULT_CACHE_DURATION, cache, get_current_app
 from acerestreamer.utils.logger import get_logger
 
+TEMPLATES_DIRECTORY_INFO = TEMPLATES_DIRECTORY / "info"
+
 current_app = get_current_app()
 
-bp = Blueprint("acerestreamer_info", __name__, template_folder="templates/info")
+bp = Blueprint("acerestreamer_info", __name__, template_folder=TEMPLATES_DIRECTORY_INFO)
 
 logger = get_logger(__name__)
 

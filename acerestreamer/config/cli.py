@@ -7,6 +7,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
 from acerestreamer import __version__
+from acerestreamer.utils.constants import TEMPLATES_DIRECTORY
 from acerestreamer.utils.logger import LOG_LEVELS, get_logger, setup_logger
 
 from .models import (
@@ -29,7 +30,7 @@ app config: `html`, `iptv`, `nginx`
 nginx config: `complete`
     complete: Instead of generating a config for a site, generate a complete Nginx configuration file."""
 
-TEMPLATES_DIR = Path(__file__).parent / "templates" / "nginx"
+TEMPLATES_DIR = TEMPLATES_DIRECTORY / "templates" / "nginx"
 
 
 def _check_config_path(
