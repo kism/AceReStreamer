@@ -4,6 +4,8 @@ from http import HTTPStatus
 
 import pytest
 
+from acerestreamer.instances import ip_allow_list
+
 
 def test_home(client):
     """Test the hello API endpoint. This one uses the fixture in conftest.py."""
@@ -29,6 +31,11 @@ def test_login(client, path):
 def test_password(client, app):
     """Test that the password works."""
     app.are_conf.app.password = "testpassword"
+    ip_allow_list.load_config(
+        instance_path=app.instance_path,
+        password=app.are_conf.app.password,
+        nginx_allowlist_path=None,
+    )
     response = client.get("/stream")
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     client.post(
@@ -50,6 +57,7 @@ def test_password(client, app):
         "/api/streams/health",
         "/api/ace_pool",
         "/api/epgs",
+        "/api/health",
     ],
 )
 def test_api_basic(client, path):

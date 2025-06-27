@@ -20,7 +20,7 @@ class AllowList:
         self.allowlist_ips: list[str] = []
         self.password: str = ""
 
-    def load_config(self, instance_path: Path | str, nginx_allowlist_path: Path | str | None, password: str) -> None:
+    def load_config(self, instance_path: Path | str, password: str, nginx_allowlist_path: Path | str | None) -> None:
         """Load the allow list from a file."""
         self.password = password
 
