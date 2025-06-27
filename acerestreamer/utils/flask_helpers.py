@@ -7,7 +7,7 @@ from typing import Any, cast
 from flask import Flask, Response, current_app, send_file
 from flask_caching import Cache
 
-from acerestreamer.config.models import load_config
+from acerestreamer.config.models import AceReStreamerConf
 from acerestreamer.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -26,7 +26,7 @@ class FlaskAceReStreamer(Flask):
         """Extend flask to add out config object to the app object."""
         super().__init__(*args, **kwargs)
 
-        self.aw_conf = load_config(Path(self.instance_path) / "config.toml")
+        self.aw_conf = AceReStreamerConf.load_config(Path(self.instance_path) / "config.toml")
         self.aw_conf.write_config(Path(self.instance_path) / "config.toml")
 
 

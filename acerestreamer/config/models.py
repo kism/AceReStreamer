@@ -244,12 +244,13 @@ class AceReStreamerConf(BaseSettings):
             f.write(new_file_content_str)
 
 
-def load_config(config_path: Path) -> AceReStreamerConf:
-    """Load the configuration file."""
-    if not config_path.exists():
-        return AceReStreamerConf()
+    @classmethod
+    def load_config(cls, config_path: Path) -> Self:
+        """Load the configuration file."""
+        if not config_path.exists():
+            return cls()
 
-    with config_path.open("r") as f:
-        config = tomlkit.load(f)
+        with config_path.open("r") as f:
+            config = tomlkit.load(f)
 
-    return AceReStreamerConf(**config)
+        return cls(**config)

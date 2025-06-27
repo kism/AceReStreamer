@@ -15,7 +15,7 @@ from acerestreamer.blueprints.web import epg as epg_bp
 from acerestreamer.blueprints.web import info as info_bp
 from acerestreamer.blueprints.web import iptv as iptv_bp
 from acerestreamer.blueprints.web import streams as stream_bp
-from acerestreamer.config.models import load_config
+from acerestreamer.config.models import AceReStreamerConf
 from acerestreamer.utils.flask_helpers import FlaskAceReStreamer, cache, check_static_folder, register_error_handlers
 from acerestreamer.utils.logger import get_logger, setup_logger
 
@@ -49,7 +49,7 @@ def create_app(
     else:
         app.logger.info("Loading real configuration from instance path: %s", app.instance_path)
         config_path = Path(app.instance_path) / "config.toml"
-        app.aw_conf = load_config(config_path)
+        app.aw_conf = AceReStreamerConf.load_config(config_path)
 
     check_static_folder(app.static_folder)
 

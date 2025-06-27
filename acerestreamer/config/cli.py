@@ -15,7 +15,7 @@ from .models import (
     NginxConf,
     ScrapeSiteHTML,
     ScrapeSiteIPTV,
-    load_config,
+    AceReStreamerConf,
 )
 
 logger = get_logger(__name__)
@@ -90,7 +90,7 @@ def generate_app_config_file(
     if app_config_path.is_file():  # If we are here, we are overwriting
         try:
             logger.info("Loading existing configuration from %s", app_config_path)
-            config = load_config(app_config_path)
+            config = AceReStreamerConf.load_config(app_config_path)
         except Exception:  # noqa: BLE001 Naa, we are generating config
             logger.error("Failed to load existing configuration")  # noqa: TRY400 Naa, we are generating config
             logger.info("Generating a new configuration file instead.")
@@ -127,7 +127,7 @@ def generate_nginx_config_file(
     """Generate a default Nginx configuration file at the specified path."""
     # Check the app config path and load
     _check_config_path(app_config_path, ".toml", expect_config=True)
-    app_config = load_config(app_config_path)
+    app_config = AceReStreamerConf.load_config(app_config_path)
 
     # Check the nginx config path
     _check_config_path(
