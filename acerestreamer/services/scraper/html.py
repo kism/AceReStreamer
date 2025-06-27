@@ -5,9 +5,12 @@ from datetime import timedelta
 import requests
 from bs4 import BeautifulSoup, Tag
 
-from acerestreamer import instances
 from acerestreamer.config.models import ScrapeSiteHTML
-from acerestreamer.services.scraper.helpers import (
+from acerestreamer.utils import check_valid_ace_id
+from acerestreamer.utils.logger import get_logger
+
+from .cache import ScraperCache
+from .helpers import (
     STREAM_TITLE_MAX_LENGTH,
     candidates_regex_cleanup,
     check_title_allowed,
@@ -16,40 +19,38 @@ from acerestreamer.services.scraper.helpers import (
     extract_ace_id_from_url,
     get_tvg_id_from_title,
 )
-from acerestreamer.services.scraper.objects import CandidateAceStream, FoundAceStream, FoundAceStreams
-from acerestreamer.utils import check_valid_ace_id
-from acerestreamer.utils.logger import get_logger
+from .objects import CandidateAceStream, FoundAceStream, FoundAceStreams
 
 logger = get_logger(__name__)
 
 
-def scrape_streams_html_sites(sites: list[ScrapeSiteHTML]) -> list[FoundAceStreams]:
+def scrape_streams_html_sites(sites: list[ScrapeSiteHTML], scraper_cache: ScraperCache) -> list[FoundAceStreams]:
     """Scrape the streams from the configured sites."""
     found_streams: list[FoundAceStreams] = []
 
     for site in sites:
-        streams = scrape_streams_html_site(site)
+        streams = scrape_streams_html_site(site, scraper_cache)
         if streams:
             found_streams.append(streams)
 
     return found_streams
 
 
-def scrape_streams_html_site(site: ScrapeSiteHTML) -> FoundAceStreams | None:
+def scrape_streams_html_site(site: ScrapeSiteHTML, scraper_cache: ScraperCache) -> FoundAceStreams | None:
     """Scrape the streams from the configured sites."""
     streams_candidates: list[CandidateAceStream] = []
     cache_max_age = timedelta(hours=1)  # HTML Sources we need to scrape more often
 
-    scraped_site_str = instances.scraper_cache.load_from_cache(site.url)
+    scraped_site_str = scraper_cache.load_from_cache(site.url)
 
-    if not instances.scraper_cache.is_cache_valid(site.url, cache_max_age):
+    if not scraper_cache.is_cache_valid(site.url, cache_max_age):
         logger.debug("Scraping streams from site: %s", site)
         try:
             response = requests.get(site.url, timeout=10)
             response.raise_for_status()
             response.encoding = "utf-8"  # Ensure the response is decoded correctly
             scraped_site_str = response.text
-            instances.scraper_cache.save_to_cache(site.url, scraped_site_str)
+            scraper_cache.save_to_cache(site.url, scraped_site_str)
         except requests.RequestException as e:
             error_short = type(e).__name__
             logger.error("Error scraping site %s, %s", site.url, error_short)  # noqa: TRY400 Naa this should be shorter

@@ -14,15 +14,17 @@ from acerestreamer.services.scraper.objects import FoundAceStream, FoundAceStrea
 from acerestreamer.utils.helpers import check_valid_ace_id
 from acerestreamer.utils.logger import get_logger
 
+from .cache import ScraperCache
+
 logger = get_logger(__name__)
 
 
-def scrape_streams_iptv_sites(sites: list[ScrapeSiteIPTV]) -> list[FoundAceStreams]:
+def scrape_streams_iptv_sites(sites: list[ScrapeSiteIPTV], scraper_cache: ScraperCache) -> list[FoundAceStreams]:
     """Scrape the streams from the configured IPTV sites."""
     found_streams: list[FoundAceStreams] = []
 
     for site in sites:
-        streams = scrape_streams_iptv_site(site)
+        streams = scrape_streams_iptv_site(site, scraper_cache)
         if streams:
             found_streams.append(streams)
 
@@ -78,10 +80,8 @@ def _parse_m3u_content(content: str, site: ScrapeSiteIPTV) -> list[FoundAceStrea
     return found_streams
 
 
-def _get_site_content(site: ScrapeSiteIPTV) -> str | None:
+def _get_site_content(site: ScrapeSiteIPTV, scraper_cache: ScraperCache) -> str | None:
     """Get site content from cache or by scraping."""
-    from acerestreamer.instances import scraper_cache
-
     cached_content = scraper_cache.load_from_cache(site.url)
 
     if scraper_cache.is_cache_valid(site.url):
@@ -103,9 +103,9 @@ def _get_site_content(site: ScrapeSiteIPTV) -> str | None:
     return content
 
 
-def scrape_streams_iptv_site(site: ScrapeSiteIPTV) -> FoundAceStreams | None:
+def scrape_streams_iptv_site(site: ScrapeSiteIPTV, scraper_cache: ScraperCache) -> FoundAceStreams | None:
     """Scrape the streams from the configured IPTV sites."""
-    content = _get_site_content(site)
+    content = _get_site_content(site, scraper_cache)
     if not content:
         return None
 

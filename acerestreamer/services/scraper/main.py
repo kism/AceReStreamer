@@ -9,11 +9,13 @@ from pydantic import BaseModel
 
 from acerestreamer.config.models import AceScrapeConf
 from acerestreamer.services.epg import EPGHandler
-from acerestreamer.services.scraper.health import AceQuality, Quality
-from acerestreamer.services.scraper.html import scrape_streams_html_sites
-from acerestreamer.services.scraper.iptv import scrape_streams_iptv_sites
-from acerestreamer.services.scraper.objects import FlatFoundAceStream, FoundAceStreams
 from acerestreamer.utils.logger import get_logger
+
+from .cache import ScraperCache
+from .health import AceQuality, Quality
+from .html import scrape_streams_html_sites
+from .iptv import scrape_streams_iptv_sites
+from .objects import FlatFoundAceStream, FoundAceStreams
 
 if TYPE_CHECKING:
     from acerestreamer.config.models import EPGInstanceConf, ScrapeSiteHTML, ScrapeSiteIPTV
@@ -60,16 +62,21 @@ class AceScraper:
 
         self.epg_handler: EPGHandler = EPGHandler()
 
+        self.scraper_cache = ScraperCache()
+
+
     def load_config(
         self,
         ace_scrape_settings: AceScrapeConf,
         epg_conf_list: list[EPGInstanceConf],
-        instance_path: Path | str | None = None,
+        instance_path: Path | str,
     ) -> None:
         """Load the configuration for the scraper."""
         if isinstance(instance_path, str):
             instance_path = Path(instance_path)
-        self._ace_quality_cache_path = instance_path / "ace_quality_cache.json" if instance_path else None
+
+        self.scraper_cache.load_config(instance_path=instance_path)
+        self._ace_quality_cache_path = instance_path / "ace_quality_cache.json"
 
         self.epg_handler.load_config(
             epg_conf_list=epg_conf_list,
@@ -81,8 +88,7 @@ class AceScraper:
 
         self._ace_quality = AceQuality(self._ace_quality_cache_path)
 
-        if self._ace_quality_cache_path:
-            self.run_scrape()
+        self.run_scrape()
 
     # region Scrape
     def run_scrape(self) -> None:
@@ -98,12 +104,14 @@ class AceScraper:
                 new_streams.extend(
                     scrape_streams_html_sites(
                         sites=self.html,
+                        scraper_cache=self.scraper_cache,
                     )
                 )
 
                 new_streams.extend(
                     scrape_streams_iptv_sites(
                         sites=self.iptv_m3u8,
+                        scraper_cache=self.scraper_cache,
                     )
                 )
 

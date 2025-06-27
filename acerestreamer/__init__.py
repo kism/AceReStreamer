@@ -77,7 +77,6 @@ def create_app(
     app.register_blueprint(stream_api_bp.bp)
 
     # Start the objects
-    instances.scraper_cache.load_config(instance_path=app.instance_path)
     instances.m3u_replacer.load_config(instance_path=app.instance_path)
     instances.ace_scraper.load_config(
         ace_scrape_settings=app.are_conf.scraper,

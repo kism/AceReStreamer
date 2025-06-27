@@ -2,9 +2,8 @@
 
 from acerestreamer.services.ace_pool import AcePool
 from acerestreamer.services.authentication import AllowList
-from acerestreamer.services.scraper import AceScraper, M3UNameReplacer, ScraperCache
+from acerestreamer.services.scraper import AceScraper, M3UNameReplacer
 
-scraper_cache = ScraperCache()
 m3u_replacer = M3UNameReplacer()
 ace_pool = AcePool()
 ace_scraper = AceScraper()
