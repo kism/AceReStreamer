@@ -11,11 +11,11 @@ class ScraperCache:
     """Cache management for the AceReStreamer scraper."""
 
     def __init__(self) -> None:
-        """Initialize the cache directory."""
+        """Init."""
         self.cache_path: Path | None = None
 
     def load_config(self, instance_path: Path | str) -> None:
-        """Load the configuration for the scraper cache."""
+        """Initialize the cache directory."""
         if isinstance(instance_path, str):
             instance_path = Path(instance_path)
         self.cache_path = instance_path / "scraper_cache"

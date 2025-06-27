@@ -27,7 +27,7 @@ COUNTRY_CODE_PATTERN = re.compile(r"\[([A-Z]{2})\]")
 ACE_ID_PATTERN = re.compile(r"\b[0-9a-fA-F]{40}\b")
 
 
-class M3UNameReplacer:
+class StreamNameProcessor:
     """Cache for M3U text replacements."""
 
     _CSV_DESIRED_COLUMNS: int = 2
@@ -37,8 +37,8 @@ class M3UNameReplacer:
         self.cache: dict[str, str] = {}
         self.instance_path: Path | None = None
 
-    def load_config(self, instance_path: Path | str) -> None:
-        """Load the configuration for the M3U name replacer."""
+    def load_config(self, instance_path: str | Path) -> None:
+        """Initialize the cache."""
         if isinstance(instance_path, str):
             instance_path = Path(instance_path)
 
@@ -153,3 +153,9 @@ class M3UNameReplacer:
             return any(word.lower() in title for word in title_filter.include_words)
 
         return True
+
+    def trim_title(self, title: str) -> str:
+        """Trim the title to a maximum length, only really needs to be used for HTML titles."""
+        if len(title) > STREAM_TITLE_MAX_LENGTH:
+            return title[:STREAM_TITLE_MAX_LENGTH].strip()
+        return title.strip()
