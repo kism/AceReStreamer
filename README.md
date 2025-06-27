@@ -77,9 +77,9 @@ uv sync --no-group test --no-group type --no-group lint
   - epg api
   - filtered epg, e.g. only serve an epg for streams that are available
   - correct epg xml metadata
-- try out yaml for config file
 - channel logos
 - administrative account
+- bootstrap on first launch
 - json for the config file
 
 ### Apps that don't work
