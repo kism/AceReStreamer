@@ -104,7 +104,7 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
     content_str = replace_m3u_sources(
         m3u_content=content_str,
         ace_address=current_app.are_conf.app.ace_address,
-        server_name=current_app.config["SERVER_NAME"],
+        server_name=current_app.are_conf.flask.SERVER_NAME,
     )
 
     ace_scraper.increment_quality(path, 1)

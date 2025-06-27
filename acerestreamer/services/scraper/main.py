@@ -51,6 +51,7 @@ class AceScraper:
     # region Initialization
     def __init__(self) -> None:
         """Init the scraper."""
+        self.external_url: str = ""
         self._ace_quality_cache_path: Path | None = None
 
         self.streams: list[FoundAceStreams] = []
@@ -72,8 +73,11 @@ class AceScraper:
         ace_scrape_settings: AceScrapeConf,
         epg_conf_list: list[EPGInstanceConf],
         instance_path: Path | str,
+        external_url: str,
     ) -> None:
         """Load the configuration for the scraper."""
+        self.external_url = external_url
+
         if isinstance(instance_path, str):
             instance_path = Path(instance_path)
 
@@ -245,3 +249,16 @@ class AceScraper:
         n = len(unique_ace_ids)
         msg = f"Found AceStreams: {n} unique streams across {len(self.streams)} site definitions."
         logger.info(msg)
+
+    def get_streams_as_iptv(self) -> str:
+        """Get the found streams as an IPTV M3U8 string."""
+        if not self.external_url:
+            logger.error("External URL is not set, cannot generate IPTV streams.")
+            return ""
+
+        hls_path = self.external_url + "/hls/"
+
+        return self.stream_name_processor.get_streams_as_iptv(
+            streams=self.get_streams_flat(),
+            hls_path=hls_path,
+        )

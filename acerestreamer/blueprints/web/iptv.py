@@ -24,9 +24,7 @@ def iptv() -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    streams = ace_scraper.get_streams_flat()
-    hls_path = current_app.config["SERVER_NAME"] + "/hls/"
-    m3u8 = ace_scraper.stream_name_processor.get_streams_as_iptv(streams=streams, hls_path=hls_path)
+    m3u8 = ace_scraper.get_streams_as_iptv()
 
     return Response(
         m3u8,

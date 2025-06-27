@@ -81,6 +81,7 @@ def create_app(
         ace_scrape_settings=app.are_conf.scraper,
         instance_path=app.instance_path,
         epg_conf_list=app.are_conf.epgs,
+        external_url=app.are_conf.flask.SERVER_NAME,
     )
     instances.ace_pool.load_config(
         app_config=app.are_conf.app,
