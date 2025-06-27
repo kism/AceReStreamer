@@ -15,7 +15,6 @@ from .models import (
     NginxConf,
     ScrapeSiteHTML,
     ScrapeSiteIPTV,
-    AceReStreamerConf,
 )
 
 logger = get_logger(__name__)
