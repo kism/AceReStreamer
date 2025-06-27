@@ -52,14 +52,13 @@ class AceScraper:
     def __init__(self) -> None:
         """Init the scraper."""
         self.external_url: str = ""
-        self._ace_quality_cache_path: Path | None = None
 
         self.streams: list[FoundAceStreams] = []
 
         self.html: list[ScrapeSiteHTML] = []
         self.iptv_m3u8: list[ScrapeSiteIPTV] = []
 
-        self._ace_quality = AceQuality(self._ace_quality_cache_path)
+        self._ace_quality = AceQuality()
 
         self.epg_handler: EPGHandler = EPGHandler()
 
@@ -81,8 +80,6 @@ class AceScraper:
         if isinstance(instance_path, str):
             instance_path = Path(instance_path)
 
-        self._ace_quality_cache_path = instance_path / "ace_quality_cache.json"
-
         self.epg_handler.load_config(
             epg_conf_list=epg_conf_list,
             instance_path=instance_path,
@@ -91,7 +88,7 @@ class AceScraper:
         self.html = ace_scrape_settings.html
         self.iptv_m3u8 = ace_scrape_settings.iptv_m3u8
 
-        self._ace_quality = AceQuality(self._ace_quality_cache_path)
+        self._ace_quality.load_config(instance_path=instance_path, external_url=external_url)
 
         self.stream_name_processor.load_config(instance_path=instance_path)
         self.html_scraper.load_config(instance_path=instance_path, stream_name_processor=self.stream_name_processor)

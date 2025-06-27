@@ -7,10 +7,7 @@ from flask import Blueprint, Response, jsonify
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.services.authentication.helpers import assumed_auth_failure
-from acerestreamer.utils.flask_helpers import get_current_app
 from acerestreamer.utils.logger import get_logger
-
-current_app = get_current_app()
 
 logger = get_logger(__name__)
 

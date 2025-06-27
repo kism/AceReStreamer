@@ -9,11 +9,8 @@ from pathlib import Path
 import requests
 from pydantic import BaseModel
 
-from acerestreamer.utils.flask_helpers import get_current_app
 from acerestreamer.utils.helpers import check_valid_ace_id
 from acerestreamer.utils.logger import get_logger
-
-current_app = get_current_app()
 
 logger = get_logger(__name__)
 
@@ -35,10 +32,16 @@ class AceQuality:
     max_quality: int = 99
     currently_checking_quality = False
 
-    def __init__(self, cache_file: Path | None) -> None:
+    def __init__(self) -> None:
         """Init AceQuality."""
-        self.cache_file = cache_file
+        self.cache_file: Path | None = None
         self.ace_streams: dict[str, Quality] = {}
+        self.external_url: str = ""
+
+    def load_config(self, instance_path: Path, external_url: str) -> None:
+        """Init AceQuality."""
+        self.cache_file = instance_path / "ace_quality_cache.json"
+        self.external_url = external_url
         self._load_cache()
         self._clean_cache()
 
@@ -149,7 +152,7 @@ class AceQuality:
 
             self.currently_checking_quality = False
 
-        url = f"{current_app.are_conf.flask.SERVER_NAME}/hls"
+        url = f"{self.external_url}/hls"
 
         thread = threading.Thread(
             target=check_missing_quality_thread,

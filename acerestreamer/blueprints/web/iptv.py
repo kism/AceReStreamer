@@ -7,9 +7,6 @@ from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.instances import ace_scraper
 from acerestreamer.services.authentication.helpers import assumed_auth_failure
-from acerestreamer.utils.flask_helpers import get_current_app
-
-current_app = get_current_app()
 
 bp = Blueprint("acerestreamer_iptv", __name__)
 
