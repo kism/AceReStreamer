@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 from acerestreamer import create_app
-from acerestreamer.config import load_config
+from acerestreamer.config import AceReStreamerConf
 
 TEST_CONFIGS_LOCATION = Path.cwd() / "tests" / "configs"
 
@@ -37,7 +37,7 @@ def get_test_config(tmp_path, place_test_config):
 
     def _get_test_config(config_name):
         place_test_config(config_name, tmp_path)
-        return load_config(Path(tmp_path) / "config.toml")
+        return AceReStreamerConf.load_config(Path(tmp_path) / "config.toml")
 
     return _get_test_config
 

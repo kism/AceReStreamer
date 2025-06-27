@@ -14,7 +14,7 @@ from acerestreamer.blueprints.web import epg as epg_bp
 from acerestreamer.blueprints.web import info as info_bp
 from acerestreamer.blueprints.web import iptv as iptv_bp
 from acerestreamer.blueprints.web import streams as stream_bp
-from acerestreamer.config.models import AceReStreamerConf
+from acerestreamer.config import AceReStreamerConf
 from acerestreamer.utils.flask_helpers import FlaskAceReStreamer, cache, check_static_folder, register_error_handlers
 from acerestreamer.utils.logger import get_logger, setup_logger
 

@@ -4,8 +4,7 @@ import logging
 
 import pytest
 
-import acerestreamer.logger
-from acerestreamer.logger import _add_file_handler, setup_logger
+from acerestreamer.utils.logger import _add_file_handler, setup_logger
 
 
 @pytest.fixture
@@ -52,11 +51,11 @@ def test_handler_console_added(logger, app):
         "include_root_logger": False,
     }
 
-    acerestreamer.logger.setup_logger(**logging_conf)
+    setup_logger(**logging_conf)
     assert len(logger.handlers) == 1
 
     # TEST: Still only one handler
-    acerestreamer.logger.setup_logger(**logging_conf)
+    setup_logger(**logging_conf)
     assert len(logger.handlers) == 1
 
 
@@ -69,11 +68,11 @@ def test_handler_file_added(logger, tmp_path, app):
         "include_root_logger": False,
     }
 
-    acerestreamer.logger.setup_logger(**logging_conf)
+    setup_logger(**logging_conf)
     assert len(logger.handlers) == 2  # noqa: PLR2004 A console and a file handler are expected
 
     # TEST: Still two handlers
-    acerestreamer.logger.setup_logger(**logging_conf)
+    setup_logger(**logging_conf)
     assert len(logger.handlers) == 2  # noqa: PLR2004 A console and a file handler are expected
 
 

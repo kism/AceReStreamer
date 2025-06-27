@@ -7,7 +7,7 @@ from typing import Any, cast
 from flask import Flask, Response, current_app, send_file
 from flask_caching import Cache
 
-from acerestreamer.config.models import AceReStreamerConf
+from acerestreamer.config import AceReStreamerConf
 from acerestreamer.utils.logger import get_logger
 
 from .constants import STATIC_DIRECTORY
