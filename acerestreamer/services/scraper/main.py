@@ -11,11 +11,11 @@ from acerestreamer.config.models import AceScrapeConf
 from acerestreamer.services.epg import EPGHandler
 from acerestreamer.utils.logger import get_logger
 
-from .health import AceQuality, Quality
 from .html import HTTPStreamScraper
 from .iptv import IPTVStreamScraper
+from .models import FlatFoundAceStream, FoundAceStreams
 from .name_processor import StreamNameProcessor
-from .objects import FlatFoundAceStream, FoundAceStreams
+from .quality import AceQuality, Quality
 
 if TYPE_CHECKING:
     from acerestreamer.config.models import EPGInstanceConf, ScrapeSiteHTML, ScrapeSiteIPTV

@@ -11,8 +11,8 @@ from acerestreamer.utils import check_valid_ace_id
 from acerestreamer.utils.logger import get_logger
 
 from .cache import ScraperCache
+from .models import CandidateAceStream, FoundAceStream, FoundAceStreams
 from .name_processor import StreamNameProcessor
-from .objects import CandidateAceStream, FoundAceStream, FoundAceStreams
 
 logger = get_logger(__name__)
 

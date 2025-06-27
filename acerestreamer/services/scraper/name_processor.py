@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 
 from acerestreamer.config.models import TitleFilter
-from acerestreamer.services.scraper.objects import FlatFoundAceStream
+from acerestreamer.services.scraper.models import FlatFoundAceStream
 from acerestreamer.utils.logger import get_logger
 
 logger = get_logger(__name__)

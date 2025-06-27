@@ -2,7 +2,7 @@
 
 from acerestreamer.services.scraper.cache import ScraperCache
 from acerestreamer.services.scraper.main import AceScraper
-from acerestreamer.services.scraper.objects import (
+from acerestreamer.services.scraper.models import (
     CandidateAceStream,
     FlatFoundAceStream,
     FoundAceStream,
