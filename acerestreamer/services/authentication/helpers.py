@@ -50,5 +50,6 @@ def get_ip_from_request() -> str:
 def is_ip_allowed(ip: str) -> bool:
     """Check if the IP address is allowed."""
     from acerestreamer.instances import ip_allow_list
+
     logger.trace("Checking if IP is allowed: %s", ip)
     return ip_allow_list.check(ip)

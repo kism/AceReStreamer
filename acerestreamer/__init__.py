@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from pprint import pformat
+from typing import TYPE_CHECKING
 
 from acerestreamer import instances
 from acerestreamer.blueprints.api import ace_pool as ace_pool_api_bp
@@ -14,9 +15,15 @@ from acerestreamer.blueprints.web import epg as epg_bp
 from acerestreamer.blueprints.web import info as info_bp
 from acerestreamer.blueprints.web import iptv as iptv_bp
 from acerestreamer.blueprints.web import streams as stream_bp
-from acerestreamer.config import models as config
-from acerestreamer.utils import logger
+from acerestreamer.config.models import load_config
 from acerestreamer.utils.flask_helpers import FlaskAceReStreamer, cache, check_static_folder, register_error_handlers
+from acerestreamer.utils.logger import get_logger, setup_logger
+
+if TYPE_CHECKING:
+    from acerestreamer.config.models import AceReStreamerConf
+else:
+    AceReStreamerConf = object
+
 
 __version__ = "0.3.2"  # This is the version of the app, used in pyproject.toml, enforced in a test.
 PROGRAM_NAME = "Ace ReStreamer"
@@ -24,14 +31,14 @@ URL = "https://github.com/kism/ace-restreamer"
 
 
 def create_app(
-    test_config: config.AceReStreamerConf | None = None,
+    test_config: AceReStreamerConf | None = None,
     instance_path: str | None = None,
 ) -> FlaskAceReStreamer:
     """Create and configure an instance of the Flask application."""
     app = FlaskAceReStreamer(__name__, instance_relative_config=True, instance_path=instance_path)
     app.logger.handlers.clear()
 
-    logger.setup_logger(in_loggers=[])  # Setup flask logger with defaults
+    setup_logger(in_loggers=[])  # Setup flask logger with defaults
 
     if test_config:  # For Python testing we will often pass in a config
         if not instance_path:
@@ -42,18 +49,18 @@ def create_app(
     else:
         app.logger.info("Loading real configuration from instance path: %s", app.instance_path)
         config_path = Path(app.instance_path) / "config.toml"
-        app.aw_conf = config.load_config(config_path)
+        app.aw_conf = load_config(config_path)
 
     check_static_folder(app.static_folder)
 
     app.logger.debug("Instance path is: %s", app.instance_path)
 
-    logger.setup_logger(  # Setup logger with config
+    setup_logger(  # Setup logger with config
         log_level=app.aw_conf.logging.level,
         log_path=app.aw_conf.logging.path,
         in_loggers=[],
     )
-    app.logger = logger.get_logger(__name__)
+    app.logger = get_logger(__name__)
 
     # Flask config, at the root of the config object.
     app.config.from_mapping(app.aw_conf.flask.model_dump())

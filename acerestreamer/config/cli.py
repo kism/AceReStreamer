@@ -7,7 +7,9 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
 from acerestreamer import __version__
-from acerestreamer.config.models import (
+from acerestreamer.utils.logger import LOG_LEVELS, get_logger, setup_logger
+
+from .models import (
     AceReStreamerConf,
     EPGInstanceConf,
     NginxConf,
@@ -15,7 +17,6 @@ from acerestreamer.config.models import (
     ScrapeSiteIPTV,
     load_config,
 )
-from acerestreamer.utils.logger import LOG_LEVELS, get_logger, setup_logger
 
 logger = get_logger(__name__)
 
