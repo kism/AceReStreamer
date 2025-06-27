@@ -79,9 +79,8 @@ uv sync --no-group test --no-group type --no-group lint
   - correct epg xml metadata
 - try out yaml for config file
 - channel logos
-- maybe get all the instances ace_scraper and such into `__init__.py`
 - administrative account
-- bootstrap-able from the web interface
+- json for the config file
 
 ### Apps that don't work
 
@@ -138,3 +137,4 @@ see iptv.html.j2
 - ~~fix threading issues~~
 - ~~fix nginx generation~~
 - ~~no objects that could be None, anywhere~~
+- maybe get all the instances ace_scraper and such into `__init__.py`
