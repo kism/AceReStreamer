@@ -126,6 +126,7 @@ class EPGHandler:
         self.instance_path: Path | None = None
         self._last_merge_time: datetime = datetime.fromtimestamp(0, tz=UTC)  # Arbitrary old time
         self._last_condense_time: datetime = datetime.fromtimestamp(0, tz=UTC)  # Arbitrary old time
+        self.set_of_tvg_ids: set[str] = set()
 
     def load_config(self, epg_conf_list: list[EPGInstanceConf], instance_path: Path | str | None = None) -> None:
         """Load EPG configurations."""
@@ -202,8 +203,6 @@ class EPGHandler:
 
     def condense_epgs(self) -> None:
         """Get a condensed version of the merged EPG data."""
-        from acerestreamer.instances import ace_scraper
-
         time_since_last_condense: timedelta = datetime.now(tz=OUR_TIMEZONE) - self._last_condense_time
         time_to_update: bool = time_since_last_condense > MIN_TIME_BETWEEN_EPG_PROCESSING
 
@@ -217,8 +216,7 @@ class EPGHandler:
             logger.error("No merged EPG data available to condense")
             return
 
-        set_of_tvg_ids: set[str] = {stream.tvg_id for stream in ace_scraper.get_streams_flat() if stream.tvg_id}
-        if not set_of_tvg_ids:
+        if not self.set_of_tvg_ids:
             logger.warning("No TVG IDs found in the current streams, skipping EPG condensation")
             return
 
@@ -226,12 +224,12 @@ class EPGHandler:
         merged_epg_copy = etree.ElementTree(self.merged_epg)
         for channel in merged_epg_copy.findall("channel"):
             tvg_id = channel.get("id")
-            if tvg_id in set_of_tvg_ids:
+            if tvg_id in self.set_of_tvg_ids:
                 condensed_data.append(channel)
 
         for programme in merged_epg_copy.findall("programme"):
             tvg_id = programme.get("channel")
-            if tvg_id in set_of_tvg_ids:
+            if tvg_id in self.set_of_tvg_ids:
                 condensed_data.append(programme)
 
         logger.info(

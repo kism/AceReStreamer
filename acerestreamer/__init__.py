@@ -82,6 +82,7 @@ def create_app(
     instances.ace_scraper.load_config(
         ace_scrape_settings=app.are_conf.scraper,
         instance_path=app.instance_path,
+        epg_conf_list=app.are_conf.epgs,
     )
     instances.ace_pool.load_config(
         app_config=app.are_conf.app,
@@ -90,10 +91,7 @@ def create_app(
         instance_path=app.instance_path,
         nginx_allowlist_path=app.are_conf.nginx.ip_allow_list_path if app.are_conf.nginx else None,
     )
-    instances.epg_handler.load_config(
-        epg_conf_list=app.are_conf.epgs,
-        instance_path=app.instance_path,
-    )
+
 
     app.logger.info("Starting Web Server")
     app.logger.info("%s version: %s", PROGRAM_NAME, __version__)

@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from pydantic import BaseModel
 
 from acerestreamer.config.models import AceScrapeConf
+from acerestreamer.services.epg import EPGHandler
 from acerestreamer.services.scraper.health import AceQuality, Quality
 from acerestreamer.services.scraper.html import scrape_streams_html_sites
 from acerestreamer.services.scraper.iptv import scrape_streams_iptv_sites
@@ -15,10 +16,11 @@ from acerestreamer.services.scraper.objects import FlatFoundAceStream, FoundAceS
 from acerestreamer.utils.logger import get_logger
 
 if TYPE_CHECKING:
-    from acerestreamer.config.models import ScrapeSiteHTML, ScrapeSiteIPTV
+    from acerestreamer.config.models import EPGInstanceConf, ScrapeSiteHTML, ScrapeSiteIPTV
 else:
     ScrapeSiteHTML = object
     ScrapeSiteIPTV = object
+    EPGInstanceConf = object
 
 logger = get_logger(__name__)
 
@@ -56,15 +58,26 @@ class AceScraper:
 
         self._ace_quality = AceQuality(self._ace_quality_cache_path)
 
-    def load_config(self, ace_scrape_settings: AceScrapeConf | None, instance_path: Path | str | None = None) -> None:
+        self.epg_handler: EPGHandler = EPGHandler()
+
+    def load_config(
+        self,
+        ace_scrape_settings: AceScrapeConf,
+        epg_conf_list: list[EPGInstanceConf],
+        instance_path: Path | str | None = None,
+    ) -> None:
         """Load the configuration for the scraper."""
         if isinstance(instance_path, str):
             instance_path = Path(instance_path)
         self._ace_quality_cache_path = instance_path / "ace_quality_cache.json" if instance_path else None
 
-        if ace_scrape_settings:
-            self.html = ace_scrape_settings.html
-            self.iptv_m3u8 = ace_scrape_settings.iptv_m3u8
+        self.epg_handler.load_config(
+            epg_conf_list=epg_conf_list,
+            instance_path=instance_path,
+        )
+
+        self.html = ace_scrape_settings.html
+        self.iptv_m3u8 = ace_scrape_settings.iptv_m3u8
 
         self._ace_quality = AceQuality(self._ace_quality_cache_path)
 
@@ -96,6 +109,9 @@ class AceScraper:
 
                 self.streams = new_streams
                 self.print_streams()
+                self.epg_handler.set_of_tvg_ids = {
+                    stream.tvg_id for found_streams in self.streams for stream in found_streams.stream_list
+                }
                 time.sleep(SCRAPE_INTERVAL)
 
         threading.Thread(target=run_scrape_thread, name="AceScraper: run_scrape", daemon=True).start()

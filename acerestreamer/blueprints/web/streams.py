@@ -7,8 +7,8 @@ from flask import Blueprint, Response, jsonify, redirect, render_template
 from flask_caching import CachedResponse
 from werkzeug.wrappers import Response as WerkzeugResponse
 
-from acerestreamer.instances import ace_pool, ace_scraper
-from acerestreamer.services.authentication import assumed_auth_failure, get_ip_from_request, is_ip_allowed
+from acerestreamer.instances import ace_pool, ace_scraper, ip_allow_list
+from acerestreamer.services.authentication.helpers import assumed_auth_failure, get_ip_from_request
 from acerestreamer.utils import get_header_snippet, replace_m3u_sources
 from acerestreamer.utils.flask_helpers import DEFAULT_CACHE_DURATION, cache, get_current_app
 from acerestreamer.utils.logger import get_logger
@@ -28,7 +28,7 @@ REVERSE_PROXY_TIMEOUT = 10  # Very high but alas
 @bp.route("/")
 def home() -> Response | WerkzeugResponse:
     """Render the home page, redirect to stream if IP is allowed."""
-    ip_is_allowed = is_ip_allowed(get_ip_from_request())
+    ip_is_allowed = ip_allow_list.check(get_ip_from_request())
     if ip_is_allowed:
         return redirect("/stream")
 

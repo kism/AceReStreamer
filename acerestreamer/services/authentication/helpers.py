@@ -4,6 +4,7 @@ from http import HTTPStatus
 
 from flask import Response, abort, request
 
+from acerestreamer.instances import ip_allow_list
 from acerestreamer.utils.constants import STATIC_DIRECTORY
 from acerestreamer.utils.flask_helpers import get_current_app
 from acerestreamer.utils.logger import get_logger
@@ -18,7 +19,7 @@ def assumed_auth_failure() -> None | Response:
     if not current_app.are_conf.app.password:
         return None
 
-    if is_ip_allowed(get_ip_from_request()):
+    if ip_allow_list.check(get_ip_from_request()):
         return None
 
     file = STATIC_DIRECTORY / "401.html"
@@ -46,11 +47,3 @@ def get_ip_from_request() -> str:
         return request_ip_raw.strip()
 
     return str(request_ip_raw).strip()
-
-
-def is_ip_allowed(ip: str) -> bool:
-    """Check if the IP address is allowed."""
-    from acerestreamer.instances import ip_allow_list
-
-    logger.trace("Checking if IP is allowed: %s", ip)
-    return ip_allow_list.check(ip)

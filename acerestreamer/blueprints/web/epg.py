@@ -3,11 +3,12 @@
 from flask import Blueprint, Response, jsonify
 from werkzeug.wrappers import Response as WerkzeugResponse
 
-from acerestreamer.instances import epg_handler
-from acerestreamer.services.authentication import assumed_auth_failure
+from acerestreamer.instances import ace_scraper
+from acerestreamer.services.authentication.helpers import assumed_auth_failure
 
 bp = Blueprint("acerestreamer_epg", __name__)
 
+epg_handler = ace_scraper.epg_handler
 
 @bp.route("/api/epgs", methods=["GET"])
 def get_epgs() -> Response | WerkzeugResponse:
