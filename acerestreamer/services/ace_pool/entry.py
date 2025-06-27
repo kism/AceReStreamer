@@ -5,9 +5,11 @@ from datetime import datetime, timedelta
 
 import requests
 
-from acerestreamer.utils.constants import ACESTREAM_API_TIMEOUT, OUR_TIMEZONE
+from acerestreamer.utils.constants import OUR_TIMEZONE
 from acerestreamer.utils.helpers import check_valid_ace_id
 from acerestreamer.utils.logger import get_logger
+
+from .constants import ACESTREAM_API_TIMEOUT
 
 logger = get_logger(__name__)
 

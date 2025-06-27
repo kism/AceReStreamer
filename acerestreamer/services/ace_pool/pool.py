@@ -9,9 +9,10 @@ import requests
 from pydantic import BaseModel, field_serializer
 
 from acerestreamer.config.models import AppConf
-from acerestreamer.utils.constants import ACESTREAM_API_TIMEOUT, OUR_TIMEZONE
+from acerestreamer.utils.constants import OUR_TIMEZONE
 from acerestreamer.utils.logger import get_logger
 
+from .constants import ACESTREAM_API_TIMEOUT
 from .entry import AcePoolEntry
 
 logger = get_logger(__name__)
