@@ -4,7 +4,7 @@ from flask import Blueprint, Response, jsonify
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.instances import epg_handler
-from acerestreamer.services.authentication import assumed_auth_failure
+from acerestreamer.services.authentication.helpers import assumed_auth_failure
 
 bp = Blueprint("acerestreamer_epg", __name__)
 

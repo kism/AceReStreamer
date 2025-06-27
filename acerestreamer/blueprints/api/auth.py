@@ -7,7 +7,7 @@ from flask import Blueprint, Response, jsonify, redirect, request
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.instances import ip_allow_list
-from acerestreamer.services.authentication import get_ip_from_request
+from acerestreamer.services.authentication.helpers import get_ip_from_request
 from acerestreamer.utils.flask_helpers import get_current_app
 from acerestreamer.utils.logger import get_logger
 

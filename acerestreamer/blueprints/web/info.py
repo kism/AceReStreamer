@@ -6,7 +6,7 @@ from flask import Blueprint, Response, render_template
 from flask_caching import CachedResponse
 from werkzeug.wrappers import Response as WerkzeugResponse
 
-from acerestreamer.services.authentication import assumed_auth_failure
+from acerestreamer.services.authentication.helpers import assumed_auth_failure
 from acerestreamer.utils import get_header_snippet
 from acerestreamer.utils.constants import TEMPLATES_DIRECTORY
 from acerestreamer.utils.flask_helpers import DEFAULT_CACHE_DURATION, cache, get_current_app

@@ -6,7 +6,7 @@ from flask import Blueprint, Response
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.instances import ace_scraper
-from acerestreamer.services.authentication import assumed_auth_failure
+from acerestreamer.services.authentication.helpers import assumed_auth_failure
 from acerestreamer.services.scraper.helpers import get_streams_as_iptv
 from acerestreamer.utils.flask_helpers import get_current_app
 

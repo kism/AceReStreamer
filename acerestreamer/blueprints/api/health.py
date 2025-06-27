@@ -6,7 +6,7 @@ from http import HTTPStatus
 from flask import Blueprint, Response, jsonify
 from werkzeug.wrappers import Response as WerkzeugResponse
 
-from acerestreamer.services.authentication import assumed_auth_failure
+from acerestreamer.services.authentication.helpers import assumed_auth_failure
 from acerestreamer.utils.flask_helpers import get_current_app
 from acerestreamer.utils.logger import get_logger
 

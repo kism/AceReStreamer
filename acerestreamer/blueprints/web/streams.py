@@ -8,7 +8,7 @@ from flask_caching import CachedResponse
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.instances import ace_pool, ace_scraper, ip_allow_list
-from acerestreamer.services.authentication import assumed_auth_failure, get_ip_from_request
+from acerestreamer.services.authentication.helpers import assumed_auth_failure, get_ip_from_request
 from acerestreamer.utils import get_header_snippet, replace_m3u_sources
 from acerestreamer.utils.flask_helpers import DEFAULT_CACHE_DURATION, cache, get_current_app
 from acerestreamer.utils.logger import get_logger
