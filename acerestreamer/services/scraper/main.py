@@ -64,7 +64,6 @@ class AceScraper:
 
         self.scraper_cache = ScraperCache()
 
-
     def load_config(
         self,
         ace_scrape_settings: AceScrapeConf,

@@ -243,7 +243,6 @@ class AceReStreamerConf(BaseSettings):
         with config_location.open("w") as f:
             f.write(new_file_content_str)
 
-
     @classmethod
     def load_config(cls, config_path: Path) -> Self:
         """Load the configuration file."""

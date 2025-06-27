@@ -77,7 +77,6 @@ def create_app(
     app.register_blueprint(stream_api_bp.bp)
 
     # Start the objects
-    instances.m3u_replacer.load_config(instance_path=app.instance_path)
     instances.ace_scraper.load_config(
         ace_scrape_settings=app.are_conf.scraper,
         instance_path=app.instance_path,
@@ -90,7 +89,6 @@ def create_app(
         instance_path=app.instance_path,
         nginx_allowlist_path=app.are_conf.nginx.ip_allow_list_path if app.are_conf.nginx else None,
     )
-
 
     app.logger.info("Starting Web Server")
     app.logger.info("%s version: %s", PROGRAM_NAME, __version__)

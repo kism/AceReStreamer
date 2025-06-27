@@ -10,6 +10,7 @@ bp = Blueprint("acerestreamer_epg", __name__)
 
 epg_handler = ace_scraper.epg_handler
 
+
 @bp.route("/api/epgs", methods=["GET"])
 def get_epgs() -> Response | WerkzeugResponse:
     """Get the list of EPGs."""

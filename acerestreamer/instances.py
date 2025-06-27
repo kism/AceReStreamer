@@ -4,8 +4,6 @@ from acerestreamer.services.ace_pool import AcePool
 from acerestreamer.services.authentication import AllowList
 from acerestreamer.services.scraper import AceScraper, M3UNameReplacer
 
-m3u_replacer = M3UNameReplacer()
 ace_pool = AcePool()
 ace_scraper = AceScraper()
 ip_allow_list = AllowList()
-
