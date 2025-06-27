@@ -6,19 +6,14 @@ from flask import Response, abort, request
 
 from acerestreamer.instances import ip_allow_list
 from acerestreamer.utils.constants import STATIC_DIRECTORY
-from acerestreamer.utils.flask_helpers import get_current_app
 from acerestreamer.utils.logger import get_logger
 
-current_app = get_current_app()
 
 logger = get_logger(__name__)  # Create a logger: acerestreamer.authentication_helpers, inherit config from root logger
 
 
 def assumed_auth_failure() -> None | Response:
     """Check if the IP is allowed."""
-    if not current_app.are_conf.app.password:
-        return None
-
     if ip_allow_list.check(get_ip_from_request()):
         return None
 

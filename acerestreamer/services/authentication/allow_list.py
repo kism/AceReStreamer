@@ -18,9 +18,12 @@ class AllowList:
         self.nginx_allowlist_path: Path | None = None
         self._nginx_bin_path: Path | None = None
         self.allowlist_ips: list[str] = []
+        self.password: str = ""
 
-    def load_config(self, instance_path: Path | str, nginx_allowlist_path: Path | str | None) -> None:
+    def load_config(self, instance_path: Path | str, nginx_allowlist_path: Path | str | None, password: str) -> None:
         """Load the allow list from a file."""
+        self.password = password
+
         if isinstance(instance_path, str):
             instance_path = Path(instance_path)
 
@@ -67,6 +70,8 @@ class AllowList:
 
     def check(self, ip: str) -> bool:
         """Check if an IP address is in the allow list."""
+        if not self.password:
+            return True
         return ip in self.allowlist_ips
 
     def save(self) -> None:

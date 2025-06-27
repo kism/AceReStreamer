@@ -89,6 +89,7 @@ def create_app(
     instances.ip_allow_list.load_config(
         instance_path=app.instance_path,
         nginx_allowlist_path=app.are_conf.nginx.ip_allow_list_path if app.are_conf.nginx else None,
+        password=app.are_conf.app.password,
     )
 
     app.logger.info("Starting Web Server")

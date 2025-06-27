@@ -26,7 +26,7 @@ def authenticate() -> Response | WerkzeugResponse:
 
         # This authentication is so cooked, but by doing this I avoid a string compare / timing attacks
         if hmac.compare_digest(
-            current_app.are_conf.app.password,
+            ip_allow_list.password,
             password,
         ):
             ip = get_ip_from_request()
