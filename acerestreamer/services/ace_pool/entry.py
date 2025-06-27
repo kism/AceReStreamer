@@ -11,7 +11,6 @@ from acerestreamer.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-
 LOCK_IN_TIME: timedelta = timedelta(minutes=3)
 LOCK_IN_RESET_MAX: timedelta = timedelta(minutes=30)
 

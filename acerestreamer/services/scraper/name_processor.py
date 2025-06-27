@@ -11,7 +11,6 @@ from .models import FlatFoundAceStream
 
 logger = get_logger(__name__)
 
-
 STREAM_TITLE_MAX_LENGTH = 50
 ACE_URL_PREFIXES = [
     "acestream://",
@@ -23,8 +22,6 @@ ACE_URL_PREFIXES = [
 
 # Compiled regex patterns
 COUNTRY_CODE_PATTERN = re.compile(r"\[([A-Z]{2})\]")
-
-
 ACE_ID_PATTERN = re.compile(r"\b[0-9a-fA-F]{40}\b")
 
 

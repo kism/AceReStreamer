@@ -14,11 +14,8 @@ from acerestreamer.utils.flask_helpers import DEFAULT_CACHE_DURATION, cache, get
 from acerestreamer.utils.logger import get_logger
 
 current_app = get_current_app()
-
 logger = get_logger(__name__)
-
 bp = Blueprint("acerestreamer_scraper", __name__)
-
 
 REVERSE_PROXY_EXCLUDED_HEADERS = ["content-encoding", "content-length", "transfer-encoding", "connection", "keep-alive"]
 REVERSE_PROXY_TIMEOUT = 10  # Very high but alas
