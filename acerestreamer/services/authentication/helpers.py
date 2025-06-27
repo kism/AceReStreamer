@@ -8,7 +8,6 @@ from acerestreamer.instances import ip_allow_list
 from acerestreamer.utils.constants import STATIC_DIRECTORY
 from acerestreamer.utils.logger import get_logger
 
-
 logger = get_logger(__name__)  # Create a logger: acerestreamer.authentication_helpers, inherit config from root logger
 
 
