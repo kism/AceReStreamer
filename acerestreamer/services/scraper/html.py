@@ -25,39 +25,37 @@ class HTTPStreamScraper:
         self.scraper_cache: ScraperCache = ScraperCache()
         self.name_processor: StreamNameProcessor = StreamNameProcessor()
 
-    def load_config(self, instance_path: Path) -> None:
+    def load_config(self, instance_path: Path, stream_name_processor: StreamNameProcessor) -> None:
         """Initialize the HTTPStreamScraper with the instance path."""
-        self.name_processor.load_config(instance_path=instance_path)
+        self.name_processor = stream_name_processor
         self.scraper_cache.load_config(instance_path=instance_path)
 
-    def scrape_streams_html_sites(
-        self, sites: list[ScrapeSiteHTML], scraper_cache: ScraperCache
-    ) -> list[FoundAceStreams]:
+    def scrape_streams_html_sites(self, sites: list[ScrapeSiteHTML]) -> list[FoundAceStreams]:
         """Scrape the streams from the configured sites."""
         found_streams: list[FoundAceStreams] = []
 
         for site in sites:
-            streams = self.scrape_streams_html_site(site, scraper_cache)
+            streams = self.scrape_streams_html_site(site)
             if streams:
                 found_streams.append(streams)
 
         return found_streams
 
-    def scrape_streams_html_site(self, site: ScrapeSiteHTML, scraper_cache: ScraperCache) -> FoundAceStreams | None:
+    def scrape_streams_html_site(self, site: ScrapeSiteHTML) -> FoundAceStreams | None:
         """Scrape the streams from the configured sites."""
         streams_candidates: list[CandidateAceStream] = []
         cache_max_age = timedelta(hours=1)  # HTML Sources we need to scrape more often
 
-        scraped_site_str = scraper_cache.load_from_cache(site.url)
+        scraped_site_str = self.scraper_cache.load_from_cache(site.url)
 
-        if not scraper_cache.is_cache_valid(site.url, cache_max_age):
+        if not self.scraper_cache.is_cache_valid(site.url, cache_max_age):
             logger.debug("Scraping streams from site: %s", site)
             try:
                 response = requests.get(site.url, timeout=10)
                 response.raise_for_status()
                 response.encoding = "utf-8"  # Ensure the response is decoded correctly
                 scraped_site_str = response.text
-                scraper_cache.save_to_cache(site.url, scraped_site_str)
+                self.scraper_cache.save_to_cache(site.url, scraped_site_str)
             except requests.RequestException as e:
                 error_short = type(e).__name__
                 logger.error("Error scraping site %s, %s", site.url, error_short)  # noqa: TRY400 Naa this should be shorter

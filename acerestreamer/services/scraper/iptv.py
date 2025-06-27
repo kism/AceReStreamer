@@ -23,9 +23,9 @@ class IPTVStreamScraper:
         self.scraper_cache: ScraperCache = ScraperCache()
         self.name_processor: StreamNameProcessor = StreamNameProcessor()
 
-    def load_config(self, instance_path: Path) -> None:
+    def load_config(self, instance_path: Path, stream_name_processor: StreamNameProcessor) -> None:
         """Initialize the IPTVStreamScraper with the instance path."""
-        self.name_processor.load_config(instance_path=instance_path)
+        self.name_processor = stream_name_processor
         self.scraper_cache.load_config(instance_path=instance_path)
 
     def scrape_streams_iptv_sites(self, sites: list[ScrapeSiteIPTV]) -> list[FoundAceStreams]:

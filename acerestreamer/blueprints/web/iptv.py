@@ -7,7 +7,6 @@ from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.instances import ace_scraper
 from acerestreamer.services.authentication.helpers import assumed_auth_failure
-from acerestreamer.services.scraper.helpers import get_streams_as_iptv
 from acerestreamer.utils.flask_helpers import get_current_app
 
 current_app = get_current_app()
@@ -27,7 +26,7 @@ def iptv() -> Response | WerkzeugResponse:
 
     streams = ace_scraper.get_streams_flat()
     hls_path = current_app.config["SERVER_NAME"] + "/hls/"
-    m3u8 = get_streams_as_iptv(streams=streams, hls_path=hls_path)
+    m3u8 = ace_scraper.stream_name_processor.get_streams_as_iptv(streams=streams, hls_path=hls_path)
 
     return Response(
         m3u8,

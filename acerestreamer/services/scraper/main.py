@@ -14,6 +14,7 @@ from acerestreamer.utils.logger import get_logger
 from .health import AceQuality, Quality
 from .html import HTTPStreamScraper
 from .iptv import IPTVStreamScraper
+from .name_processor import StreamNameProcessor
 from .objects import FlatFoundAceStream, FoundAceStreams
 
 if TYPE_CHECKING:
@@ -61,6 +62,11 @@ class AceScraper:
 
         self.epg_handler: EPGHandler = EPGHandler()
 
+        self.stream_name_processor: StreamNameProcessor = StreamNameProcessor()
+
+        self.html_scraper: HTTPStreamScraper = HTTPStreamScraper()
+        self.iptv_scraper: IPTVStreamScraper = IPTVStreamScraper()
+
     def load_config(
         self,
         ace_scrape_settings: AceScrapeConf,
@@ -83,6 +89,10 @@ class AceScraper:
 
         self._ace_quality = AceQuality(self._ace_quality_cache_path)
 
+        self.stream_name_processor.load_config(instance_path=instance_path)
+        self.html_scraper.load_config(instance_path=instance_path, stream_name_processor=self.stream_name_processor)
+        self.iptv_scraper.load_config(instance_path=instance_path, stream_name_processor=self.stream_name_processor)
+
         self.run_scrape()
 
     # region Scrape
@@ -91,24 +101,20 @@ class AceScraper:
 
         def run_scrape_thread() -> None:
             """Thread function to run the scraper."""
-
-
             while True:
                 logger.info("Running AceStream scraper...")
 
                 new_streams = []
 
                 new_streams.extend(
-                    scrape_streams_html_sites(
+                    self.html_scraper.scrape_streams_html_sites(
                         sites=self.html,
-                        scraper_cache=self.scraper_cache,
                     )
                 )
 
                 new_streams.extend(
-                    scrape_streams_iptv_sites(
+                    self.iptv_scraper.scrape_streams_iptv_sites(
                         sites=self.iptv_m3u8,
-                        scraper_cache=self.scraper_cache,
                     )
                 )
 
