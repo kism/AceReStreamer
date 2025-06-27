@@ -6,13 +6,18 @@ import threading
 import time
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import requests
 from lxml import etree
 
-from acerestreamer.config.models import EPGInstanceConf
 from acerestreamer.utils.constants import OUR_TIMEZONE
 from acerestreamer.utils.logger import get_logger
+
+if TYPE_CHECKING:
+    from acerestreamer.config import EPGInstanceConf
+else:
+    EPGInstanceConf = object
 
 logger = get_logger(__name__)
 

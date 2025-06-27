@@ -43,8 +43,6 @@ def test_password(client, app):
     assert response.status_code == HTTPStatus.OK
 
 
-
-
 @pytest.mark.parametrize(
     "path",
     [

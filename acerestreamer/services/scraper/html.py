@@ -6,7 +6,7 @@ from pathlib import Path
 import requests
 from bs4 import BeautifulSoup, Tag
 
-from acerestreamer.config.models import ScrapeSiteHTML
+from acerestreamer.config import ScrapeSiteHTML
 from acerestreamer.utils import check_valid_ace_id
 from acerestreamer.utils.logger import get_logger
 

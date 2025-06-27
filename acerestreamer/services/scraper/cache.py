@@ -3,8 +3,8 @@
 from datetime import datetime, timedelta
 from pathlib import Path
 
+from acerestreamer.utils import slugify
 from acerestreamer.utils.constants import OUR_TIMEZONE
-from acerestreamer.utils.helpers import slugify
 
 
 class ScraperCache:

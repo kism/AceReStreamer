@@ -8,9 +8,8 @@ from flask import Flask, Response, current_app, send_file
 from flask_caching import Cache
 
 from acerestreamer.config import AceReStreamerConf
+from acerestreamer.utils.constants import STATIC_DIRECTORY
 from acerestreamer.utils.logger import get_logger
-
-from .constants import STATIC_DIRECTORY
 
 DEFAULT_CACHE_DURATION = 60 * 60 * 24  # 1 day in seconds
 

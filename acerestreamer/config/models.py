@@ -9,7 +9,7 @@ import tomlkit
 from pydantic import BaseModel, model_validator
 from pydantic_settings import BaseSettings
 
-from acerestreamer.utils.helpers import slugify
+from acerestreamer.utils import slugify
 from acerestreamer.utils.logger import LoggingConf, get_logger
 
 # Logging should be all done at INFO level or higher as the log level hasn't been set yet

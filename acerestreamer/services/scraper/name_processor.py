@@ -4,7 +4,7 @@ import csv
 import re
 from pathlib import Path
 
-from acerestreamer.config.models import TitleFilter
+from acerestreamer.config import TitleFilter
 from acerestreamer.utils.logger import get_logger
 
 from .models import FlatFoundAceStream

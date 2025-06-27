@@ -4,8 +4,8 @@ from pathlib import Path
 
 import requests
 
-from acerestreamer.config.models import ScrapeSiteIPTV, TitleFilter
-from acerestreamer.utils.helpers import check_valid_ace_id
+from acerestreamer.config import ScrapeSiteIPTV, TitleFilter
+from acerestreamer.utils import check_valid_ace_id
 from acerestreamer.utils.logger import get_logger
 
 from .cache import ScraperCache
