@@ -12,10 +12,10 @@ from acerestreamer.utils.logger import get_logger
 
 from .constants import STATIC_DIRECTORY
 
+DEFAULT_CACHE_DURATION = 60 * 60 * 24  # 1 day in seconds
+
 logger = get_logger(__name__)
 cache = Cache(config={"DEBUG": False, "CACHE_TYPE": "SimpleCache", "CACHE_DEFAULT_TIMEOUT": DEFAULT_CACHE_DURATION})
-
-DEFAULT_CACHE_DURATION = 60 * 60 * 24  # 1 day in seconds
 
 
 class FlaskAceReStreamer(Flask):
