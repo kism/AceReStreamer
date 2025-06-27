@@ -101,7 +101,11 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
         ace_scraper.increment_quality(path, -5)
         return jsonify({"error": "Invalid HLS stream", "m3u8": content_str}, HTTPStatus.BAD_REQUEST)
 
-    content_str = replace_m3u_sources(m3u_content=content_str)
+    content_str = replace_m3u_sources(
+        m3u_content=content_str,
+        ace_address=current_app.are_conf.app.ace_address,
+        server_name=current_app.config["SERVER_NAME"],
+    )
 
     ace_scraper.increment_quality(path, 1)
 

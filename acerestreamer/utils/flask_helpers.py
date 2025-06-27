@@ -10,10 +10,10 @@ from flask_caching import Cache
 from acerestreamer.config.models import AceReStreamerConf
 from acerestreamer.utils.logger import get_logger
 
+from .constants import STATIC_DIRECTORY
+
 logger = get_logger(__name__)
 
-STATIC_DIRECTORY = Path(__file__).parent / "static"
-TEMPLATES_DIRECTORY = Path(__file__).parent.parent / "templates" # Lol
 
 DEFAULT_CACHE_DURATION = 60 * 60 * 24  # 1 day in seconds
 cache = Cache(config={"DEBUG": False, "CACHE_TYPE": "SimpleCache", "CACHE_DEFAULT_TIMEOUT": DEFAULT_CACHE_DURATION})

@@ -2,7 +2,6 @@
 
 from pathlib import Path
 from pprint import pformat
-from typing import TYPE_CHECKING
 
 from acerestreamer import instances
 from acerestreamer.blueprints.api import ace_pool as ace_pool_api_bp
@@ -18,12 +17,6 @@ from acerestreamer.blueprints.web import streams as stream_bp
 from acerestreamer.config.models import AceReStreamerConf
 from acerestreamer.utils.flask_helpers import FlaskAceReStreamer, cache, check_static_folder, register_error_handlers
 from acerestreamer.utils.logger import get_logger, setup_logger
-
-if TYPE_CHECKING:
-    from acerestreamer.config.models import AceReStreamerConf
-else:
-    AceReStreamerConf = object
-
 
 __version__ = "0.3.2"  # This is the version of the app, used in pyproject.toml, enforced in a test.
 PROGRAM_NAME = "Ace ReStreamer"

@@ -4,7 +4,8 @@ from http import HTTPStatus
 
 from flask import Response, abort, request
 
-from acerestreamer.utils.flask_helpers import STATIC_DIRECTORY, get_current_app
+from acerestreamer.utils.constants import STATIC_DIRECTORY
+from acerestreamer.utils.flask_helpers import get_current_app
 from acerestreamer.utils.logger import get_logger
 
 current_app = get_current_app()

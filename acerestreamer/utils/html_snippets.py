@@ -4,7 +4,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
-from acerestreamer.utils.flask_helpers import TEMPLATES_DIRECTORY
+from acerestreamer.utils.constants import TEMPLATES_DIRECTORY
 from acerestreamer.utils.logger import get_logger
 
 SNIPPETS_DIRECTORY = TEMPLATES_DIRECTORY / "snippets"
