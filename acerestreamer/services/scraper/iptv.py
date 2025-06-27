@@ -3,13 +3,6 @@
 import requests
 
 from acerestreamer.config.models import ScrapeSiteIPTV, TitleFilter
-from acerestreamer.services.scraper.helpers import (
-    check_title_allowed,
-    check_valid_ace_url,
-    cleanup_candidate_title,
-    extract_ace_id_from_url,
-    get_tvg_id_from_title,
-)
 from acerestreamer.services.scraper.objects import FoundAceStream, FoundAceStreams
 from acerestreamer.utils.helpers import check_valid_ace_id
 from acerestreamer.utils.logger import get_logger

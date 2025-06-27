@@ -10,15 +10,6 @@ from acerestreamer.utils import check_valid_ace_id
 from acerestreamer.utils.logger import get_logger
 
 from .cache import ScraperCache
-from .helpers import (
-    STREAM_TITLE_MAX_LENGTH,
-    candidates_regex_cleanup,
-    check_title_allowed,
-    check_valid_ace_url,
-    cleanup_candidate_title,
-    extract_ace_id_from_url,
-    get_tvg_id_from_title,
-)
 from .objects import CandidateAceStream, FoundAceStream, FoundAceStreams
 
 logger = get_logger(__name__)
