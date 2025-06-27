@@ -45,25 +45,25 @@ def create_app(
             msg = "When testing supply both test_config and instance_path!"
             app.logger.critical(msg)
             raise ValueError(msg)
-        app.aw_conf = test_config
+        app.are_conf = test_config
     else:
         app.logger.info("Loading real configuration from instance path: %s", app.instance_path)
         config_path = Path(app.instance_path) / "config.toml"
-        app.aw_conf = AceReStreamerConf.load_config(config_path)
+        app.are_conf = AceReStreamerConf.load_config(config_path)
 
     check_static_folder(app.static_folder)
 
     app.logger.debug("Instance path is: %s", app.instance_path)
 
     setup_logger(  # Setup logger with config
-        log_level=app.aw_conf.logging.level,
-        log_path=app.aw_conf.logging.path,
+        log_level=app.are_conf.logging.level,
+        log_path=app.are_conf.logging.path,
         in_loggers=[],
     )
     app.logger = get_logger(__name__)
 
     # Flask config, at the root of the config object.
-    app.config.from_mapping(app.aw_conf.flask.model_dump())
+    app.config.from_mapping(app.are_conf.flask.model_dump())
 
     # Do some debug logging of config
     app_config_str = ">>>\nFlask config:"
@@ -87,18 +87,18 @@ def create_app(
     instances.scraper_cache.load_config(instance_path=app.instance_path)
     instances.m3u_replacer.load_config(instance_path=app.instance_path)
     instances.ace_scraper.load_config(
-        ace_scrape_settings=app.aw_conf.scraper,
+        ace_scrape_settings=app.are_conf.scraper,
         instance_path=app.instance_path,
     )
     instances.ace_pool.load_config(
-        app_config=app.aw_conf.app,
+        app_config=app.are_conf.app,
     )
     instances.ip_allow_list.load_config(
         instance_path=app.instance_path,
-        nginx_allowlist_path=app.aw_conf.nginx.ip_allow_list_path if app.aw_conf.nginx else None,
+        nginx_allowlist_path=app.are_conf.nginx.ip_allow_list_path if app.are_conf.nginx else None,
     )
     instances.epg_handler.load_config(
-        epg_conf_list=app.aw_conf.epgs,
+        epg_conf_list=app.are_conf.epgs,
         instance_path=app.instance_path,
     )
 

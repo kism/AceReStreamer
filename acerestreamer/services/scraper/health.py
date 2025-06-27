@@ -149,7 +149,7 @@ class AceQuality:
 
             self.currently_checking_quality = False
 
-        url = f"{current_app.aw_conf.flask.SERVER_NAME}/hls"
+        url = f"{current_app.are_conf.flask.SERVER_NAME}/hls"
 
         thread = threading.Thread(
             target=check_missing_quality_thread,

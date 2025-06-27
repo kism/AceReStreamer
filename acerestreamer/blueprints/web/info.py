@@ -46,13 +46,13 @@ def guide() -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    logger.warning(current_app.aw_conf.flask.SERVER_NAME)
+    logger.warning(current_app.are_conf.flask.SERVER_NAME)
 
     return CachedResponse(  # type: ignore[no-untyped-call] # Missing from flask-caching
         response=Response(
             render_template(
                 "iptv.html.j2",
-                server_base_url=current_app.aw_conf.flask.SERVER_NAME,
+                server_base_url=current_app.are_conf.flask.SERVER_NAME,
                 rendered_header=get_header_snippet("Ace ReStreamer Guide"),
             ),
             status=HTTPStatus.OK,

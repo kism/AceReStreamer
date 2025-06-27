@@ -26,8 +26,8 @@ class FlaskAceReStreamer(Flask):
         """Extend flask to add out config object to the app object."""
         super().__init__(*args, **kwargs)
 
-        self.aw_conf = AceReStreamerConf.load_config(Path(self.instance_path) / "config.toml")
-        self.aw_conf.write_config(Path(self.instance_path) / "config.toml")
+        self.are_conf = AceReStreamerConf.load_config(Path(self.instance_path) / "config.toml")
+        self.are_conf.write_config(Path(self.instance_path) / "config.toml")
 
 
 def get_current_app() -> FlaskAceReStreamer:

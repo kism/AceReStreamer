@@ -14,7 +14,7 @@ logger = get_logger(__name__)  # Create a logger: acerestreamer.authentication_h
 
 def assumed_auth_failure() -> None | Response:
     """Check if the IP is allowed."""
-    if not current_app.aw_conf.app.password:
+    if not current_app.are_conf.app.password:
         return None
 
     if is_ip_allowed(get_ip_from_request()):

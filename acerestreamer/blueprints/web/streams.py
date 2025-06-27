@@ -116,7 +116,7 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    url = f"{current_app.aw_conf.app.ace_address}/ace/c/{path}"
+    url = f"{current_app.are_conf.app.ace_address}/ace/c/{path}"
 
     logger.trace("Ace content requested for url: %s", url)
 

@@ -26,7 +26,7 @@ def authenticate() -> Response | WerkzeugResponse:
 
         # This authentication is so cooked, but by doing this I avoid a string compare / timing attacks
         if hmac.compare_digest(
-            current_app.aw_conf.app.password,
+            current_app.are_conf.app.password,
             password,
         ):
             ip = get_ip_from_request()
@@ -40,7 +40,7 @@ def authenticate() -> Response | WerkzeugResponse:
                 return response
 
             return redirect(
-                f"{current_app.aw_conf.flask.SERVER_NAME}/stream",
+                f"{current_app.are_conf.flask.SERVER_NAME}/stream",
                 code=HTTPStatus.FOUND,
             )
 

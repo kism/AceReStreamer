@@ -28,7 +28,7 @@ def test_login(client, path):
 
 def test_password(client, app):
     """Test that the password works."""
-    app.aw_conf.app.password = "testpassword"
+    app.are_conf.app.password = "testpassword"
     response = client.get("/stream")
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     client.post(
