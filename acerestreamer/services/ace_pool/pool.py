@@ -4,11 +4,11 @@ import contextlib
 import threading
 import time
 from datetime import datetime, timedelta
+from typing import TYPE_CHECKING
 
 import requests
 from pydantic import BaseModel, field_serializer
 
-from acerestreamer.config.models import AppConf
 from acerestreamer.utils.constants import OUR_TIMEZONE
 from acerestreamer.utils.logger import get_logger
 
@@ -16,6 +16,12 @@ from .constants import ACESTREAM_API_TIMEOUT
 from .entry import AcePoolEntry
 
 logger = get_logger(__name__)
+
+
+if TYPE_CHECKING:
+    from acerestreamer.config.models import AppConf
+else:
+    AppConf = object
 
 
 # region AcePoolEntry
