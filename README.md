@@ -78,12 +78,10 @@ uv sync --no-group test --no-group type --no-group lint
   - filtered epg, e.g. only serve an epg for streams that are available
   - correct epg xml metadata
 - channel logos
-- administrative account
 - bootstrap on first launch
-- json for the config file
-- make the iptv scraper and the html scraper inherit from a common base class
-- calculate wait times for scraper to avoid drift
-- replate `/api/streams/health/check_all`
+  - administrative account
+  - json for the config file
+- replace `/api/streams/health/check_all`
 
 ### Apps that don't work
 
@@ -141,3 +139,4 @@ see iptv.html.j2
 - ~~fix nginx generation~~
 - ~~no objects that could be None, anywhere~~
 - maybe get all the instances ace_scraper and such into `__init__.py`
+- ~~make the iptv scraper and the html scraper inherit from a common base class~~

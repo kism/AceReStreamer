@@ -94,18 +94,3 @@ def api_streams_health() -> Response | WerkzeugResponse:
     response.status_code = HTTPStatus.OK
 
     return response
-
-
-@bp.route("/api/streams/health/check_all", methods=["POST"])
-def api_streams_health_check_all() -> Response | WerkzeugResponse:
-    """API endpoint to attempt to check all streams health."""
-    started = ace_scraper.check_missing_quality()
-
-    if started:
-        response = jsonify({"message": "Health check started"})
-        response.status_code = HTTPStatus.ACCEPTED
-    else:
-        response = jsonify({"error": "Health check already running"})
-        response.status_code = HTTPStatus.CONFLICT
-
-    return response
