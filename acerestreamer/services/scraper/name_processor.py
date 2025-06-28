@@ -3,11 +3,18 @@
 import csv
 import re
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from acerestreamer.config import TitleFilter
 from acerestreamer.utils.logger import get_logger
 
-from .models import FlatFoundAceStream
+if TYPE_CHECKING:
+    from acerestreamer.config import TitleFilter
+
+    from .models import FlatFoundAceStream
+else:
+    FlatFoundAceStream = object
+    TitleFilter = object
+
 
 logger = get_logger(__name__)
 
