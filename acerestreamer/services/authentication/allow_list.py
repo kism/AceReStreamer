@@ -44,6 +44,9 @@ class AllowList:
                 except json.JSONDecodeError:
                     logger.error("Failed to decode JSON from allow list file, resetting")  # noqa: TRY400
 
+        self.add("127.0.0.1")
+        self.add("::1")
+
         self.save()
 
     def _ensure_correct_ips(self) -> None:
