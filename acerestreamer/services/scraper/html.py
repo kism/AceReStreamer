@@ -1,16 +1,23 @@
 """Helper functions and functions for searching in beautiful soup tags."""
 
 from datetime import timedelta
+from typing import TYPE_CHECKING
 
 import requests
 from bs4 import BeautifulSoup, Tag
 
-from acerestreamer.config import ScrapeSiteHTML
 from acerestreamer.utils import check_valid_ace_id
 from acerestreamer.utils.logger import get_logger
 
-from .common import ScraperCommon
 from .models import CandidateAceStream, FoundAceStream, FoundAceStreams
+
+if TYPE_CHECKING:
+    from acerestreamer.config import ScrapeSiteHTML
+
+    from .common import ScraperCommon
+else:
+    ScrapeSiteHTML = object
+    ScraperCommon = object
 
 logger = get_logger(__name__)
 
