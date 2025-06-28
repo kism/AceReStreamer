@@ -153,11 +153,8 @@ class AceQuality:
                     logger.info("Checking Ace Stream %s (%d/%d)", stream_url, n, ace_streams_never_worked)
 
                     for _ in range(3):
-                        try:
+                        with contextlib.suppress(requests.Timeout, requests.ConnectionError):
                             requests.get(stream_url, timeout=10)
-                        except (requests.Timeout, requests.ConnectionError) as e:
-                            error_short = type(e).__name__
-                            logger.error("Error checking Ace Stream %s: %s", stream_url, error_short)  # noqa: TRY400 Temp
                         time.sleep(1)
 
                     time.sleep(10)
