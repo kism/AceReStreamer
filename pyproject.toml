@@ -1,6 +1,6 @@
 [project]
 name = "acerestreamer"
-version = "0.3.3"
+version = "0.3.4"
 description = "Ace Restreamer, a web interface, scraper, and restreamer for Ace Stream."
 readme = "README.md"
 license = { file = "LICENSE.md" }
