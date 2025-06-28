@@ -60,6 +60,7 @@ def api_streams_source_by_slug(source_slug: str) -> Response | WerkzeugResponse:
     response.status_code = HTTPStatus.OK
     return response
 
+
 @bp.route("/api/sources/check_all", methods=["POST"])
 def api_streams_health_check_all() -> Response | WerkzeugResponse:
     """API endpoint to attempt to check all streams health."""
