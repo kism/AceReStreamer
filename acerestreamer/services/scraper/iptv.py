@@ -13,7 +13,6 @@ if TYPE_CHECKING:
     from acerestreamer.config import ScrapeSiteIPTV, TitleFilter
 
     from .common import ScraperCommon
-
 else:
     ScraperCommon = object
     ScrapeSiteIPTV = object

@@ -5,22 +5,27 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from acerestreamer.config.models import AceScrapeConf
 from acerestreamer.services.epg import EPGHandler
 from acerestreamer.utils.logger import get_logger
 
 from .html import HTTPStreamScraper
 from .iptv import IPTVStreamScraper
-from .models import AceScraperSourceApi, AceScraperSourcesApi, FlatFoundAceStream, FoundAceStreams
+from .models import AceScraperSourceApi, AceScraperSourcesApi, FlatFoundAceStream
 from .name_processor import StreamNameProcessor
-from .quality import AceQuality, Quality
+from .quality import AceQuality
 
 if TYPE_CHECKING:
-    from acerestreamer.config.models import EPGInstanceConf, ScrapeSiteHTML, ScrapeSiteIPTV
+    from acerestreamer.config.models import AceScrapeConf, EPGInstanceConf, ScrapeSiteHTML, ScrapeSiteIPTV
+
+    from .models import FoundAceStreams
+    from .quality import Quality
 else:
     ScrapeSiteHTML = object
     ScrapeSiteIPTV = object
     EPGInstanceConf = object
+    AceScrapeConf = object
+    FoundAceStreams = object
+    Quality = object
 
 logger = get_logger(__name__)
 
