@@ -18,7 +18,6 @@ else:
     ScrapeSiteIPTV = object
     TitleFilter = object
 
-
 logger = get_logger(__name__)
 
 

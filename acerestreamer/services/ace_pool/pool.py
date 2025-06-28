@@ -17,7 +17,6 @@ from .models import AcePoolEntryForAPI, AcePoolForApi
 
 logger = get_logger(__name__)
 
-
 if TYPE_CHECKING:
     from acerestreamer.config.models import AppConf
 else:

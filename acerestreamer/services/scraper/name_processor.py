@@ -15,7 +15,6 @@ else:
     FlatFoundAceStream = object
     TitleFilter = object
 
-
 logger = get_logger(__name__)
 
 STREAM_TITLE_MAX_LENGTH = 50
