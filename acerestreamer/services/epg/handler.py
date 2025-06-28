@@ -76,9 +76,17 @@ class EPG:
                 return True
 
         time_since_last_update = datetime.now(tz=OUR_TIMEZONE) - self.last_updated
-        logger.debug("Time since last update for %s: %d seconds", self.region_code, time_since_last_update.seconds)
+        need_to_update = time_since_last_update > EPG_LIFESPAN
 
-        return time_since_last_update > EPG_LIFESPAN
+        logger.debug(
+            "Time since last update for %s: %s, lifespan: %s, need_to_update=%s",
+            self.region_code,
+            time_since_last_update,
+            EPG_LIFESPAN,
+            need_to_update,
+        )
+
+        return need_to_update
 
     def _download_epg(self) -> bytes:
         """Download the EPG data from the URL."""
