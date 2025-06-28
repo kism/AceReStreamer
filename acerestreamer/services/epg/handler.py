@@ -82,7 +82,6 @@ class EPG:
 
     def _download_epg(self) -> bytes:
         """Download the EPG data from the URL."""
-        # Placeholder for actual download logic
         logger.info("Downloading EPG data from %s", self.url)
         data: bytes = b""
         try:
@@ -103,7 +102,6 @@ class EPG:
 
     def _un_gz_data(self, data: bytes) -> bytes:
         """Uncompress gzipped EPG data."""
-        # Placeholder for actual decompression logic
         logger.info("Uncompressing gzipped EPG data")
 
         buffer = io.BytesIO(data)
