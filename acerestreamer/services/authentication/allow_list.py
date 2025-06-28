@@ -44,9 +44,6 @@ class AllowList:
                 except json.JSONDecodeError:
                     logger.error("Failed to decode JSON from allow list file, resetting")  # noqa: TRY400
 
-        self.add("127.0.0.1")
-        self.add("::1")
-
         self.save()
 
     def _ensure_correct_ips(self) -> None:
@@ -62,6 +59,13 @@ class AllowList:
         if ip == "":
             logger.error("Attempted to add an empty IP address to the allow list.")
             return
+
+        # These two being done here are to make pytest a bit easier
+        if "127.0.0.1" not in self.allowlist_ips:
+            self.allowlist_ips.append("127.0.0.1")
+
+        if "::1" not in self.allowlist_ips:
+            self.allowlist_ips.append("::1")
 
         if ip not in self.allowlist_ips:
             self.allowlist_ips.append(ip)
