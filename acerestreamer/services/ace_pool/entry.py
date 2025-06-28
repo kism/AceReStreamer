@@ -13,8 +13,8 @@ from .constants import ACESTREAM_API_TIMEOUT
 
 logger = get_logger(__name__)
 
-LOCK_IN_TIME: timedelta = timedelta(minutes=3)
-LOCK_IN_RESET_MAX: timedelta = timedelta(minutes=30)
+LOCK_IN_TIME: timedelta = timedelta(minutes=5)
+LOCK_IN_RESET_MAX: timedelta = timedelta(minutes=15)
 
 
 class AcePoolEntry:
