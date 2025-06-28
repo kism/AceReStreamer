@@ -149,7 +149,7 @@ class AceQuality:
             for ace_id, quality in self.ace_streams.items():
                 if not quality.has_ever_worked or quality.quality == 0:
                     n += 1
-                    stream_url = f"{base_url}/hls/{ace_id}"
+                    stream_url = f"{base_url}/{ace_id}"
                     logger.info("Checking Ace Stream %s (%d/%d)", stream_url, n, ace_streams_never_worked)
 
                     for _ in range(3):
