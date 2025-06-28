@@ -83,6 +83,7 @@ uv sync --no-group test --no-group type --no-group lint
 - json for the config file
 - make the iptv scraper and the html scraper inherit from a common base class
 - calculate wait times for scraper to avoid drift
+- replate `/api/streams/health/check_all`
 
 ### Apps that don't work
 
