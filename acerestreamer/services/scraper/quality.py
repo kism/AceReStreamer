@@ -72,7 +72,15 @@ class AceQuality:
                 return
 
             for ace_id, quality_data in ace_streams_dict.items():
-                self.ace_streams[ace_id] = Quality(**quality_data)
+                try:
+                    self.ace_streams[ace_id] = Quality(**quality_data)
+                except TypeError:
+                    error_short = type(quality_data).__name__
+                    msg = (
+                        f"{error_short} loading quality cache, invalid quality data for Ace ID {ace_id}: {quality_data}"
+                    )
+                    logger.error(msg)  # noqa: TRY400 Short error is fine
+                    continue
 
     def save_cache(self) -> None:
         """Save the current quality cache to a file."""
