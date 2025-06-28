@@ -1,12 +1,8 @@
 """AceQuality, for tracking quality of Ace URIs."""
 
-import contextlib
 import json
-import threading
-import time
 from pathlib import Path
 
-import requests
 from pydantic import BaseModel
 
 from acerestreamer.utils.helpers import check_valid_ace_id
@@ -132,41 +128,3 @@ class AceQuality:
         """Cycle through all Ace IDs that have never worked and check them."""
         if self.currently_checking_quality:
             return
-
-        def check_missing_quality_thread(base_url: str) -> None:
-            self.currently_checking_quality = True
-
-            ace_streams_never_worked = len(
-                [  # We also check if the quality is zero, since maybe it started working
-                    ace_id
-                    for ace_id, quality in self.ace_streams.items()
-                    if not quality.has_ever_worked or quality.quality == 0
-                ]
-            )
-
-            # Don't enumerate here, and don't bother with list comprehension tbh
-            n = 0
-            for ace_id, quality in self.ace_streams.items():
-                if not quality.has_ever_worked or quality.quality == 0:
-                    n += 1
-                    stream_url = f"{base_url}/{ace_id}"
-                    logger.info("Checking Ace Stream %s (%d/%d)", stream_url, n, ace_streams_never_worked)
-
-                    for _ in range(3):
-                        with contextlib.suppress(requests.Timeout, requests.ConnectionError):
-                            requests.get(stream_url, timeout=10)
-                        time.sleep(1)
-
-                    time.sleep(10)
-
-            self.currently_checking_quality = False
-
-        url = f"{self.external_url}/hls"
-
-        thread = threading.Thread(
-            target=check_missing_quality_thread,
-            name="AceQuality: check_missing_quality",
-            args=(url,),
-            daemon=True,
-        )
-        thread.start()

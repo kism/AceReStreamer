@@ -81,7 +81,7 @@ uv sync --no-group test --no-group type --no-group lint
 - bootstrap on first launch
   - administrative account
   - json for the config file
-- replace `/api/streams/health/check_all`
+- only iterate through found streams for big health check
 
 ### Apps that don't work
 
@@ -140,3 +140,4 @@ see iptv.html.j2
 - ~~no objects that could be None, anywhere~~
 - maybe get all the instances ace_scraper and such into `__init__.py`
 - ~~make the iptv scraper and the html scraper inherit from a common base class~~
+- ~~replace `/api/streams/health/check_all`~~

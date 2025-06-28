@@ -1,9 +1,12 @@
 """Scraper object."""
 
+import contextlib
 import threading
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING
+
+import requests
 
 from acerestreamer.services.epg import EPGHandler
 from acerestreamer.utils.logger import get_logger
@@ -200,7 +203,49 @@ class AceScraper:
         if self._ace_quality.currently_checking_quality:
             return False
 
-        self._ace_quality.check_missing_quality()
+        def check_missing_quality_thread(base_url: str) -> None:
+            self.currently_checking_quality = True
+
+            streams = self.get_streams_flat()
+            if not streams:
+                logger.warning("No streams found to check quality.")
+                self.currently_checking_quality = False
+                return
+
+            ace_streams_never_worked = len(
+                [  # We also check if the quality is zero, since maybe it started working
+                    ace_id for ace_id, quality in self._ace_quality.ace_streams.items()
+                ]
+            )
+
+            # We only iterate through streams from get_streams_flat()
+            # since we don't want to health check streams that are not current per the scraper.
+            # Don't enumerate here, and don't bother with list comprehension tbh
+            n = 0
+            for stream in streams:
+                if not stream.has_ever_worked or stream.quality == 0:
+                    n += 1
+                    stream_url = f"{base_url}/{stream.ace_id}"
+                    logger.info("Checking Ace Stream %s (%d/%d)", stream_url, n, ace_streams_never_worked)
+
+                    for _ in range(3):
+                        with contextlib.suppress(requests.Timeout, requests.ConnectionError):
+                            requests.get(stream_url, timeout=10)
+                        time.sleep(1)
+
+                    time.sleep(10)
+
+            self.currently_checking_quality = False
+
+        url = f"{self.external_url}/hls"
+
+        thread = threading.Thread(
+            target=check_missing_quality_thread,
+            name="AceQuality: check_missing_quality",
+            args=(url,),
+            daemon=True,
+        )
+        thread.start()
 
         return True
 
