@@ -5,15 +5,13 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pydantic import BaseModel
-
 from acerestreamer.config.models import AceScrapeConf
 from acerestreamer.services.epg import EPGHandler
 from acerestreamer.utils.logger import get_logger
 
 from .html import HTTPStreamScraper
 from .iptv import IPTVStreamScraper
-from .models import FlatFoundAceStream, FoundAceStreams
+from .models import AceScraperSourceApi, AceScraperSourcesApi, FlatFoundAceStream, FoundAceStreams
 from .name_processor import StreamNameProcessor
 from .quality import AceQuality, Quality
 
@@ -27,22 +25,6 @@ else:
 logger = get_logger(__name__)
 
 SCRAPE_INTERVAL = 60 * 60  # Default scrape interval in seconds (1 hour)
-
-
-# region API Models
-class AceScraperSourcesApi(BaseModel):
-    """Represent the sources of the AceScraper, for API use."""
-
-    html: list[ScrapeSiteHTML]
-    iptv_m3u8: list[ScrapeSiteIPTV]
-
-
-class AceScraperSourceApi(BaseModel):
-    """Represent a scraper instance, generic for HTML and IPTV sources."""
-
-    name: str
-    slug: str
-    epg: list[str] = []
 
 
 class AceScraper:
@@ -95,13 +77,13 @@ class AceScraper:
                 new_streams = []
 
                 new_streams.extend(
-                    self.html_scraper.scrape_streams_html_sites(
+                    self.html_scraper.scrape_sites(
                         sites=self.html,
                     )
                 )
 
                 new_streams.extend(
-                    self.iptv_scraper.scrape_streams_iptv_sites(
+                    self.iptv_scraper.scrape_iptv_playlists(
                         sites=self.iptv_m3u8,
                     )
                 )

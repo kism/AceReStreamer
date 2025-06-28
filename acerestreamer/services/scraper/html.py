@@ -1,7 +1,6 @@
 """Helper functions and functions for searching in beautiful soup tags."""
 
 from datetime import timedelta
-from pathlib import Path
 
 import requests
 from bs4 import BeautifulSoup, Tag
@@ -10,38 +9,27 @@ from acerestreamer.config import ScrapeSiteHTML
 from acerestreamer.utils import check_valid_ace_id
 from acerestreamer.utils.logger import get_logger
 
-from .cache import ScraperCache
+from .common import ScraperCommon
 from .models import CandidateAceStream, FoundAceStream, FoundAceStreams
-from .name_processor import StreamNameProcessor
 
 logger = get_logger(__name__)
 
 
-class HTTPStreamScraper:
+class HTTPStreamScraper(ScraperCommon):
     """Scraper for websites to find AceStream streams."""
 
-    def __init__(self) -> None:
-        """Initialize the HTTPStreamScraper with the instance path."""
-        self.scraper_cache: ScraperCache = ScraperCache()
-        self.name_processor: StreamNameProcessor = StreamNameProcessor()
-
-    def load_config(self, instance_path: Path, stream_name_processor: StreamNameProcessor) -> None:
-        """Initialize the HTTPStreamScraper with the instance path."""
-        self.name_processor = stream_name_processor
-        self.scraper_cache.load_config(instance_path=instance_path)
-
-    def scrape_streams_html_sites(self, sites: list[ScrapeSiteHTML]) -> list[FoundAceStreams]:
+    def scrape_sites(self, sites: list[ScrapeSiteHTML]) -> list[FoundAceStreams]:
         """Scrape the streams from the configured sites."""
         found_streams: list[FoundAceStreams] = []
 
         for site in sites:
-            streams = self.scrape_streams_html_site(site)
+            streams = self.scrape_site(site)
             if streams:
                 found_streams.append(streams)
 
         return found_streams
 
-    def scrape_streams_html_site(self, site: ScrapeSiteHTML) -> FoundAceStreams | None:
+    def scrape_site(self, site: ScrapeSiteHTML) -> FoundAceStreams | None:
         """Scrape the streams from the configured sites."""
         streams_candidates: list[CandidateAceStream] = []
         cache_max_age = timedelta(hours=1)  # HTML Sources we need to scrape more often

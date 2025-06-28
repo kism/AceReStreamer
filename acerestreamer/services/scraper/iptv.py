@@ -1,39 +1,26 @@
 """Scraper for IPTV sites to find AceStream streams."""
 
-from pathlib import Path
-
 import requests
 
 from acerestreamer.config import ScrapeSiteIPTV, TitleFilter
 from acerestreamer.utils import check_valid_ace_id
 from acerestreamer.utils.logger import get_logger
 
-from .cache import ScraperCache
+from .common import ScraperCommon
 from .models import FoundAceStream, FoundAceStreams
-from .name_processor import StreamNameProcessor
 
 logger = get_logger(__name__)
 
 
-class IPTVStreamScraper:
+class IPTVStreamScraper(ScraperCommon):
     """Scraper for IPTV sites to find AceStream streams."""
 
-    def __init__(self) -> None:
-        """Initialize the IPTVStreamScraper with the instance path."""
-        self.scraper_cache: ScraperCache = ScraperCache()
-        self.name_processor: StreamNameProcessor = StreamNameProcessor()
-
-    def load_config(self, instance_path: Path, stream_name_processor: StreamNameProcessor) -> None:
-        """Initialize the IPTVStreamScraper with the instance path."""
-        self.name_processor = stream_name_processor
-        self.scraper_cache.load_config(instance_path=instance_path)
-
-    def scrape_streams_iptv_sites(self, sites: list[ScrapeSiteIPTV]) -> list[FoundAceStreams]:
+    def scrape_iptv_playlists(self, sites: list[ScrapeSiteIPTV]) -> list[FoundAceStreams]:
         """Scrape the streams from the configured IPTV sites."""
         found_streams: list[FoundAceStreams] = []
 
         for site in sites:
-            streams = self.scrape_streams_iptv_site(site)
+            streams = self.scrape_iptv_playlist(site)
             if streams:
                 found_streams.append(streams)
 
@@ -107,7 +94,7 @@ class IPTVStreamScraper:
 
         return content
 
-    def scrape_streams_iptv_site(self, site: ScrapeSiteIPTV) -> FoundAceStreams | None:
+    def scrape_iptv_playlist(self, site: ScrapeSiteIPTV) -> FoundAceStreams | None:
         """Scrape the streams from the configured IPTV sites."""
         content = self._get_site_content(site)
         if not content:

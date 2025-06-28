@@ -1,6 +1,14 @@
 """Custom Pydantic models (objects) for scraping."""
 
+from typing import TYPE_CHECKING
+
 from pydantic import BaseModel
+
+if TYPE_CHECKING:
+    from acerestreamer.config.models import ScrapeSiteHTML, ScrapeSiteIPTV
+else:
+    ScrapeSiteHTML = object
+    ScrapeSiteIPTV = object
 
 
 class FoundAceStream(BaseModel):
@@ -36,3 +44,18 @@ class FlatFoundAceStream(BaseModel):
     ace_id: str
     tvg_id: str
     has_ever_worked: bool
+
+
+class AceScraperSourcesApi(BaseModel):
+    """Represent the sources of the AceScraper, for API use."""
+
+    html: list[ScrapeSiteHTML]
+    iptv_m3u8: list[ScrapeSiteIPTV]
+
+
+class AceScraperSourceApi(BaseModel):
+    """Represent a scraper instance, generic for HTML and IPTV sources."""
+
+    name: str
+    slug: str
+    epg: list[str] = []
