@@ -57,7 +57,7 @@ class AllowList:
     def add(self, ip: str) -> None:
         """Add an IP address to the allow list."""
         if ip == "":
-            logger.warning("Attempted to add an empty IP address to the allow list.")
+            logger.error("Attempted to add an empty IP address to the allow list.")
             return
 
         if ip not in self.allowlist_ips:

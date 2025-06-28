@@ -54,7 +54,7 @@ class IPTVStreamScraper(ScraperCommon):
         tvg_id = self.name_processor.get_tvg_id_from_title(title)
 
         if not check_valid_ace_id(ace_id):
-            logger.warning("Invalid Ace ID found in candidate: %s, skipping", ace_id)
+            logger.error("Invalid Ace ID found in candidate: %s, skipping", ace_id)
             return None
 
         return FoundAceStream(title=title, ace_id=ace_id, tvg_id=tvg_id)

@@ -117,7 +117,7 @@ class AcePool:
             self.remove_instance_by_ace_id(best_instance.ace_id, caller="get_available_instance_number")
             return ace_pid
 
-        logger.warning("Ace pool is full, could not get available instance.")
+        logger.error("Ace pool is full, could not get available instance.")
         return None
 
     def get_instance(self, ace_id: str) -> str | None:

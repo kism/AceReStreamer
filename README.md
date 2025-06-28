@@ -82,6 +82,7 @@ uv sync --no-group test --no-group type --no-group lint
 - bootstrap on first launch
 - json for the config file
 - make the iptv scraper and the html scraper inherit from a common base class
+- calculate wait times for scraper to avoid drift
 
 ### Apps that don't work
 

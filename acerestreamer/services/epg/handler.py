@@ -254,9 +254,7 @@ class EPGHandler:
 
     def get_condensed_epg(self) -> str:
         """Get the condensed EPG data."""
-        logger.warning("get_condensed_epg called, merging and condensing EPG data")
         self.merge_epgs()
-        logger.warning("get_condensed_epg called, condensing EPG data")
         self.condense_epgs()
 
         if self.condensed_epg is None:
