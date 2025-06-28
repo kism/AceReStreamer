@@ -7,14 +7,12 @@ import requests
 from acerestreamer.utils import check_valid_ace_id
 from acerestreamer.utils.logger import get_logger
 
+from .common import ScraperCommon
 from .models import FoundAceStream, FoundAceStreams
 
 if TYPE_CHECKING:
     from acerestreamer.config import ScrapeSiteIPTV, TitleFilter
-
-    from .common import ScraperCommon
 else:
-    ScraperCommon = object
     ScrapeSiteIPTV = object
     TitleFilter = object
 
