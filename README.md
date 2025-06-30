@@ -142,3 +142,4 @@ see iptv.html.j2
 - ~~replace `/api/streams/health/check_all`~~
 - ~~only iterate through found streams for big health check~~
 - ~~channel logos~~
+- ~~deduplicate iptv~~
