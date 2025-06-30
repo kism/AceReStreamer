@@ -1,14 +1,25 @@
 """AceQuality, for tracking quality of Ace URIs."""
 
 import json
+import re
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from pydantic import BaseModel
 
+from acerestreamer.utils.constants import OUR_TIMEZONE
 from acerestreamer.utils.helpers import check_valid_ace_id
 from acerestreamer.utils.logger import get_logger
 
 logger = get_logger(__name__)
+
+RE_EXTRACT_EXTINF_SECONDS = re.compile(r"EXTINF:(\d+(\.\d+)?),")
+RE_EXTRACT_TS_NUMBER = re.compile(r"(\d+)\.ts$")
+
+DEFAULT_NEXT_SEGMENT_EXPECTED = timedelta(seconds=30)
+QUALITY_ON_FIRST_SUCCESS = 20
+MIN_QUALITY = 0
+MAX_QUALITY = 99
 
 
 # region: Quality
@@ -16,16 +27,64 @@ class Quality(BaseModel):
     """Model for tracking quality of a stream."""
 
     quality: int = -1
+    _last_segment_number: int = 0
     has_ever_worked: bool = False
+    _last_segment_fetched: datetime = datetime.now(tz=OUR_TIMEZONE)
+    _next_segment_expected: timedelta = DEFAULT_NEXT_SEGMENT_EXPECTED
+
+    def update_quality(self, m3u_playlist: str) -> None:
+        """Update the quality based on the m3u playlist."""
+        if not m3u_playlist:  # If we don't have a playlist, it sure isn't working
+            rating = -5
+        else:  # We have a playlist, let's see if the new segment showed up in time
+            # Get the sequence number in the hls stream m3u
+            last_line = m3u_playlist.splitlines()[-1]
+            ts_number_result = RE_EXTRACT_TS_NUMBER.search(last_line)
+            ts_number = ts_number_result.group(1) if ts_number_result else None
+            if not isinstance(ts_number, str):
+                logger.warning("Could not extract TS number from last line: %s", last_line)
+                return  # Weird
+            ts_number_int: int = int(ts_number)
+
+            current_time = datetime.now(tz=OUR_TIMEZONE)
+
+            # If the stream has progressed, give it a positive rating, we can't check if it was late.
+            if ts_number_int != self._last_segment_number:
+                # If we get two segments it will be +2 etc, if it jumps by more than 5 I wouldn't call it healthy
+                rating = min(max(ts_number_int - self._last_segment_number, 1), 5)
+                self._last_segment_fetched = current_time
+            elif (  # If more time has passed than expected
+                # This is a fair comparison since we don't actually know when the pending segment became available
+                current_time - self._last_segment_fetched > self._next_segment_expected
+            ):
+                rating = -5
+            else:
+                rating = 0
+
+            # We are done figuring out the rating, now we update the quality
+            self._last_segment_number = ts_number_int
+
+            second_last_line = m3u_playlist.splitlines()[-2]
+            seconds = RE_EXTRACT_EXTINF_SECONDS.search(second_last_line)
+
+            if seconds:
+                seconds_int = float(seconds.group(1))
+                self._next_segment_expected = timedelta(seconds=seconds_int)
+
+        if rating > 0 and not self.has_ever_worked:
+            # Only need max if someone edited the json, I might do something with it later
+            rating = max(QUALITY_ON_FIRST_SUCCESS, self.quality)
+            self.has_ever_worked = True
+
+        self.quality += rating
+        self.quality = max(self.quality, MIN_QUALITY)
+        self.quality = min(self.quality, MAX_QUALITY)
 
 
 class AceQuality:
     """For tracking quality of Streams."""
 
     default_quality: int = -1  # Unknown quality
-    quality_on_first_success: int = 20
-    min_quality: int = 0
-    max_quality: int = 99
     currently_checking_quality = False
 
     def __init__(self) -> None:
@@ -105,23 +164,18 @@ class AceQuality:
         if ace_id not in self.ace_streams:
             self.ace_streams[ace_id] = Quality()
 
-    def increment_quality(self, ace_id: str, rating: int) -> None:
+    def increment_quality(self, ace_id: str, m3u_playlist: str) -> None:
         """Increment the quality of a stream by ace_id."""
         if not check_valid_ace_id(ace_id):
             return
 
-        logger.trace("Setting quality for AceStream %s by %d", ace_id, rating)
         if ace_id not in self.ace_streams:
             self.ace_streams[ace_id] = Quality()
 
-        if rating > 0 and not self.ace_streams[ace_id].has_ever_worked:
-            # Only need max if someone edited the json, I might do something with it later
-            rating = max(self.quality_on_first_success, self.ace_streams[ace_id].quality)
-            self.ace_streams[ace_id].has_ever_worked = True
+        self.ace_streams[ace_id].update_quality(m3u_playlist)
 
-        self.ace_streams[ace_id].quality += rating
-        self.ace_streams[ace_id].quality = max(self.ace_streams[ace_id].quality, self.min_quality)
-        self.ace_streams[ace_id].quality = min(self.ace_streams[ace_id].quality, self.max_quality)
+        logger.debug("Updated quality for Ace ID %s: %s", ace_id, self.ace_streams[ace_id].quality)
+
         self.save_cache()
 
     def check_missing_quality(self) -> None:

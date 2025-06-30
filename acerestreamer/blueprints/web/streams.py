@@ -77,12 +77,12 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
     except requests.Timeout as e:
         error_short = type(e).__name__
         logger.error("reverse proxy timeout /hls/ %s", error_short)  # noqa: TRY400 Too verbose otherwise
-        ace_scraper.increment_quality(path, -5)
+        ace_scraper.increment_quality(path, "")
         return jsonify({"error": "HLS stream timeout"}, HTTPStatus.REQUEST_TIMEOUT)
     except requests.RequestException as e:
         error_short = type(e).__name__
         logger.error("reverse proxy failure /hls/ %s %s %s", error_short, e.errno, e.strerror)  # noqa: TRY400 Naa this should be shorter
-        ace_scraper.increment_quality(path, -5)
+        ace_scraper.increment_quality(path, "")
         return jsonify({"error": "Failed to fetch HLS stream"}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
     headers = [
@@ -96,7 +96,7 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
     if "#EXTM3U" not in content_str:
         logger.error("Invalid HLS stream received for path: %s", path)
         logger.debug("Content received: %s", content_str[:1000])
-        ace_scraper.increment_quality(path, -5)
+        ace_scraper.increment_quality(path, "")
         return jsonify({"error": "Invalid HLS stream", "m3u8": content_str}, HTTPStatus.BAD_REQUEST)
 
     content_str = replace_m3u_sources(
@@ -105,7 +105,7 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
         server_name=current_app.are_conf.flask.SERVER_NAME,
     )
 
-    ace_scraper.increment_quality(path, 1)
+    ace_scraper.increment_quality(path, m3u_playlist=content_str)
 
     return Response(content_str, resp.status_code, headers)
 

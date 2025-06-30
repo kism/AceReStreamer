@@ -209,9 +209,9 @@ class AceScraper:
         return self._ace_quality.ace_streams
 
     # region Quality
-    def increment_quality(self, ace_id: str, rating: int) -> None:
+    def increment_quality(self, ace_id: str, m3u_playlist: str = "") -> None:
         """Increment the quality of a stream by ace_id."""
-        self._ace_quality.increment_quality(ace_id, rating)
+        self._ace_quality.increment_quality(ace_id=ace_id, m3u_playlist=m3u_playlist)
 
     def check_missing_quality(self) -> bool:
         """Check the quality of all streams."""
