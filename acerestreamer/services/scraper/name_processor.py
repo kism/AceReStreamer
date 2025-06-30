@@ -105,16 +105,18 @@ class StreamNameProcessor:
 
         iptv_set = set()
 
+        # I used to filter this for whether the stream has ever worked,
+        # but sometimes sites change the id of their stream often...
         for stream in streams:
             logger.debug(stream)
-            if stream.has_ever_worked:
-                # Country codes are 2 characters between square brackets, e.g. [US]
-                tvg_id = f'tvg-id="{stream.tvg_id}"'
-                tvg_logo = f'tvg-logo="{external_url}/tvg-logo/{stream.tvg_logo}"' if stream.tvg_logo else ""
 
-                m3u8_addition = f"#EXTINF:-1 {tvg_id} {tvg_logo},{stream.title}\n{external_url}/hls/{stream.ace_id}"
+            # Country codes are 2 characters between square brackets, e.g. [US]
+            tvg_id = f'tvg-id="{stream.tvg_id}"'
+            tvg_logo = f'tvg-logo="{external_url}/tvg-logo/{stream.tvg_logo}"' if stream.tvg_logo else ""
 
-                iptv_set.add(m3u8_addition)
+            m3u8_addition = f"#EXTINF:-1 {tvg_id} {tvg_logo},{stream.title}\n{external_url}/hls/{stream.ace_id}"
+
+            iptv_set.add(m3u8_addition)
 
         return m3u8_content + "\n".join(sorted(iptv_set))
 
