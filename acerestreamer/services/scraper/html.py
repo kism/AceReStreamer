@@ -158,11 +158,14 @@ class HTTPStreamScraper(ScraperCommon):
 
             tvg_id = self.name_processor.get_tvg_id_from_title(title)
 
+            tvg_logo = self.name_processor.find_tvg_logo_image(title)
+
             found_streams.append(
                 FoundAceStream(
                     title=title,
                     ace_id=url_no_uri,
                     tvg_id=tvg_id,
+                    tvg_logo=tvg_logo,
                 )
             )
 

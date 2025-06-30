@@ -1,8 +1,10 @@
 """Custom Pydantic models (objects) for scraping."""
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Self
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
+
+from acerestreamer.utils import check_valid_ace_id
 
 if TYPE_CHECKING:
     from acerestreamer.config.models import ScrapeSiteHTML, ScrapeSiteIPTV
@@ -17,7 +19,21 @@ class FoundAceStream(BaseModel):
     title: str
     ace_id: str
     tvg_id: str
+    tvg_logo: str
     quality: int = -1
+
+    @model_validator(mode="after")
+    def manual_validate(self) -> Self:
+        """Validate the AceStream ID manually."""
+        if not check_valid_ace_id(self.ace_id):
+            msg = f"FoundAceStream: Invalid AceStream ID: {self.ace_id}"
+            raise ValueError(msg)
+
+        if not self.title:
+            msg = "FoundAceStream: Title cannot be empty"
+            raise ValueError(msg)
+
+        return self
 
 
 class FoundAceStreams(BaseModel):
@@ -43,6 +59,7 @@ class FlatFoundAceStream(BaseModel):
     title: str
     ace_id: str
     tvg_id: str
+    tvg_logo: str
     has_ever_worked: bool
 
 

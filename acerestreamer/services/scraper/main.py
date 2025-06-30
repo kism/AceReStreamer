@@ -113,12 +113,13 @@ class AceScraper:
             if found_stream.ace_id == ace_id:
                 return found_stream
 
-        return FlatFoundAceStream(
+        return FlatFoundAceStream(  # Default return if no stream is found
             site_name="Unknown",
             quality=self._ace_quality.default_quality,
             title=ace_id,
             ace_id=ace_id,
             tvg_id="",
+            tvg_logo="",
             has_ever_worked=False,
         )
 
@@ -143,6 +144,7 @@ class AceScraper:
                         title=stream.title,
                         ace_id=stream.ace_id,
                         tvg_id=stream.tvg_id,
+                        tvg_logo=stream.tvg_logo,
                         has_ever_worked=self._ace_quality.get_quality(stream.ace_id).has_ever_worked,
                     )
                     for stream in scraped_streams_listing.stream_list
@@ -165,6 +167,7 @@ class AceScraper:
                     title=stream["title"],
                     ace_id=stream["ace_id"],
                     tvg_id=stream["tvg_id"],
+                    tvg_logo=stream["tvg_logo"],
                 )
                 flat_streams.append(new_stream)
         return flat_streams
@@ -272,9 +275,9 @@ class AceScraper:
             logger.error("External URL is not set, cannot generate IPTV streams.")
             return ""
 
-        hls_path = self.external_url + "/hls/"
+        external_url = self.external_url
 
         return self.stream_name_processor.get_streams_as_iptv(
             streams=self.get_streams_flat(),
-            hls_path=hls_path,
+            external_url=external_url,
         )

@@ -8,3 +8,5 @@ OUR_TIMEZONE = datetime.now().astimezone().tzinfo
 # Lol
 STATIC_DIRECTORY = Path(__file__).parent.parent / "static"
 TEMPLATES_DIRECTORY = Path(__file__).parent.parent / "templates"
+
+SUPPORTED_TVG_LOGO_EXTENSIONS = ["png", "jpg", "jpeg", "webp"]

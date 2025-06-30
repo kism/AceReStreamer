@@ -5,6 +5,8 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from acerestreamer.utils import slugify
+from acerestreamer.utils.constants import SUPPORTED_TVG_LOGO_EXTENSIONS
 from acerestreamer.utils.logger import get_logger
 
 if TYPE_CHECKING:
@@ -23,7 +25,8 @@ ACE_URL_PREFIXES = [
     "http://127.0.0.1:6878/ace/getstream?id=",
     "http://127.0.0.1:6878/ace/getstream?content_id=",
     "http://127.0.0.1:6878/ace/manifest.m3u8?id=",
-    "http://127.0.0.1:6878/ace/manifest.m3u8?content_id=",  # Side note, this is the good one
+    "http://127.0.0.1:6878/ace/manifest.m3u8?content_id=",  # Side note, this is the good one when using ace
+    "plugin://script.module.horus?action=play&id=",  # Horus Kodi plugin
 ]
 
 # Compiled regex patterns
@@ -96,7 +99,7 @@ class StreamNameProcessor:
 
         return new_candidate_titles
 
-    def get_streams_as_iptv(self, streams: list[FlatFoundAceStream], hls_path: str) -> str:
+    def get_streams_as_iptv(self, streams: list[FlatFoundAceStream], external_url: str) -> str:
         """Get the found streams as an IPTV M3U8 string."""
         m3u8_content = "#EXTM3U\n"
 
@@ -105,9 +108,10 @@ class StreamNameProcessor:
             if stream.has_ever_worked:
                 # Country codes are 2 characters between square brackets, e.g. [US]
                 tvg_id = f'tvg-id="{stream.tvg_id}"'
+                tvg_logo = f'tvg-logo="{external_url}/tvg-logo/{stream.tvg_logo}"' if stream.tvg_logo else ""
 
-                m3u8_content += f"#EXTINF:-1 {tvg_id},{stream.title}\n"
-                m3u8_content += f"{hls_path}{stream.ace_id}\n"
+                m3u8_content += f"#EXTINF:-1 {tvg_id} {tvg_logo},{stream.title}\n"
+                m3u8_content += f"{external_url}/hls/{stream.ace_id}\n"
 
         return m3u8_content
 
@@ -163,3 +167,17 @@ class StreamNameProcessor:
         if len(title) > STREAM_TITLE_MAX_LENGTH:
             return title[:STREAM_TITLE_MAX_LENGTH].strip()
         return title.strip()
+
+    def find_tvg_logo_image(self, title: str) -> str:
+        """Find the TVG logo image for a given title."""
+        if self.instance_path is None:
+            return ""
+
+        title_slug = slugify(title)
+
+        for extension in SUPPORTED_TVG_LOGO_EXTENSIONS:
+            logo_path = self.instance_path / "tvg_logos" / f"{title_slug}.{extension}"
+            if logo_path.is_file():
+                return f"{title_slug}.{extension}"
+
+        return f"{title_slug}.png.notfound"  # Leave this as default, easier to add images to the instance folder later

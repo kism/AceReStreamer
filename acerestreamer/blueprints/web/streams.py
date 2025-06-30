@@ -1,9 +1,10 @@
 """Main Stream Site Blueprint."""
 
 from http import HTTPStatus
+from pathlib import Path
 
 import requests
-from flask import Blueprint, Response, jsonify, redirect, render_template
+from flask import Blueprint, Response, jsonify, redirect, render_template, send_file
 from flask_caching import CachedResponse
 from werkzeug.wrappers import Response as WerkzeugResponse
 
@@ -143,4 +144,34 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
 
     response.headers["Content-Type"] = "video/MP2T"  # Doesn't seem to be necessary
 
+    return response
+
+
+@bp.route("/tvg-logo/<path:path>")
+def tvg_logo(path: str) -> Response | WerkzeugResponse:
+    """Serve the TVG logo from the local filesystem."""
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
+    if current_app.static_folder is None:
+        response = jsonify({"error": "Static folder not configured"})
+        response.status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+        return response
+
+    logo_path = Path(current_app.instance_path) / "tvg_logos" / path
+
+    if not logo_path.is_file():
+        response = send_file(
+            Path(current_app.static_folder) / "default_tvg_logo.png",
+        )
+        response.headers["Cache-Control"] = "public, max-age=3600"
+        response.headers["Content-Type"] = "image/png"
+        response.status_code = HTTPStatus.OK
+        return response
+
+    response = send_file(
+        logo_path,
+    )
+    response.headers["Cache-Control"] = "public, max-age=3600"
     return response
