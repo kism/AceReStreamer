@@ -60,6 +60,8 @@ class FlatFoundAceStream(BaseModel):
     ace_id: str
     tvg_id: str
     tvg_logo: str
+    program_title: str = ""
+    program_description: str = ""
     has_ever_worked: bool
 
 

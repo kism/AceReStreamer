@@ -270,3 +270,44 @@ class EPGHandler:
             return b""
 
         return etree.tostring(self.condensed_epg, encoding="utf-8", xml_declaration=True)
+
+    def get_current_program(self, tvg_id: str) -> tuple[str, str]:
+        """Get the current program for a given TVG ID."""
+        if self.condensed_epg is None:
+            self.condense_epgs()
+
+        if self.condensed_epg is None:
+            logger.error("No condensed EPG data available to get current program")
+            return "", ""
+
+        # Find the channel with the given TVG ID
+        channel = self.condensed_epg.find(f"channel[@id='{tvg_id}']")
+        if channel is None:
+            return "", ""
+
+        # Find the current programme for this channel
+        now = datetime.now(tz=OUR_TIMEZONE)
+        programmes = self.condensed_epg.findall(f"programme[@channel='{tvg_id}']")
+        for programme in programmes:
+            start_time = programme.get("start")
+            end_time = programme.get("stop")
+            if start_time is None or end_time is None:
+                continue
+
+            start_date_time = datetime.strptime(start_time, "%Y%m%d%H%M%S %z")
+            end_date_time = datetime.strptime(end_time, "%Y%m%d%H%M%S %z")
+
+            if start_date_time <= now <= end_date_time:
+                title_match = programme.find("title")
+                program_title = "Unknown Title"
+                if title_match is not None:
+                    program_title = title_match.text or program_title
+
+                description_match = programme.find("desc")
+                program_description = "Unknown Description"
+                if description_match is not None:
+                    program_description = description_match.text or program_description
+
+                return program_title, program_description
+
+        return "", ""

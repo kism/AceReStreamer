@@ -70,13 +70,6 @@ uv sync --no-group test --no-group type --no-group lint
 - iptv api
   - ~~more on the iptv guide~~
   - per source iptv feeds
-- epg
-  - ~~implement~~
-  - ~~merge~~
-  - ~~fetch on a schedule~~
-  - epg api
-  - ~~filtered epg, e.g. only serve an epg for streams that are available~~
-  - ~~correct epg xml metadata~~
 - bootstrap on first launch
   - administrative account
   - json for the config file
@@ -143,3 +136,10 @@ see iptv.html.j2
 - ~~only iterate through found streams for big health check~~
 - ~~channel logos~~
 - ~~deduplicate iptv~~
+- ~~epg~~
+  - ~~implement~~
+  - ~~merge~~
+  - ~~fetch on a schedule~~
+  - ~~epg in api~~
+  - ~~filtered epg, e.g. only serve an epg for streams that are available~~
+  - ~~correct epg xml metadata~~

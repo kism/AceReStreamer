@@ -137,8 +137,10 @@ class AceScraper:
         """Get the found streams for a specific source by its slug."""
         for scraped_streams_listing in self.streams:
             if scraped_streams_listing.site_slug == source_slug:
-                return [
-                    FlatFoundAceStream(
+                shortlist = []
+
+                for stream in scraped_streams_listing.stream_list:
+                    new_stream = FlatFoundAceStream(
                         site_name=scraped_streams_listing.site_name,
                         quality=self._ace_quality.get_quality(stream.ace_id).quality,
                         title=stream.title,
@@ -147,8 +149,14 @@ class AceScraper:
                         tvg_logo=stream.tvg_logo,
                         has_ever_worked=self._ace_quality.get_quality(stream.ace_id).has_ever_worked,
                     )
-                    for stream in scraped_streams_listing.stream_list
-                ]
+
+                    program_title, program_description = self.epg_handler.get_current_program(tvg_id=stream.tvg_id)
+                    new_stream.program_title = program_title
+                    new_stream.program_description = program_description
+
+                    shortlist.append(new_stream)
+
+                return shortlist
 
         logger.warning("No scraper source found with slug: %s", source_slug)
         return None
@@ -160,6 +168,8 @@ class AceScraper:
         flat_streams: list[FlatFoundAceStream] = []
         for found_stream in streams:
             for stream in found_stream["stream_list"]:
+                program_title, program_description = self.epg_handler.get_current_program(tvg_id=stream["tvg_id"])
+
                 new_stream: FlatFoundAceStream = FlatFoundAceStream(
                     site_name=found_stream["site_name"],
                     quality=self._ace_quality.get_quality(stream["ace_id"]).quality,
@@ -168,6 +178,8 @@ class AceScraper:
                     ace_id=stream["ace_id"],
                     tvg_id=stream["tvg_id"],
                     tvg_logo=stream["tvg_logo"],
+                    program_title=program_title,
+                    program_description=program_description,
                 )
                 flat_streams.append(new_stream)
         return flat_streams

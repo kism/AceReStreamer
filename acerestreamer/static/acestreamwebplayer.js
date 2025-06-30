@@ -330,14 +330,28 @@ function loadStream() {
 }
 
 // region Stream/loadStreamUrl
-function loadStreamUrl(streamId, streamName = "") {
+function loadStreamUrl(streamId, streamInfo = null) {
   window.location.hash = streamId; // Set the URL in the hash
 
   const streamNameElement = document.getElementById("stream-name");
-  if (streamName === "") {
-    streamNameElement.innerHTML = streamId;
+  streamNameElement.innerHTML = streamInfo.title || streamId;
+
+  const streamProgramNameElement = document.getElementById("stream-program-name");
+  if (!streamInfo || !streamInfo.program_title) {
+    streamProgramNameElement.innerHTML = "No program name";
+    streamProgramNameElement.classList.add("hidden");
   } else {
-    streamNameElement.innerHTML = streamName;
+    streamProgramNameElement.classList.remove("hidden");
+    streamProgramNameElement.innerHTML = streamInfo.program_title;
+  }
+
+  const streamProgramDescriptionElement = document.getElementById("stream-program-description");
+  if (!streamInfo || !streamInfo.program_description) {
+    streamProgramDescriptionElement.classList.add("hidden");
+    streamProgramDescriptionElement.innerHTML = "No program description";
+  } else {
+    streamProgramDescriptionElement.classList.remove("hidden");
+    streamProgramDescriptionElement.innerHTML = streamInfo.program_description;
   }
 
   loadStream();
@@ -353,7 +367,7 @@ function loadStreamUrl(streamId, streamName = "") {
 function loadPlayStream(streamID) {
   getStream(streamID)
     .then((streamInfo) => {
-      loadStreamUrl(streamID, streamInfo.title);
+      loadStreamUrl(streamID, streamInfo);
 
       attemptPlay();
     })
@@ -675,6 +689,11 @@ function populateStreamTable(streamsSource) {
       tr_heading.appendChild(th_link);
       flashBackgroundColor(th_link);
 
+      const th_program_title = document.createElement("th");
+      th_program_title.textContent = "Program";
+      tr_heading.appendChild(th_program_title);
+      flashBackgroundColor(th_program_title);
+
       table.appendChild(tr_heading);
 
       // Sort the data by quality in descending order
@@ -705,9 +724,22 @@ function populateStreamTable(streamsSource) {
         a.onclick = () => loadPlayStream(stream.ace_id);
         td_link.appendChild(a); // Append the anchor element to the table data cell
 
+        // Program title cell
+        const td_program_title = document.createElement("td");
+        if (stream.program_title && stream.program_title !== "") {
+          td_program_title.textContent = stream.program_title;
+        } else {
+          td_program_title.textContent = "-";
+        }
+
+        if (stream.program_description && stream.program_description !== "") {
+          td_program_title.title = stream.program_description;
+        }
+
         // Append to the row
         tr.appendChild(td_quality);
         tr.appendChild(td_link);
+        tr.appendChild(td_program_title);
         table.appendChild(tr);
       }
     })
@@ -745,7 +777,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(`Loading stream on page load: ${streamId}`);
     getStream(streamId)
       .then((streamInfo) => {
-        loadStreamUrl(streamId, streamInfo.title);
+        loadStreamUrl(streamId, streamInfo);
       })
       .catch((_error) => {});
   }

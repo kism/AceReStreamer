@@ -74,9 +74,8 @@
 }
 
 body {
-  font-family:
-    "Noto Sans Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-family: "Noto Sans Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   font-size: 14px;
   font-weight: 500;
   background-color: #1a1a1a;
@@ -497,6 +496,10 @@ label > .label-body {
   max-width: 100%;
 }
 
+.hidden {
+  display: none !important;
+}
+
 /* #region: Stream List */
 .stream-table {
   border-collapse: collapse; /* This removes gaps between cells */
@@ -632,6 +635,20 @@ nav ul {
 #ace-info td,
 #ace-pool-info td {
   text-align: center;
+}
+
+/* #endregion */
+
+/* #region: Stream Program Info */
+
+#stream-program-name {
+  font-style: italic;
+  margin-top: -4px;
+  margin-bottom: 2px;
+}
+
+#stream-program-description {
+  margin-bottom: 4px;
 }
 
 /* #endregion */
