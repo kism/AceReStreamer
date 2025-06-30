@@ -179,6 +179,13 @@ class EPGHandler:
 
         threading.Thread(target=epg_update_thread, name="EPGHandler: update_epgs", daemon=True).start()
 
+    def _create_tv_element(self) -> etree._Element:
+        """Create a base XML element for the EPG data."""
+        tv_tag = etree.Element("tv")
+        tv_tag.set("generator-info-name", "Ace ReStreamer")
+        tv_tag.set("generator-info-url", "https://github.com/kism/AceReStreamer")
+        return tv_tag
+
     def merge_epgs(self) -> None:
         """Merge all EPG data into a single XML structure."""
         time_since_last_merge: timedelta = datetime.now(tz=OUR_TIMEZONE) - self._last_merge_time
@@ -188,7 +195,7 @@ class EPGHandler:
             return
 
         logger.info("Merging EPG data from %d sources", len(self.epgs))
-        merged_data = etree.Element("tv")
+        merged_data = self._create_tv_element()  # Create a base XML element for the merged EPG
 
         for epg in self.epgs:
             if epg.data is not None:
@@ -202,15 +209,15 @@ class EPGHandler:
         self._last_merge_time = datetime.now(tz=OUR_TIMEZONE)
         logger.debug("EPG data merged successfully")
 
-    def get_merged_epg(self) -> str:
+    def get_merged_epg(self) -> bytes:
         """Get the merged EPG data from all configured EPGs."""
         self.merge_epgs()
 
         if self.merged_epg is None:
             logger.error("No EPG data available to merge")
-            return ""
+            return b""
 
-        return etree.tostring(self.merged_epg, encoding="unicode")
+        return etree.tostring(self.merged_epg, encoding="utf-8", xml_declaration=True)
 
     def condense_epgs(self) -> None:
         """Get a condensed version of the merged EPG data."""
@@ -231,7 +238,8 @@ class EPGHandler:
             logger.warning("No TVG IDs found in the current streams, skipping EPG condensation")
             return
 
-        condensed_data = etree.Element("tv")
+        condensed_data = self._create_tv_element()  # Create a base XML element for the merged EPG
+
         merged_epg_copy = etree.ElementTree(self.merged_epg)
         for channel in merged_epg_copy.findall("channel"):
             tvg_id = channel.get("id")
@@ -252,13 +260,13 @@ class EPGHandler:
         self.condensed_epg = condensed_data
         self._last_condense_time = datetime.now(tz=OUR_TIMEZONE)
 
-    def get_condensed_epg(self) -> str:
+    def get_condensed_epg(self) -> bytes:
         """Get the condensed EPG data."""
         self.merge_epgs()
         self.condense_epgs()
 
         if self.condensed_epg is None:
             logger.error("No condensed EPG data available")
-            return ""
+            return b""
 
-        return etree.tostring(self.condensed_epg, encoding="unicode")
+        return etree.tostring(self.condensed_epg, encoding="utf-8", xml_declaration=True)

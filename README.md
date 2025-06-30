@@ -76,7 +76,7 @@ uv sync --no-group test --no-group type --no-group lint
   - ~~fetch on a schedule~~
   - epg api
   - ~~filtered epg, e.g. only serve an epg for streams that are available~~
-  - correct epg xml metadata
+  - ~~correct epg xml metadata~~
 - bootstrap on first launch
   - administrative account
   - json for the config file
