@@ -207,8 +207,6 @@ class AceReStreamerConf(BaseSettings):
 
     def write_config(self, config_location: Path) -> None:
         """Write the current settings to a TOML file."""
-        from acerestreamer import PROGRAM_NAME, URL, __version__  # noqa: PLC0415, RUF100 Avoid circular import
-
         config_location.parent.mkdir(parents=True, exist_ok=True)
 
         config_data = json.loads(self.model_dump_json())
@@ -223,8 +221,7 @@ class AceReStreamerConf(BaseSettings):
 
         logger.info("Writing config to %s", config_location)
 
-        new_file_content_str = f"# Configuration file for {PROGRAM_NAME} v{__version__} {URL}\n"
-        new_file_content_str += json.dumps(config_data)
+        new_file_content_str = json.dumps(config_data)
 
         if existing_data != config_data:  # The new object will be valid, so we back up the old one
             local_tz = datetime.datetime.now().astimezone().tzinfo
