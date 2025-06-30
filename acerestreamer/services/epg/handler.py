@@ -181,9 +181,11 @@ class EPGHandler:
 
     def _create_tv_element(self) -> etree._Element:
         """Create a base XML element for the EPG data."""
+        from acerestreamer import PROGRAM_NAME, URL  # noqa: PLC0415 Avoid circular import
+
         tv_tag = etree.Element("tv")
-        tv_tag.set("generator-info-name", "Ace ReStreamer")
-        tv_tag.set("generator-info-url", "https://github.com/kism/AceReStreamer")
+        tv_tag.set("generator-info-name", PROGRAM_NAME)
+        tv_tag.set("generator-info-url", URL)
         return tv_tag
 
     def merge_epgs(self) -> None:
