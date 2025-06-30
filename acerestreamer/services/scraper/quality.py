@@ -34,6 +34,7 @@ class Quality(BaseModel):
 
     def update_quality(self, m3u_playlist: str) -> None:
         """Update the quality based on the m3u playlist."""
+        rating = 0
         if not m3u_playlist:  # If we don't have a playlist, it sure isn't working
             rating = -5
         else:  # We have a playlist, let's see if the new segment showed up in time
@@ -57,6 +58,12 @@ class Quality(BaseModel):
                 # This is a fair comparison since we don't actually know when the pending segment became available
                 current_time - self._last_segment_fetched > self._next_segment_expected
             ):
+                logger.debug(
+                    "Segment %s was not fetched in time, expected within %s, but it was fetched in %s",
+                    ts_number_int,
+                    self._next_segment_expected,
+                    (current_time - self._last_segment_fetched),
+                )
                 rating = -5
             else:
                 rating = 0
@@ -71,14 +78,14 @@ class Quality(BaseModel):
                 seconds_int = float(seconds.group(1))
                 self._next_segment_expected = timedelta(seconds=seconds_int)
 
-        if rating > 0 and not self.has_ever_worked:
-            # Only need max if someone edited the json, I might do something with it later
-            rating = max(QUALITY_ON_FIRST_SUCCESS, self.quality)
+        if rating > 0:  # If it works at all, we set the quality to a minimum of QUALITY_ON_FIRST_SUCCESS
+            self.quality = max(QUALITY_ON_FIRST_SUCCESS, self.quality)
             self.has_ever_worked = True
 
         self.quality += rating
         self.quality = max(self.quality, MIN_QUALITY)
         self.quality = min(self.quality, MAX_QUALITY)
+        logger.trace("New quality %s %s", self.quality, f"(rating: {rating})")
 
 
 class AceQuality:
@@ -169,8 +176,7 @@ class AceQuality:
         if not check_valid_ace_id(ace_id):
             return
 
-        if ace_id not in self.ace_streams:
-            self.ace_streams[ace_id] = Quality()
+        self._ensure_entry(ace_id)
 
         self.ace_streams[ace_id].update_quality(m3u_playlist)
 

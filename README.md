@@ -73,7 +73,6 @@ uv sync --no-group test --no-group type --no-group lint
 - bootstrap on first launch
   - administrative account
   - ~~json for the config file~~
-- determine stream health from m3u8
 
 ### Apps that don't work
 
@@ -143,3 +142,4 @@ see iptv.html.j2
   - ~~epg in api~~
   - ~~filtered epg, e.g. only serve an epg for streams that are available~~
   - ~~correct epg xml metadata~~
+- ~~determine stream health from m3u8~~

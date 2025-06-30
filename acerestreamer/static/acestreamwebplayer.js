@@ -336,28 +336,12 @@ function loadStreamUrl(streamId, streamInfo = null) {
   const streamNameElement = document.getElementById("stream-name");
   streamNameElement.innerHTML = streamInfo.title || streamId;
 
-  const streamProgramNameElement = document.getElementById("stream-program-name");
-  if (!streamInfo || !streamInfo.program_title) {
-    streamProgramNameElement.innerHTML = "No program name";
-    streamProgramNameElement.classList.add("hidden");
-  } else {
-    streamProgramNameElement.classList.remove("hidden");
-    streamProgramNameElement.innerHTML = streamInfo.program_title;
-  }
-
-  const streamProgramDescriptionElement = document.getElementById("stream-program-description");
-  if (!streamInfo || !streamInfo.program_description) {
-    streamProgramDescriptionElement.classList.add("hidden");
-    streamProgramDescriptionElement.innerHTML = "No program description";
-  } else {
-    streamProgramDescriptionElement.classList.remove("hidden");
-    streamProgramDescriptionElement.innerHTML = streamInfo.program_description;
-  }
+  populateCurrentStreamInfo(streamInfo.program_title, streamInfo.program_description);
 
   loadStream();
 
-  if (streamId !== streamName && streamName !== "") {
-    document.title = `${streamName}`;
+  if (streamId !== streamInfo.title && streamInfo.title !== "") {
+    document.title = `${streamInfo.title}`;
   } else {
     document.title = `AceRestreamer`;
   }
@@ -531,7 +515,7 @@ function populateAceInfoTable(acePool) {
     setStatusClass(td_ace_pool_healthy, "bad");
     td_ace_pool_healthy.textContent = "Failure";
   } else {
-    setStatusClass(td_ace_pool_healthy, "good");
+    setStatusClass(td_ace_pool_healthy, "neutral");
     td_ace_pool_healthy.textContent = "Healthy";
   }
   tr.appendChild(td_ace_pool_healthy);
@@ -561,6 +545,11 @@ function populateAcePoolTable(aceInstances) {
   th_status.textContent = "Status";
   tr_heading.appendChild(th_status);
   flashBackgroundColor(th_status);
+
+  const th_quality = document.createElement("th");
+  th_quality.textContent = "Quality";
+  tr_heading.appendChild(th_quality);
+  flashBackgroundColor(th_quality);
 
   const th_playing = document.createElement("th");
   th_playing.textContent = "Currently Playing";
@@ -597,21 +586,42 @@ function populateAcePoolTable(aceInstances) {
     td_status.textContent = lockedIn;
     tr.appendChild(td_status);
 
-    // Now Playing cell
+    // Quality, currently playing (sorry for readability, do these together)
+    const td_quality = document.createElement("td");
+
     const td_playing = document.createElement("td");
     if (instance.ace_id !== "") {
       getStream(instance.ace_id)
         .then((streamInfo) => {
+          quality = streamInfo.quality || -1;
+          if (quality === -1) {
+            setStatusClass(td_quality, "neutral");
+          } else if (quality < 20) {
+            setStatusClass(td_quality, "bad");
+          } else if (quality >= 20 && quality <= 80) {
+            setStatusClass(td_quality, "neutral");
+          } else if (quality >= 80) {
+            setStatusClass(td_quality, "good");
+          }
+          td_quality.textContent = quality;
+
           td_playing.textContent = streamInfo.title || "Unknown Stream";
           td_playing.addEventListener("click", () => {
             loadPlayStream(instance.ace_id);
           });
           td_playing.classList.add("link");
+          td_playing.title = streamInfo.program_title || "No program title";
+
+          // Odd spot for this, but its the easiest way to refresh the current program info
+          if (streamInfo.ace_id === window.location.hash.substring(1)) {
+            populateCurrentStreamInfo(streamInfo.program_title, streamInfo.program_description);
+          }
         })
         .catch((_error) => {});
     } else {
       td_playing.textContent = "-";
     }
+    tr.appendChild(td_quality);
     tr.appendChild(td_playing);
 
     // Unlock button cell
@@ -744,6 +754,29 @@ function populateStreamTable(streamsSource) {
       }
     })
     .catch((_error) => {});
+}
+
+// region Current Stream Info
+function populateCurrentStreamInfo(programTitle, programDescription) {
+  console.log("Populating current stream info...");
+
+  const streamProgramNameElement = document.getElementById("stream-program-name");
+  if (programTitle === null || programTitle === "") {
+    streamProgramNameElement.innerHTML = "No program name";
+    streamProgramNameElement.classList.add("hidden");
+  } else {
+    streamProgramNameElement.classList.remove("hidden");
+    streamProgramNameElement.innerHTML = programTitle;
+  }
+
+  const streamProgramDescriptionElement = document.getElementById("stream-program-description");
+  if (programDescription === null || programDescription === "") {
+    streamProgramDescriptionElement.classList.add("hidden");
+    streamProgramDescriptionElement.innerHTML = "No program description";
+  } else {
+    streamProgramDescriptionElement.classList.remove("hidden");
+    streamProgramDescriptionElement.innerHTML = programDescription;
+  }
 }
 
 // region DOMContentLoaded
