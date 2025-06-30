@@ -1,6 +1,0 @@
-[app]
-
-[logging]
-
-[flask]
-TESTING = false # This should be true for every other test config.

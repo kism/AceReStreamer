@@ -1,0 +1,9 @@
+{
+  "app": {},
+  "flask": {
+    "TESTING": true
+  },
+  "logging": {
+    "level": "INVALID"
+  }
+}

@@ -1,8 +1,0 @@
-[app]
-my_message = "Hello, PyTest!"
-
-[logging]
-level = "TRACE"
-
-[flask]
-TESTING = true

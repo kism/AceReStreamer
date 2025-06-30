@@ -1,0 +1,11 @@
+{
+  "app": {
+    "my_message": "Hello, PyTest!"
+  },
+  "flask": {
+    "TESTING": true
+  },
+  "logging": {
+    "level": "TRACE"
+  }
+}

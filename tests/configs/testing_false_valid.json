@@ -1,0 +1,7 @@
+{
+  "app": {},
+  "flask": {
+    "TESTING": false
+  },
+  "logging": {}
+}

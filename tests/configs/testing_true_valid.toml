@@ -1,8 +1,0 @@
-
-[app]
-password = "testpassword"
-
-[logging]
-
-[flask]
-TESTING = true

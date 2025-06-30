@@ -1,0 +1,11 @@
+{
+  "app": {
+    "my_message": ""
+  },
+  "flask": {
+    "TESTING": true
+  },
+  "logging": {
+    "level": "TRACE"
+  }
+}
