@@ -103,6 +103,8 @@ class StreamNameProcessor:
         """Get the found streams as an IPTV M3U8 string."""
         m3u8_content = "#EXTM3U\n"
 
+        iptv_set = set()
+
         for stream in streams:
             logger.debug(stream)
             if stream.has_ever_worked:
@@ -110,10 +112,11 @@ class StreamNameProcessor:
                 tvg_id = f'tvg-id="{stream.tvg_id}"'
                 tvg_logo = f'tvg-logo="{external_url}/tvg-logo/{stream.tvg_logo}"' if stream.tvg_logo else ""
 
-                m3u8_content += f"#EXTINF:-1 {tvg_id} {tvg_logo},{stream.title}\n"
-                m3u8_content += f"{external_url}/hls/{stream.ace_id}\n"
+                m3u8_addition = f"#EXTINF:-1 {tvg_id} {tvg_logo},{stream.title}\n{external_url}/hls/{stream.ace_id}"
 
-        return m3u8_content
+                iptv_set.add(m3u8_addition)
+
+        return m3u8_content + "\n".join(sorted(iptv_set))
 
     def get_tvg_id_from_title(self, title: str) -> str:
         """Extract the TVG ID from the title."""
