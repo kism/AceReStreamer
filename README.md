@@ -75,9 +75,8 @@ uv sync --no-group test --no-group type --no-group lint
   - ~~merge~~
   - ~~fetch on a schedule~~
   - epg api
-  - filtered epg, e.g. only serve an epg for streams that are available
+  - ~~filtered epg, e.g. only serve an epg for streams that are available~~
   - correct epg xml metadata
-- channel logos
 - bootstrap on first launch
   - administrative account
   - json for the config file
@@ -142,3 +141,4 @@ see iptv.html.j2
 - ~~make the iptv scraper and the html scraper inherit from a common base class~~
 - ~~replace `/api/streams/health/check_all`~~
 - ~~only iterate through found streams for big health check~~
+- ~~channel logos~~
