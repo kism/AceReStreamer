@@ -41,7 +41,7 @@ def create_app(
         app.are_conf = test_config
     else:
         app.logger.info("Loading real configuration from instance path: %s", app.instance_path)
-        config_path = Path(app.instance_path) / "config.toml"
+        config_path = Path(app.instance_path) / "config.json"
         app.are_conf = AceReStreamerConf.load_config(config_path)
 
     check_static_folder(app.static_folder)

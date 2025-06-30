@@ -72,7 +72,7 @@ uv sync --no-group test --no-group type --no-group lint
   - per source iptv feeds
 - bootstrap on first launch
   - administrative account
-  - json for the config file
+  - ~~json for the config file~~
 - determine stream health from m3u8
 
 ### Apps that don't work

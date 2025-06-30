@@ -5,7 +5,6 @@ import json
 from pathlib import Path
 from typing import Self
 
-import tomlkit
 from pydantic import BaseModel, model_validator
 from pydantic_settings import BaseSettings
 
@@ -104,7 +103,6 @@ class ScrapeSiteIPTV(BaseModel):
 class AceScrapeConf(BaseModel):
     """Settings for scraping AceStreams."""
 
-    user_agent: str = ""  # This is load bearing, if you remove this field, pydantic won't validate the model
     html: list[ScrapeSiteHTML] = []
     iptv_m3u8: list[ScrapeSiteIPTV] = []
 
@@ -213,9 +211,7 @@ class AceReStreamerConf(BaseSettings):
 
         config_location.parent.mkdir(parents=True, exist_ok=True)
 
-        config_data = json.loads(self.model_dump_json())  # This is how we make the object safe for tomlkit
-        if self.nginx is None:
-            config_data.pop("nginx")  # Remove nginx if it is None
+        config_data = json.loads(self.model_dump_json())
 
         if not config_location.exists():
             logger.warning("Config file does not exist, creating it at %s", config_location)
@@ -223,12 +219,12 @@ class AceReStreamerConf(BaseSettings):
             existing_data = config_data
         else:
             with config_location.open("r") as f:
-                existing_data = tomlkit.load(f)
+                existing_data = json.load(f)
 
         logger.info("Writing config to %s", config_location)
 
         new_file_content_str = f"# Configuration file for {PROGRAM_NAME} v{__version__} {URL}\n"
-        new_file_content_str += tomlkit.dumps(config_data)
+        new_file_content_str += json.dumps(config_data)
 
         if existing_data != config_data:  # The new object will be valid, so we back up the old one
             local_tz = datetime.datetime.now().astimezone().tzinfo
@@ -238,10 +234,15 @@ class AceReStreamerConf(BaseSettings):
             backup_file = config_backup_dir / f"{config_location.stem}_{time_str}{config_location.suffix}.bak"
             logger.warning("Validation has changed the config file, backing up the old one to %s", backup_file)
             with backup_file.open("w") as f:
-                f.write(tomlkit.dumps(existing_data))
+                f.write(json.dumps(existing_data))
 
         with config_location.open("w") as f:
             f.write(new_file_content_str)
+
+        config_location_json = config_location.with_suffix(".json")
+        logger.info("Writing config to %s", config_location_json)
+        with config_location_json.open("w") as f:
+            f.write(self.model_dump_json(indent=2, exclude_none=False))
 
     @classmethod
     def load_config(cls, config_path: Path) -> Self:
@@ -250,6 +251,6 @@ class AceReStreamerConf(BaseSettings):
             return cls()
 
         with config_path.open("r") as f:
-            config = tomlkit.load(f)
+            config = json.load(f)
 
         return cls(**config)

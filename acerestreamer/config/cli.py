@@ -82,7 +82,7 @@ def generate_app_config_file(
         if overwrite
         else f"Generating configuration file at {app_config_path}"
     )
-    _check_config_path(app_config_path, ".toml", expect_config=False, overwrite=overwrite)
+    _check_config_path(app_config_path, ".json", expect_config=False, overwrite=overwrite)
 
     logger.info(msg)
 
@@ -126,7 +126,7 @@ def generate_nginx_config_file(
 ) -> None:
     """Generate a default Nginx configuration file at the specified path."""
     # Check the app config path and load
-    _check_config_path(app_config_path, ".toml", expect_config=True)
+    _check_config_path(app_config_path, ".json", expect_config=True)
     app_config = AceReStreamerConf.load_config(app_config_path)
 
     # Check the nginx config path

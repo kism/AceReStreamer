@@ -22,7 +22,7 @@ def pytest_configure():
 @pytest.fixture
 def app(tmp_path, get_test_config):
     """This fixture uses the default config within the flask app."""
-    return create_app(test_config=get_test_config("testing_true_valid.toml"), instance_path=tmp_path)
+    return create_app(test_config=get_test_config("testing_true_valid.json"), instance_path=tmp_path)
 
 
 @pytest.fixture
@@ -37,7 +37,7 @@ def get_test_config(tmp_path, place_test_config):
 
     def _get_test_config(config_name):
         place_test_config(config_name, tmp_path)
-        return AceReStreamerConf.load_config(Path(tmp_path) / "config.toml")
+        return AceReStreamerConf.load_config(Path(tmp_path) / "config.json")
 
     return _get_test_config
 
@@ -52,7 +52,7 @@ def place_test_config():
     def _place_test_config(config_name: str, path: str) -> None:
         """Place config in tmp_path by name."""
         filepath = TEST_CONFIGS_LOCATION / config_name
-        config_path = Path(path) / "config.toml"
+        config_path = Path(path) / "config.json"
         shutil.copyfile(filepath, config_path)
 
     return _place_test_config

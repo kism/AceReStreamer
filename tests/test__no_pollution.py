@@ -17,4 +17,4 @@ from acerestreamer import create_app
 def test_instance_path_check(get_test_config):
     """TEST: When passed a dictionary as a config, the instance path must be specified."""
     with pytest.raises(ValueError, match="When testing supply both test_config and instance_path!"):
-        create_app(test_config=get_test_config("testing_true_valid.toml"))
+        create_app(test_config=get_test_config("testing_true_valid.json"))

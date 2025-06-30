@@ -299,12 +299,12 @@ class EPGHandler:
 
             if start_date_time <= now <= end_date_time:
                 title_match = programme.find("title")
-                program_title = "Unknown Title"
+                program_title = ""
                 if title_match is not None:
                     program_title = title_match.text or program_title
 
                 description_match = programme.find("desc")
-                program_description = "Unknown Description"
+                program_description = ""
                 if description_match is not None:
                     program_description = description_match.text or program_description
 
