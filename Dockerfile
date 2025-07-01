@@ -1,5 +1,5 @@
 # Node Builder
-FROM node:24 AS node_builder
+FROM node:24-alpine AS node_builder
 WORKDIR /app
 RUN mkdir -p /app/acerestreamer/static
 COPY package.json package-lock.json ./
@@ -9,7 +9,7 @@ RUN npm install
 FROM ghcr.io/astral-sh/uv:python3.13-alpine
 
 ## Required for psutil
-RUN apk add gcc python3-dev musl-dev linux-headers
+RUN apk --no-cache add gcc python3-dev musl-dev linux-headers
 
 COPY --from=node_builder /app/acerestreamer/static/* /app/acerestreamer/static/
 
