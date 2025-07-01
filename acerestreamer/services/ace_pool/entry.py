@@ -4,6 +4,7 @@ import contextlib
 from datetime import datetime, timedelta
 
 import requests
+from pydantic import ValidationError
 
 from acerestreamer.utils import check_valid_ace_id
 from acerestreamer.utils.constants import OUR_TIMEZONE
@@ -148,6 +149,7 @@ class AcePoolEntry:
         # Also check if the ace_id is valid, as a failsafe
 
         if not self.check_if_stale() and check_valid_ace_id(self.ace_id):
+            # Keep Alive
             with contextlib.suppress(requests.RequestException):
                 if not self._keep_alive_run_once:
                     logger.info("Keeping alive ace_pid %d with ace_id %s", self.ace_pid, self.ace_id)
@@ -155,11 +157,16 @@ class AcePoolEntry:
                 resp = requests.get(self.ace_hls_m3u8_url, timeout=ACESTREAM_API_TIMEOUT)
                 logger.trace("Keep alive, response: %s", resp.status_code)
 
+            # Update the stats
             try:
                 resp_stat = requests.get(self.ace_stat_url, timeout=ACESTREAM_API_TIMEOUT)
                 resp_stat.raise_for_status()
                 self.ace_stat = AcePoolStat(**resp_stat.json())
             except requests.RequestException:
+                self.ace_stat = None
+            except ValidationError:
+                logger.exception("Failed to parse AceStream stat for ace_id %s", self.ace_id)
+                logger.info("Did ace stream change their API?")
                 self.ace_stat = None
         else:
             logger.trace("Not keeping alive %s, not locked in", self.ace_address)
