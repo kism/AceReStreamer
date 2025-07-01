@@ -13,14 +13,20 @@ services:
       retries: 3
       start_period: 60s
 
-# In your config, ensure "ace_address": "http://acestream-http-proxy:6878",
+  # In your config, ensure "ace_address": "http://acestream-http-proxy:6878",
   acerestreamer:
-    # build:
-    #   context: .
-    #   dockerfile: Dockerfile
-    image: ghcr.io/kism/acerestreamer:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # image: ghcr.io/kism/acerestreamer:latest
     ports:
       - "5100:5100"
     volumes:
       - ./instance:/app/instance
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://127.0.1:5100/api/health"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 60s

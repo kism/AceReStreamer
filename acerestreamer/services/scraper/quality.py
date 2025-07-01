@@ -21,6 +21,8 @@ QUALITY_ON_FIRST_SUCCESS = 20
 MIN_QUALITY = 0
 MAX_QUALITY = 99
 
+NEW_STREAM_THRESHOLD = 20  # If the TS number is below this, we are more lenient with the quality rating
+
 
 # region: Quality
 class Quality(BaseModel):
@@ -58,18 +60,14 @@ class Quality(BaseModel):
                 # If we get two segments it will be +2 etc, if it jumps by more than 5 I wouldn't call it healthy
                 rating = min(max(ts_number_int - self._last_segment_number, 1), 5)
                 self._last_segment_fetched = current_time
-            elif (  # If more time has passed than expected
-                # This is a fair comparison since we don't actually know when the pending segment became available
+            elif (
                 current_time - self._last_segment_fetched > self._next_segment_expected
-            ):
-                logger.debug(
-                    "Segment %s was not fetched in time, expected within %s, but it was fetched in %s",
-                    ts_number_int,
-                    self._next_segment_expected,
-                    (current_time - self._last_segment_fetched),
-                )
-                rating = -5
+            ):  # If more time has passed than expected
+                # This is a fair comparison since we don't actually know when the pending segment became available
+                # If it's a new stream, we are less harsh
+                rating = -1 if ts_number_int < NEW_STREAM_THRESHOLD else -4
             else:
+                # No segment was due at time of checking
                 rating = 0
 
             # We are done figuring out the rating, now we update the quality
