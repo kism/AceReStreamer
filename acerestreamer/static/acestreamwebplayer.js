@@ -738,12 +738,13 @@ function populateStreamTable(streamsSource) {
         const td_program_title = document.createElement("td");
         if (stream.program_title && stream.program_title !== "") {
           td_program_title.textContent = stream.program_title;
+          if (stream.program_description && stream.program_description !== "") {
+            td_program_title.title = stream.program_description;
+          } else {
+            td_program_title.title = "No program description available";
+          }
         } else {
           td_program_title.textContent = "-";
-        }
-
-        if (stream.program_description && stream.program_description !== "") {
-          td_program_title.title = stream.program_description;
         }
 
         // Append to the row
