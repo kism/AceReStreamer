@@ -145,15 +145,6 @@ def generate_nginx_config_file(
         sys.exit(1)
 
     required_fields = [app_config.nginx.server_name, app_config.nginx.cert_path, app_config.nginx.cert_key_path]
-    if app_config.nginx.ip_allow_list_path == "":
-        app_config.nginx.ip_allow_list_path = (Path("instance") / "ip_allow_list.conf").absolute()
-
-    if isinstance(app_config.nginx.ip_allow_list_path, str):
-        app_config.nginx.ip_allow_list_path = Path(app_config.nginx.ip_allow_list_path)
-
-    if not app_config.nginx.ip_allow_list_path.is_file():
-        with app_config.nginx.ip_allow_list_path.open("w", encoding="utf-8") as f:
-            f.write("deny all;")
 
     if not all(required_fields):
         logger.error("Nginx configuration is missing required fields: server_name, cert_path, cert_key_path.")
@@ -174,7 +165,6 @@ def generate_nginx_config_file(
         "cert_path": app_config.nginx.cert_path,
         "cert_key_path": app_config.nginx.cert_key_path,
         "extra_config_file_path": app_config.nginx.extra_config_file_path,
-        "ip_allow_list_path": app_config.nginx.ip_allow_list_path,
     }
 
     env = Environment(loader=FileSystemLoader(TEMPLATES_DIR), autoescape=True)
@@ -191,10 +181,6 @@ def generate_nginx_config_file(
         f.write(nginx_config)
 
     logger.info("Nginx configuration file generated successfully at %s", nginx_config_path)
-
-    logger.info("Creating allowlist file at %s", app_config.nginx.ip_allow_list_path)
-    with app_config.nginx.ip_allow_list_path.open("w", encoding="utf-8") as f:
-        f.write("deny all;")
 
 
 def main() -> None:
