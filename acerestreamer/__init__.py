@@ -11,6 +11,7 @@ from acerestreamer.blueprints.api import scraper as scraper_api_bp
 from acerestreamer.blueprints.api import streams as stream_api_bp
 from acerestreamer.blueprints.web import auth as auth_bp
 from acerestreamer.blueprints.web import epg as epg_bp
+from acerestreamer.blueprints.web import home as home_bp
 from acerestreamer.blueprints.web import info as info_bp
 from acerestreamer.blueprints.web import iptv as iptv_bp
 from acerestreamer.blueprints.web import streams as stream_bp
@@ -65,6 +66,7 @@ def create_app(
 
     app.logger.trace(app_config_str)
 
+    app.register_blueprint(home_bp.bp)
     app.register_blueprint(stream_bp.bp)
     app.register_blueprint(auth_bp.bp)
     app.register_blueprint(info_bp.bp)

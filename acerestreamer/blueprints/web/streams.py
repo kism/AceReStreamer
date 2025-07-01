@@ -1,57 +1,24 @@
-"""Main Stream Site Blueprint."""
+"""Stream Handling Blueprint."""
 
 from http import HTTPStatus
 from pathlib import Path
 
 import requests
-from flask import Blueprint, Response, jsonify, redirect, render_template, send_file
-from flask_caching import CachedResponse
+from flask import Blueprint, Response, jsonify, send_file
 from werkzeug.wrappers import Response as WerkzeugResponse
 
-from acerestreamer.instances import ace_pool, ace_scraper, ip_allow_list
-from acerestreamer.services.authentication.helpers import assumed_auth_failure, get_ip_from_request
-from acerestreamer.utils import get_header_snippet, replace_m3u_sources
-from acerestreamer.utils.flask_helpers import DEFAULT_CACHE_DURATION, cache, get_current_app
+from acerestreamer.instances import ace_pool, ace_scraper
+from acerestreamer.services.authentication.helpers import assumed_auth_failure
+from acerestreamer.utils import replace_m3u_sources
+from acerestreamer.utils.flask_helpers import get_current_app
 from acerestreamer.utils.logger import get_logger
 
 current_app = get_current_app()
 logger = get_logger(__name__)
-bp = Blueprint("acerestreamer_scraper", __name__)
+bp = Blueprint("acerestreamer_stream", __name__)
 
 REVERSE_PROXY_EXCLUDED_HEADERS = ["content-encoding", "content-length", "transfer-encoding", "connection", "keep-alive"]
 REVERSE_PROXY_TIMEOUT = 10  # Very high but alas
-
-
-# region /
-@bp.route("/")
-def home() -> Response | WerkzeugResponse:
-    """Render the home page, redirect to stream if IP is allowed."""
-    ip_is_allowed = ip_allow_list.check(get_ip_from_request())
-    if ip_is_allowed:
-        return redirect("/stream")
-
-    return redirect("/login")
-
-
-# region /stream
-@bp.route("/stream")
-@cache.cached()
-def webplayer_stream() -> Response | WerkzeugResponse | CachedResponse:
-    """Render the webpage for a stream."""
-    auth_failure = assumed_auth_failure()
-    if auth_failure:
-        return auth_failure
-
-    return CachedResponse(  # type: ignore[no-untyped-call] # Missing from flask-caching
-        response=Response(
-            render_template(
-                "stream.html.j2",
-                rendered_header=get_header_snippet("Ace ReStreamer"),
-            ),
-            HTTPStatus.OK,
-        ),
-        timeout=DEFAULT_CACHE_DURATION,
-    )
 
 
 # region /hls
@@ -149,7 +116,7 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
 
     response = Response(resp.content, resp.status_code, headers)
 
-    response.headers["Content-Type"] = "video/MP2T"  # Doesn't seem to be necessary
+    response.headers["Content-Type"] = "video/MP2T"  # Doesn't seem to be necessary, Apple says so in the spec
 
     return response
 
