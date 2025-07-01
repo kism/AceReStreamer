@@ -1,6 +1,6 @@
 [project]
 name = "acerestreamer"
-version = "0.3.6"
+version = "0.3.7"
 description = "Ace Restreamer, a web interface, scraper, and restreamer for Ace Stream."
 readme = "README.md"
 license = { file = "LICENSE.md" }
@@ -38,13 +38,10 @@ test = [
     "pytest-random-order",
     "detect-test-pollution",
 ]
-profile = [
-    "pympler>=1.1",
-    "snakeviz",
-]
+profile = ["pympler>=1.1", "snakeviz"]
 
 [tool.uv]
-default-groups = ["test", "type", "lint"]
+default-groups = ["test", "type", "lint", "profile"]
 
 [tool.ruff]
 cache-dir = "~/.cache/ruff"
