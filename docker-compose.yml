@@ -14,9 +14,10 @@ services:
       start_period: 60s
 
   acerestreamer:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    image: ghcr.io/kism/AceReStreamer:latest
     ports:
       - "5100:5100"
     volumes:
