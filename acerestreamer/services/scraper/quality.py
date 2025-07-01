@@ -35,8 +35,9 @@ class Quality(BaseModel):
     def update_quality(self, m3u_playlist: str) -> None:
         """Update the quality based on the m3u playlist."""
         rating = 0
-        if not m3u_playlist:  # If we don't have a playlist, it sure isn't working
-            rating = -5
+        # If we don't have a playlist, it sure isn't working, this will always happen when starting a new stream though
+        if not m3u_playlist:
+            rating = -1
         else:  # We have a playlist, let's see if the new segment showed up in time
             # Get the sequence number in the hls stream m3u
             last_line = m3u_playlist.splitlines()[-1]
