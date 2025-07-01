@@ -12,3 +12,17 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
+
+  acerestreamer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5100:5100"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://127.0.0.1:5100/api/health"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 60s

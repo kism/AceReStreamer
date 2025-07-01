@@ -26,7 +26,6 @@ def test_password(client, app):
     ip_allow_list.load_config(
         instance_path=app.instance_path,
         password=app.are_conf.app.password,
-        nginx_allowlist_path=None,
     )
     response = client.get("/stream")
     assert response.status_code == HTTPStatus.UNAUTHORIZED
@@ -107,7 +106,6 @@ def test_misc_endpoints(client):
         "/api/streams/health",
         "/api/ace_pool",
         "/api/epgs",
-        "/api/health",
         "/hls/test",
         "/ace/c/test",
     ],
@@ -118,7 +116,6 @@ def test_no_auth(client, app, path):
     ip_allow_list.load_config(
         instance_path=app.instance_path,
         password=app.are_conf.app.password,
-        nginx_allowlist_path=None,
     )
 
     response = client.get(path)
