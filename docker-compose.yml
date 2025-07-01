@@ -13,6 +13,7 @@ services:
       retries: 3
       start_period: 60s
 
+# In your config, ensure "ace_address": "http://acestream-http-proxy:6878",
   acerestreamer:
     # build:
     #   context: .

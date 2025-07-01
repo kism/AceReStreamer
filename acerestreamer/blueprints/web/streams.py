@@ -72,26 +72,33 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
     logger.trace("HLS stream requested for path: %s", instance_ace_hls_m3u8_url)
 
     try:
-        resp = requests.get(instance_ace_hls_m3u8_url, timeout=REVERSE_PROXY_TIMEOUT, stream=True)
-        resp.raise_for_status()
-    except requests.Timeout as e:
-        error_short = type(e).__name__
-        logger.error("reverse proxy timeout /hls/ %s", error_short)  # noqa: TRY400 Too verbose otherwise
-        ace_scraper.increment_quality(path, "")
-        return jsonify({"error": "HLS stream timeout"}, HTTPStatus.REQUEST_TIMEOUT)
+        ace_resp = requests.get(instance_ace_hls_m3u8_url, timeout=REVERSE_PROXY_TIMEOUT, stream=True)
+        ace_resp.raise_for_status()
     except requests.RequestException as e:
         error_short = type(e).__name__
-        logger.error("reverse proxy failure /hls/ %s %s %s", error_short, e.errno, e.strerror)  # noqa: TRY400 Naa this should be shorter
-        ace_scraper.increment_quality(path, "")
-        return jsonify({"error": "Failed to fetch HLS stream"}, HTTPStatus.INTERNAL_SERVER_ERROR)
+
+        # Determine error type and response
+        if isinstance(e, requests.Timeout):
+            logger.error("reverse proxy timeout /hls/ %s", error_short)  # noqa: TRY400 # Too verbose otherwise
+            error_msg, status = "HLS stream timeout", HTTPStatus.REQUEST_TIMEOUT
+            ace_scraper.increment_quality(path, "")
+        elif isinstance(e, requests.ConnectionError):
+            logger.error("%s reverse proxy cannot connect to Ace", error_short)  # noqa: TRY400 # Too verbose otherwise
+            error_msg, status = "Cannot connect to Ace", HTTPStatus.INTERNAL_SERVER_ERROR
+        else:
+            logger.error("reverse proxy failure /hls/ %s %s %s", error_short, e.errno, e.strerror)  # noqa: TRY400 # Too verbose otherwise
+            error_msg, status = "Failed to fetch HLS stream", HTTPStatus.INTERNAL_SERVER_ERROR
+            ace_scraper.increment_quality(path, "")
+
+        return jsonify({"error": error_msg}, status)
 
     headers = [
         (name, value)
-        for (name, value) in resp.raw.headers.items()
+        for (name, value) in ace_resp.raw.headers.items()
         if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS
     ]
 
-    content_str = resp.content.decode("utf-8", errors="replace")
+    content_str = ace_resp.content.decode("utf-8", errors="replace")
 
     if "#EXTM3U" not in content_str:
         logger.error("Invalid HLS stream received for path: %s", path)
@@ -107,7 +114,7 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
 
     ace_scraper.increment_quality(path, m3u_playlist=content_str)
 
-    return Response(content_str, resp.status_code, headers)
+    return Response(content_str, ace_resp.status_code, headers)
 
 
 # region /ace/c/

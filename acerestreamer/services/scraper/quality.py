@@ -27,8 +27,9 @@ class Quality(BaseModel):
     """Model for tracking quality of a stream."""
 
     quality: int = -1
-    _last_segment_number: int = 0
     has_ever_worked: bool = False
+    m3u_failures: int = 0
+    _last_segment_number: int = 0
     _last_segment_fetched: datetime = datetime.now(tz=OUR_TIMEZONE)
     _next_segment_expected: timedelta = DEFAULT_NEXT_SEGMENT_EXPECTED
 
@@ -37,9 +38,11 @@ class Quality(BaseModel):
         rating = 0
         # If we don't have a playlist, it sure isn't working, this will always happen when starting a new stream though
         if not m3u_playlist:
-            rating = -1
+            rating = 0 - self.m3u_failures
+            self.m3u_failures += 1
         else:  # We have a playlist, let's see if the new segment showed up in time
             # Get the sequence number in the hls stream m3u
+            self.m3u_failures = 0  # Reset
             last_line = m3u_playlist.splitlines()[-1]
             ts_number_result = RE_EXTRACT_TS_NUMBER.search(last_line)
             ts_number = ts_number_result.group(1) if ts_number_result else None

@@ -181,7 +181,6 @@ class EPGHandler:
                         except Exception:
                             logger.exception("Failed to update EPG %s", epg.region_code)
 
-                    self.merge_epgs()
                     self.condense_epgs()
                     time.sleep(EPG_LIFESPAN.total_seconds())
 
