@@ -17,7 +17,7 @@ services:
     # build:
     #   context: .
     #   dockerfile: Dockerfile
-    image: ghcr.io/kism/AceReStreamer:latest
+    image: ghcr.io/kism/acerestreamer:latest
     ports:
       - "5100:5100"
     volumes:
