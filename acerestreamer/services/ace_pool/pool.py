@@ -78,6 +78,7 @@ class AcePool:
         if ace_id in self.ace_instances:
             logger.info("%sRemoving AceStream instance with ace_id %s", caller, ace_id)
             with contextlib.suppress(KeyError):
+                self.ace_instances[ace_id].stop()
                 del self.ace_instances[ace_id]
             return True
 
@@ -153,6 +154,7 @@ class AcePool:
                     time_until_unlock=time_until_unlock,
                     time_running=total_time_running,
                     ace_hls_m3u8_url=instance.ace_hls_m3u8_url,
+                    ace_stat=instance.ace_stat,
                 )
             )
 
@@ -180,7 +182,7 @@ class AcePool:
                     # If the instance is stale, remove it
                     if instance.check_if_stale():
                         instances_to_remove.append(instance.ace_id)
-                    else:  # Otherwise, try keep it alive, will only keep_alive if it's locked in
+                    else:  # Otherwise, try keep it alive
                         instance.keep_alive()
 
                 for ace_id in instances_to_remove:  # Separate loop to avoid modifying the dict while iterating

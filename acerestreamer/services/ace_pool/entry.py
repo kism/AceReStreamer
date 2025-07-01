@@ -10,6 +10,7 @@ from acerestreamer.utils.constants import OUR_TIMEZONE
 from acerestreamer.utils.logger import get_logger
 
 from .constants import ACESTREAM_API_TIMEOUT
+from .models import AcePoolStat
 
 logger = get_logger(__name__)
 
@@ -20,29 +21,54 @@ LOCK_IN_RESET_MAX: timedelta = timedelta(minutes=15)
 class AcePoolEntry:
     """Model for an AceStream pool entry."""
 
+    # region Initialization
     def __init__(self, ace_pid: int, ace_address: str, ace_id: str, *, transcode_audio: bool) -> None:
         """Initialize an AceStream pool entry."""
         self._keep_alive_run_once = False
+
+        self.ace_hls_m3u8_url = ""
+        self.ace_stat_url = ""
+        self.ace_cmd_url = ""
+
+        self.ace_stat: AcePoolStat | None = None
+
         self.ace_pid = ace_pid
         self.ace_id = ace_id
         self.ace_address = ace_address
-
         if not self.ace_address.endswith("/"):
             self.ace_address += "/"
-        self.ace_hls_m3u8_url = (
-            f"{self.ace_address}ace/manifest.m3u8?content_id={self.ace_id}"
+
+        self.ace_middleware_url = (  # https://docs.acestream.net/developers/start-playback/
+            f"{self.ace_address}ace/manifest.m3u8"
+            "?format=json"
+            f"&content_id={self.ace_id}"
             f"&transcode_ac3={str(transcode_audio).lower()}"
             f"&pid={self.ace_pid}"
         )
+
+        self._populate_urls()
 
         # Required to ensure that this actually gets the current time
         self.date_started = datetime.now(tz=OUR_TIMEZONE)
         self.last_used = datetime.now(tz=OUR_TIMEZONE)
 
+    def _populate_urls(self) -> None:
+        try:
+            resp = requests.get(self.ace_middleware_url, timeout=ACESTREAM_API_TIMEOUT)
+            resp.raise_for_status()
+            response_json = resp.json()
+        except requests.RequestException:
+            logger.exception("Failed to fetch AceStream URLs for ace_id %s", self.ace_id)
+
+        self.ace_hls_m3u8_url = response_json.get("response", {}).get("playback_url", "")
+        self.ace_stat_url = response_json.get("response", {}).get("stat_url", "")
+        self.ace_cmd_url = response_json.get("response", {}).get("command_url", "")
+
     def update_last_used(self) -> None:
         """Update the last used timestamp."""
         self.last_used = datetime.now(tz=OUR_TIMEZONE)
 
+    # region Get
     def get_required_time_until_unlock(self) -> timedelta:
         """Get the time until the instance is unlocked."""
         time_now = datetime.now(tz=OUR_TIMEZONE)
@@ -58,6 +84,7 @@ class AcePoolEntry:
         """Check if the instance has been running long enough to be locked in."""
         return datetime.now(tz=OUR_TIMEZONE) - self.date_started > LOCK_IN_TIME
 
+    # region Check
     def check_unused_longer_than_lock_in_reset(self) -> bool:
         """Check if the instance has been unused longer than the lock-in reset time."""
         time_now = datetime.now(tz=OUR_TIMEZONE)
@@ -114,12 +141,13 @@ class AcePoolEntry:
 
         return stale
 
+    # region Health
     def keep_alive(self) -> None:
         """The keep_alive method, should be called by poolboy thread."""
         # If we are locked in, we keep the stream alive
         # Also check if the ace_id is valid, as a failsafe
 
-        if self.check_locked_in() and check_valid_ace_id(self.ace_id):
+        if not self.check_if_stale() and check_valid_ace_id(self.ace_id):
             with contextlib.suppress(requests.RequestException):
                 if not self._keep_alive_run_once:
                     logger.info("Keeping alive ace_pid %d with ace_id %s", self.ace_pid, self.ace_id)
@@ -127,5 +155,28 @@ class AcePoolEntry:
                 resp = requests.get(self.ace_hls_m3u8_url, timeout=ACESTREAM_API_TIMEOUT)
                 logger.trace("Keep alive, response: %s", resp.status_code)
 
+            try:
+                resp_stat = requests.get(self.ace_stat_url, timeout=ACESTREAM_API_TIMEOUT)
+                resp_stat.raise_for_status()
+                self.ace_stat = AcePoolStat(**resp_stat.json())
+            except requests.RequestException:
+                self.ace_stat = None
         else:
             logger.trace("Not keeping alive %s, not locked in", self.ace_address)
+
+    # region Control
+    def stop(self) -> None:
+        """Stop the AceStream instance, only access this externally via remove_instance_by_ace_id."""
+        if not self.ace_cmd_url:
+            logger.warning("No stat URL for ace_id %s, cannot stop instance", self.ace_id)
+            return
+
+        url = f"{self.ace_cmd_url}?method=stop"
+
+        try:
+            resp = requests.get(url, timeout=ACESTREAM_API_TIMEOUT)
+            resp.raise_for_status()
+            logger.info("Stopped AceStream instance with ace_id %s", self.ace_id)
+        except requests.RequestException as e:
+            error_short = type(e).__name__
+            logger.error("Failed to stop AceStream instance with ace_id %s: %s", self.ace_id, error_short)  # noqa: TRY400 Don't need to be verbose
