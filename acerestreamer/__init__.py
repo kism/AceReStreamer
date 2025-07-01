@@ -23,6 +23,12 @@ PROGRAM_NAME = "Ace ReStreamer"
 URL = "https://github.com/kism/ace-restreamer"
 
 
+from pympler import muppy, summary
+from pympler.classtracker import ClassTracker
+
+tracker = ClassTracker()
+
+
 def create_app(
     test_config: AceReStreamerConf | None = None,
     instance_path: str | None = None,

@@ -35,7 +35,6 @@ class EPG:
         self._extracted_format = self.format.replace(".gz", "")  # Remove .gz for internal use
         self.region_code = epg_conf.region_code
         self.last_updated: datetime | None = None
-        self.data: bytes | None = None
         self.saved_file_path: Path | None = None
 
     def update(self, instance_path: Path) -> None:
@@ -57,12 +56,25 @@ class EPG:
             data_bytes = self._download_epg()
             downloaded_file = True
 
-        self.data = data_bytes
         self.last_updated = datetime.now(tz=OUR_TIMEZONE)
 
         if downloaded_file:
             self._write_to_file(data_bytes)  # Write to file after, so empty file is not created if download fails
             logger.info("EPG data for %s updated successfully", self.region_code)
+
+    def get_data(self) -> bytes | None:
+        """Get the EPG data as bytes."""
+        # I used to have this in RAM, but it got very large with multiple EPGs
+        if self.saved_file_path and self.saved_file_path.is_file():
+            try:
+                return self.saved_file_path.read_bytes()
+            except OSError as e:
+                error_short = type(e).__name__
+                logger.error("%s Failed to read EPG data from %s: %s", error_short, self.saved_file_path, e)  # noqa: TRY400 Fine for this to be a short error
+                return None
+        else:
+            logger.warning("No saved file path defined or file does not exist for EPG %s", self.region_code)
+            return None
 
     def _time_to_update(self) -> bool:
         """Check if the EPG data needs to be updated based on the last update time."""
@@ -132,10 +144,8 @@ class EPGHandler:
     def __init__(self) -> None:
         """Initialize the EPGHandler with a list of URLs."""
         self.epgs: list[EPG] = []
-        self.merged_epg: etree._Element | None = None
         self.condensed_epg: etree._Element | None = None
         self.instance_path: Path | None = None
-        self._last_merge_time: datetime = datetime.fromtimestamp(0, tz=UTC)  # Arbitrary old time
         self._last_condense_time: datetime = datetime.fromtimestamp(0, tz=UTC)  # Arbitrary old time
         self.set_of_tvg_ids: set[str] = set()
 
@@ -188,38 +198,21 @@ class EPGHandler:
         tv_tag.set("generator-info-url", URL)
         return tv_tag
 
-    def merge_epgs(self) -> None:
+    def merge_epgs(self) -> etree._Element:
         """Merge all EPG data into a single XML structure."""
-        time_since_last_merge: timedelta = datetime.now(tz=OUR_TIMEZONE) - self._last_merge_time
-        time_to_update: bool = time_since_last_merge > MIN_TIME_BETWEEN_EPG_PROCESSING
-
-        if self.merged_epg is not None and not time_to_update:
-            return
-
         logger.info("Merging EPG data from %d sources", len(self.epgs))
         merged_data = self._create_tv_element()  # Create a base XML element for the merged EPG
 
         for epg in self.epgs:
-            if epg.data is not None:
+            epg_data = epg.get_data()
+            if epg_data is not None:
                 merged_data.extend(
-                    etree.fromstring(epg.data)  # Parse the EPG data and extend the merged_data
+                    etree.fromstring(epg_data)  # Parse the EPG data and extend the merged_data
                 )
             else:
                 logger.warning("EPG data for %s is None, skipping", epg.region_code)
 
-        self.merged_epg = merged_data
-        self._last_merge_time = datetime.now(tz=OUR_TIMEZONE)
-        logger.debug("EPG data merged successfully")
-
-    def get_merged_epg(self) -> bytes:
-        """Get the merged EPG data from all configured EPGs."""
-        self.merge_epgs()
-
-        if self.merged_epg is None:
-            logger.error("No EPG data available to merge")
-            return b""
-
-        return etree.tostring(self.merged_epg, encoding="utf-8", xml_declaration=True)
+        return merged_data
 
     def condense_epgs(self) -> None:
         """Get a condensed version of the merged EPG data."""
@@ -229,12 +222,7 @@ class EPGHandler:
         if self.condensed_epg is not None and not time_to_update:
             return
 
-        if self.merged_epg is None:
-            self.merge_epgs()
-
-        if self.merged_epg is None:
-            logger.error("No merged EPG data available to condense")
-            return
+        merged_epgs = self.merge_epgs()
 
         if not self.set_of_tvg_ids:
             logger.warning("No TVG IDs found in the current streams, skipping EPG condensation")
@@ -242,13 +230,12 @@ class EPGHandler:
 
         condensed_data = self._create_tv_element()  # Create a base XML element for the merged EPG
 
-        merged_epg_copy = etree.ElementTree(self.merged_epg)
-        for channel in merged_epg_copy.findall("channel"):
+        for channel in merged_epgs.findall("channel"):
             tvg_id = channel.get("id")
             if tvg_id in self.set_of_tvg_ids:
                 condensed_data.append(channel)
 
-        for programme in merged_epg_copy.findall("programme"):
+        for programme in merged_epgs.findall("programme"):
             tvg_id = programme.get("channel")
             if tvg_id in self.set_of_tvg_ids:
                 condensed_data.append(programme)
@@ -264,7 +251,6 @@ class EPGHandler:
 
     def get_condensed_epg(self) -> bytes:
         """Get the condensed EPG data."""
-        self.merge_epgs()
         self.condense_epgs()
 
         if self.condensed_epg is None:

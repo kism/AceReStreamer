@@ -77,4 +77,3 @@ class AceScraperSourceApi(BaseModel):
 
     name: str
     slug: str
-    epg: list[str] = []

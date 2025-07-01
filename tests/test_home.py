@@ -85,10 +85,6 @@ def test_misc_endpoints(client):
     assert response.status_code == HTTPStatus.OK
     assert response.content_type == "application/xml; charset=utf-8"
 
-    response = client.get("/epg_full")
-    assert response.status_code == HTTPStatus.OK
-    assert response.content_type == "application/xml; charset=utf-8"
-
     response = client.get("/iptv")
     assert response.status_code == HTTPStatus.OK
     assert response.content_type == "application/vnd.apple.mpegurl"
@@ -99,7 +95,6 @@ def test_misc_endpoints(client):
     [
         "/stream",
         "/epg",
-        "/epg_full",
         "/iptv",
         "/info/guide",
         "/info/iptv",
