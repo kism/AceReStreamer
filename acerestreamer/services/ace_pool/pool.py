@@ -45,26 +45,29 @@ class AcePool:
 
     def check_ace_running(self) -> bool:
         """Use the AceStream API to check if the instance is running."""
+        healthy = False
         if not self.ace_address:
-            return False
+            return healthy
 
-        version_data = {}
         url = f"{self.ace_address}/webui/api/service?method=get_version"
+        version_data = {}
+
         try:
             response = requests.get(url, timeout=ACESTREAM_API_TIMEOUT)
             response.raise_for_status()
             version_data = response.json()
-            self.healthy = True
+            healthy = True
         except requests.RequestException as e:
             error_short = type(e).__name__
             logger.error("Ace Instance %s is not healthy: %s", self.ace_address, error_short)  # noqa: TRY400 Don't need to be verbose
-            self.healthy = False
+            healthy = False
         except Exception as e:  # noqa: BLE001 Last resort
             error_short = type(e).__name__
             logger.error("Ace Instance %s is not healthy for a weird reason: %s", self.ace_address, e)  # noqa: TRY400 Don't need to be verbose
-            self.healthy = False
+            healthy = False
 
         self.ace_version = version_data.get("result", {}).get("version", "unknown")
+        self.healthy = healthy
 
         return self.healthy
 
