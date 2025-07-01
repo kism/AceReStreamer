@@ -26,11 +26,11 @@ else:
 class AcePool:
     """A pool of AceStream instances to distribute requests across."""
 
-    def __init__(self, app_config: AppConf | None = None) -> None:
+    def __init__(self) -> None:
         """Initialize the AcePool."""
-        self.ace_address = app_config.ace_address if app_config else ""
-        self.max_size = app_config.ace_max_streams if app_config else 0
-        self.transcode_audio = app_config.transcode_audio if app_config else False
+        self.ace_address = ""
+        self.max_size = 0
+        self.transcode_audio = False
         self.ace_instances: dict[str, AcePoolEntry] = {}
         self.healthy = False
         self.ace_version = "unknown"
@@ -41,38 +41,19 @@ class AcePool:
         self.ace_address = app_config.ace_address
         self.max_size = app_config.ace_max_streams
         self.transcode_audio = app_config.transcode_audio
-        self.populate_ace_version()
         self.ace_poolboy()
-
-    def populate_ace_version(self) -> None:
-        """Get the AceStream version from the API."""
-        version_url = f"{self.ace_address}/webui/api/service?method=get_version"
-        try:
-            response = requests.get(version_url, timeout=ACESTREAM_API_TIMEOUT)
-            response.raise_for_status()
-            version_data = response.json()
-
-        except requests.RequestException as e:
-            error_short = type(e).__name__
-            logger.error("Failed to get AceStream version from %s: %s", self.ace_address, error_short)  # noqa: TRY400
-            self.ace_version = "unknown"
-            return
-
-        try:
-            self.ace_version = version_data["result"]["version"]
-            logger.info("AceStream version %s found at %s", self.ace_version, self.ace_address)
-        except KeyError:
-            logger.exception("Failed to parse AceStream version from %s: %s", self.ace_address, version_data)
 
     def check_ace_running(self) -> bool:
         """Use the AceStream API to check if the instance is running."""
         if not self.ace_address:
             return False
 
+        version_data = {}
         url = f"{self.ace_address}/webui/api/service?method=get_version"
         try:
             response = requests.get(url, timeout=ACESTREAM_API_TIMEOUT)
             response.raise_for_status()
+            version_data = response.json()
             self.healthy = True
         except requests.RequestException as e:
             error_short = type(e).__name__
@@ -82,6 +63,8 @@ class AcePool:
             error_short = type(e).__name__
             logger.error("Ace Instance %s is not healthy for a weird reason: %s", self.ace_address, e)  # noqa: TRY400 Don't need to be verbose
             self.healthy = False
+
+        self.ace_version = version_data.get("result", {}).get("version", "unknown")
 
         return self.healthy
 
