@@ -161,12 +161,13 @@ class AcePoolEntry:
             try:
                 resp_stat = requests.get(self.ace_stat_url, timeout=ACESTREAM_API_TIMEOUT)
                 resp_stat.raise_for_status()
-                self.ace_stat = AcePoolStat(**resp_stat.json())
+                resp_stat_json = resp_stat.json()
+                self.ace_stat = AcePoolStat(**resp_stat_json)
             except requests.RequestException:
                 self.ace_stat = None
             except ValidationError:
                 logger.exception("Failed to parse AceStream stat for ace_id %s", self.ace_id)
-                logger.info("Did ace stream change their API?")
+                logger.info("Did ace stream change their API?\n%s", resp_stat_json)
                 self.ace_stat = None
         else:
             logger.trace("Not keeping alive %s, not locked in", self.ace_address)

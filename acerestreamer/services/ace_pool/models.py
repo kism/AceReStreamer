@@ -54,7 +54,7 @@ class AcePoolStatResponse(BaseModel):
     is_live: int
     infohash: str
     selected_file_index: int
-    livepos: AcePoolStatResponseLivePos
+    livepos: AcePoolStatResponseLivePos | None = None
 
 
 class AcePoolStat(BaseModel):
