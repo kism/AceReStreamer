@@ -73,6 +73,7 @@ uv sync --no-group test --no-group type --no-group lint
 - bootstrap on first launch
   - administrative account
   - ~~json for the config file~~
+- [use the middleware](https://docs.acestream.net/developers/start-playback/)
 
 ### Apps that don't work
 
