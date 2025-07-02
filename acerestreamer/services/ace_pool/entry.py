@@ -31,8 +31,6 @@ class AcePoolEntry:
         self.ace_stat_url = ""
         self.ace_cmd_url = ""
 
-        self.ace_stat: AcePoolStat | None = None
-
         self.ace_pid = ace_pid
         self.ace_id = ace_id
         self.ace_address = ace_address
@@ -70,6 +68,21 @@ class AcePoolEntry:
         self.last_used = datetime.now(tz=OUR_TIMEZONE)
 
     # region Get
+    def get_ace_stat(self) -> AcePoolStat | None:
+        """Get the AceStream statistics for this instance."""
+        try:
+            resp_stat = requests.get(self.ace_stat_url, timeout=ACESTREAM_API_TIMEOUT)
+            resp_stat.raise_for_status()
+            resp_stat_json = resp_stat.json()
+            return AcePoolStat(**resp_stat_json)
+        except requests.RequestException:
+            pass
+        except ValidationError:
+            logger.exception("Failed to parse AceStream stat for ace_id %s", self.ace_id)
+            logger.info("Did ace stream change their API?\n%s", resp_stat_json)
+
+        return None
+
     def get_required_time_until_unlock(self) -> timedelta:
         """Get the time until the instance is unlocked."""
         time_now = datetime.now(tz=OUR_TIMEZONE)
@@ -157,18 +170,6 @@ class AcePoolEntry:
                 resp = requests.get(self.ace_hls_m3u8_url, timeout=ACESTREAM_API_TIMEOUT)
                 logger.trace("Keep alive, response: %s", resp.status_code)
 
-            # Update the stats
-            try:
-                resp_stat = requests.get(self.ace_stat_url, timeout=ACESTREAM_API_TIMEOUT)
-                resp_stat.raise_for_status()
-                resp_stat_json = resp_stat.json()
-                self.ace_stat = AcePoolStat(**resp_stat_json)
-            except requests.RequestException:
-                self.ace_stat = None
-            except ValidationError:
-                logger.exception("Failed to parse AceStream stat for ace_id %s", self.ace_id)
-                logger.info("Did ace stream change their API?\n%s", resp_stat_json)
-                self.ace_stat = None
         else:
             logger.trace("Not keeping alive %s, not locked in", self.ace_address)
 

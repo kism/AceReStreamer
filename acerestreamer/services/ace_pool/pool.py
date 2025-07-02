@@ -4,7 +4,7 @@ import contextlib
 import threading
 import time
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import requests
 
@@ -13,7 +13,7 @@ from acerestreamer.utils.logger import get_logger
 
 from .constants import ACESTREAM_API_TIMEOUT
 from .entry import AcePoolEntry
-from .models import AcePoolEntryForAPI, AcePoolForApi
+from .models import AcePoolEntryForAPI, AcePoolForApi, AcePoolStat
 
 logger = get_logger(__name__)
 
@@ -154,7 +154,6 @@ class AcePool:
                     time_until_unlock=time_until_unlock,
                     time_running=total_time_running,
                     ace_hls_m3u8_url=instance.ace_hls_m3u8_url,
-                    ace_stat=instance.ace_stat,
                 )
             )
 
@@ -166,6 +165,45 @@ class AcePool:
             ace_version=self.ace_version,
             transcode_audio=self.transcode_audio,
         )
+
+    def get_instance_by_pid(self, pid: int) -> AcePoolEntry | None:
+        """Get the AcePoolEntry instance by its process ID."""
+        for entry in self.ace_instances.values():
+            if entry.ace_pid == pid:
+                return entry
+
+        logger.error("No AceStream instance found with pid %s", pid)
+        return None
+
+    def get_stats_by_pid(self, pid: int) -> AcePoolStat | None:
+        """Get the AcePool statistics for a specific index."""
+        if not self.healthy:
+            logger.error("Ace pool is not healthy, cannot get stats.")
+            return None
+
+        for entry in self.ace_instances.values():
+            if entry.ace_pid == pid:
+                ace_stat = entry.get_ace_stat()
+                if ace_stat is not None:
+                    return ace_stat
+
+        return None
+
+    def get_all_stats(self) -> dict[int, dict[str, Any] | None]:
+        """Get all AcePool statistics for each instance, for the API only."""
+        # I had to use typing.Any, sad day but it's fine since its from pydantic
+        result: dict[int, dict[str, Any] | None] = {}
+        n = 1
+        for _ in range(self.max_size):
+            ace_pool_stat = self.get_stats_by_pid(n)
+            if ace_pool_stat is None:
+                result[n] = None
+            else:
+                result[n] = ace_pool_stat.model_dump()
+
+            n += 1
+
+        return result
 
     def ace_poolboy(self) -> None:
         """Run the AcePoolboy to clean up instances."""

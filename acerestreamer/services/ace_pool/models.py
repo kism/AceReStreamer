@@ -78,7 +78,6 @@ class AcePoolEntryForAPI(BaseModel):
     last_used: datetime
     date_started: datetime
     ace_hls_m3u8_url: str
-    ace_stat: AcePoolStat | None
 
     @field_serializer("time_until_unlock")
     def serialize_time_until_unlock(self, time_until_unlock: timedelta) -> int:

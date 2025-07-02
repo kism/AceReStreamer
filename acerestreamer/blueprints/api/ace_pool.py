@@ -51,3 +51,42 @@ def api_ace_pool_by_id(ace_id: str) -> Response | WerkzeugResponse:
         return jsonify({"message": "Ace ID removed successfully"}, HTTPStatus.OK)
 
     return jsonify({"error": "Method not allowed"}, HTTPStatus.METHOD_NOT_ALLOWED)
+
+
+@bp.route("/api/ace_pool_stats")
+def api_ace_pool_stats() -> Response | WerkzeugResponse:
+    """API endpoint to get Ace pool stats."""
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
+    ace_pool_stats = ace_pool.get_all_stats()
+
+    response = jsonify(ace_pool_stats)
+    response.status_code = HTTPStatus.OK
+    return response
+
+
+@bp.route("/api/ace_pool_stats/<path:pid_str>")
+def api_ace_pool_stats_by_id(pid_str: str) -> Response | WerkzeugResponse:
+    """API endpoint to get Ace pool stats by Ace ID."""
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
+    try:
+        pid_int = int(pid_str)
+    except ValueError as e:
+        error_short = type(e).__name__
+        logger.error("Invalid Ace PID: %s", pid_str)  # noqa: TRY400 Short error please
+        return jsonify({"error": "Invalid Ace PID"}, HTTPStatus.BAD_REQUEST)
+
+    ace_pool_stat = ace_pool.get_stats_by_pid(pid_int)
+
+    if ace_pool_stat is None:
+        logger.error("Ace ID %s not found in pool stats", error_short)
+        return jsonify({"error": "Ace PID not found"}, HTTPStatus.NOT_FOUND)
+
+    response = jsonify(ace_pool_stat.model_dump())
+    response.status_code = HTTPStatus.OK
+    return response
