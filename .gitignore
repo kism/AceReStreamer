@@ -3,6 +3,7 @@ test_site
 hls.min.js
 hls.min.js.map
 profiler
+*.m3u
 
 # Javascript, if we want to use eslint/scss-lintbiome for checking the html/css/javascript
 node_modules
@@ -171,3 +172,4 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 acerestreamer.svg
+test.py
