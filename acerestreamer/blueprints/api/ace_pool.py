@@ -78,16 +78,18 @@ def api_ace_pool_stats_by_id(pid_str: str) -> Response | WerkzeugResponse:
 
     try:
         pid_int = int(pid_str)
-    except ValueError as e:
-        error_short = type(e).__name__
+    except ValueError:
         logger.error("Invalid Ace PID: %s", pid_str)  # noqa: TRY400 Short error please
-        return jsonify({"error": "Invalid Ace PID"}, HTTPStatus.BAD_REQUEST)
+        resp = jsonify({"error": "Invalid Ace PID"})
+        resp.status_code = HTTPStatus.BAD_REQUEST
+        return resp
 
     ace_pool_stat = ace_pool.get_stats_by_pid(pid_int)
 
     if ace_pool_stat is None:
-        logger.error("Ace ID %s not found in pool stats", error_short)
-        return jsonify({"error": "Ace PID not found"}, HTTPStatus.NOT_FOUND)
+        resp = jsonify(None)
+        resp.status_code = HTTPStatus.OK
+        return resp
 
     response = jsonify(ace_pool_stat.model_dump())
     response.status_code = HTTPStatus.OK
