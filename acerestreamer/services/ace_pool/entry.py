@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import requests
 from pydantic import ValidationError
 
-from acerestreamer.utils import check_valid_ace_id
+from acerestreamer.utils import check_valid_ace_content_id
 from acerestreamer.utils.constants import OUR_TIMEZONE
 from acerestreamer.utils.logger import get_logger
 
@@ -23,7 +23,7 @@ class AcePoolEntry:
     """Model for an AceStream pool entry."""
 
     # region Initialization
-    def __init__(self, ace_pid: int, ace_address: str, ace_id: str, *, transcode_audio: bool) -> None:
+    def __init__(self, ace_pid: int, ace_address: str, ace_content_id: str, *, transcode_audio: bool) -> None:
         """Initialize an AceStream pool entry."""
         self._keep_alive_run_once = False
 
@@ -32,7 +32,7 @@ class AcePoolEntry:
         self.ace_cmd_url = ""
 
         self.ace_pid = ace_pid
-        self.ace_id = ace_id
+        self.ace_content_id = ace_content_id
         self.ace_address = ace_address
         if not self.ace_address.endswith("/"):
             self.ace_address += "/"
@@ -40,7 +40,7 @@ class AcePoolEntry:
         self.ace_middleware_url = (  # https://docs.acestream.net/developers/start-playback/
             f"{self.ace_address}ace/manifest.m3u8"
             "?format=json"
-            f"&content_id={self.ace_id}"
+            f"&content_id={self.ace_content_id}"
             f"&transcode_ac3={str(transcode_audio).lower()}"
             f"&pid={self.ace_pid}"
         )
@@ -57,7 +57,7 @@ class AcePoolEntry:
             resp.raise_for_status()
             response_json = resp.json()
         except requests.RequestException:
-            logger.exception("Failed to fetch AceStream URLs for ace_id %s", self.ace_id)
+            logger.exception("Failed to fetch AceStream URLs for ace_content_id %s", self.ace_content_id)
 
         self.ace_hls_m3u8_url = response_json.get("response", {}).get("playback_url", "")
         self.ace_stat_url = response_json.get("response", {}).get("stat_url", "")
@@ -78,7 +78,7 @@ class AcePoolEntry:
         except requests.RequestException:
             pass
         except ValidationError:
-            logger.exception("Failed to parse AceStream stat for ace_id %s", self.ace_id)
+            logger.exception("Failed to parse AceStream stat for ace_content_id %s", self.ace_content_id)
             logger.info("Did ace stream change their API?\n%s", resp_stat_json)
 
         return None
@@ -134,9 +134,9 @@ class AcePoolEntry:
 
         if condition_one and condition_two and condition_three:
             logger.debug(
-                "Old ace_pid %d with ace_id %s is stale. one=%s, two=%s, three=%s",
+                "Old ace_pid %d with ace_content_id %s is stale. one=%s, two=%s, three=%s",
                 self.ace_pid,
-                self.ace_id,
+                self.ace_content_id,
                 condition_one,
                 condition_two,
                 condition_three,
@@ -145,9 +145,9 @@ class AcePoolEntry:
 
         if not condition_one and condition_four:
             logger.debug(
-                "New-ish and unused ace_pid %d with ace_id %s is stale. one=%s, four=%s",
+                "New-ish and unused ace_pid %d with ace_content_id %s is stale. one=%s, four=%s",
                 self.ace_pid,
-                self.ace_id,
+                self.ace_content_id,
                 condition_one,
                 condition_four,
             )
@@ -159,13 +159,13 @@ class AcePoolEntry:
     def keep_alive(self) -> None:
         """The keep_alive method, should be called by poolboy thread."""
         # If we are locked in, we keep the stream alive
-        # Also check if the ace_id is valid, as a failsafe
+        # Also check if the ace_content_id is valid, as a failsafe
 
-        if not self.check_if_stale() and check_valid_ace_id(self.ace_id):
+        if not self.check_if_stale() and check_valid_ace_content_id(self.ace_content_id):
             # Keep Alive
             with contextlib.suppress(requests.RequestException):
                 if not self._keep_alive_run_once:
-                    logger.info("Keeping alive ace_pid %d with ace_id %s", self.ace_pid, self.ace_id)
+                    logger.info("Keeping alive ace_pid %d with ace_content_id %s", self.ace_pid, self.ace_content_id)
                     self._keep_alive_run_once = True
                 resp = requests.get(self.ace_hls_m3u8_url, timeout=ACESTREAM_API_TIMEOUT)
                 logger.trace("Keep alive, response: %s", resp.status_code)
@@ -175,9 +175,9 @@ class AcePoolEntry:
 
     # region Control
     def stop(self) -> None:
-        """Stop the AceStream instance, only access this externally via remove_instance_by_ace_id."""
+        """Stop the AceStream instance, only access this externally via remove_instance_by_ace_content_id."""
         if not self.ace_cmd_url:
-            logger.warning("No stat URL for ace_id %s, cannot stop instance", self.ace_id)
+            logger.warning("No stat URL for ace_content_id %s, cannot stop instance", self.ace_content_id)
             return
 
         url = f"{self.ace_cmd_url}?method=stop"
@@ -185,7 +185,9 @@ class AcePoolEntry:
         try:
             resp = requests.get(url, timeout=ACESTREAM_API_TIMEOUT)
             resp.raise_for_status()
-            logger.info("Stopped AceStream instance with ace_id %s", self.ace_id)
+            logger.info("Stopped AceStream instance with ace_content_id %s", self.ace_content_id)
         except requests.RequestException as e:
             error_short = type(e).__name__
-            logger.error("Failed to stop AceStream instance with ace_id %s: %s", self.ace_id, error_short)  # noqa: TRY400 Don't need to be verbose
+            logger.error(  # noqa: TRY400 Short error for requests
+                "%s Failed to stop AceStream instance with ace_content_id %s: ", error_short, self.ace_content_id
+            )

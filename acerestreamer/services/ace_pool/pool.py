@@ -71,15 +71,15 @@ class AcePool:
 
         return self.healthy
 
-    def remove_instance_by_ace_id(self, ace_id: str, caller: str = "") -> bool:
-        """Remove an AceStream instance from the pool by ace_id."""
+    def remove_instance_by_ace_content_id(self, ace_content_id: str, caller: str = "") -> bool:
+        """Remove an AceStream instance from the pool by ace_content_id."""
         if caller != "":
             caller = f"{caller}: "
-        if ace_id in self.ace_instances:
-            logger.info("%sRemoving AceStream instance with ace_id %s", caller, ace_id)
+        if ace_content_id in self.ace_instances:
+            logger.info("%sRemoving AceStream instance with ace_content_id %s", caller, ace_content_id)
             with contextlib.suppress(KeyError):
-                self.ace_instances[ace_id].stop()
-                del self.ace_instances[ace_id]
+                self.ace_instances[ace_content_id].stop()
+                del self.ace_instances[ace_content_id]
             return True
 
         return False
@@ -101,16 +101,16 @@ class AcePool:
 
             logger.info("Found available AceStream instance: %s, reclaiming it.", best_instance.ace_pid)
             ace_pid = best_instance.ace_pid
-            self.remove_instance_by_ace_id(best_instance.ace_id, caller="get_available_instance_number")
+            self.remove_instance_by_ace_content_id(best_instance.ace_content_id, caller="get_available_instance_number")
             return ace_pid
 
         logger.error("Ace pool is full, could not get available instance.")
         return None
 
-    def get_instance(self, ace_id: str) -> str | None:
-        """Find the AceStream instance URL for a given ace_id."""
-        if self.ace_instances.get(ace_id):
-            instance = self.ace_instances[ace_id]
+    def get_instance(self, ace_content_id: str) -> str | None:
+        """Find the AceStream instance URL for a given ace_content_id."""
+        if self.ace_instances.get(ace_content_id):
+            instance = self.ace_instances[ace_content_id]
             instance.update_last_used()
             return instance.ace_hls_m3u8_url
 
@@ -121,12 +121,12 @@ class AcePool:
 
         new_instance = AcePoolEntry(
             ace_pid=new_instance_number,
-            ace_id=ace_id,
+            ace_content_id=ace_content_id,
             ace_address=self.ace_address,
             transcode_audio=self.transcode_audio,
         )
 
-        self.ace_instances[ace_id] = new_instance
+        self.ace_instances[ace_content_id] = new_instance
 
         return new_instance.ace_hls_m3u8_url
 
@@ -141,13 +141,13 @@ class AcePool:
                 time_until_unlock = instance.get_time_until_unlock()
 
             total_time_running = timedelta(seconds=0)
-            if instance.ace_id != "":
+            if instance.ace_content_id != "":
                 total_time_running = datetime.now(tz=OUR_TIMEZONE) - instance.date_started
 
             instances.append(
                 AcePoolEntryForAPI(
                     ace_pid=instance.ace_pid,
-                    ace_id=instance.ace_id,
+                    ace_content_id=instance.ace_content_id,
                     date_started=instance.date_started,
                     last_used=instance.last_used,
                     locked_in=locked_in,
@@ -219,12 +219,12 @@ class AcePool:
                 for instance in self.ace_instances.values():
                     # If the instance is stale, remove it
                     if instance.check_if_stale():
-                        instances_to_remove.append(instance.ace_id)
+                        instances_to_remove.append(instance.ace_content_id)
                     else:  # Otherwise, try keep it alive
                         instance.keep_alive()
 
-                for ace_id in instances_to_remove:  # Separate loop to avoid modifying the dict while iterating
-                    self.remove_instance_by_ace_id(ace_id, caller="ace_poolboy")
+                for ace_content_id in instances_to_remove:  # Separate loop to avoid modifying the dict while iterating
+                    self.remove_instance_by_ace_content_id(ace_content_id, caller="ace_poolboy")
 
         if not self._ace_poolboy_running:
             self._ace_poolboy_running = True

@@ -18,14 +18,14 @@ bp = Blueprint("acerestreamer_stream_api", __name__)
 
 
 # region /api/stream(s)
-@bp.route("/api/stream/<path:ace_id>")
-def api_stream(ace_id: str) -> Response | WerkzeugResponse:
+@bp.route("/api/stream/<path:ace_content_id>")
+def api_stream(ace_content_id: str) -> Response | WerkzeugResponse:
     """API endpoint to get a specific stream by Ace ID."""
     auth_failure = assumed_auth_failure()
     if auth_failure:
         return auth_failure
 
-    stream = ace_scraper.get_stream_by_ace_id(ace_id)
+    stream = ace_scraper.get_stream_by_ace_content_id(ace_content_id)
 
     response = jsonify(stream.model_dump())
     response.status_code = HTTPStatus.OK
@@ -88,7 +88,7 @@ def api_streams_health() -> Response | WerkzeugResponse:
         return auth_failure
 
     streams = ace_scraper.get_streams_health()
-    streams_dict = {ace_id: quality.model_dump() for ace_id, quality in streams.items()}
+    streams_dict = {ace_content_id: quality.model_dump() for ace_content_id, quality in streams.items()}
 
     response = jsonify(streams_dict)
     response.status_code = HTTPStatus.OK

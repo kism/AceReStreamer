@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import requests
 from bs4 import BeautifulSoup, Tag
 
-from acerestreamer.utils import check_valid_ace_id
+from acerestreamer.utils import check_valid_ace_content_id
 from acerestreamer.utils.logger import get_logger
 
 from .common import ScraperCommon
@@ -70,7 +70,7 @@ class HTTPStreamScraper(ScraperCommon):
                 ace_stream_url: str = link_href.strip()
 
                 # Skip URLs that are already added, maybe this can check if the second instance has a different title
-                if ace_stream_url in [stream.ace_id for stream in streams_candidates]:
+                if ace_stream_url in [stream.ace_content_id for stream in streams_candidates]:
                     continue
 
                 # Recurse through the parent tags to find a suitable title
@@ -102,7 +102,7 @@ class HTTPStreamScraper(ScraperCommon):
 
                 streams_candidates.append(
                     CandidateAceStream(
-                        ace_id=ace_stream_url,
+                        ace_content_id=ace_stream_url,
                         title_candidates=candidate_titles,
                     )
                 )
@@ -144,7 +144,7 @@ class HTTPStreamScraper(ScraperCommon):
                 # If there are multiple candidates, we can choose the first one
                 title = " / ".join(new_title_candidates)
 
-            url_no_uri = self.name_processor.extract_ace_id_from_url(candidate.ace_id)
+            url_no_uri = self.name_processor.extract_ace_content_id_from_url(candidate.ace_content_id)
 
             if not self.name_processor.check_title_allowed(
                 title=title,
@@ -152,7 +152,7 @@ class HTTPStreamScraper(ScraperCommon):
             ):
                 continue
 
-            if not check_valid_ace_id(url_no_uri):
+            if not check_valid_ace_content_id(url_no_uri):
                 logger.warning("Invalid Ace ID found in candidate: %s, skipping", url_no_uri)
                 continue
 
@@ -163,7 +163,7 @@ class HTTPStreamScraper(ScraperCommon):
             found_streams.append(
                 FoundAceStream(
                     title=title,
-                    ace_id=url_no_uri,
+                    ace_content_id=url_no_uri,
                     tvg_id=tvg_id,
                     tvg_logo=tvg_logo,
                 )

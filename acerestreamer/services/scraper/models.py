@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Self
 
 from pydantic import BaseModel, model_validator
 
-from acerestreamer.utils import check_valid_ace_id
+from acerestreamer.utils import check_valid_ace_content_id
 
 if TYPE_CHECKING:
     from acerestreamer.config.models import ScrapeSiteHTML, ScrapeSiteIPTV
@@ -17,7 +17,7 @@ class FoundAceStream(BaseModel):
     """Model for a found AceStream."""
 
     title: str
-    ace_id: str
+    ace_content_id: str
     tvg_id: str
     tvg_logo: str
     quality: int = -1
@@ -25,8 +25,8 @@ class FoundAceStream(BaseModel):
     @model_validator(mode="after")
     def manual_validate(self) -> Self:
         """Validate the AceStream ID manually."""
-        if not check_valid_ace_id(self.ace_id):
-            msg = f"FoundAceStream: Invalid AceStream ID: {self.ace_id}"
+        if not check_valid_ace_content_id(self.ace_content_id):
+            msg = f"FoundAceStream: Invalid AceStream ID: {self.ace_content_id}"
             raise ValueError(msg)
 
         if not self.title:
@@ -47,7 +47,7 @@ class FoundAceStreams(BaseModel):
 class CandidateAceStream(BaseModel):
     """Model for a candidate AceStream."""
 
-    ace_id: str
+    ace_content_id: str
     title_candidates: list[str] = []
 
 
@@ -57,7 +57,7 @@ class FlatFoundAceStream(BaseModel):
     site_name: str
     quality: int
     title: str
-    ace_id: str
+    ace_content_id: str
     tvg_id: str
     tvg_logo: str
     program_title: str = ""

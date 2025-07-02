@@ -106,18 +106,18 @@ class AceScraper:
         threading.Thread(target=run_scrape_thread, name="AceScraper: run_scrape", daemon=True).start()
 
     # region GET
-    def get_stream_by_ace_id(self, ace_id: str) -> FlatFoundAceStream:
-        """Get a stream by its Ace ID, will use the first found matching FlatFoundAceStream by ace_id."""
+    def get_stream_by_ace_content_id(self, ace_content_id: str) -> FlatFoundAceStream:
+        """Get a stream by its Ace ID, will use the first found matching FlatFoundAceStream by ace_content_id."""
         streams = self.get_streams_flat()
         for found_stream in streams:
-            if found_stream.ace_id == ace_id:
+            if found_stream.ace_content_id == ace_content_id:
                 return found_stream
 
         return FlatFoundAceStream(  # Default return if no stream is found
             site_name="Unknown",
             quality=self._ace_quality.default_quality,
-            title=ace_id,
-            ace_id=ace_id,
+            title=ace_content_id,
+            ace_content_id=ace_content_id,
             tvg_id="",
             tvg_logo="",
             has_ever_worked=False,
@@ -129,7 +129,7 @@ class AceScraper:
 
         for found_stream in streams:
             for stream in found_stream.stream_list:
-                stream.quality = self._ace_quality.get_quality(stream.ace_id).quality
+                stream.quality = self._ace_quality.get_quality(stream.ace_content_id).quality
 
         return streams
 
@@ -142,12 +142,12 @@ class AceScraper:
                 for stream in scraped_streams_listing.stream_list:
                     new_stream = FlatFoundAceStream(
                         site_name=scraped_streams_listing.site_name,
-                        quality=self._ace_quality.get_quality(stream.ace_id).quality,
+                        quality=self._ace_quality.get_quality(stream.ace_content_id).quality,
                         title=stream.title,
-                        ace_id=stream.ace_id,
+                        ace_content_id=stream.ace_content_id,
                         tvg_id=stream.tvg_id,
                         tvg_logo=stream.tvg_logo,
-                        has_ever_worked=self._ace_quality.get_quality(stream.ace_id).has_ever_worked,
+                        has_ever_worked=self._ace_quality.get_quality(stream.ace_content_id).has_ever_worked,
                     )
 
                     program_title, program_description = self.epg_handler.get_current_program(tvg_id=stream.tvg_id)
@@ -172,10 +172,10 @@ class AceScraper:
 
                 new_stream: FlatFoundAceStream = FlatFoundAceStream(
                     site_name=found_stream["site_name"],
-                    quality=self._ace_quality.get_quality(stream["ace_id"]).quality,
-                    has_ever_worked=self._ace_quality.get_quality(stream["ace_id"]).has_ever_worked,
+                    quality=self._ace_quality.get_quality(stream["ace_content_id"]).quality,
+                    has_ever_worked=self._ace_quality.get_quality(stream["ace_content_id"]).has_ever_worked,
                     title=stream["title"],
-                    ace_id=stream["ace_id"],
+                    ace_content_id=stream["ace_content_id"],
                     tvg_id=stream["tvg_id"],
                     tvg_logo=stream["tvg_logo"],
                     program_title=program_title,
@@ -209,9 +209,9 @@ class AceScraper:
         return self._ace_quality.ace_streams
 
     # region Quality
-    def increment_quality(self, ace_id: str, m3u_playlist: str = "") -> None:
-        """Increment the quality of a stream by ace_id."""
-        self._ace_quality.increment_quality(ace_id=ace_id, m3u_playlist=m3u_playlist)
+    def increment_quality(self, ace_content_id: str, m3u_playlist: str = "") -> None:
+        """Increment the quality of a stream by ace_content_id."""
+        self._ace_quality.increment_quality(ace_content_id=ace_content_id, m3u_playlist=m3u_playlist)
 
     def check_missing_quality(self) -> bool:
         """Check the quality of all streams."""
@@ -229,7 +229,7 @@ class AceScraper:
 
             ace_streams_never_worked = len(
                 [  # We also check if the quality is zero, since maybe it started working
-                    ace_id for ace_id, quality in self._ace_quality.ace_streams.items()
+                    ace_content_id for ace_content_id, quality in self._ace_quality.ace_streams.items()
                 ]
             )
 
@@ -240,7 +240,7 @@ class AceScraper:
             for stream in streams:
                 if not stream.has_ever_worked or stream.quality == 0:
                     n += 1
-                    stream_url = f"{base_url}/{stream.ace_id}"
+                    stream_url = f"{base_url}/{stream.ace_content_id}"
                     logger.info("Checking Ace Stream %s (%d/%d)", stream_url, n, ace_streams_never_worked)
 
                     for _ in range(3):
@@ -271,13 +271,13 @@ class AceScraper:
             logger.warning("Scraper found no AceStreams.")
             return
 
-        # Collect all unique ace_ids
-        unique_ace_ids = set()
+        # Collect all unique ace_content_ids
+        unique_ace_content_ids = set()
         for found_streams in self.streams:
             for stream in found_streams.stream_list:
-                unique_ace_ids.add(stream.ace_id)
+                unique_ace_content_ids.add(stream.ace_content_id)
 
-        n = len(unique_ace_ids)
+        n = len(unique_ace_content_ids)
         msg = f"Found AceStreams: {n} unique streams across {len(self.streams)} site definitions."
         logger.info(msg)
 

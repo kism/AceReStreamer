@@ -114,7 +114,7 @@ class StreamNameProcessor:
             tvg_id = f'tvg-id="{stream.tvg_id}"'
             tvg_logo = f'tvg-logo="{external_url}/tvg-logo/{stream.tvg_logo}"' if stream.tvg_logo else ""
 
-            m3u8_addition = f"#EXTINF:-1 {tvg_id} {tvg_logo},{stream.title}\n{external_url}/hls/{stream.ace_id}"
+            m3u8_addition = f"#EXTINF:-1 {tvg_id} {tvg_logo},{stream.title}\n{external_url}/hls/{stream.ace_content_id}"
 
             iptv_set.add(m3u8_addition)
 
@@ -129,7 +129,7 @@ class StreamNameProcessor:
             return f"{title_no_cc}.{country_code.lower()}"
         return ""
 
-    def extract_ace_id_from_url(self, url: str) -> str:
+    def extract_ace_content_id_from_url(self, url: str) -> str:
         """Extract the AceStream ID from a URL."""
         url = url.strip()
         for prefix in ACE_URL_PREFIXES:

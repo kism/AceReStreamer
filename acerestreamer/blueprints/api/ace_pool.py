@@ -30,24 +30,26 @@ def api_ace_pool() -> Response | WerkzeugResponse:
     return response
 
 
-@bp.route("/api/ace_pool/<path:ace_id>", methods=["GET", "DELETE"])
-def api_ace_pool_by_id(ace_id: str) -> Response | WerkzeugResponse:
+@bp.route("/api/ace_pool/<path:ace_content_id>", methods=["GET", "DELETE"])
+def api_ace_pool_by_id(ace_content_id: str) -> Response | WerkzeugResponse:
     """API endpoint to get or delete an Ace pool entry by Ace ID."""
     auth_failure = assumed_auth_failure()
     if auth_failure:
         return auth_failure
 
-    instance_url = ace_pool.get_instance(ace_id)
+    instance_url = ace_pool.get_instance(ace_content_id)
 
     if instance_url is None:
-        logger.error("Ace ID %s not found in pool", ace_id)
+        logger.error("Ace ID %s not found in pool", ace_content_id)
         return jsonify({"error": "Ace ID not found"}, HTTPStatus.NOT_FOUND)
 
     if request.method == "GET":
         return jsonify({"ace_url": instance_url}, HTTPStatus.OK)
 
     if request.method == "DELETE":
-        ace_pool.remove_instance_by_ace_id(ace_id, caller="API")  # Assume success since we validated above
+        ace_pool.remove_instance_by_ace_content_id(
+            ace_content_id, caller="API"
+        )  # Assume success since we validated above
         return jsonify({"message": "Ace ID removed successfully"}, HTTPStatus.OK)
 
     return jsonify({"error": "Method not allowed"}, HTTPStatus.METHOD_NOT_ALLOWED)

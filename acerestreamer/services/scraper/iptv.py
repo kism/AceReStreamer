@@ -81,7 +81,7 @@ class IPTVStreamScraper(ScraperCommon):
 
     # region Line Processing
     def _found_ace_stream_from_extinf_line(
-        self, line: str, ace_id: str, title_filter: TitleFilter
+        self, line: str, ace_content_id: str, title_filter: TitleFilter
     ) -> FoundAceStream | None:
         """Parse EXTINF line and return title if valid."""
         extinf_parts = 2
@@ -101,7 +101,7 @@ class IPTVStreamScraper(ScraperCommon):
         self._download_tvg_logo(parts[0], title)
         tvg_logo = self.name_processor.find_tvg_logo_image(title)
 
-        return FoundAceStream(title=title, ace_id=ace_id, tvg_id=tvg_id, tvg_logo=tvg_logo)
+        return FoundAceStream(title=title, ace_content_id=ace_content_id, tvg_id=tvg_id, tvg_logo=tvg_logo)
 
     def _parse_m3u_content(self, content: str, site: ScrapeSiteIPTV) -> list[FoundAceStream]:
         """Parse M3U content and extract AceStream entries."""
@@ -118,9 +118,9 @@ class IPTVStreamScraper(ScraperCommon):
                 line_one = line_normalised
             # Second line of an entry, creates the ace stream object
             elif self.name_processor.check_valid_ace_url(line_normalised) and line_one:
-                ace_id = self.name_processor.extract_ace_id_from_url(line_normalised)
+                ace_content_id = self.name_processor.extract_ace_content_id_from_url(line_normalised)
                 ace_stream = self._found_ace_stream_from_extinf_line(
-                    line=line_one, ace_id=ace_id, title_filter=site.title_filter
+                    line=line_one, ace_content_id=ace_content_id, title_filter=site.title_filter
                 )
                 if ace_stream is not None:
                     found_streams.append(ace_stream)

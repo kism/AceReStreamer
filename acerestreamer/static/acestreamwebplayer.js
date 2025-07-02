@@ -31,12 +31,12 @@ function getStreamsSources() {
 }
 
 // region API/getStream
-function getStream(streamId) {
+function getStream(aceContentId) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
 
   // GET the hello endpoint that the flask app has
-  return fetch(`/api/stream/${streamId}`, {
+  return fetch(`/api/stream/${aceContentId}`, {
     method: "GET",
     signal: controller.signal,
   })
@@ -330,17 +330,17 @@ function loadStream() {
 }
 
 // region Stream/loadStreamUrl
-function loadStreamUrl(streamId, streamInfo = null) {
-  window.location.hash = streamId; // Set the URL in the hash
+function loadStreamUrl(aceContentId, streamInfo = null) {
+  window.location.hash = aceContentId; // Set the URL in the hash
 
   const streamNameElement = document.getElementById("stream-name");
-  streamNameElement.innerHTML = streamInfo.title || streamId;
+  streamNameElement.innerHTML = streamInfo.title || aceContentId;
 
   populateCurrentStreamInfo(streamInfo.program_title, streamInfo.program_description);
 
   loadStream();
 
-  if (streamId !== streamInfo.title && streamInfo.title !== "") {
+  if (aceContentId !== streamInfo.title && streamInfo.title !== "") {
     document.title = `${streamInfo.title}`;
   } else {
     document.title = `AceRestreamer`;
@@ -348,16 +348,16 @@ function loadStreamUrl(streamId, streamInfo = null) {
 }
 
 // region Stream/loadPlayStream
-function loadPlayStream(streamID) {
-  getStream(streamID)
+function loadPlayStream(aceContentId) {
+  getStream(aceContentId)
     .then((streamInfo) => {
-      loadStreamUrl(streamID, streamInfo);
+      loadStreamUrl(aceContentId, streamInfo);
 
       attemptPlay();
     })
     .catch((error) => {
       console.error("Failed to get stream info:", error);
-      loadStreamUrl(streamID);
+      loadStreamUrl(aceContentId);
       attemptPlay();
     });
 }
@@ -365,10 +365,10 @@ function loadPlayStream(streamID) {
 // region Stream/loadPlayStreamFromHash
 // biome-ignore lint/correctness/noUnusedVariables: HTML uses it
 function loadPlayStreamFromHash() {
-  const streamId = window.location.hash.substring(1);
-  if (streamId) {
-    console.log(`Loading stream from hash: ${streamId}`);
-    loadPlayStream(streamId);
+  const aceContentId = window.location.hash.substring(1);
+  if (aceContentId) {
+    console.log(`Loading stream from hash: ${aceContentId}`);
+    loadPlayStream(aceContentId);
   } else {
     console.error("No stream ID loaded...");
     setOnPageStreamErrorMessage("No stream ID loaded...");
@@ -590,8 +590,8 @@ function populateAcePoolTable(aceInstances) {
     const td_quality = document.createElement("td");
 
     const td_playing = document.createElement("td");
-    if (instance.ace_id !== "") {
-      getStream(instance.ace_id)
+    if (instance.ace_content_id !== "") {
+      getStream(instance.ace_content_id)
         .then((streamInfo) => {
           quality = streamInfo.quality || -1;
           if (quality === -1) {
@@ -607,13 +607,13 @@ function populateAcePoolTable(aceInstances) {
 
           td_playing.textContent = streamInfo.title || "Unknown Stream";
           td_playing.addEventListener("click", () => {
-            loadPlayStream(instance.ace_id);
+            loadPlayStream(instance.ace_content_id);
           });
           td_playing.classList.add("link");
           td_playing.title = streamInfo.program_title || "No program title";
 
           // Odd spot for this, but its the easiest way to refresh the current program info
-          if (streamInfo.ace_id === window.location.hash.substring(1)) {
+          if (streamInfo.ace_content_id === window.location.hash.substring(1)) {
             populateCurrentStreamInfo(streamInfo.program_title, streamInfo.program_description);
           }
         })
@@ -631,9 +631,9 @@ function populateAcePoolTable(aceInstances) {
     unlockButton.classList.add("unlock-button");
     unlockButton.onclick = () => {
       currentlyFetchingM3U8 = "";
-      makeAcePoolInstanceAvailable(instance.ace_id)
+      makeAcePoolInstanceAvailable(instance.ace_content_id)
         .then(() => {
-          console.log(`Ace Pool instance ${instance.ace_id} made available`);
+          console.log(`Ace Pool instance ${instance.ace_content_id} made available`);
           populateAceInfoTables(); // Refresh the table after unlocking
         })
         .catch((_error) => {});
@@ -731,7 +731,7 @@ function populateStreamTable(streamsSource) {
         td_link = document.createElement("td");
         const a = document.createElement("a"); // Create a new anchor element
         a.textContent = `${stream.title}`;
-        a.onclick = () => loadPlayStream(stream.ace_id);
+        a.onclick = () => loadPlayStream(stream.ace_content_id);
         td_link.appendChild(a); // Append the anchor element to the table data cell
 
         // Program title cell
@@ -806,12 +806,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Check the page hash for a stream ID, load it if present
-  const streamId = window.location.hash.substring(1);
-  if (streamId) {
-    console.log(`Loading stream on page load: ${streamId}`);
-    getStream(streamId)
+  const aceContentId = window.location.hash.substring(1);
+  if (aceContentId) {
+    console.log(`Loading stream on page load: ${aceContentId}`);
+    getStream(aceContentId)
       .then((streamInfo) => {
-        loadStreamUrl(streamId, streamInfo);
+        loadStreamUrl(aceContentId, streamInfo);
       })
       .catch((_error) => {});
   }
@@ -822,9 +822,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Set up the load stream button
   loadStreamButton = document.getElementById("load-stream-button");
   loadStreamButton.onclick = () => {
-    const streamId = document.getElementById("stream-id-input").value;
-    if (streamId) {
-      loadPlayStream(streamId);
+    const aceContentId = document.getElementById("stream-id-input").value;
+    if (aceContentId) {
+      loadPlayStream(aceContentId);
     }
   };
 });

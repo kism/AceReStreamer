@@ -74,7 +74,7 @@ class AcePoolEntryForAPI(BaseModel):
     time_until_unlock: timedelta = timedelta(seconds=0)
     time_running: timedelta = timedelta(seconds=0)
     ace_pid: int
-    ace_id: str
+    ace_content_id: str
     last_used: datetime
     date_started: datetime
     ace_hls_m3u8_url: str
