@@ -79,7 +79,7 @@ def api_ace_pool_stats_by_id(pid_str: str) -> Response | WerkzeugResponse:
     try:
         pid_int = int(pid_str)
     except ValueError:
-        logger.error("Invalid Ace PID: %s", pid_str)  # noqa: TRY400 Short error please
+        logger.error("Invalid Ace PID: %s", pid_str)  # noqa: TRY400 Short error for requests
         resp = jsonify({"error": "Invalid Ace PID"})
         resp.status_code = HTTPStatus.BAD_REQUEST
         return resp

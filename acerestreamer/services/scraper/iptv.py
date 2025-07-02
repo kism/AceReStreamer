@@ -70,7 +70,7 @@ class IPTVStreamScraper(ScraperCommon):
             response.raise_for_status()
         except requests.RequestException as e:
             error_short = type(e).__name__
-            logger.error("Error scraping IPTV site %s, %s", site.url, error_short)  # noqa: TRY400
+            logger.error("Error scraping IPTV site %s, %s", site.url, error_short)  # noqa: TRY400 Short error for requests
             return None
 
         response.encoding = "utf-8"
@@ -161,7 +161,7 @@ class IPTVStreamScraper(ScraperCommon):
             response.raise_for_status()
         except requests.RequestException as e:
             error_short = type(e).__name__
-            logger.error("Error downloading TVG logo for %s, %s", title, error_short)  # noqa: TRY400 Shorter error
+            logger.error("Error downloading TVG logo for %s, %s", title, error_short)  # noqa: TRY400 Short error for requests
             return
 
         tvg_logo_path = self.instance_path / "tvg_logos" / f"{title_slug}.{url_file_extension}"

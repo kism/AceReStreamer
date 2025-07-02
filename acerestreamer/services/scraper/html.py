@@ -51,7 +51,7 @@ class HTTPStreamScraper(ScraperCommon):
                 self.scraper_cache.save_to_cache(site.url, scraped_site_str)
             except requests.RequestException as e:
                 error_short = type(e).__name__
-                logger.error("Error scraping site %s, %s", site.url, error_short)  # noqa: TRY400 Naa this should be shorter
+                logger.error("Error scraping site %s, %s", site.url, error_short)  # noqa: TRY400 Short error for requests
                 return None
 
         soup = BeautifulSoup(scraped_site_str, "html.parser")

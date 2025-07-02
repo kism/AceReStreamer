@@ -70,7 +70,7 @@ class EPG:
                 return self.saved_file_path.read_bytes()
             except OSError as e:
                 error_short = type(e).__name__
-                logger.error("%s Failed to read EPG data from %s: %s", error_short, self.saved_file_path, e)  # noqa: TRY400 Fine for this to be a short error
+                logger.error("%s Failed to read EPG data from %s: %s", error_short, self.saved_file_path, e)  # noqa: TRY400 Short error for requests
                 return None
         else:
             logger.warning("No saved file path defined or file does not exist for EPG %s", self.region_code)
@@ -116,7 +116,7 @@ class EPG:
 
         except requests.RequestException as e:
             error_short = type(e).__name__
-            logger.error("Failed to download EPG data: %s", error_short)  # noqa: TRY400 Short error is good
+            logger.error("Failed to download EPG data: %s", error_short)  # noqa: TRY400 Short error for requests
 
         return data
 

@@ -59,11 +59,11 @@ class AcePool:
             healthy = True
         except requests.RequestException as e:
             error_short = type(e).__name__
-            logger.error("Ace Instance %s is not healthy: %s", self.ace_address, error_short)  # noqa: TRY400 Don't need to be verbose
+            logger.error("Ace Instance %s is not healthy: %s", self.ace_address, error_short)  # noqa: TRY400 Short error for requests
             healthy = False
         except Exception as e:  # noqa: BLE001 Last resort
             error_short = type(e).__name__
-            logger.error("Ace Instance %s is not healthy for a weird reason: %s", self.ace_address, e)  # noqa: TRY400 Don't need to be verbose
+            logger.error("Ace Instance %s is not healthy for a weird reason: %s", self.ace_address, e)  # noqa: TRY400 Short error for requests
             healthy = False
 
         self.ace_version = version_data.get("result", {}).get("version", "unknown")

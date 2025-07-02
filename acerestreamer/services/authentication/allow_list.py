@@ -35,7 +35,7 @@ class AllowList:
                 try:
                     self.allowlist_ips = json.load(f)
                 except json.JSONDecodeError:
-                    logger.error("Failed to decode JSON from allow list file, resetting")  # noqa: TRY400
+                    logger.error("Failed to decode JSON from allow list file, resetting")  # noqa: TRY400 Short error for requests
 
         self.save()
 

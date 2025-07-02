@@ -144,7 +144,7 @@ class AceQuality:
                         f"{error_short} loading quality cache, invalid quality data for Ace ID: "
                         f"{ace_content_id}: {quality_data}"
                     )
-                    logger.error(msg)  # noqa: TRY400 Short error is fine
+                    logger.error(msg)  # noqa: TRY400 Short error for requests
                     continue
 
     def save_cache(self) -> None:
