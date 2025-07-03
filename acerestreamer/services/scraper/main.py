@@ -11,6 +11,7 @@ import requests
 
 from acerestreamer.services.epg import EPGHandler
 from acerestreamer.utils.logger import get_logger
+from acerestreamer.utils.content_id_infohash_mapping import content_id_infohash_mapping
 
 from .html import HTTPStreamScraper
 from .iptv import IPTVStreamScraper
@@ -312,20 +313,16 @@ class AceScraper:
 
         url = f"{self.ace_url}/server/api?api_version=3&method=get_content_id&infohash="
 
-        content_id_infohash_map: dict[str, str] = {}
-
-        content_id_infohash_map_file = self.instance_path / "content_id_infohash_map.json"
-        if content_id_infohash_map_file.exists():
-            try:
-                with content_id_infohash_map_file.open("r", encoding="utf-8") as file:
-                    content_id_infohash_map = json.load(file)
-            except (json.JSONDecodeError, OSError):
-                pass
-
         for found_streams in self.streams:
             for stream in found_streams.stream_list:
                 if not stream.ace_content_id:
-                    stream.ace_content_id = content_id_infohash_map.get(stream.ace_infohash, "")
+                    stream.ace_content_id = content_id_infohash_mapping.get_infohash(
+                        content_id=stream.ace_infohash,
+                    )
+                elif not stream.ace_infohash:
+                    stream.ace_infohash = content_id_infohash_mapping.get_content_id(
+                        infohash=stream.ace_content_id,
+                    )
 
         for found_streams in self.streams:
             for stream in found_streams.stream_list:
@@ -352,7 +349,9 @@ class AceScraper:
                             stream.title,
                             stream.ace_content_id,
                         )
-                        content_id_infohash_map[stream.ace_infohash] = stream.ace_content_id
+                        content_id_infohash_mapping.add_mapping(
+                            content_id=stream.ace_content_id,
+                            infohash=stream.ace_infohash,
+                        )
 
-        with content_id_infohash_map_file.open("w", encoding="utf-8") as file:
-            json.dump(content_id_infohash_map, file, indent=4)
+        content_id_infohash_mapping.save_config()

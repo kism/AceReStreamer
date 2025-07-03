@@ -8,6 +8,7 @@ from pydantic import ValidationError
 
 from acerestreamer.utils import check_valid_ace_content_id_or_infohash
 from acerestreamer.utils.constants import OUR_TIMEZONE
+from acerestreamer.utils.content_id_infohash_mapping import content_id_infohash_mapping
 from acerestreamer.utils.logger import get_logger
 
 from .constants import ACESTREAM_API_TIMEOUT
@@ -77,6 +78,12 @@ class AcePoolEntry:
         self.ace_stat_url = response_json.get("response", {}).get("stat_url", "")
         self.ace_cmd_url = response_json.get("response", {}).get("command_url", "")
         self.ace_infohash = response_json.get("response", {}).get("infohash", "")
+
+        if self.ace_infohash:
+            content_id_infohash_mapping.add_mapping(
+                content_id=self.ace_content_id,
+                infohash=self.ace_infohash,
+            )
 
     def update_last_used(self) -> None:
         """Update the last used timestamp."""
