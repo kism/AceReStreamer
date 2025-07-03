@@ -57,6 +57,7 @@ class AcePoolEntry:
             resp.raise_for_status()
             response_json = resp.json()
         except requests.RequestException:
+            response_json = {}
             logger.exception("Failed to fetch AceStream URLs for ace_content_id %s", self.ace_content_id)
 
         self.ace_hls_m3u8_url = response_json.get("response", {}).get("playback_url", "")
