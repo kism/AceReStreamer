@@ -94,7 +94,6 @@ class AceQuality:
     """For tracking quality of Streams."""
 
     default_quality: int = -1  # Unknown quality
-    currently_checking_quality = False
 
     def __init__(self) -> None:
         """Init AceQuality."""
@@ -186,8 +185,3 @@ class AceQuality:
         logger.debug("Updated quality for Ace ID %s: %s", ace_content_id, self.ace_streams[ace_content_id].quality)
 
         self.save_cache()
-
-    def check_missing_quality(self) -> None:
-        """Cycle through all Ace IDs that have never worked and check them."""
-        if self.currently_checking_quality:
-            return

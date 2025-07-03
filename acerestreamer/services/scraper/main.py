@@ -50,6 +50,7 @@ class AceScraper:
         self.stream_name_processor: StreamNameProcessor = StreamNameProcessor()
         self.html_scraper: HTTPStreamScraper = HTTPStreamScraper()
         self.iptv_scraper: IPTVStreamScraper = IPTVStreamScraper()
+        self.currently_checking_quality: bool = False
 
     def load_config(
         self,
@@ -215,7 +216,7 @@ class AceScraper:
 
     def check_missing_quality(self) -> bool:
         """Check the quality of all streams."""
-        if self._ace_quality.currently_checking_quality:
+        if self.currently_checking_quality:
             return False
 
         def check_missing_quality_thread(base_url: str) -> None:
@@ -229,7 +230,7 @@ class AceScraper:
 
             ace_streams_never_worked = len(
                 [  # We also check if the quality is zero, since maybe it started working
-                    ace_content_id for ace_content_id, quality in self._ace_quality.ace_streams.items()
+                    ace_content_id for ace_content_id, _ in self._ace_quality.ace_streams.items()
                 ]
             )
 
