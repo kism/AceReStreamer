@@ -36,16 +36,9 @@ def slugify(file_name: str | bytes) -> str:
 def check_valid_ace_content_id_or_infohash(ace_content_id: str) -> bool:
     """Check if the AceStream ID is valid."""
     if len(ace_content_id) != ACE_ID_LENGTH:
-        logger.warning(
-            "AceStream ID is not the expected length %d != %d , skipping: %s",
-            ACE_ID_LENGTH,
-            len(ace_content_id),
-            ace_content_id,
-        )
         return False
 
-    if not _HEX_PATTERN.match(ace_content_id):
-        logger.warning("AceStream ID contains invalid characters: %s", ace_content_id)
+    if not _HEX_PATTERN.match(ace_content_id):  # noqa: SIM103 eh
         return False
 
     return True

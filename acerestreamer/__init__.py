@@ -84,6 +84,7 @@ def create_app(
         instance_path=app.instance_path,
         epg_conf_list=app.are_conf.epgs,
         external_url=app.are_conf.flask.SERVER_NAME,
+        ace_url=app.are_conf.app.ace_address,
     )
     instances.ace_pool.load_config(
         app_config=app.are_conf.app,

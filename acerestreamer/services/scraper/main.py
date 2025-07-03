@@ -1,6 +1,7 @@
 """Scraper object."""
 
 import contextlib
+import json
 import threading
 import time
 from pathlib import Path
@@ -42,6 +43,7 @@ class AceScraper:
     def __init__(self) -> None:
         """Init the scraper."""
         self.external_url: str = ""
+        self.ace_url: str = ""
         self.streams: list[FoundAceStreams] = []
         self.html: list[ScrapeSiteHTML] = []
         self.iptv_m3u8: list[ScrapeSiteIPTV] = []
@@ -51,6 +53,7 @@ class AceScraper:
         self.html_scraper: HTTPStreamScraper = HTTPStreamScraper()
         self.iptv_scraper: IPTVStreamScraper = IPTVStreamScraper()
         self.currently_checking_quality: bool = False
+        self.instance_path: Path | None = None
 
     def load_config(
         self,
@@ -58,12 +61,15 @@ class AceScraper:
         epg_conf_list: list[EPGInstanceConf],
         instance_path: Path | str,
         external_url: str,
+        ace_url: str,
     ) -> None:
         """Load the configuration for the scraper."""
         if isinstance(instance_path, str):
             instance_path = Path(instance_path)
 
+        self.instance_path = instance_path
         self.external_url = external_url
+        self.ace_url = ace_url
         self.epg_handler.load_config(epg_conf_list=epg_conf_list, instance_path=instance_path)
         self.html = ace_scrape_settings.html
         self.iptv_m3u8 = ace_scrape_settings.iptv_m3u8
@@ -102,6 +108,7 @@ class AceScraper:
                 self.epg_handler.set_of_tvg_ids = {
                     stream.tvg_id for found_streams in self.streams for stream in found_streams.stream_list
                 }
+                self.populate_missing_content_ids()
                 time.sleep(SCRAPE_INTERVAL)
 
         threading.Thread(target=run_scrape_thread, name="AceScraper: run_scrape", daemon=True).start()
@@ -297,3 +304,55 @@ class AceScraper:
             streams=self.get_streams_flat(),
             external_url=external_url,
         )
+
+    def populate_missing_content_ids(self) -> None:
+        """Populate missing content IDs for streams that have an infohash."""
+        if not self.instance_path:
+            return
+
+        url = f"{self.ace_url}/server/api?api_version=3&method=get_content_id&infohash="
+
+        content_id_infohash_map: dict[str, str] = {}
+
+        content_id_infohash_map_file = self.instance_path / "content_id_infohash_map.json"
+        if content_id_infohash_map_file.exists():
+            try:
+                with content_id_infohash_map_file.open("r", encoding="utf-8") as file:
+                    content_id_infohash_map = json.load(file)
+            except (json.JSONDecodeError, OSError):
+                pass
+
+        for found_streams in self.streams:
+            for stream in found_streams.stream_list:
+                if not stream.ace_content_id:
+                    stream.ace_content_id = content_id_infohash_map.get(stream.ace_infohash, "")
+
+        for found_streams in self.streams:
+            for stream in found_streams.stream_list:
+                if not stream.ace_content_id and stream.ace_infohash:
+                    try:
+                        resp = requests.get(
+                            f"{url}{stream.ace_infohash}",
+                            timeout=10,
+                        )
+                        resp.raise_for_status()
+                        data = resp.json()
+                    except (requests.RequestException, ValueError):
+                        logger.error(  # noqa: TRY400 AAA
+                            "Failed to fetch content ID for stream %s with infohash %s",
+                            stream.title,
+                            stream.ace_infohash,
+                        )
+                        continue
+
+                    if data.get("result", {}).get("content_id"):
+                        stream.ace_content_id = data["result"]["content_id"]
+                        logger.info(
+                            "Populated missing content ID for stream %s: %s",
+                            stream.title,
+                            stream.ace_content_id,
+                        )
+                        content_id_infohash_map[stream.ace_infohash] = stream.ace_content_id
+
+        with content_id_infohash_map_file.open("w", encoding="utf-8") as file:
+            json.dump(content_id_infohash_map, file, indent=4)
