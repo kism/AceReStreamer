@@ -338,7 +338,7 @@ class AceScraper:
                         resp.raise_for_status()
                         data = resp.json()
                     except (requests.RequestException, ValueError):
-                        logger.error(  # noqa: TRY400 AAA
+                        logger.error(  # noqa: TRY400 Short error for requests
                             "Failed to fetch content ID for stream %s with infohash %s",
                             stream.title,
                             stream.ace_infohash,
