@@ -73,7 +73,6 @@ uv sync --no-group test --no-group type --no-group lint
 - bootstrap on first launch
   - administrative account
   - ~~json for the config file~~
-- [use the middleware](https://docs.acestream.net/developers/start-playback/)
 
 ### Apps that don't work
 
@@ -144,3 +143,4 @@ see iptv.html.j2
   - ~~filtered epg, e.g. only serve an epg for streams that are available~~
   - ~~correct epg xml metadata~~
 - ~~determine stream health from m3u8~~
+- ~~[use the middleware](https://docs.acestream.net/developers/start-playback/)~~

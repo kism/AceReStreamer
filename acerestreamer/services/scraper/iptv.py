@@ -4,6 +4,7 @@ import re
 from typing import TYPE_CHECKING
 
 import requests
+from pydantic import ValidationError
 
 from acerestreamer.utils import slugify
 from acerestreamer.utils.constants import SUPPORTED_TVG_LOGO_EXTENSIONS
@@ -101,7 +102,17 @@ class IPTVStreamScraper(ScraperCommon):
         self._download_tvg_logo(parts[0], title)
         tvg_logo = self.name_processor.find_tvg_logo_image(title)
 
-        return FoundAceStream(title=title, ace_content_id=ace_content_id, tvg_id=tvg_id, tvg_logo=tvg_logo)
+        try:
+            found_ace_stream = FoundAceStream(
+                title=title, ace_content_id=ace_content_id, tvg_id=tvg_id, tvg_logo=tvg_logo
+            )
+        except ValidationError:
+            msg = "Validation error creating FoundAceStream object:\n"
+            msg += f"Tried title: {title}, ace_content_id: {ace_content_id}, tvg_id: {tvg_id}, tvg_logo: {tvg_logo}"
+            msg += f" for line: \n{line}"
+            logger.error(msg)  # noqa: TRY400
+            return None
+        return found_ace_stream
 
     def _parse_m3u_content(self, content: str, site: ScrapeSiteIPTV) -> list[FoundAceStream]:
         """Parse M3U content and extract AceStream entries."""
@@ -116,17 +127,22 @@ class IPTVStreamScraper(ScraperCommon):
             # First line of an entry
             if line.startswith("#EXTINF:"):
                 line_one = line_normalised
+                continue
+
             # Second line of an entry, creates the ace stream object
-            elif self.name_processor.check_valid_ace_url(line_normalised) and line_one:
+            if (
+                not line.startswith("#EXTINF:")
+                and self.name_processor.check_valid_ace_url(line_normalised)
+                and line_one
+            ):
                 ace_content_id = self.name_processor.extract_ace_content_id_from_url(line_normalised)
                 ace_stream = self._found_ace_stream_from_extinf_line(
                     line=line_one, ace_content_id=ace_content_id, title_filter=site.title_filter
                 )
                 if ace_stream is not None:
                     found_streams.append(ace_stream)
-                line_one = ""
-            else:
-                line_one = ""
+
+            line_one = ""
 
         return found_streams
 
