@@ -44,7 +44,8 @@ class ContentIDInfohashMapping:
 
         config_path = self.instance_path / "content_id_infohash_map.json"
         with config_path.open("w", encoding="utf-8") as file:
-            json.dump(self.content_id_infohash_mapping, file)
+            dict_to_save = dict(self.content_id_infohash_mapping) # TODO FIXME
+            json.dump(dict_to_save, file)
 
     def add_mapping(self, content_id: str, infohash: str) -> None:
         """Add a mapping between content ID and infohash."""
