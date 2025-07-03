@@ -107,7 +107,7 @@ class AcePool:
         logger.error("Ace pool is full, could not get available instance.")
         return None
 
-    def get_instance(self, ace_content_id: str) -> str | None:
+    def get_instance_by_content_id(self, ace_content_id: str) -> str | None:
         """Find the AceStream instance URL for a given ace_content_id."""
         if self.ace_instances.get(ace_content_id):
             instance = self.ace_instances[ace_content_id]
@@ -129,6 +129,19 @@ class AcePool:
         self.ace_instances[ace_content_id] = new_instance
 
         return new_instance.ace_hls_m3u8_url
+
+    def get_instance_by_infohash(self, ace_infohash: str) -> str | None:
+        """Find the AceStream instance URL for a given infohash."""
+        if not ace_infohash:
+            logger.error("No infohash provided, cannot get AceStream instance.")
+            return None
+
+        for instance in self.ace_instances.values():
+            if instance.ace_infohash == ace_infohash:
+                instance.update_last_used()
+                return instance.ace_hls_m3u8_url
+
+        return None
 
     def get_instances_nice(self) -> AcePoolForApi:
         """Get a list of AcePoolEntryForAPI instances for the API."""

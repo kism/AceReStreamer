@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from acerestreamer.utils import slugify
+from acerestreamer.utils import check_valid_ace_content_id_or_infohash, slugify
 from acerestreamer.utils.constants import SUPPORTED_TVG_LOGO_EXTENSIONS
 from acerestreamer.utils.logger import get_logger
 
@@ -20,7 +20,7 @@ else:
 logger = get_logger(__name__)
 
 STREAM_TITLE_MAX_LENGTH = 50
-ACE_URL_PREFIXES = [
+ACE_URL_PREFIXES_CONTENT_ID = [
     "acestream://",
     "http://127.0.0.1:6878/ace/getstream?id=",
     "http://127.0.0.1:6878/ace/getstream?content_id=",
@@ -28,6 +28,11 @@ ACE_URL_PREFIXES = [
     "http://127.0.0.1:6878/ace/manifest.m3u8?content_id=",  # Side note, this is the good one when using ace
     "plugin://script.module.horus?action=play&id=",  # Horus Kodi plugin
 ]
+ACE_URL_PREFIXES_INFOHASH = [
+    "http://127.0.0.1:6878/ace/getstream?infohash=",
+    "http://127.0.0.1:6878/ace/manifest.m3u8?infohash=",
+]
+
 
 # Compiled regex patterns
 COUNTRY_CODE_PATTERN = re.compile(r"\[([A-Z]{2})\]")
@@ -76,7 +81,7 @@ class StreamNameProcessor:
         """Cleanup the candidate title."""
         title = title.strip()
 
-        for prefix in ACE_URL_PREFIXES:
+        for prefix in ACE_URL_PREFIXES_CONTENT_ID:
             title = title.removeprefix(prefix)
 
         title = title.split("\n")[0].strip()  # Remove any newlines
@@ -132,17 +137,36 @@ class StreamNameProcessor:
     def extract_ace_content_id_from_url(self, url: str) -> str:
         """Extract the AceStream ID from a URL."""
         url = url.strip()
-        for prefix in ACE_URL_PREFIXES:
+        for prefix in ACE_URL_PREFIXES_CONTENT_ID:
             url = url.replace(prefix, "")
 
         if "&" in url:
             url = url.split("&")[0]
 
+        if not check_valid_ace_content_id_or_infohash(url):
+            return ""
+
+        return url
+
+    def extract_ace_infohash_from_url(self, url: str) -> str:
+        """Extract the AceStream infohash from a URL."""
+        url = url.strip()
+        for prefix in ACE_URL_PREFIXES_INFOHASH:
+            url = url.replace(prefix, "")
+
+        if "&" in url:
+            url = url.split("&")[0]
+
+        if not check_valid_ace_content_id_or_infohash(url):
+            return ""
+
         return url
 
     def check_valid_ace_url(self, url: str) -> bool:
         """Check if the AceStream URL is valid."""
-        return any(url.startswith(prefix) for prefix in ACE_URL_PREFIXES)
+        return any(url.startswith(prefix) for prefix in ACE_URL_PREFIXES_CONTENT_ID) or any(
+            url.startswith(prefix) for prefix in ACE_URL_PREFIXES_INFOHASH
+        )
 
     def check_title_allowed(self, title: str, title_filter: TitleFilter) -> bool:
         """Check if the title contains any disallowed words."""

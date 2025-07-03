@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import requests
 from pydantic import ValidationError
 
-from acerestreamer.utils import check_valid_ace_content_id
+from acerestreamer.utils import check_valid_ace_content_id_or_infohash
 from acerestreamer.utils.constants import OUR_TIMEZONE
 from acerestreamer.utils.logger import get_logger
 
@@ -23,8 +23,20 @@ class AcePoolEntry:
     """Model for an AceStream pool entry."""
 
     # region Initialization
-    def __init__(self, ace_pid: int, ace_address: str, ace_content_id: str, *, transcode_audio: bool) -> None:
+    def __init__(
+        self,
+        ace_pid: int,
+        ace_address: str,
+        ace_content_id: str = "",
+        ace_infohash: str = "",
+        *,
+        transcode_audio: bool,
+    ) -> None:
         """Initialize an AceStream pool entry."""
+        if not ace_content_id and not ace_infohash:
+            msg = "AcePoolEntry: Either ace_content_id or ace_infohash must be provided"
+            raise ValueError(msg)
+
         self._keep_alive_run_once = False
 
         self.ace_hls_m3u8_url = ""
@@ -33,6 +45,7 @@ class AcePoolEntry:
 
         self.ace_pid = ace_pid
         self.ace_content_id = ace_content_id
+        self.ace_infohash = ace_infohash
         self.ace_address = ace_address
         if not self.ace_address.endswith("/"):
             self.ace_address += "/"
@@ -63,6 +76,7 @@ class AcePoolEntry:
         self.ace_hls_m3u8_url = response_json.get("response", {}).get("playback_url", "")
         self.ace_stat_url = response_json.get("response", {}).get("stat_url", "")
         self.ace_cmd_url = response_json.get("response", {}).get("command_url", "")
+        self.ace_infohash = response_json.get("response", {}).get("infohash", "")
 
     def update_last_used(self) -> None:
         """Update the last used timestamp."""
@@ -162,7 +176,7 @@ class AcePoolEntry:
         # If we are locked in, we keep the stream alive
         # Also check if the ace_content_id is valid, as a failsafe
 
-        if not self.check_if_stale() and check_valid_ace_content_id(self.ace_content_id):
+        if not self.check_if_stale() and check_valid_ace_content_id_or_infohash(self.ace_content_id):
             # Keep Alive
             with contextlib.suppress(requests.RequestException):
                 if not self._keep_alive_run_once:

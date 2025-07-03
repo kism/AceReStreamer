@@ -8,7 +8,7 @@ from pathlib import Path
 from pydantic import BaseModel
 
 from acerestreamer.utils.constants import OUR_TIMEZONE
-from acerestreamer.utils.helpers import check_valid_ace_content_id
+from acerestreamer.utils.helpers import check_valid_ace_content_id_or_infohash
 from acerestreamer.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -116,7 +116,7 @@ class AceQuality:
 
         cleaned_cache = {}
         for ace_content_id, quality in self.ace_streams.items():
-            if check_valid_ace_content_id(ace_content_id):
+            if check_valid_ace_content_id_or_infohash(ace_content_id):
                 cleaned_cache[ace_content_id] = quality
             else:
                 logger.warning("Invalid Ace ID found in cache: %s", ace_content_id)
@@ -161,7 +161,7 @@ class AceQuality:
 
     def get_quality(self, ace_content_id: str) -> Quality:
         """Get the quality of a stream by ace_content_id."""
-        if not check_valid_ace_content_id(ace_content_id):
+        if not check_valid_ace_content_id_or_infohash(ace_content_id):
             return Quality()
 
         if ace_content_id not in self.ace_streams:
@@ -175,7 +175,7 @@ class AceQuality:
 
     def increment_quality(self, ace_content_id: str, m3u_playlist: str) -> None:
         """Increment the quality of a stream by ace_content_id."""
-        if not check_valid_ace_content_id(ace_content_id):
+        if not check_valid_ace_content_id_or_infohash(ace_content_id):
             return
 
         self._ensure_entry(ace_content_id)

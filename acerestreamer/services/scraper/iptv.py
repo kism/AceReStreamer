@@ -82,7 +82,11 @@ class IPTVStreamScraper(ScraperCommon):
 
     # region Line Processing
     def _found_ace_stream_from_extinf_line(
-        self, line: str, ace_content_id: str, title_filter: TitleFilter
+        self,
+        line: str,
+        ace_content_id: str,
+        ace_infohash: str,
+        title_filter: TitleFilter,
     ) -> FoundAceStream | None:
         """Parse EXTINF line and return title if valid."""
         extinf_parts = 2
@@ -104,7 +108,11 @@ class IPTVStreamScraper(ScraperCommon):
 
         try:
             found_ace_stream = FoundAceStream(
-                title=title, ace_content_id=ace_content_id, tvg_id=tvg_id, tvg_logo=tvg_logo
+                title=title,
+                ace_content_id=ace_content_id,
+                ace_infohash=ace_infohash,
+                tvg_id=tvg_id,
+                tvg_logo=tvg_logo,
             )
         except ValidationError:
             msg = "Validation error creating FoundAceStream object:\n"
@@ -136,8 +144,12 @@ class IPTVStreamScraper(ScraperCommon):
                 and line_one
             ):
                 ace_content_id = self.name_processor.extract_ace_content_id_from_url(line_normalised)
+                ace_infohash = self.name_processor.extract_ace_infohash_from_url(line_normalised)
                 ace_stream = self._found_ace_stream_from_extinf_line(
-                    line=line_one, ace_content_id=ace_content_id, title_filter=site.title_filter
+                    line=line_one,
+                    ace_content_id=ace_content_id,
+                    ace_infohash=ace_infohash,
+                    title_filter=site.title_filter,
                 )
                 if ace_stream is not None:
                     found_streams.append(ace_stream)

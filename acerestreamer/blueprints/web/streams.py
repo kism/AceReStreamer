@@ -29,7 +29,7 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    instance_ace_hls_m3u8_url = ace_pool.get_instance(path)
+    instance_ace_hls_m3u8_url = ace_pool.get_instance_by_content_id(path)
 
     if not instance_ace_hls_m3u8_url:
         msg = f"Can't server hls_stream, Ace pool is full: {path}"

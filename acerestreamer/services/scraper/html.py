@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import requests
 from bs4 import BeautifulSoup, Tag
 
-from acerestreamer.utils import check_valid_ace_content_id
+from acerestreamer.utils import check_valid_ace_content_id_or_infohash
 from acerestreamer.utils.logger import get_logger
 
 from .common import ScraperCommon
@@ -152,7 +152,7 @@ class HTTPStreamScraper(ScraperCommon):
             ):
                 continue
 
-            if not check_valid_ace_content_id(url_no_uri):
+            if not check_valid_ace_content_id_or_infohash(url_no_uri):
                 logger.warning("Invalid Ace ID found in candidate: %s, skipping", url_no_uri)
                 continue
 

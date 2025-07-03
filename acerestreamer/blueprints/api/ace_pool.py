@@ -37,7 +37,7 @@ def api_ace_pool_by_id(ace_content_id: str) -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    instance_url = ace_pool.get_instance(ace_content_id)
+    instance_url = ace_pool.get_instance_by_content_id(ace_content_id)
 
     if instance_url is None:
         logger.error("Ace ID %s not found in pool", ace_content_id)
