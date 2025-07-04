@@ -101,7 +101,7 @@ def hls_multistream(path: str) -> Response | WerkzeugResponse:
         ace_resp.raise_for_status()
     except requests.RequestException as e:
         error_short = type(e).__name__
-        logger.error("reverse proxy failure /hls/m/ %s %s %s", error_short, e.errno, e.strerror)  # noqa: TRY400 Short error for requests
+        logger.error("reverse proxy failure /hls/m/ %s", error_short)  # noqa: TRY400 Short error for requests
         error_msg = "Failed to fetch HLS multistream"
 
         response = jsonify({"error": error_msg})
