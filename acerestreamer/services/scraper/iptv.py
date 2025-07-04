@@ -145,6 +145,7 @@ class IPTVStreamScraper(ScraperCommon):
             ):
                 ace_content_id = self.name_processor.extract_ace_content_id_from_url(line_normalised)
                 ace_infohash = self.name_processor.extract_ace_infohash_from_url(line_normalised)
+
                 ace_stream = self._found_ace_stream_from_extinf_line(
                     line=line_one,
                     ace_content_id=ace_content_id,
@@ -183,7 +184,7 @@ class IPTVStreamScraper(ScraperCommon):
             logger.warning("Unsupported TVG logo file extension for %s: %s", title, url_file_extension)
             return
 
-        logger.info("Downloading TVG logo for %s from %s", title, tvg_logo_url)
+        logger.trace("Downloading TVG logo for %s from %s", title, tvg_logo_url)
         try:
             response = requests.get(tvg_logo_url, timeout=1)
             response.raise_for_status()

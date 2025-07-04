@@ -72,7 +72,7 @@ class StreamNameProcessor:
         """Perform replacements in the M3U content."""
         for key, value in self.cache.items():
             if key in name:
-                logger.debug("Replacing '%s' with '%s' in '%s'", key, value, name)
+                logger.trace("Replacing '%s' with '%s' in '%s'", key, value, name)
                 name = name.replace(key, value)
 
         return name

@@ -15,8 +15,8 @@ from acerestreamer.blueprints.web import home as home_bp
 from acerestreamer.blueprints.web import info as info_bp
 from acerestreamer.blueprints.web import iptv as iptv_bp
 from acerestreamer.blueprints.web import streams as stream_bp
-from acerestreamer.utils.content_id_infohash_mapping import content_id_infohash_mapping
 from acerestreamer.config import AceReStreamerConf
+from acerestreamer.utils.content_id_infohash_mapping import content_id_infohash_mapping
 from acerestreamer.utils.flask_helpers import FlaskAceReStreamer, cache, check_static_folder, register_error_handlers
 from acerestreamer.utils.logger import get_logger, setup_logger
 
@@ -94,7 +94,10 @@ def create_app(
         instance_path=app.instance_path,
         password=app.are_conf.app.password,
     )
-    content_id_infohash_mapping.load_config(instance_path=app.instance_path)
+    content_id_infohash_mapping.load_config(
+        instance_path=app.instance_path,
+        ace_url=app.are_conf.app.ace_address,
+    )
 
     app.logger.info("Starting Web Server")
     app.logger.info("%s version: %s", PROGRAM_NAME, __version__)
