@@ -74,7 +74,6 @@ uv sync --no-group test --no-group type --no-group lint
   - administrative account
   - ~~json for the config file~~
 - cleanup streampaths
-- download speeds?
 
 ### Apps that don't work
 
