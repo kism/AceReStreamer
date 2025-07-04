@@ -4,8 +4,8 @@ from acerestreamer.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-ACE_CONTENT_PATH = "/ace/c/"
-FUNKY_ACE_HLS_PATH = "/hls/m/"  # For multistreams
+
+CONTENT_PATHS = ["/ace/c/", "/hls/c/", "/hls/m/"]
 
 
 def replace_m3u_sources(m3u_content: str, ace_address: str, server_name: str) -> str:
@@ -16,9 +16,12 @@ def replace_m3u_sources(m3u_content: str, ace_address: str, server_name: str) ->
 
     def process_line(line: str) -> str:
         line_stripped = line.strip()
-        if (ACE_CONTENT_PATH in line and line_stripped.startswith(ace_address)) or (
-            FUNKY_ACE_HLS_PATH in line and line_stripped.startswith(ace_address)
-        ):
+
+        if "#EXT-X-MEDIA:URI=" in line_stripped: # Avoid whatever this is, seems to bork VLC
+            return ""
+
+        if any(path in line_stripped for path in CONTENT_PATHS):
+            # Replace the Ace Stream address with the server name
             return line_stripped.replace(ace_address, server_name)
         return line_stripped
 
