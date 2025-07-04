@@ -4,7 +4,7 @@ from http import HTTPStatus
 from pathlib import Path
 
 import requests
-from flask import Blueprint, Response, jsonify, send_file
+from flask import Blueprint, Response, jsonify, request, send_file
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.instances import ace_pool, ace_scraper
@@ -127,15 +127,22 @@ def hls_multistream(path: str) -> Response | WerkzeugResponse:
     return Response(content_str, ace_resp.status_code)
 
 
-# region /ace/c/
+# region /ace/c/ and /hls/c/ Content paths for regular and multistream
 @bp.route("/ace/c/<path:path>")
+@bp.route("/hls/c/<path:path>")
 def ace_content(path: str) -> Response | WerkzeugResponse:
     """Reverse proxy the Ace content."""
     auth_failure = assumed_auth_failure()
     if auth_failure:
         return auth_failure
 
-    url = f"{current_app.are_conf.app.ace_address}/ace/c/{path}"
+    # Determine the correct URL based on the request path
+    if "/hls/c/" in request.path:
+        url = f"{current_app.are_conf.app.ace_address}/hls/c/{path}"
+        route_prefix = "/hls/c/"
+    else:
+        url = f"{current_app.are_conf.app.ace_address}/ace/c/{path}"
+        route_prefix = "/ace/c/"
 
     logger.trace("Ace content requested for url: %s", url)
 
@@ -144,48 +151,11 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
         resp.raise_for_status()
     except requests.RequestException as e:
         error_short = type(e).__name__
-        logger.error("/ace/c/ reverse proxy failure %s", error_short)  # noqa: TRY400 Short error for requests
+        logger.error("%s reverse proxy failure %s", route_prefix, error_short)  # noqa: TRY400 Short error for requests
         return jsonify({"error": "Failed to fetch HLS stream"}, HTTPStatus.INTERNAL_SERVER_ERROR)
     except requests.Timeout as e:
         error_short = type(e).__name__
-        logger.error("/ace/c/ reverse proxy timeout %s %s %s", error_short, e.errno, e.strerror)  # noqa: TRY400 Short error for requests
-        return jsonify({"error": "Ace content timeout"}, HTTPStatus.REQUEST_TIMEOUT)
-
-    headers = [
-        (name, value)
-        for (name, value) in resp.raw.headers.items()
-        if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS
-    ]
-
-    response = Response(resp.content, resp.status_code, headers)
-
-    response.headers["Content-Type"] = "video/MP2T"  # Doesn't seem to be necessary, Apple says so in the spec
-
-    return response
-
-
-# region /hls/c/
-@bp.route("/hls/c/<path:path>")  # Multistreams
-def ace_multistream(path: str) -> Response | WerkzeugResponse:
-    """Reverse proxy the Ace content."""
-    auth_failure = assumed_auth_failure()
-    if auth_failure:
-        return auth_failure
-
-    url = f"{current_app.are_conf.app.ace_address}/hls/c/{path}"
-
-    logger.trace("Ace content requested for url: %s", url)
-
-    try:
-        resp = requests.get(url, timeout=REVERSE_PROXY_TIMEOUT, stream=True)
-        resp.raise_for_status()
-    except requests.RequestException as e:
-        error_short = type(e).__name__
-        logger.error("/hls/c/ reverse proxy failure %s", error_short)  # noqa: TRY400 Short error for requests
-        return jsonify({"error": "Failed to fetch HLS stream"}, HTTPStatus.INTERNAL_SERVER_ERROR)
-    except requests.Timeout as e:
-        error_short = type(e).__name__
-        logger.error("/hls/c/ reverse proxy timeout %s %s %s", error_short, e.errno, e.strerror)  # noqa: TRY400 Short error for requests
+        logger.error("%s reverse proxy timeout %s %s %s", route_prefix, error_short, e.errno, e.strerror)  # noqa: TRY400 Short error for requests
         return jsonify({"error": "Ace content timeout"}, HTTPStatus.REQUEST_TIMEOUT)
 
     headers = [
