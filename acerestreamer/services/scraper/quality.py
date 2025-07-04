@@ -178,6 +178,10 @@ class AceQuality:
         if not check_valid_ace_content_id_or_infohash(ace_content_id):
             return
 
+        if "#EXT-X-STREAM-INF" in m3u_playlist:
+            logger.debug("Skipping quality update for Ace ID %s, multistream detected", ace_content_id)
+            return
+
         self._ensure_entry(ace_content_id)
 
         self.ace_streams[ace_content_id].update_quality(m3u_playlist)

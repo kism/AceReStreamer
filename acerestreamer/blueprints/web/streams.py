@@ -21,7 +21,7 @@ REVERSE_PROXY_EXCLUDED_HEADERS = ["content-encoding", "content-length", "transfe
 REVERSE_PROXY_TIMEOUT = 10  # Very high but alas
 
 
-# region /hls
+# region /hls/
 @bp.route("/hls/<path:path>")
 def hls_stream(path: str) -> Response | WerkzeugResponse:
     """Reverse proxy the HLS from Ace."""
@@ -29,10 +29,15 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    instance_ace_hls_m3u8_url = ace_pool.get_instance_by_content_id(path)
+    instance_ace_hls_m3u8_url: str | None = None
+
+    if ".m3u8" in path:
+        instance_ace_hls_m3u8_url = f"{current_app.are_conf.app.ace_address}/{path}"
+    else:
+        instance_ace_hls_m3u8_url = ace_pool.get_instance_by_content_id(path)
 
     if not instance_ace_hls_m3u8_url:
-        msg = f"Can't server hls_stream, Ace pool is full: {path}"
+        msg = f"Can't serve hls_stream, Ace pool is full: {path}"
         logger.error("HLS stream error: %s", msg)
         return jsonify({"error": msg}, HTTPStatus.SERVICE_UNAVAILABLE)
 
@@ -82,6 +87,32 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
     ace_scraper.increment_quality(path, m3u_playlist=content_str)
 
     return Response(content_str, ace_resp.status_code, headers)
+
+
+# region /hls/m/
+@bp.route("/hls/m/<path:path>")
+def hls_multistream(path: str) -> Response | WerkzeugResponse:
+    """Reverse proxy the HLS multistream from Ace."""
+    logger.warning("MULTISTREAM")
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
+    url = f"{current_app.are_conf.app.ace_address}/hls/m/{path}"
+
+    try:
+        ace_resp = requests.get(url, timeout=REVERSE_PROXY_TIMEOUT, stream=True)
+        ace_resp.raise_for_status()
+    except requests.RequestException as e:
+        error_short = type(e).__name__
+        logger.error("reverse proxy failure /hls/m/ %s %s %s", error_short, e.errno, e.strerror)  # noqa: TRY400 Short error for requests
+        error_msg = "Failed to fetch HLS multistream"
+
+        response = jsonify({"error": error_msg})
+        response.status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+        return response
+
+    return Response(ace_resp.content, ace_resp.status_code)
 
 
 # region /ace/c/

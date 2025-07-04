@@ -28,21 +28,21 @@ class AcePoolEntry:
         self,
         ace_pid: int,
         ace_address: str,
-        ace_content_id: str = "",
+        ace_content_id: str,
         ace_infohash: str = "",
         *,
         transcode_audio: bool,
     ) -> None:
         """Initialize an AceStream pool entry."""
-        if not ace_content_id and not ace_infohash:
-            msg = "AcePoolEntry: Either ace_content_id or ace_infohash must be provided"
+        if not check_valid_ace_content_id_or_infohash(ace_content_id):
+            msg = f"AcePoolEntry: Invalid AceStream content_id: {ace_content_id}"
             raise ValueError(msg)
 
         self._keep_alive_run_once = False
 
-        self.ace_hls_m3u8_url = ""
-        self.ace_stat_url = ""
-        self.ace_cmd_url = ""
+        self.ace_hls_m3u8_url: str = ""
+        self.ace_stat_url: str = ""
+        self.ace_cmd_url: str = ""
 
         self.ace_pid = ace_pid
         self.ace_content_id = ace_content_id
@@ -186,7 +186,7 @@ class AcePoolEntry:
         if not self.check_if_stale() and check_valid_ace_content_id_or_infohash(self.ace_content_id):
             # Keep Alive
             with contextlib.suppress(requests.RequestException):
-                if not self._keep_alive_run_once:
+                if not self._keep_alive_run_once and self.ace_hls_m3u8_url != "":
                     logger.info("Keeping alive ace_pid %d with ace_content_id %s", self.ace_pid, self.ace_content_id)
                     self._keep_alive_run_once = True
                 resp = requests.get(self.ace_hls_m3u8_url, timeout=ACESTREAM_API_TIMEOUT)

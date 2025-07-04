@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 
 import requests
 
+from acerestreamer.utils import check_valid_ace_content_id_or_infohash
 from acerestreamer.utils.constants import OUR_TIMEZONE
 from acerestreamer.utils.logger import get_logger
 
@@ -109,6 +110,10 @@ class AcePool:
 
     def get_instance_by_content_id(self, ace_content_id: str) -> str | None:
         """Find the AceStream instance URL for a given ace_content_id."""
+        if not check_valid_ace_content_id_or_infohash(ace_content_id):
+            logger.error("Invalid AceStream content ID: %s", ace_content_id)
+            return None
+
         if self.ace_instances.get(ace_content_id):
             instance = self.ace_instances[ace_content_id]
             instance.update_last_used()
@@ -139,6 +144,16 @@ class AcePool:
         for instance in self.ace_instances.values():
             if instance.ace_infohash == ace_infohash:
                 instance.update_last_used()
+                return instance.ace_hls_m3u8_url
+
+        return None
+
+    def get_instance_by_multistream_path(self, ace_multistream_path: str) -> str | None:
+        """Find the AceStream instance URL for a given multistream path."""
+        for instance in self.ace_instances.values():
+            if ace_multistream_path in instance.ace_hls_m3u8_url:
+                instance.update_last_used()
+                logger.error("YEP MULTISTREAM: %s", instance.ace_hls_m3u8_url)
                 return instance.ace_hls_m3u8_url
 
         return None
