@@ -59,36 +59,6 @@ function getStream(aceContentId) {
     });
 }
 
-// region API/getStreamsFromSource
-function getStreamsFromSource(sourceSlug) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000);
-  return fetch(`/api/streams/by_source/${sourceSlug}`, {
-    method: "GET",
-    signal: controller.signal,
-  })
-    .then((response) => {
-      if (response.ok) {
-        return response.json();
-      } else {
-        console.error(`Error fetching streams from source ${sourceSlug}: ${response.status}`);
-        throw new Error(`Error fetching streams from source ${sourceSlug}: ${response.status}`);
-      }
-    })
-    .then((data) => {
-      return data;
-    })
-    .catch((error) => {
-      clearTimeout(timeoutId); // Stop the timeout since we only care about the GET timing out
-      if (error.name === "AbortError") {
-        console.error("getStreamsFromSource Fetch request timed out");
-      } else {
-        console.error(`getStreamsFromSource Error: ${error.message}`);
-      }
-      throw error;
-    });
-}
-
 // region API/getAcePool
 function getAcePool() {
   const controller = new AbortController();
