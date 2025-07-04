@@ -17,7 +17,7 @@ def replace_m3u_sources(m3u_content: str, ace_address: str, server_name: str) ->
     def process_line(line: str) -> str:
         line_stripped = line.strip()
 
-        if "#EXT-X-MEDIA:URI=" in line_stripped: # Avoid whatever this is, seems to bork VLC
+        if "#EXT-X-MEDIA:URI=" in line_stripped:  # Avoid whatever this is, seems to bork VLC
             return ""
 
         if any(path in line_stripped for path in CONTENT_PATHS):
