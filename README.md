@@ -64,16 +64,11 @@ uv sync --no-group test --no-group type --no-group lint
 
 ### Features
 
-- /health endpoint
 - pytest
 - vitest?
-- iptv api
-  - ~~more on the iptv guide~~
-  - per source iptv feeds
 - bootstrap on first launch
   - administrative account
   - ~~json for the config file~~
-- cleanup streampaths
 
 ### Apps that don't work
 
@@ -145,3 +140,6 @@ see iptv.html.j2
   - ~~correct epg xml metadata~~
 - ~~determine stream health from m3u8~~
 - ~~[use the middleware](https://docs.acestream.net/developers/start-playback/)~~
+- ~~cleanup streampaths~~
+- iptv api
+  - ~~more on the iptv guide~~
