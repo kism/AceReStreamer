@@ -1,11 +1,11 @@
 // region Global Variables
 let currentlyFetchingM3U8 = "";
 
-// region API/getStreamsSources
-function getStreamsSources() {
+// region API/getStreamsFlat
+function getStreamsFlat() {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
-  return fetch("/api/sources/flat", {
+  return fetch("/api/streams/flat", {
     method: "GET",
     signal: controller.signal,
   })
@@ -22,9 +22,9 @@ function getStreamsSources() {
     .catch((error) => {
       clearTimeout(timeoutId); // Stop the timeout since we only care about the GET timing out
       if (error.name === "AbortError") {
-        console.error("getStreamsSources Fetch request timed out");
+        console.error("getStreamsFlat Fetch request timed out");
       } else {
-        console.error(`getStreamsSources Error: ${error.message}`);
+        console.error(`getStreamsFlat Error: ${error.message}`);
       }
       throw error;
     });
@@ -444,7 +444,7 @@ function attemptPlay() {
 // biome-ignore lint/correctness/noUnusedVariables: HTML uses it
 function populateTables() {
   populateAceInfoTables();
-  populateStreamTables();
+  populateStreamTable();
 }
 
 // region Table/populateAceInfoTables
@@ -647,43 +647,11 @@ function populateAcePoolTable(aceInstances) {
   }
 }
 
-// region Table/populateStreamTables
-function populateStreamTables() {
-  getStreamsSources().then((sources) => {
-    const streamTableDiv = document.getElementById("stream-table");
-
-    // Create a document fragment to build new content
-    const fragment = document.createDocumentFragment();
-
-    for (const source of sources) {
-      const tableTitle = document.createElement("h4");
-      tableTitle.textContent = source.name;
-      fragment.appendChild(tableTitle);
-
-      const table = document.createElement("table");
-      table.classList.add("stream-table");
-      table.id = `stream-table-${source.slug}`;
-      fragment.appendChild(table);
-    }
-
-    // Only replace if the structure has actually changed
-    if (streamTableDiv.children.length !== sources.length * 2) {
-      streamTableDiv.innerHTML = "";
-      streamTableDiv.appendChild(fragment);
-    }
-
-    // Now populate each table (this will update content without structure changes)
-    for (const source of sources) {
-      populateStreamTable(source);
-    }
-  });
-}
-
 // region Table/populateStreamTable
-function populateStreamTable(streamsSource) {
-  const tableId = `stream-table-${streamsSource.slug}`;
+function populateStreamTable() {
+  const tableId = `stream-table`;
 
-  getStreamsFromSource(streamsSource.slug)
+  getStreamsFlat()
     .then((streams) => {
       const table = document.getElementById(tableId);
       table.innerHTML = ""; // Clear the table before adding new data
@@ -792,8 +760,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Populate tables
   populateAceInfoTables();
   setInterval(populateAceInfoTables, 30000);
-  populateStreamTables();
-  setInterval(populateStreamTables, 95007);
+  populateStreamTable();
+  setInterval(populateStreamTable, 95007);
 
   // Check if Hls is even defined
   if (typeof Hls === "undefined") {

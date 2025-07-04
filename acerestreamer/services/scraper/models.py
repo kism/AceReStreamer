@@ -63,7 +63,7 @@ class CandidateAceStream(BaseModel):
 class FlatFoundAceStream(BaseModel):
     """Flat model for a found AceStream."""
 
-    site_name: str
+    site_names: list[str]
     quality: int
     title: str
     ace_content_id: str

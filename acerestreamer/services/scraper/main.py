@@ -120,7 +120,7 @@ class AceScraper:
                 return found_stream
 
         return FlatFoundAceStream(  # Default return if no stream is found
-            site_name="Unknown",
+            site_names=["Unknown"],
             quality=self._ace_quality.default_quality,
             title=ace_content_id,
             ace_content_id=ace_content_id,
@@ -148,7 +148,7 @@ class AceScraper:
 
                 for stream in scraped_streams_listing.stream_list:
                     new_stream = FlatFoundAceStream(
-                        site_name=scraped_streams_listing.site_name,
+                        site_names=[scraped_streams_listing.site_name],
                         quality=self._ace_quality.get_quality(stream.ace_content_id).quality,
                         title=stream.title,
                         ace_content_id=stream.ace_content_id,
@@ -170,28 +170,35 @@ class AceScraper:
         return None
 
     def get_streams_flat(self) -> list[FlatFoundAceStream]:
-        """Get a list of streams, as a list of dicts."""
+        """Get a list of streams, as a list of dicts, deduplicated by ace_content_id."""
         streams = [stream.model_dump() for stream in self.streams]
 
-        flat_streams: list[FlatFoundAceStream] = []
+        flat_streams: dict[str, FlatFoundAceStream] = {}
         for found_stream in streams:
             for stream in found_stream["stream_list"]:
                 program_title, program_description = self.epg_handler.get_current_program(tvg_id=stream["tvg_id"])
 
-                new_stream: FlatFoundAceStream = FlatFoundAceStream(
-                    site_name=found_stream["site_name"],
-                    quality=self._ace_quality.get_quality(stream["ace_content_id"]).quality,
-                    has_ever_worked=self._ace_quality.get_quality(stream["ace_content_id"]).has_ever_worked,
-                    title=stream["title"],
-                    ace_content_id=stream["ace_content_id"],
-                    ace_infohash=stream["ace_infohash"],
-                    tvg_id=stream["tvg_id"],
-                    tvg_logo=stream["tvg_logo"],
-                    program_title=program_title,
-                    program_description=program_description,
-                )
-                flat_streams.append(new_stream)
-        return flat_streams
+                if stream["ace_content_id"] in flat_streams:
+                    # If the stream already exists, we append the site name to the existing one
+                    existing_stream = flat_streams[stream["ace_content_id"]]
+                    existing_stream.site_names.append(found_stream["site_name"])
+
+                else:
+                    new_stream: FlatFoundAceStream = FlatFoundAceStream(
+                        site_names=[found_stream["site_name"]],
+                        quality=self._ace_quality.get_quality(stream["ace_content_id"]).quality,
+                        has_ever_worked=self._ace_quality.get_quality(stream["ace_content_id"]).has_ever_worked,
+                        title=stream["title"],
+                        ace_content_id=stream["ace_content_id"],
+                        ace_infohash=stream["ace_infohash"],
+                        tvg_id=stream["tvg_id"],
+                        tvg_logo=stream["tvg_logo"],
+                        program_title=program_title,
+                        program_description=program_description,
+                    )
+                    flat_streams[stream["ace_content_id"]] = new_stream
+
+        return list(flat_streams.values())
 
     def get_streams_sources(self) -> AceScraperSourcesApi:
         """Get the sources for the scraper."""
@@ -322,4 +329,3 @@ class AceScraper:
                     stream.ace_content_id = content_id_infohash_mapping.populate_from_api(
                         ace_infohash=stream.ace_infohash,
                     )
-

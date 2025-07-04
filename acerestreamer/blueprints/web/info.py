@@ -29,11 +29,14 @@ def info_guide() -> Response | WerkzeugResponse | CachedResponse:
     if auth_failure:
         return auth_failure
 
+    page_title = "Ace ReStreamer Guide"
+
     return CachedResponse(  # type: ignore[no-untyped-call] # Missing from flask-caching
         response=Response(
             render_template(
                 "guide.html.j2",
-                rendered_header=get_header_snippet("Ace ReStreamer Guide"),
+                rendered_header=get_header_snippet(page_title),
+                page_title=page_title,
             ),
             status=HTTPStatus.OK,
         ),
@@ -49,14 +52,15 @@ def guide() -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    logger.warning(current_app.are_conf.flask.SERVER_NAME)
+    page_title = "Ace ReStreamer IPTV Guide"
 
     return CachedResponse(  # type: ignore[no-untyped-call] # Missing from flask-caching
         response=Response(
             render_template(
                 "iptv.html.j2",
                 server_base_url=current_app.are_conf.flask.SERVER_NAME,
-                rendered_header=get_header_snippet("Ace ReStreamer Guide"),
+                rendered_header=get_header_snippet(page_title),
+                page_title=page_title,
             ),
             status=HTTPStatus.OK,
         ),
@@ -72,11 +76,37 @@ def api() -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
+    page_title = "Ace ReStreamer API Information"
+
     return CachedResponse(  # type: ignore[no-untyped-call] # Missing from flask-caching
         response=Response(
             render_template(
                 "api.html.j2",
-                rendered_header=get_header_snippet("Ace ReStreamer API Information"),
+                rendered_header=get_header_snippet(page_title),
+                page_title=page_title,
+            ),
+            status=HTTPStatus.OK,
+        ),
+        timeout=DEFAULT_CACHE_DURATION,
+    )
+
+
+@bp.route("/info/health")
+@cache.cached()
+def health() -> Response | WerkzeugResponse:
+    """Render the API information page."""
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
+    page_title = "Ace ReStreamer Health"
+
+    return CachedResponse(  # type: ignore[no-untyped-call] # Missing from flask-caching
+        response=Response(
+            render_template(
+                "health.html.j2",
+                rendered_header=get_header_snippet(page_title),
+                page_title=page_title,
             ),
             status=HTTPStatus.OK,
         ),

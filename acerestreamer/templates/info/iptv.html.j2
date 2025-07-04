@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>Ace Stream WebPlayer Guide</title>
+    <title>{{ page_title }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett">
     <link rel="preload" href="/static/fonts/noto-sans-display-latin-400.woff2" as="font" type="font/woff2" crossorigin>
@@ -20,6 +20,7 @@
 
 <body>
     {{ rendered_header }}
+    <h3>IPTV Links</h3>
     <p>Point your IPTV app at one of, some apps only accept the .m3u or .m3u8 extensions:
         <code class="code-block">{{ server_base_url }}/iptv</code>
         <code class="code-block">{{ server_base_url }}/iptv.m3u</code>
