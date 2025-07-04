@@ -148,15 +148,19 @@ class AcePool:
 
         return None
 
-    def get_instance_by_multistream_path(self, ace_multistream_path: str) -> str | None:
+    def get_instance_by_multistream_path(self, ace_multistream_path: str) -> str:
         """Find the AceStream instance URL for a given multistream path."""
+        ace_multistream_path = ace_multistream_path.split("/")[0]
+        if not ace_multistream_path:
+            logger.warning("No multistream path provided, cannot get AceStream instance.")
+            return ""
+
         for instance in self.ace_instances.values():
             if ace_multistream_path in instance.ace_hls_m3u8_url:
                 instance.update_last_used()
-                logger.error("YEP MULTISTREAM: %s", instance.ace_hls_m3u8_url)
-                return instance.ace_hls_m3u8_url
+                return instance.ace_content_id
 
-        return None
+        return ""
 
     def get_instances_nice(self) -> AcePoolForApi:
         """Get a list of AcePoolEntryForAPI instances for the API."""
