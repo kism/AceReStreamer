@@ -59,20 +59,23 @@ class AcePoolEntry:
             f"&pid={self.ace_pid}"
         )
 
-        self._populate_urls()
+        self.populate_urls()
 
         # Required to ensure that this actually gets the current time
         self.date_started = datetime.now(tz=OUR_TIMEZONE)
         self.last_used = datetime.now(tz=OUR_TIMEZONE)
 
-    def _populate_urls(self) -> None:
+    def populate_urls(self) -> None:
+        """Populate the AceStream URLs for this instance."""
+        if self.ace_hls_m3u8_url:
+            return
         try:
             resp = requests.get(self.ace_middleware_url, timeout=ACESTREAM_API_TIMEOUT)
             resp.raise_for_status()
             response_json = resp.json()
         except requests.RequestException:
             response_json = {}
-            logger.exception("Failed to fetch AceStream URLs for ace_content_id %s", self.ace_content_id)
+            logger.warning("Failed to fetch AceStream URLs for ace_content_id %s", self.ace_middleware_url)
 
         self.ace_hls_m3u8_url = response_json.get("response", {}).get("playback_url", "")
         self.ace_stat_url = response_json.get("response", {}).get("stat_url", "")
@@ -182,6 +185,7 @@ class AcePoolEntry:
         """The keep_alive method, should be called by poolboy thread."""
         # If we are locked in, we keep the stream alive
         # Also check if the ace_content_id is valid, as a failsafe
+        self.populate_urls()
 
         if not self.check_if_stale() and check_valid_ace_content_id_or_infohash(self.ace_content_id):
             # Keep Alive

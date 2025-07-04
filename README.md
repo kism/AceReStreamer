@@ -73,8 +73,8 @@ uv sync --no-group test --no-group type --no-group lint
 - bootstrap on first launch
   - administrative account
   - ~~json for the config file~~
-- accept infohash
 - cleanup streampaths
+- download speeds?
 
 ### Apps that don't work
 
