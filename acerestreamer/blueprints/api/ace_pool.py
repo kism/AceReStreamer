@@ -39,7 +39,7 @@ def api_ace_pool_by_id(ace_content_id: str) -> Response | WerkzeugResponse:
 
     logger.warning("/api/ace_pool/%s", ace_content_id)
 
-    instance_url = ace_pool.get_instance_by_content_id(ace_content_id)
+    instance_url = ace_pool.get_instance_hls_url_by_content_id(ace_content_id)
 
     if instance_url is None:
         logger.error("Ace ID %s not found in pool", ace_content_id)
