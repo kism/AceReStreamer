@@ -53,6 +53,7 @@ class AceScraper:
         self.html_scraper: HTTPStreamScraper = HTTPStreamScraper()
         self.iptv_scraper: IPTVStreamScraper = IPTVStreamScraper()
         self.currently_checking_quality: bool = False
+        self._missing_quality: bool = False
 
     def load_config(
         self,
@@ -107,6 +108,11 @@ class AceScraper:
                     stream.tvg_id for found_streams in self.streams for stream in found_streams.stream_list
                 }
                 self.populate_missing_content_ids()
+
+                if self._missing_quality:
+                    time.sleep(60)
+                    self.populate_missing_content_ids()
+
                 time.sleep(SCRAPE_INTERVAL)
 
         threading.Thread(target=run_scrape_thread, name="AceScraper: run_scrape", daemon=True).start()
@@ -312,6 +318,8 @@ class AceScraper:
 
     def populate_missing_content_ids(self) -> None:
         """Populate missing content IDs for streams that have an infohash."""
+        self._missing_quality = False  # Reset the flag
+
         for found_streams in self.streams:
             for stream in found_streams.stream_list:
                 if not stream.ace_content_id:
@@ -329,3 +337,5 @@ class AceScraper:
                     stream.ace_content_id = content_id_infohash_mapping.populate_from_api(
                         ace_infohash=stream.ace_infohash,
                     )
+                    if stream.ace_content_id == "":
+                        self._missing_quality = True
