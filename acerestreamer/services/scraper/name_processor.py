@@ -106,7 +106,7 @@ class StreamNameProcessor:
 
     def get_streams_as_iptv(self, streams: list[FlatFoundAceStream], external_url: str) -> str:
         """Get the found streams as an IPTV M3U8 string."""
-        m3u8_content = "#EXTM3U\n"
+        m3u8_content = f'#EXTM3U url-tvg="{external_url}/epg"\n'
 
         iptv_set = set()
 
