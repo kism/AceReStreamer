@@ -5,8 +5,8 @@ import json
 from pathlib import Path
 from typing import Self
 
-from pydantic import BaseModel, model_validator
-from pydantic_settings import BaseSettings
+from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from acerestreamer.utils import slugify
 from acerestreamer.utils.logger import LoggingConf, get_logger
@@ -19,6 +19,8 @@ logger = get_logger(__name__)
 class FlaskConf(BaseModel):
     """Flask configuration definition."""
 
+    model_config = ConfigDict(extra="ignore")  # Ignore extras for config related things
+
     DEBUG: bool = False
     TESTING: bool = False
     SERVER_NAME: str = "http://127.0.0.1:5100"
@@ -26,6 +28,8 @@ class FlaskConf(BaseModel):
 
 class TitleFilter(BaseModel):
     """Model for title filtering."""
+
+    model_config = ConfigDict(extra="ignore")  # Ignore extras for config related things
 
     always_exclude_words: list[str] = []
     always_include_words: list[str] = []
@@ -36,6 +40,8 @@ class TitleFilter(BaseModel):
 
 class ScrapeSiteHTML(BaseModel):
     """Model for a site to scrape."""
+
+    model_config = ConfigDict(extra="ignore")  # Ignore extras for config related things
 
     name: str = "Example HTML"
     slug: str = ""
@@ -71,6 +77,8 @@ class ScrapeSiteHTML(BaseModel):
 class ScrapeSiteIPTV(BaseModel):
     """Model for a site to scrape IPTV streams."""
 
+    model_config = ConfigDict(extra="ignore")  # Ignore extras for config related things
+
     name: str = "Example IPTV"
     slug: str = ""
     url: str = "https://example.com/iptv.txt"
@@ -103,6 +111,8 @@ class ScrapeSiteIPTV(BaseModel):
 class AceScrapeConf(BaseModel):
     """Settings for scraping AceStreams."""
 
+    model_config = ConfigDict(extra="ignore")  # Ignore extras for config related things
+
     html: list[ScrapeSiteHTML] = []
     iptv_m3u8: list[ScrapeSiteIPTV] = []
 
@@ -132,6 +142,8 @@ class AceScrapeConf(BaseModel):
 
 class AppConf(BaseModel):
     """Application configuration definition."""
+
+    model_config = ConfigDict(extra="ignore")  # Ignore extras for config related things
 
     password: str = ""
     ace_address: str = "http://localhost:6878"
@@ -175,6 +187,8 @@ class AppConf(BaseModel):
 class EPGInstanceConf(BaseModel):
     """EPG (Electronic Program Guide) configuration definition."""
 
+    model_config = ConfigDict(extra="ignore")  # Ignore extras for config related things
+
     region_code: str = "UK"
     format: str = "xml.gz"
     url: str = "https://www.open-epg.com/files/unitedkingdom1.xml.gz"
@@ -182,6 +196,8 @@ class EPGInstanceConf(BaseModel):
 
 class AceReStreamerConf(BaseSettings):
     """Settings loaded from a TOML file."""
+
+    model_config = SettingsConfigDict(extra="ignore")
 
     # Default values for our settings
     app: AppConf = AppConf()
