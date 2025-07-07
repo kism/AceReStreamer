@@ -114,9 +114,6 @@ def api_ace_pool() -> Response | WerkzeugResponse:
 # region /api/ace-pool/stats
 def get_stats_by_pid(pid_str: str) -> Response:
     """Get Ace pool stats by PID."""
-    if request.method != "GET":
-        return invalid_method_response()
-
     try:
         pid_int = int(pid_str)
         ace_pool_stat = ace_pool.get_stats_by_pid(pid_int)
@@ -134,9 +131,6 @@ def get_stats_by_pid(pid_str: str) -> Response:
 
 def get_stats_by_content_id(ace_content_id: str) -> Response:
     """Get Ace pool stats by content ID."""
-    if request.method != "GET":
-        return invalid_method_response()
-
     ace_pool_stat = ace_pool.get_instance_by_content_id_api(ace_content_id)
 
     if ace_pool_stat is None:
@@ -147,7 +141,7 @@ def get_stats_by_content_id(ace_content_id: str) -> Response:
     return response
 
 
-@bp.route("/api/ace-pool/stats")
+@bp.route("/api/ace-pool/stats", methods=["GET"])
 def api_ace_pool_stats() -> Response | WerkzeugResponse:
     """API endpoint to get Ace pool stats."""
     auth_failure = assumed_auth_failure()

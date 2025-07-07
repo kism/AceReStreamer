@@ -6,6 +6,7 @@ from pprint import pformat
 from acerestreamer import instances
 from acerestreamer.blueprints.api import ace_pool as ace_pool_api_bp
 from acerestreamer.blueprints.api import auth as auth_api_bp
+from acerestreamer.blueprints.api import epg as epg_api_bp
 from acerestreamer.blueprints.api import health as health_api_bp
 from acerestreamer.blueprints.api import scraper as scraper_api_bp
 from acerestreamer.blueprints.api import streams as stream_api_bp
@@ -75,6 +76,7 @@ def create_app(
     app.register_blueprint(iptv_bp.bp)
     app.register_blueprint(ace_pool_api_bp.bp)
     app.register_blueprint(auth_api_bp.bp)
+    app.register_blueprint(epg_api_bp.bp)
     app.register_blueprint(scraper_api_bp.bp)
     app.register_blueprint(health_api_bp.bp)
     app.register_blueprint(stream_api_bp.bp)

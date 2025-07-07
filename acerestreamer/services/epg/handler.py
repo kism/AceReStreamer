@@ -1,18 +1,18 @@
 """Module for handling Electronic Program Guide (EPG) data."""
 
-import gzip
-import io
 import threading
 import time
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import requests
 from lxml import etree
 
 from acerestreamer.utils.constants import OUR_TIMEZONE
 from acerestreamer.utils.logger import get_logger
+
+from .epg import EPG
+from .models import EPGApiResponse
 
 if TYPE_CHECKING:
     from acerestreamer.config import EPGInstanceConf
@@ -23,119 +23,7 @@ logger = get_logger(__name__)
 
 EPG_LIFESPAN = timedelta(days=1)
 MIN_TIME_BETWEEN_EPG_PROCESSING = timedelta(minutes=20)
-
-
-class EPG:
-    """An Electronic Program Guide (EPG) entry."""
-
-    def __init__(self, epg_conf: EPGInstanceConf) -> None:
-        """Initialize the EPG entry with a URL."""
-        self.url = epg_conf.url
-        self.format = epg_conf.format
-        self._extracted_format = self.format.replace(".gz", "")  # Remove .gz for internal use
-        self.region_code = epg_conf.region_code
-        self.last_updated: datetime | None = None
-        self.saved_file_path: Path | None = None
-
-    def update(self, instance_path: Path) -> None:
-        """Update the EPG data from the configured URL."""
-        downloaded_file = False
-        directory_path = instance_path / "epg"
-        if not directory_path.is_dir():
-            logger.info("Creating EPG directory at %s", directory_path)
-            directory_path.mkdir(parents=True, exist_ok=True)
-
-        self.saved_file_path = directory_path / f"{self.region_code}.{self._extracted_format}"
-        if not self._time_to_update():
-            logger.info("EPG data for %s is up-to-date, no need to update", self.region_code)
-            if self.saved_file_path.is_file():
-                data_bytes = self.saved_file_path.read_bytes()
-            else:
-                logger.error("Entered impossible state: EPG data is not up-to-date but no saved file exists")
-        else:
-            data_bytes = self._download_epg()
-            downloaded_file = True
-
-        self.last_updated = datetime.now(tz=OUR_TIMEZONE)
-
-        if downloaded_file:
-            self._write_to_file(data_bytes)  # Write to file after, so empty file is not created if download fails
-            logger.info("EPG data for %s updated successfully", self.region_code)
-
-    def get_data(self) -> bytes | None:
-        """Get the EPG data as bytes."""
-        # I used to have this in RAM, but it got very large with multiple EPGs
-        if self.saved_file_path and self.saved_file_path.is_file():
-            try:
-                return self.saved_file_path.read_bytes()
-            except OSError as e:
-                error_short = type(e).__name__
-                logger.error("%s Failed to read EPG data from %s: %s", error_short, self.saved_file_path, e)  # noqa: TRY400 Short error for requests
-                return None
-        else:
-            logger.warning("No saved file path defined or file does not exist for EPG %s", self.region_code)
-            return None
-
-    def _time_to_update(self) -> bool:
-        """Check if the EPG data needs to be updated based on the last update time."""
-        if self.last_updated is None:
-            logger.debug("%s: Last updated time is None, will update EPG data", self.region_code)
-            if self.saved_file_path is not None and self.saved_file_path.is_file():
-                # Stat the existing file to get its last modified time
-                mtime = self.saved_file_path.stat().st_mtime
-                self.last_updated = datetime.fromtimestamp(mtime, tz=OUR_TIMEZONE)
-            else:
-                return True
-
-        time_since_last_update = datetime.now(tz=OUR_TIMEZONE) - self.last_updated
-        need_to_update = time_since_last_update > EPG_LIFESPAN
-
-        logger.debug(
-            "Time since last update for %s: %s, lifespan: %s, need_to_update=%s",
-            self.region_code,
-            time_since_last_update,
-            EPG_LIFESPAN,
-            need_to_update,
-        )
-
-        return need_to_update
-
-    def _download_epg(self) -> bytes:
-        """Download the EPG data from the URL."""
-        logger.info("Downloading EPG data from %s", self.url)
-        data: bytes = b""
-        try:
-            response = requests.get(self.url, timeout=10)
-            response.raise_for_status()
-            data = response.content
-
-            if self.format == "xml.gz":
-                data = self._un_gz_data(data)
-
-            self.last_updated = datetime.now(tz=OUR_TIMEZONE)
-
-        except requests.RequestException as e:
-            error_short = type(e).__name__
-            logger.error("Failed to download EPG data: %s", error_short)  # noqa: TRY400 Short error for requests
-
-        return data
-
-    def _un_gz_data(self, data: bytes) -> bytes:
-        """Uncompress gzipped EPG data."""
-        logger.info("Uncompressing gzipped EPG data")
-
-        buffer = io.BytesIO(data)
-        with gzip.GzipFile(fileobj=buffer, mode="rb") as gz_file:
-            return gz_file.read()
-
-    def _write_to_file(self, data: bytes) -> None:
-        """Write the EPG data to a file."""
-        if self.saved_file_path:
-            logger.info("Writing EPG data to %s", self.saved_file_path)
-            with self.saved_file_path.open("wb") as file:
-                file.write(data)
-        else:
-            logger.error("No saved file path defined for EPG data")
+ONE_WEEK_IN_SECONDS = timedelta(days=7).seconds
 
 
 class EPGHandler:
@@ -163,31 +51,7 @@ class EPGHandler:
 
         logger.info("Initialised EPGHandler with %d EPG configurations", len(epg_conf_list))
 
-    def get_epg_names(self) -> list[str]:
-        """Get the names of all EPGs."""
-        return [epg.region_code for epg in self.epgs]
-
-    def update_epgs(self) -> None:
-        """Update all EPGs with the current instance path."""
-
-        def epg_update_thread() -> None:
-            """Thread function to update EPGs."""
-            logger.info("Starting EPG update thread")
-            while True:
-                if self.instance_path is not None:
-                    for epg in self.epgs:
-                        try:
-                            epg.update(instance_path=self.instance_path)
-                        except Exception:
-                            logger.exception("Failed to update EPG %s", epg.region_code)
-
-                    self.condense_epgs()
-                    time.sleep(EPG_LIFESPAN.total_seconds())
-
-                time.sleep(10)  # Sleep to avoid busy waiting
-
-        threading.Thread(target=epg_update_thread, name="EPGHandler: update_epgs", daemon=True).start()
-
+    # region Helpers
     def _create_tv_element(self) -> etree._Element:
         """Create a base XML element for the EPG data."""
         from acerestreamer import PROGRAM_NAME, URL  # noqa: PLC0415 Avoid circular import
@@ -197,6 +61,7 @@ class EPGHandler:
         tv_tag.set("generator-info-url", URL)
         return tv_tag
 
+    # region Condense & Merge
     def merge_epgs(self) -> etree._Element:
         """Merge all EPG data into a single XML structure."""
         logger.info("Merging EPG data from %d sources", len(self.epgs))
@@ -258,6 +123,7 @@ class EPGHandler:
 
         return etree.tostring(self.condensed_epg, encoding="utf-8", xml_declaration=True)
 
+    # region Getters
     def get_current_program(self, tvg_id: str) -> tuple[str, str]:
         """Get the current program for a given TVG ID."""
         if self.condensed_epg is None:
@@ -298,3 +164,43 @@ class EPGHandler:
                 return program_title, program_description
 
         return "", ""
+
+    # region API
+    def get_epgs_api(self) -> list[EPGApiResponse]:
+        """Get the names of all EPGs."""
+        response = []
+        current_time = datetime.now(tz=OUR_TIMEZONE)
+        for epg in self.epgs:
+            seconds_since_last_updated = (
+                int((current_time - epg.last_updated).total_seconds()) if epg.last_updated else ONE_WEEK_IN_SECONDS
+            )
+            response.append(
+                EPGApiResponse(
+                    url=epg.url,
+                    region_code=epg.region_code,
+                    seconds_since_last_updated=seconds_since_last_updated,
+                )
+            )
+        return response
+
+    # region Update Thread
+    def update_epgs(self) -> None:
+        """Update all EPGs with the current instance path."""
+
+        def epg_update_thread() -> None:
+            """Thread function to update EPGs."""
+            logger.info("Starting EPG update thread")
+            while True:
+                if self.instance_path is not None:
+                    for epg in self.epgs:
+                        try:
+                            epg.update(instance_path=self.instance_path)
+                        except Exception:
+                            logger.exception("Failed to update EPG %s", epg.region_code)
+
+                    self.condense_epgs()
+                    time.sleep(EPG_LIFESPAN.total_seconds())
+
+                time.sleep(10)  # Sleep to avoid busy waiting
+
+        threading.Thread(target=epg_update_thread, name="EPGHandler: update_epgs", daemon=True).start()

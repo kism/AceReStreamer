@@ -117,8 +117,19 @@ class AceScraper:
 
         threading.Thread(target=run_scrape_thread, name="AceScraper: run_scrape", daemon=True).start()
 
-    # region GET
-    def get_stream_by_ace_content_id(self, ace_content_id: str) -> FlatFoundAceStream:
+    # region Getters
+    def get_all_streams_by_source(self) -> list[FoundAceStreams]:
+        """Get the found streams as a list of dicts, ready to be turned into json."""
+        streams = list(self.streams)
+
+        for found_stream in streams:
+            for stream in found_stream.stream_list:
+                stream.quality = self._ace_quality.get_quality(stream.ace_content_id).quality
+
+        return streams
+
+    # region GET API
+    def get_stream_by_ace_content_id_api(self, ace_content_id: str) -> FlatFoundAceStream:
         """Get a stream by its Ace ID, will use the first found matching FlatFoundAceStream by ace_content_id."""
         streams = self.get_streams_flat()
         for found_stream in streams:
@@ -135,16 +146,6 @@ class AceScraper:
             tvg_logo="",
             has_ever_worked=False,
         )
-
-    def get_all_streams_by_source(self) -> list[FoundAceStreams]:
-        """Get the found streams as a list of dicts, ready to be turned into json."""
-        streams = list(self.streams)
-
-        for found_stream in streams:
-            for stream in found_stream.stream_list:
-                stream.quality = self._ace_quality.get_quality(stream.ace_content_id).quality
-
-        return streams
 
     def get_streams_by_source(self, source_slug: str) -> list[FlatFoundAceStream] | None:
         """Get the found streams for a specific source by its slug."""

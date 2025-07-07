@@ -44,6 +44,7 @@ class AcePool:
         self.transcode_audio = app_config.transcode_audio
         self.ace_poolboy()
 
+    # region Health
     def check_ace_running(self) -> bool:
         """Use the AceStream API to check if the instance is running."""
         healthy = False
@@ -72,7 +73,7 @@ class AcePool:
 
         return self.healthy
 
-    # region DELETE
+    # region Delete
     def remove_instance_by_ace_content_id(self, ace_content_id: str, caller: str = "") -> bool:
         """Remove an AceStream instance from the pool by ace_content_id."""
         if caller != "":
@@ -86,7 +87,7 @@ class AcePool:
 
         return False
 
-    # region GET Internal
+    # region Getters
     def get_available_instance_number(self) -> int | None:
         """Get the next available AceStream instance URL."""
         instance_numbers = [instance.ace_pid for instance in self.ace_instances.values()]
@@ -222,7 +223,6 @@ class AcePool:
                     return ace_stat
 
         return None
-
 
     def get_stats_by_content_id(self, ace_content_id: str) -> AcePoolStat | None:
         """Get the AcePool statistics for a specific content ID."""

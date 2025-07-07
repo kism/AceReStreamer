@@ -25,7 +25,7 @@ def api_stream(ace_content_id: str) -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    stream = ace_scraper.get_stream_by_ace_content_id(ace_content_id)
+    stream = ace_scraper.get_stream_by_ace_content_id_api(ace_content_id)
 
     response = jsonify(stream.model_dump())
     response.status_code = HTTPStatus.OK
@@ -80,7 +80,7 @@ def api_streams_by_source(source_slug: str) -> Response | WerkzeugResponse:
     return response
 
 
-@bp.route("/api/streams/health")
+@bp.route("/api/streams/health", methods=["GET"])
 def api_streams_health() -> Response | WerkzeugResponse:
     """API endpoint to get the streams."""
     auth_failure = assumed_auth_failure()

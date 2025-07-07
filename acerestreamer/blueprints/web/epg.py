@@ -11,16 +11,6 @@ bp = Blueprint("acerestreamer_epg", __name__)
 epg_handler = ace_scraper.epg_handler
 
 
-@bp.route("/api/epg", methods=["GET"])
-def get_epgs() -> Response | WerkzeugResponse:
-    """Get the list of EPGs."""
-    auth_failure = assumed_auth_failure()
-    if auth_failure:
-        return auth_failure
-
-    return jsonify(epg_handler.get_epg_names())
-
-
 @bp.route("/epg", methods=["GET"])
 @bp.route("/epg.xml", methods=["GET"])
 @bp.route("/xmltv", methods=["GET"])

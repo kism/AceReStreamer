@@ -72,6 +72,7 @@ uv sync --no-group test --no-group type --no-group lint
 - more epg stats in api
 - rework api locations
 - fix epg thread
+- fix api playground
 
 ### Apps that don't work
 
