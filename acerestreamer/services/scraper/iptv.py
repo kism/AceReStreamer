@@ -84,8 +84,8 @@ class IPTVStreamScraper(ScraperCommon):
     def _found_ace_stream_from_extinf_line(
         self,
         line: str,
-        ace_content_id: str,
-        ace_infohash: str,
+        content_id: str,
+        infohash: str,
         title_filter: TitleFilter,
     ) -> FoundAceStream | None:
         """Parse EXTINF line and return title if valid."""
@@ -109,14 +109,14 @@ class IPTVStreamScraper(ScraperCommon):
         try:
             found_ace_stream = FoundAceStream(
                 title=title,
-                ace_content_id=ace_content_id,
-                ace_infohash=ace_infohash,
+                content_id=content_id,
+                infohash=infohash,
                 tvg_id=tvg_id,
                 tvg_logo=tvg_logo,
             )
         except ValidationError:
             msg = "Validation error creating FoundAceStream object:\n"
-            msg += f"Tried title: {title}, ace_content_id: {ace_content_id}, tvg_id: {tvg_id}, tvg_logo: {tvg_logo}"
+            msg += f"Tried title: {title}, content_id: {content_id}, tvg_id: {tvg_id}, tvg_logo: {tvg_logo}"
             msg += f" for line: \n{line}"
             logger.error(msg)  # noqa: TRY400
             return None
@@ -143,13 +143,13 @@ class IPTVStreamScraper(ScraperCommon):
                 and self.name_processor.check_valid_ace_url(line_normalised)
                 and line_one
             ):
-                ace_content_id = self.name_processor.extract_ace_content_id_from_url(line_normalised)
-                ace_infohash = self.name_processor.extract_ace_infohash_from_url(line_normalised)
+                content_id = self.name_processor.extract_content_id_from_url(line_normalised)
+                infohash = self.name_processor.extract_infohash_from_url(line_normalised)
 
                 ace_stream = self._found_ace_stream_from_extinf_line(
                     line=line_one,
-                    ace_content_id=ace_content_id,
-                    ace_infohash=ace_infohash,
+                    content_id=content_id,
+                    infohash=infohash,
                     title_filter=site.title_filter,
                 )
                 if ace_stream is not None:

@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from acerestreamer.utils import check_valid_ace_content_id_or_infohash, slugify
+from acerestreamer.utils import check_valid_content_id_or_infohash, slugify
 from acerestreamer.utils.constants import SUPPORTED_TVG_LOGO_EXTENSIONS
 from acerestreamer.utils.logger import get_logger
 
@@ -119,7 +119,7 @@ class StreamNameProcessor:
             tvg_id = f'tvg-id="{stream.tvg_id}"'
             tvg_logo = f'tvg-logo="{external_url}/tvg-logo/{stream.tvg_logo}"' if stream.tvg_logo else ""
 
-            m3u8_addition = f"#EXTINF:-1 {tvg_id} {tvg_logo},{stream.title}\n{external_url}/hls/{stream.ace_content_id}"
+            m3u8_addition = f"#EXTINF:-1 {tvg_id} {tvg_logo},{stream.title}\n{external_url}/hls/{stream.content_id}"
 
             iptv_set.add(m3u8_addition)
 
@@ -134,7 +134,7 @@ class StreamNameProcessor:
             return f"{title_no_cc}.{country_code.lower()}"
         return ""
 
-    def extract_ace_content_id_from_url(self, url: str) -> str:
+    def extract_content_id_from_url(self, url: str) -> str:
         """Extract the AceStream ID from a URL."""
         url = url.strip()
         for prefix in ACE_URL_PREFIXES_CONTENT_ID:
@@ -143,12 +143,12 @@ class StreamNameProcessor:
         if "&" in url:
             url = url.split("&")[0]
 
-        if not check_valid_ace_content_id_or_infohash(url):
+        if not check_valid_content_id_or_infohash(url):
             return ""
 
         return url
 
-    def extract_ace_infohash_from_url(self, url: str) -> str:
+    def extract_infohash_from_url(self, url: str) -> str:
         """Extract the AceStream infohash from a URL."""
         url = url.strip()
         for prefix in ACE_URL_PREFIXES_INFOHASH:
@@ -157,7 +157,7 @@ class StreamNameProcessor:
         if "&" in url:
             url = url.split("&")[0]
 
-        if not check_valid_ace_content_id_or_infohash(url):
+        if not check_valid_content_id_or_infohash(url):
             return ""
 
         return url

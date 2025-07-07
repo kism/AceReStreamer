@@ -54,22 +54,22 @@ class ContentIDInfohashMapping:
         self.content_id_infohash_mapping[content_id] = infohash
         self.save_config()
 
-    def get_infohash(self, ace_content_id: str) -> str:
+    def get_infohash(self, content_id: str) -> str:
         """Get the infohash for a given content ID."""
-        return self.content_id_infohash_mapping.get(ace_content_id, "")
+        return self.content_id_infohash_mapping.get(content_id, "")
 
     def get_content_id(self, infohash: str) -> str:
         """Get the content ID for a given infohash."""
         return self.content_id_infohash_mapping.inverse.get(infohash, "")
 
-    def populate_from_api(self, ace_infohash: str) -> str:
+    def populate_from_api(self, infohash: str) -> str:
         """Populate the mapping from th Ace API from infohash, returning the content ID."""
-        ace_content_id = ""
+        content_id = ""
         url = f"{self.ace_url}/server/api?api_version=3&method=get_content_id&infohash="
 
         try:
             resp = requests.get(
-                f"{url}{ace_infohash}",
+                f"{url}{infohash}",
                 timeout=10,
             )
             resp.raise_for_status()
@@ -79,23 +79,23 @@ class ContentIDInfohashMapping:
             logger.error(  # noqa: TRY400 Short error for requests
                 "%s Failed to fetch content ID for infohash %s",
                 error_short,
-                ace_infohash,
+                infohash,
             )
-            return ace_content_id
+            return content_id
 
         if data.get("result", {}).get("content_id"):
-            ace_content_id = data.get("result", {}).get("content_id", "")
+            content_id = data.get("result", {}).get("content_id", "")
             logger.info(
                 "Populated missing content ID for stream %s -> %s",
-                ace_infohash,
-                ace_content_id,
+                infohash,
+                content_id,
             )
             self.add_mapping(
-                content_id=ace_content_id,
-                infohash=ace_infohash,
+                content_id=content_id,
+                infohash=infohash,
             )
 
-        return ace_content_id
+        return content_id
 
 
 content_id_infohash_mapping: ContentIDInfohashMapping = ContentIDInfohashMapping()

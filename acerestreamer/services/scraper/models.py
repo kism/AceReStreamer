@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Self
 from pydantic import BaseModel, model_validator
 
 from acerestreamer.config.models import TitleFilter
-from acerestreamer.utils import check_valid_ace_content_id_or_infohash
+from acerestreamer.utils import check_valid_content_id_or_infohash
 
 if TYPE_CHECKING:
     from acerestreamer.config.models import ScrapeSiteHTML, ScrapeSiteIPTV
@@ -18,8 +18,8 @@ class FoundAceStream(BaseModel):
     """Model for a found AceStream."""
 
     title: str
-    ace_content_id: str = ""
-    ace_infohash: str = ""
+    content_id: str = ""
+    infohash: str = ""
     tvg_id: str
     tvg_logo: str
     quality: int = -1
@@ -27,16 +27,16 @@ class FoundAceStream(BaseModel):
     @model_validator(mode="after")
     def manual_validate(self) -> Self:
         """Validate the AceStream ID manually."""
-        if not self.ace_content_id and not self.ace_infohash:
-            msg = "FoundAceStream: Either ace_content_id or ace_infohash must be provided"
+        if not self.content_id and not self.infohash:
+            msg = "FoundAceStream: Either content_id or infohash must be provided"
             raise ValueError(msg)
 
-        if self.ace_content_id and not check_valid_ace_content_id_or_infohash(self.ace_content_id):
-            msg = f"FoundAceStream: Invalid AceStream content_id: {self.ace_content_id}"
+        if self.content_id and not check_valid_content_id_or_infohash(self.content_id):
+            msg = f"FoundAceStream: Invalid AceStream content_id: {self.content_id}"
             raise ValueError(msg)
 
-        if self.ace_infohash and not check_valid_ace_content_id_or_infohash(self.ace_infohash):
-            msg = f"FoundAceStream: Invalid AceStream infohash: {self.ace_infohash}"
+        if self.infohash and not check_valid_content_id_or_infohash(self.infohash):
+            msg = f"FoundAceStream: Invalid AceStream infohash: {self.infohash}"
             raise ValueError(msg)
 
         if not self.title:
@@ -57,7 +57,7 @@ class FoundAceStreams(BaseModel):
 class CandidateAceStream(BaseModel):
     """Model for a candidate AceStream."""
 
-    ace_content_id: str
+    content_id: str
     title_candidates: list[str] = []
 
 
@@ -67,8 +67,8 @@ class FlatFoundAceStream(BaseModel):
     site_names: list[str]
     quality: int
     title: str
-    ace_content_id: str
-    ace_infohash: str
+    content_id: str
+    infohash: str
     tvg_id: str
     tvg_logo: str
     program_title: str = ""

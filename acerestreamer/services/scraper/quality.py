@@ -8,7 +8,7 @@ from pathlib import Path
 from pydantic import BaseModel
 
 from acerestreamer.utils.constants import OUR_TIMEZONE
-from acerestreamer.utils.helpers import check_valid_ace_content_id_or_infohash
+from acerestreamer.utils.helpers import check_valid_content_id_or_infohash
 from acerestreamer.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -115,11 +115,11 @@ class AceQuality:
             return
 
         cleaned_cache = {}
-        for ace_content_id, quality in self.ace_streams.items():
-            if check_valid_ace_content_id_or_infohash(ace_content_id):
-                cleaned_cache[ace_content_id] = quality
+        for content_id, quality in self.ace_streams.items():
+            if check_valid_content_id_or_infohash(content_id):
+                cleaned_cache[content_id] = quality
             else:
-                logger.warning("Invalid Ace ID found in cache: %s", ace_content_id)
+                logger.warning("Invalid Ace ID found in cache: %s", content_id)
 
         self.ace_streams = cleaned_cache
 
@@ -134,14 +134,14 @@ class AceQuality:
                 logger.exception("Error loading cache file: %s", self.cache_file)
                 return
 
-            for ace_content_id, quality_data in ace_streams_dict.items():
+            for content_id, quality_data in ace_streams_dict.items():
                 try:
-                    self.ace_streams[ace_content_id] = Quality(**quality_data)
+                    self.ace_streams[content_id] = Quality(**quality_data)
                 except TypeError:
                     error_short = type(quality_data).__name__
                     msg = (
                         f"{error_short} loading quality cache, invalid quality data for Ace ID: "
-                        f"{ace_content_id}: {quality_data}"
+                        f"{content_id}: {quality_data}"
                     )
                     logger.error(msg)  # noqa: TRY400 Short error for requests
                     continue
@@ -151,7 +151,7 @@ class AceQuality:
         if not self.cache_file:
             return
 
-        cache_as_dict = {ace_content_id: quality.model_dump() for ace_content_id, quality in self.ace_streams.items()}
+        cache_as_dict = {content_id: quality.model_dump() for content_id, quality in self.ace_streams.items()}
 
         try:
             with self.cache_file.open("w") as f:
@@ -159,33 +159,33 @@ class AceQuality:
         except OSError:
             logger.exception("Error saving cache file: %s", self.cache_file)
 
-    def get_quality(self, ace_content_id: str) -> Quality:
-        """Get the quality of a stream by ace_content_id."""
-        if not check_valid_ace_content_id_or_infohash(ace_content_id):
+    def get_quality(self, content_id: str) -> Quality:
+        """Get the quality of a stream by content_id."""
+        if not check_valid_content_id_or_infohash(content_id):
             return Quality()
 
-        if ace_content_id not in self.ace_streams:
-            self._ensure_entry(ace_content_id)
-        return self.ace_streams[ace_content_id]
+        if content_id not in self.ace_streams:
+            self._ensure_entry(content_id)
+        return self.ace_streams[content_id]
 
-    def _ensure_entry(self, ace_content_id: str) -> None:
+    def _ensure_entry(self, content_id: str) -> None:
         """Creates an entry with defaults if it doen't exist."""
-        if ace_content_id not in self.ace_streams:
-            self.ace_streams[ace_content_id] = Quality()
+        if content_id not in self.ace_streams:
+            self.ace_streams[content_id] = Quality()
 
-    def increment_quality(self, ace_content_id: str, m3u_playlist: str) -> None:
-        """Increment the quality of a stream by ace_content_id."""
-        if not check_valid_ace_content_id_or_infohash(ace_content_id):
+    def increment_quality(self, content_id: str, m3u_playlist: str) -> None:
+        """Increment the quality of a stream by content_id."""
+        if not check_valid_content_id_or_infohash(content_id):
             return
 
         if "#EXT-X-STREAM-INF" in m3u_playlist:
-            logger.debug("Skipping quality update for Ace ID %s, multistream detected", ace_content_id)
+            logger.debug("Skipping quality update for Ace ID %s, multistream detected", content_id)
             return
 
-        self._ensure_entry(ace_content_id)
+        self._ensure_entry(content_id)
 
-        self.ace_streams[ace_content_id].update_quality(m3u_playlist)
+        self.ace_streams[content_id].update_quality(m3u_playlist)
 
-        logger.debug("Updated quality for Ace ID %s: %s", ace_content_id, self.ace_streams[ace_content_id].quality)
+        logger.debug("Updated quality for Ace ID %s: %s", content_id, self.ace_streams[content_id].quality)
 
         self.save_cache()

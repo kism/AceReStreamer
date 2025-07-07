@@ -35,19 +35,19 @@ def api_ace_pool() -> Response | WerkzeugResponse:
 
 
 @bp.route("/api/ace-pool/content_id/<path:content_id>", methods=["GET", "DELETE"])
-def api_ace_pool_content_id(ace_content_id: str) -> Response | WerkzeugResponse:
+def api_ace_pool_content_id(content_id: str) -> Response | WerkzeugResponse:
     """API endpoint to get the Ace pool."""
     auth_failure = assumed_auth_failure()
     if auth_failure:
         return auth_failure
 
-    instance = ace_pool.get_instance_by_content_id_api(ace_content_id)
+    instance = ace_pool.get_instance_by_content_id_api(content_id)
 
     if instance is None:
-        return instance_not_found_response(ace_content_id, in_what="Ace pool")
+        return instance_not_found_response(content_id, in_what="Ace pool")
 
     if request.method == "DELETE":
-        ace_pool.remove_instance_by_ace_content_id(ace_content_id, caller="API")
+        ace_pool.remove_instance_by_content_id(content_id, caller="API")
         response = jsonify({"message": "Ace ID removed successfully"}, HTTPStatus.OK)
         response.status_code = HTTPStatus.OK
     else:
@@ -92,16 +92,16 @@ def api_ace_pool_stats() -> Response | WerkzeugResponse:
 
 
 @bp.route("/api/ace-pool/stats/content_id/<path:content_id>", methods=["GET"])
-def api_ace_pool_stats_content_id(ace_content_id: str) -> Response | WerkzeugResponse:
+def api_ace_pool_stats_content_id(content_id: str) -> Response | WerkzeugResponse:
     """API endpoint to get Ace pool stats by Ace content ID."""
     auth_failure = assumed_auth_failure()
     if auth_failure:
         return auth_failure
 
-    ace_pool_stat = ace_pool.get_instance_by_content_id_api(ace_content_id)
+    ace_pool_stat = ace_pool.get_instance_by_content_id_api(content_id)
 
     if ace_pool_stat is None:
-        return instance_not_found_response(ace_content_id, in_what="Ace pool")
+        return instance_not_found_response(content_id, in_what="Ace pool")
 
     response = jsonify(ace_pool_stat.model_dump())
     response.status_code = HTTPStatus.OK

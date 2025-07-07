@@ -33,12 +33,12 @@ def slugify(file_name: str | bytes) -> str:
     return file_name.strip().replace(" ", "-")
 
 
-def check_valid_ace_content_id_or_infohash(ace_content_id: str) -> bool:
+def check_valid_content_id_or_infohash(content_id: str) -> bool:
     """Check if the AceStream ID is valid."""
-    if len(ace_content_id) != ACE_ID_LENGTH:
+    if len(content_id) != ACE_ID_LENGTH:
         return False
 
-    if not _HEX_PATTERN.match(ace_content_id):  # noqa: SIM103 eh
+    if not _HEX_PATTERN.match(content_id):  # noqa: SIM103 eh
         return False
 
     return True

@@ -560,8 +560,8 @@ function populateAcePoolTable(aceInstances) {
     const td_quality = document.createElement("td");
 
     const td_playing = document.createElement("td");
-    if (instance.ace_content_id !== "") {
-      getStream(instance.ace_content_id)
+    if (instance.content_id !== "") {
+      getStream(instance.content_id)
         .then((streamInfo) => {
           quality = streamInfo.quality || -1;
           if (quality === -1) {
@@ -577,13 +577,13 @@ function populateAcePoolTable(aceInstances) {
 
           td_playing.textContent = streamInfo.title || "Unknown Stream";
           td_playing.addEventListener("click", () => {
-            loadPlayStream(instance.ace_content_id);
+            loadPlayStream(instance.content_id);
           });
           td_playing.classList.add("link");
           td_playing.title = streamInfo.program_title || "No program title";
 
           // Odd spot for this, but its the easiest way to refresh the current program info
-          if (streamInfo.ace_content_id === window.location.hash.substring(1)) {
+          if (streamInfo.content_id === window.location.hash.substring(1)) {
             populateCurrentStreamInfo(streamInfo.program_title, streamInfo.program_description);
           }
         })
@@ -601,9 +601,9 @@ function populateAcePoolTable(aceInstances) {
     unlockButton.classList.add("unlock-button");
     unlockButton.onclick = () => {
       currentlyFetchingM3U8 = "";
-      makeAcePoolInstanceAvailable(instance.ace_content_id)
+      makeAcePoolInstanceAvailable(instance.content_id)
         .then(() => {
-          console.log(`Ace Pool instance ${instance.ace_content_id} made available`);
+          console.log(`Ace Pool instance ${instance.content_id} made available`);
           populateAceInfoTables(); // Refresh the table after unlocking
         })
         .catch((_error) => {});
@@ -669,7 +669,7 @@ function populateStreamTable() {
         td_link = document.createElement("td");
         const a = document.createElement("a"); // Create a new anchor element
         a.textContent = `${stream.title}`;
-        a.onclick = () => loadPlayStream(stream.ace_content_id);
+        a.onclick = () => loadPlayStream(stream.content_id);
         td_link.appendChild(a); // Append the anchor element to the table data cell
 
         // Program title cell
