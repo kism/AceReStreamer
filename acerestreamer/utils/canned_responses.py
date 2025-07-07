@@ -21,7 +21,7 @@ def invalid_query_parameters_response() -> Response:
 
 def instance_not_found_response(ace_content_id: str, in_what: str) -> Response:
     """Return a response when an Ace instance is not found."""
-    msg = f"Ace ID {ace_content_id} not found in {in_what}"
+    msg = f"Ace content_id '{ace_content_id}' not found in {in_what}"
 
     response = jsonify({"error": msg})
     response.status_code = HTTPStatus.NOT_FOUND
@@ -30,7 +30,7 @@ def instance_not_found_response(ace_content_id: str, in_what: str) -> Response:
 
 def pid_not_found_response(pid: str, in_what: str = "") -> Response:
     """Return a response when an Ace PID is not found."""
-    msg = f"Ace PID {pid} not found in {in_what}"
+    msg = f"Ace PID '{pid}' not found in {in_what}"
 
     response = jsonify({"error": msg})
     response.status_code = HTTPStatus.NOT_FOUND

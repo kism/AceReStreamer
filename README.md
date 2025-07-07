@@ -71,6 +71,7 @@ uv sync --no-group test --no-group type --no-group lint
   - ~~json for the config file~~
 - more epg stats in api
 - rework api locations
+- fix epg thread
 
 ### Apps that don't work
 
