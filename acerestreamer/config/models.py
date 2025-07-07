@@ -172,17 +172,6 @@ class AppConf(BaseModel):
         return self
 
 
-class NginxConf(BaseModel):
-    """Nginx configuration definition."""
-
-    # CLI config generation only
-    server_name: str = ""
-    dhparam_path: Path | str = ""
-    cert_path: Path | str = ""
-    cert_key_path: Path | str = ""
-    extra_config_file_path: Path | str = ""  # Example /etc/letsencrypt/options-ssl-nginx.conf
-
-
 class EPGInstanceConf(BaseModel):
     """EPG (Electronic Program Guide) configuration definition."""
 
@@ -197,7 +186,6 @@ class AceReStreamerConf(BaseSettings):
     # Default values for our settings
     app: AppConf = AppConf()
     flask: FlaskConf = FlaskConf()
-    nginx: NginxConf | None = None  # Nginx configuration is optional
     logging: LoggingConf = LoggingConf()
     scraper: AceScrapeConf = AceScrapeConf()
     epgs: list[EPGInstanceConf] = []
