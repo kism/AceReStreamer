@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Self
 
 from pydantic import BaseModel, model_validator
 
+from acerestreamer.config.models import TitleFilter
 from acerestreamer.utils import check_valid_ace_content_id_or_infohash
 
 if TYPE_CHECKING:
@@ -87,3 +88,24 @@ class AceScraperSourceApi(BaseModel):
 
     name: str
     slug: str
+    url: str
+    title_filter: TitleFilter
+    type: str
+    check_sibling: bool | None = None
+    target_class: str | None = None
+
+    @model_validator(mode="after")
+    def validate_html_only_options(self) -> Self:
+        """Validate options that are only applicable to HTML sources."""
+        if self.type == "html":
+            msg = "HTML source must have target_class and check_sibling defined"
+            if not self.target_class:
+                raise ValueError(msg)
+            if self.check_sibling is None:
+                raise ValueError(msg)
+        elif self.type == "iptv":
+            msg = "IPTV source must not have target_class or check_sibling defined"
+            if self.target_class or self.check_sibling is not None:
+                raise ValueError(msg)
+
+        return self

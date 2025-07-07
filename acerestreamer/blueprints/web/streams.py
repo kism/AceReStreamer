@@ -92,7 +92,7 @@ def hls_multistream(path: str) -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    content_id = ace_pool.get_instance_by_multistream_path(path)
+    ace_content_id = ace_pool.get_instance_by_multistream_path(path)
 
     url = f"{current_app.are_conf.app.ace_address}/hls/m/{path}"
 
@@ -113,7 +113,7 @@ def hls_multistream(path: str) -> Response | WerkzeugResponse:
     if "#EXTM3U" not in content_str:
         logger.error("Invalid HLS stream received for path: %s", path)
         logger.debug("Content received: %s", content_str[:1000])
-        ace_scraper.increment_quality(content_id, "")
+        ace_scraper.increment_quality(ace_content_id, "")
         return jsonify({"error": "Invalid HLS stream", "m3u8": content_str}, HTTPStatus.BAD_REQUEST)
 
     content_str = replace_m3u_sources(
@@ -122,7 +122,7 @@ def hls_multistream(path: str) -> Response | WerkzeugResponse:
         server_name=current_app.are_conf.flask.SERVER_NAME,
     )
 
-    ace_scraper.increment_quality(content_id, m3u_playlist=content_str)
+    ace_scraper.increment_quality(ace_content_id, m3u_playlist=content_str)
 
     return Response(content_str, ace_resp.status_code)
 

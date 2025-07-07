@@ -54,9 +54,9 @@ class ContentIDInfohashMapping:
         self.content_id_infohash_mapping[content_id] = infohash
         self.save_config()
 
-    def get_infohash(self, content_id: str) -> str:
+    def get_infohash(self, ace_content_id: str) -> str:
         """Get the infohash for a given content ID."""
-        return self.content_id_infohash_mapping.get(content_id, "")
+        return self.content_id_infohash_mapping.get(ace_content_id, "")
 
     def get_content_id(self, infohash: str) -> str:
         """Get the content ID for a given infohash."""

@@ -207,25 +207,31 @@ class AceScraper:
 
         return list(flat_streams.values())
 
-    def get_streams_sources(self) -> AceScraperSourcesApi:
-        """Get the sources for the scraper."""
-        return AceScraperSourcesApi(
-            html=self.html,
-            iptv_m3u8=self.iptv_m3u8,
+    def get_scraper_sources_flat(self) -> list[AceScraperSourceApi]:
+        """Get the sources for the scraper, as a flat list."""
+        sources = [
+            AceScraperSourceApi(
+                name=site.name,
+                slug=site.slug,
+                url=site.url,
+                title_filter=site.title_filter,
+                type="html",
+                check_sibling=site.check_sibling,
+                target_class=site.target_class,
+            )
+            for site in self.html
+        ]
+
+        sources.extend(
+            [
+                AceScraperSourceApi(
+                    name=site.name, slug=site.slug, url=site.url, title_filter=site.title_filter, type="iptv"
+                )
+                for site in self.iptv_m3u8
+            ]
         )
 
-    def get_streams_sources_flat(self) -> list[AceScraperSourceApi]:
-        """Get the sources for the scraper, as a flat list."""
-        return [AceScraperSourceApi(name=site.name, slug=site.slug) for site in self.html + self.iptv_m3u8]
-
-    def get_streams_source(self, slug: str) -> AceScraperSourceApi | None:
-        """Get a source by its slug."""
-        for site in self.html + self.iptv_m3u8:
-            if site.slug == slug:
-                return AceScraperSourceApi(name=site.name, slug=site.slug)
-
-        logger.warning("No scraper source found with slug: %s", slug)
-        return None
+        return sources
 
     def get_streams_health(self) -> dict[str, Quality]:
         """Get the health of the streams."""
@@ -329,7 +335,7 @@ class AceScraper:
                     )
                 elif not stream.ace_infohash:
                     stream.ace_infohash = content_id_infohash_mapping.get_infohash(
-                        content_id=stream.ace_content_id,
+                        ace_content_id=stream.ace_content_id,
                     )
 
         for found_streams in self.streams:

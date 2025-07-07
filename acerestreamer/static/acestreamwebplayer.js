@@ -36,7 +36,7 @@ function getStream(aceContentId) {
   const timeoutId = setTimeout(() => controller.abort(), 5000);
 
   // GET the hello endpoint that the flask app has
-  return fetch(`/api/stream/${aceContentId}`, {
+  return fetch(`/api/streams/${aceContentId}`, {
     method: "GET",
     signal: controller.signal,
   })

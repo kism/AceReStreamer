@@ -82,34 +82,14 @@
             <td>Get authentication status</td>
         </tr>
         <tr>
-            <td>/api/streams/flat</td>
+            <td>/api/streams</td>
             <td>GET</td>
-            <td>Get all streams flat</td>
+            <td>Get all info for all available streams</td>
         </tr>
         <tr>
-            <td>/api/streams/by_source</td>
+            <td>/api/streams/content_id/{content_id}</td>
             <td>GET</td>
-            <td>Get all streams by site scraped</td>
-        </tr>
-        <tr>
-            <td>/api/streams/by_source/{source_slug}</td>
-            <td>GET</td>
-            <td>Get all streams by site scraped, by source slug</td>
-        </tr>
-        <tr>
-            <td>/api/sources</td>
-            <td>GET</td>
-            <td>Get all stream sources flat</td>
-        </tr>
-        <tr>
-            <td>/api/sources/flat</td>
-            <td>GET</td>
-            <td>Get all stream sources as list</td>
-        </tr>
-        <tr>
-            <td>/api/sources/check_all</td>
-            <td>POST</td>
-            <td>Start thread to load streams with missing health.</td>
+            <td>Get stream info for a Ace content_id</td>
         </tr>
         <tr>
             <td>/api/streams/health</td>
@@ -117,31 +97,46 @@
             <td>Stream IDs with health status</td>
         </tr>
         <tr>
-            <td>/api/stream/{content_id}</td>
+            <td>/api/sources</td>
             <td>GET</td>
-            <td>Get stream by Ace content_id ID</td>
+            <td>Get all stream sources flat</td>
+        </tr>
+        <tr>
+            <td>/api/sources/check</td>
+            <td>POST</td>
+            <td>Start thread to load streams with missing health.</td>
         </tr>
         <tr>
             <td>/api/ace-pool</td>
             <td>GET</td>
-            <td>Get pool of streams<br><code>?content_id={content_id}<br>?pid={pid}</code></td>
+            <td>Get pool of streams, key is the acepool PID</td>
         </tr>
         <tr>
-            <td>/api/ace-pool?content_id={content_id}</td>
-            <td>DELETE</td>
-            <td>Remove lock on instance by content_id</td>
+            <td>/api/ace-pool/content_id/{content_id}</td>
+            <td>GET, DELETE</td>
+            <td>Get acepool info for a content_id<br>Remove lock on instance for a content_id</td>
+        </tr>
+        <tr>
+            <td>/api/ace-pool/pid/{pid}</td>
+            <td>GET</td>
+            <td>Get the acepool info via pid</td>
         </tr>
         <tr>
             <td>/api/ace-pool/stats</td>
             <td>GET</td>
-            <td>Get all instance status proxy of /ace/stat/ on Ace Stream
-                <br><code>?content_id={content_id}<br>?pid={pid}</code>
-            </td>
+            <td>Get all instance status proxy of /ace/stat/ on Ace Stream</td>
+        </tr>
+
+        <tr>
+            <td>/api/ace-pool/stats/content_id/{content_id}</td>
+            <td>GET</td>
+            <td>Get all instance ace stats for a content_id</td>
         </tr>
         <tr>
-            <td>/api/ace-pool-stats/{pid}</td>
+            <td>/api/ace-pool/stats/pid/{pid}</td>
             <td>GET</td>
-            <td>Get AcePool statistics by ace PID
+            <td>Get all instance ace stats for an acepool pid</td>
+        </tr>
         <tr>
             <td>/api/epgs</td>
             <td>GET</td>
