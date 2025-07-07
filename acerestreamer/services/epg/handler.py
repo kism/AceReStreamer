@@ -78,12 +78,13 @@ class EPGHandler:
 
         return merged_data
 
-    def condense_epgs(self) -> None:
+    def condense_epgs(self, *, force: bool = False) -> None:
         """Get a condensed version of the merged EPG data."""
+        # Force is used after you have done a fresh download.
         time_since_last_condense: timedelta = datetime.now(tz=OUR_TIMEZONE) - self._last_condense_time
         time_to_update: bool = time_since_last_condense > MIN_TIME_BETWEEN_EPG_PROCESSING
 
-        if self.condensed_epg is not None and not time_to_update:
+        if not force and self.condensed_epg is not None and not time_to_update:
             return
 
         merged_epgs = self.merge_epgs()
@@ -115,8 +116,6 @@ class EPGHandler:
 
     def get_condensed_epg(self) -> bytes:
         """Get the condensed EPG data."""
-        self.condense_epgs()
-
         if self.condensed_epg is None:
             logger.error("No condensed EPG data available")
             return b""
@@ -126,9 +125,6 @@ class EPGHandler:
     # region Getters
     def get_current_program(self, tvg_id: str) -> tuple[str, str]:
         """Get the current program for a given TVG ID."""
-        if self.condensed_epg is None:
-            self.condense_epgs()
-
         if self.condensed_epg is None:
             logger.error("No condensed EPG data available to get current program")
             return "", ""
