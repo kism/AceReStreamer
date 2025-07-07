@@ -28,9 +28,9 @@ def instance_not_found_response(ace_content_id: str, in_what: str) -> Response:
     return response
 
 
-def pid_not_found_response(pid: str, in_what: str = "") -> Response:
+def pid_not_found_response(pid: str) -> Response:
     """Return a response when an Ace PID is not found."""
-    msg = f"Ace PID '{pid}' not found in {in_what}"
+    msg = f"Ace PID '{pid}' not found in ace pool" # PIDs only exist as a concept in the ace pool
 
     response = jsonify({"error": msg})
     response.status_code = HTTPStatus.NOT_FOUND

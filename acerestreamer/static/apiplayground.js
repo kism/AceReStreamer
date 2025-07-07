@@ -1,23 +1,25 @@
-function doApiCall(apiEndpoint) {
-  return fetch(apiEndpoint)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.text();
-    })
-    .catch((error) => {
-      console.error("Error fetching API:", error);
-      return `Error: ${error.message}`;
-    });
-}
-
 function prettyFormatJson(json) {
   try {
     return JSON.stringify(JSON.parse(json), null, 2);
   } catch (e) {
     console.error("Error formatting JSON:", e);
     return json; // Return the original string if parsing fails
+  }
+}
+
+function setStatusClass(element, status) {
+  // Remove all status classes from the element
+  const statusClasses = ["status-good", "status-neutral", "status-bad"];
+  for (const cls of statusClasses) {
+    element.classList.remove(cls);
+  }
+  // Add the appropriate status class based on the status parameter
+  if (status === "good") {
+    element.classList.add("status-good");
+  } else if (status === "neutral") {
+    element.classList.add("status-neutral");
+  } else if (status === "bad") {
+    element.classList.add("status-bad");
   }
 }
 
@@ -46,23 +48,34 @@ function populateApiEndpointLinks() {
 document.addEventListener("DOMContentLoaded", () => {
   const apiInput = document.getElementById("api-input");
   const apiSubmit = document.getElementById("do-api-btn");
-  const apiOutput = document.getElementById("api-output");
+  const apiOutputBody = document.getElementById("api-output-body");
+  const apiOutputStatus = document.getElementById("api-output-status");
 
   apiSubmit.addEventListener("click", () => {
     const apiEndpoint = apiInput.value.trim();
     const startTime = performance.now();
     if (apiEndpoint) {
-      doApiCall(apiEndpoint).then((response) => {
-        apiOutput.innerHTML = `<pre>${prettyFormatJson(response)}</pre>`;
-        const endTime = performance.now();
-        const duration = (endTime - startTime).toFixed(2);
-        document.getElementById("api-response-time").textContent = `Duration: ${duration} ms`;
-        console.log(`API call to ${apiEndpoint} took ${duration} ms`);
-      });
+      const cleanEndpoint = apiEndpoint.startsWith("/") ? apiEndpoint : `/${apiEndpoint}`;
+
+      fetch(cleanEndpoint)
+        .then((response) => {
+          apiOutputStatus.textContent = `${response.status} ${response.statusText}`;
+          setStatusClass(apiOutputStatus, response.ok ? "good" : "bad");
+          return response.text();
+        })
+        .then((text) => {
+          const formattedText = prettyFormatJson(text);
+          apiOutputBody.innerHTML = `<pre>${formattedText}</pre>`;
+        });
+
+      const endTime = performance.now();
+      const duration = (endTime - startTime).toFixed(2);
+      document.getElementById("api-response-time").textContent = `Duration: ${duration} ms`;
+      console.log(`API call to ${cleanEndpoint} took ${duration} ms`);
     } else {
-      apiOutput.textContent = "Please enter a valid API endpoint.";
+      apiOutputStatus.textContent = "Please enter a valid API endpoint.";
+      apiOutputBody.innerHTML = "";
     }
   });
-
   populateApiEndpointLinks();
 });

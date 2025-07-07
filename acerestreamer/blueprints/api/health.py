@@ -16,7 +16,7 @@ bp = Blueprint("acerestreamer_health_api", __name__)
 PROCESS = Process()
 
 
-@bp.route("/api/health")
+@bp.route("/api/health", methods=["GET"])
 def api_health() -> Response | WerkzeugResponse:
     """API endpoint to check the health of the service."""
     threads_enumerated = threading.enumerate()
