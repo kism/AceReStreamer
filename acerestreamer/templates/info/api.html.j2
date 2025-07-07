@@ -124,17 +124,19 @@
         <tr>
             <td>/api/ace-pool</td>
             <td>GET</td>
-            <td>Get pool of streams</td>
+            <td>Get pool of streams<br><code>?content_id={content_id}<br>?pid={pid}</code></td>
         </tr>
         <tr>
             <td>/api/ace-pool?content_id={content_id}</td>
-            <td>GET</td>
-            <td>Get instance of Ace that has Ace content_id loaded</td>
+            <td>DELETE</td>
+            <td>Remove lock on instance by content_id</td>
         </tr>
         <tr>
-            <td>/api/ace-pool-stats</td>
+            <td>/api/ace-pool/stats</td>
             <td>GET</td>
-            <td>Get all instance status per ace PID, proxy of /ace/stat/</td>
+            <td>Get all instance status proxy of /ace/stat/ on Ace Stream
+                <br><code>?content_id={content_id}<br>?pid={pid}</code>
+            </td>
         </tr>
         <tr>
             <td>/api/ace-pool-stats/{pid}</td>
