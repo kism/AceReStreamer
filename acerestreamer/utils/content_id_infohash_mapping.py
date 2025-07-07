@@ -74,9 +74,11 @@ class ContentIDInfohashMapping:
             )
             resp.raise_for_status()
             data = resp.json()
-        except (requests.RequestException, ValueError):
+        except (requests.RequestException, ValueError) as e:
+            error_short = type(e).__name__
             logger.error(  # noqa: TRY400 Short error for requests
-                "Failed to fetch content ID for infohash %s",
+                "%s Failed to fetch content ID for infohash %s",
+                error_short,
                 ace_infohash,
             )
             return ace_content_id
