@@ -40,7 +40,7 @@ class Quality(BaseModel):
         rating = 0
         # If we don't have a playlist, it sure isn't working, this will always happen when starting a new stream though
         if not m3u_playlist:
-            rating = 0 - self.m3u_failures
+            rating = max(0 - self.m3u_failures, -5)
             self.m3u_failures += 1
         else:  # We have a playlist, let's see if the new segment showed up in time
             # Get the sequence number in the hls stream m3u
