@@ -69,7 +69,6 @@ uv sync --no-group test --no-group type --no-group lint
 - bootstrap on first launch
   - administrative account
   - ~~json for the config file~~
-- fix epg thread
 
 ### Apps that don't work
 
@@ -147,3 +146,4 @@ see iptv.html.j2
 - ~~more epg stats in api~~
 - ~~rework api locations~~
 - ~~fix api playground~~
+- ~~fix epg thread~~
