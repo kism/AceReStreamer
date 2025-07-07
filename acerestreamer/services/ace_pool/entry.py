@@ -72,20 +72,26 @@ class AcePoolEntry:
         try:
             resp = requests.get(self.ace_middleware_url, timeout=ACESTREAM_API_TIMEOUT)
             resp.raise_for_status()
-            response_json = resp.json()
+            response_json = resp.json().get("response", {})
         except (requests.RequestException, ValueError):
             response_json = {}
             logger.warning("Failed to fetch AceStream URLs for content_id %s", self.ace_middleware_url)
 
-        if response_json is None:
-            response_json = {}
+        self.ace_hls_m3u8_url = ""
+        self.ace_stat_url = ""
+        self.ace_cmd_url = ""
+        self.infohash = ""
 
-        # FIXME FIXME, when using a crap id
+        # FIXME: See if this is cooked
 
-        self.ace_hls_m3u8_url = response_json.get("response", {}).get("playback_url", "")
-        self.ace_stat_url = response_json.get("response", {}).get("stat_url", "")
-        self.ace_cmd_url = response_json.get("response", {}).get("command_url", "")
-        self.infohash = response_json.get("response", {}).get("infohash", "")
+        if not response_json:
+            logger.warning("No response from AceStream for content_id %s", self.content_id)
+            return
+
+        self.ace_hls_m3u8_url = response_json.get("playback_url", "")
+        self.ace_stat_url = response_json.get("stat_url", "")
+        self.ace_cmd_url = response_json.get("command_url", "")
+        self.infohash = response_json.get("infohash", "")
 
     def update_last_used(self) -> None:
         """Update the last used timestamp."""
