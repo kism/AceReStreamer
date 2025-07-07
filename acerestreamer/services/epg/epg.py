@@ -34,30 +34,25 @@ class EPG:
         self.last_updated: datetime | None = None
         self.saved_file_path: Path | None = None
 
-    def update(self, instance_path: Path) -> None:
+    def update(self, instance_path: Path | None) -> None:
         """Update the EPG data from the configured URL."""
-        downloaded_file = False
+        if instance_path is None:
+            logger.error("Instance path is not set, cannot update EPG %s", self.region_code)
+            return
+
         directory_path = instance_path / "epg"
         if not directory_path.is_dir():
             logger.info("Creating EPG directory at %s", directory_path)
             directory_path.mkdir(parents=True, exist_ok=True)
 
         self.saved_file_path = directory_path / f"{self.region_code}.{self._extracted_format}"
-        if not self._time_to_update():
-            logger.info("EPG data for %s is up-to-date, no need to update", self.region_code)
-            if self.saved_file_path.is_file():
-                data_bytes = self.saved_file_path.read_bytes()
-            else:
-                logger.error("Entered impossible state: EPG data is not up-to-date but no saved file exists")
-        else:
+
+        if self._time_to_update():
             data_bytes = self._download_epg()
-            downloaded_file = True
 
-        self.last_updated = datetime.now(tz=OUR_TIMEZONE)
-
-        if downloaded_file:
-            self._write_to_file(data_bytes)  # Write to file after, so empty file is not created if download fails
-            logger.info("EPG data for %s updated successfully", self.region_code)
+            if data_bytes:
+                self._write_to_file(data_bytes)
+                logger.info("EPG data for %s updated successfully", self.region_code)
 
     # region Getters
     def get_data(self) -> bytes | None:
@@ -77,14 +72,13 @@ class EPG:
     # region Helpers
     def _time_to_update(self) -> bool:
         """Check if the EPG data needs to be updated based on the last update time."""
-        if self.last_updated is None:
-            logger.debug("%s: Last updated time is None, will update EPG data", self.region_code)
+        if self.last_updated is None:  # If we havent updated this EPG
             if self.saved_file_path is not None and self.saved_file_path.is_file():
-                # Stat the existing file to get its last modified time
+                # Stat the existing file to get its last modified time, this is the last updated time
                 mtime = self.saved_file_path.stat().st_mtime
                 self.last_updated = datetime.fromtimestamp(mtime, tz=OUR_TIMEZONE)
             else:
-                return True
+                return True  # If no file exists, we need to update
 
         time_since_last_update = datetime.now(tz=OUR_TIMEZONE) - self.last_updated
         need_to_update = time_since_last_update > EPG_LIFESPAN

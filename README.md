@@ -69,10 +69,7 @@ uv sync --no-group test --no-group type --no-group lint
 - bootstrap on first launch
   - administrative account
   - ~~json for the config file~~
-- more epg stats in api
-- rework api locations
 - fix epg thread
-- fix api playground
 
 ### Apps that don't work
 
@@ -145,5 +142,8 @@ see iptv.html.j2
 - ~~determine stream health from m3u8~~
 - ~~[use the middleware](https://docs.acestream.net/developers/start-playback/)~~
 - ~~cleanup streampaths~~
-- iptv api
+- ~~iptv api~~
   - ~~more on the iptv guide~~
+- ~~more epg stats in api~~
+- ~~rework api locations~~
+- ~~fix api playground~~

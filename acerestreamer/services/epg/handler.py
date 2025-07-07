@@ -21,7 +21,7 @@ else:
 
 logger = get_logger(__name__)
 
-EPG_LIFESPAN = timedelta(days=1)
+EPG_CHECK_INTERVAL = timedelta(hours=1)
 MIN_TIME_BETWEEN_EPG_PROCESSING = timedelta(minutes=20)
 ONE_WEEK_IN_SECONDS = timedelta(days=7).seconds
 
@@ -186,21 +186,25 @@ class EPGHandler:
     # region Update Thread
     def update_epgs(self) -> None:
         """Update all EPGs with the current instance path."""
+        if self.instance_path is None:
+            logger.error("Instance path is not set, cannot update EPGs")
+            return
 
         def epg_update_thread() -> None:
             """Thread function to update EPGs."""
             logger.info("Starting EPG update thread")
             while True:
-                if self.instance_path is not None:
-                    for epg in self.epgs:
-                        try:
-                            epg.update(instance_path=self.instance_path)
-                        except Exception:
-                            logger.exception("Failed to update EPG %s", epg.region_code)
+                for epg in self.epgs:
+                    try:
+                        epg.update(instance_path=self.instance_path)
+                    except Exception:
+                        logger.exception("Failed to update EPG %s", epg.region_code)
 
+                try:
                     self.condense_epgs()
-                    time.sleep(EPG_LIFESPAN.total_seconds())
+                except Exception:
+                    logger.exception("Failed to condense EPGs")
 
-                time.sleep(10)  # Sleep to avoid busy waiting
+                time.sleep(EPG_CHECK_INTERVAL.total_seconds())
 
         threading.Thread(target=epg_update_thread, name="EPGHandler: update_epgs", daemon=True).start()
