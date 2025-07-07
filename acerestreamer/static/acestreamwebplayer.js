@@ -5,7 +5,7 @@ let currentlyFetchingM3U8 = "";
 function getStreamsFlat() {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
-  return fetch("/api/streams/flat", {
+  return fetch("/api/streams", {
     method: "GET",
     signal: controller.signal,
   })
@@ -31,12 +31,12 @@ function getStreamsFlat() {
 }
 
 // region API/getStream
-function getStream(aceContentId) {
+function getStream(ContentId) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
 
   // GET the hello endpoint that the flask app has
-  return fetch(`/api/streams/${aceContentId}`, {
+  return fetch(`/api/streams/content_id/${ContentId}`, {
     method: "GET",
     signal: controller.signal,
   })
@@ -90,7 +90,7 @@ function getAcePool() {
 function makeAcePoolInstanceAvailable(aceId) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
-  return fetch(`/api/ace-pool/${aceId}`, {
+  return fetch(`/api/ace-pool/content_id/${aceId}`, {
     method: "DELETE",
     signal: controller.signal,
   })
@@ -300,17 +300,17 @@ function loadStream() {
 }
 
 // region Stream/loadStreamUrl
-function loadStreamUrl(aceContentId, streamInfo = null) {
-  window.location.hash = aceContentId; // Set the URL in the hash
+function loadStreamUrl(ContentId, streamInfo = null) {
+  window.location.hash = ContentId; // Set the URL in the hash
 
   const streamNameElement = document.getElementById("stream-name");
-  streamNameElement.innerHTML = streamInfo.title || aceContentId;
+  streamNameElement.innerHTML = streamInfo.title || ContentId;
 
   populateCurrentStreamInfo(streamInfo.program_title, streamInfo.program_description);
 
   loadStream();
 
-  if (aceContentId !== streamInfo.title && streamInfo.title !== "") {
+  if (ContentId !== streamInfo.title && streamInfo.title !== "") {
     document.title = `${streamInfo.title}`;
   } else {
     document.title = `AceRestreamer`;
@@ -318,16 +318,16 @@ function loadStreamUrl(aceContentId, streamInfo = null) {
 }
 
 // region Stream/loadPlayStream
-function loadPlayStream(aceContentId) {
-  getStream(aceContentId)
+function loadPlayStream(ContentId) {
+  getStream(ContentId)
     .then((streamInfo) => {
-      loadStreamUrl(aceContentId, streamInfo);
+      loadStreamUrl(ContentId, streamInfo);
 
       attemptPlay();
     })
     .catch((error) => {
       console.error("Failed to get stream info:", error);
-      loadStreamUrl(aceContentId);
+      loadStreamUrl(ContentId);
       attemptPlay();
     });
 }
@@ -335,10 +335,10 @@ function loadPlayStream(aceContentId) {
 // region Stream/loadPlayStreamFromHash
 // biome-ignore lint/correctness/noUnusedVariables: HTML uses it
 function loadPlayStreamFromHash() {
-  const aceContentId = window.location.hash.substring(1);
-  if (aceContentId) {
-    console.log(`Loading stream from hash: ${aceContentId}`);
-    loadPlayStream(aceContentId);
+  const ContentId = window.location.hash.substring(1);
+  if (ContentId) {
+    console.log(`Loading stream from hash: ${ContentId}`);
+    loadPlayStream(ContentId);
   } else {
     console.error("No stream ID loaded...");
     setOnPageStreamErrorMessage("No stream ID loaded...");
@@ -744,12 +744,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Check the page hash for a stream ID, load it if present
-  const aceContentId = window.location.hash.substring(1);
-  if (aceContentId) {
-    console.log(`Loading stream on page load: ${aceContentId}`);
-    getStream(aceContentId)
+  const ContentId = window.location.hash.substring(1);
+  if (ContentId) {
+    console.log(`Loading stream on page load: ${ContentId}`);
+    getStream(ContentId)
       .then((streamInfo) => {
-        loadStreamUrl(aceContentId, streamInfo);
+        loadStreamUrl(ContentId, streamInfo);
       })
       .catch((_error) => {});
   }
@@ -760,9 +760,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Set up the load stream button
   loadStreamButton = document.getElementById("load-stream-button");
   loadStreamButton.onclick = () => {
-    const aceContentId = document.getElementById("stream-id-input").value;
-    if (aceContentId) {
-      loadPlayStream(aceContentId);
+    const ContentId = document.getElementById("stream-id-input").value;
+    if (ContentId) {
+      loadPlayStream(ContentId);
     }
   };
 });
