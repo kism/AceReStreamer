@@ -63,7 +63,7 @@ function getStream(aceContentId) {
 function getAcePool() {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
-  return fetch("/api/ace_pool", {
+  return fetch("/api/ace-pool", {
     method: "GET",
     signal: controller.signal,
   })
@@ -90,7 +90,7 @@ function getAcePool() {
 function makeAcePoolInstanceAvailable(aceId) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
-  return fetch(`/api/ace_pool/${aceId}`, {
+  return fetch(`/api/ace-pool/${aceId}`, {
     method: "DELETE",
     signal: controller.signal,
   })

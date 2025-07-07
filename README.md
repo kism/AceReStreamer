@@ -69,6 +69,8 @@ uv sync --no-group test --no-group type --no-group lint
 - bootstrap on first launch
   - administrative account
   - ~~json for the config file~~
+- more epg stats in api
+- rework api locations
 
 ### Apps that don't work
 

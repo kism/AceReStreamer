@@ -72,6 +72,7 @@ class AcePool:
 
         return self.healthy
 
+    # region DELETE
     def remove_instance_by_ace_content_id(self, ace_content_id: str, caller: str = "") -> bool:
         """Remove an AceStream instance from the pool by ace_content_id."""
         if caller != "":
@@ -85,6 +86,7 @@ class AcePool:
 
         return False
 
+    # region GET Internal
     def get_available_instance_number(self) -> int | None:
         """Get the next available AceStream instance URL."""
         instance_numbers = [instance.ace_pid for instance in self.ace_instances.values()]
@@ -109,7 +111,7 @@ class AcePool:
         return None
 
     def get_instance_hls_url_by_content_id(self, ace_content_id: str) -> str | None:
-        """Find the AceStream instance URL for a given ace_content_id."""
+        """Find the AceStream instance URL for a given ace_content_id, create a new instance if it doesn't exist."""
         if not check_valid_ace_content_id_or_infohash(ace_content_id):
             logger.error("Invalid AceStream content ID: %s", ace_content_id)
             return None
@@ -136,7 +138,7 @@ class AcePool:
         return new_instance.ace_hls_m3u8_url
 
     def get_instance_by_multistream_path(self, ace_multistream_path: str) -> str:
-        """Find the AceStream instance URL for a given multistream path."""
+        """Find the AceStream instance content_id for a given multistream path."""
         ace_multistream_path = ace_multistream_path.split("/")[0]
         if not ace_multistream_path:
             logger.warning("No multistream path provided, cannot get AceStream instance.")
@@ -149,32 +151,37 @@ class AcePool:
 
         return ""
 
-    def get_instances_nice(self) -> AcePoolForApi:
+    def get_instance_by_pid(self, pid: int) -> AcePoolEntry | None:
+        """Get the AcePoolEntry instance by its process ID."""
+        for entry in self.ace_instances.values():
+            if entry.ace_pid == pid:
+                return entry
+
+        logger.error("No AceStream instance found with pid %s", pid)
+        return None
+
+    # region GET API
+    def get_instance_by_content_id_api(self, ace_content_id: str) -> AcePoolEntryForAPI | None:
+        """Get the AcePoolEntry instance by its content ID."""
+        instance = self.ace_instances.get(ace_content_id)
+        if instance:
+            return self._make_api_response_from_instance(instance)
+
+        logger.error("No AceStream instance found with content ID %s", ace_content_id)
+        return None
+
+    def get_instance_by_pid_api(self, ace_pid: int) -> AcePoolEntryForAPI | None:
+        """Get the AcePoolEntry instance by its process ID."""
+        for entry in self.ace_instances.values():
+            if entry.ace_pid == ace_pid:
+                return self._make_api_response_from_instance(entry)
+
+        logger.error("No AceStream instance found with pid %s", ace_pid)
+        return None
+
+    def get_instances_api(self) -> AcePoolForApi:
         """Get a list of AcePoolEntryForAPI instances for the API."""
-        instances = []
-
-        for instance in self.ace_instances.values():
-            locked_in = instance.check_locked_in()
-            time_until_unlock = timedelta(seconds=0)
-            if locked_in:
-                time_until_unlock = instance.get_time_until_unlock()
-
-            total_time_running = timedelta(seconds=0)
-            if instance.ace_content_id != "":
-                total_time_running = datetime.now(tz=OUR_TIMEZONE) - instance.date_started
-
-            instances.append(
-                AcePoolEntryForAPI(
-                    ace_pid=instance.ace_pid,
-                    ace_content_id=instance.ace_content_id,
-                    date_started=instance.date_started,
-                    last_used=instance.last_used,
-                    locked_in=locked_in,
-                    time_until_unlock=time_until_unlock,
-                    time_running=total_time_running,
-                    ace_hls_m3u8_url=instance.ace_hls_m3u8_url,
-                )
-            )
+        instances = [self._make_api_response_from_instance(instance) for instance in self.ace_instances.values()]
 
         return AcePoolForApi(
             ace_address=self.ace_address,
@@ -185,29 +192,7 @@ class AcePool:
             transcode_audio=self.transcode_audio,
         )
 
-    def get_instance_by_pid(self, pid: int) -> AcePoolEntry | None:
-        """Get the AcePoolEntry instance by its process ID."""
-        for entry in self.ace_instances.values():
-            if entry.ace_pid == pid:
-                return entry
-
-        logger.error("No AceStream instance found with pid %s", pid)
-        return None
-
-    def get_stats_by_pid(self, pid: int) -> AcePoolStat | None:
-        """Get the AcePool statistics for a specific index."""
-        if not self.healthy:
-            logger.error("Ace pool is not healthy, cannot get stats.")
-            return None
-
-        for entry in self.ace_instances.values():
-            if entry.ace_pid == pid:
-                ace_stat = entry.get_ace_stat()
-                if ace_stat is not None:
-                    return ace_stat
-
-        return None
-
+    # region GET API Stats
     def get_all_stats(self) -> dict[int, dict[str, Any] | None]:
         """Get all AcePool statistics for each instance, for the API only."""
         # I had to use typing.Any, sad day but it's fine since its from pydantic
@@ -224,6 +209,60 @@ class AcePool:
 
         return result
 
+    def get_stats_by_pid(self, pid: int) -> AcePoolStat | None:
+        """Get the AcePool statistics for a specific index."""
+        if not self.healthy:
+            logger.error("Ace pool is not healthy, cannot get stats.")
+            return None
+
+        for entry in self.ace_instances.values():
+            if entry.ace_pid == pid:
+                ace_stat = entry.get_ace_stat()
+                if ace_stat is not None:
+                    return ace_stat
+
+        return None
+
+
+    def get_stats_by_content_id(self, ace_content_id: str) -> AcePoolStat | None:
+        """Get the AcePool statistics for a specific content ID."""
+        if not self.healthy:
+            logger.error("Ace pool is not healthy, cannot get stats.")
+            return None
+
+        instance = self.ace_instances.get(ace_content_id)
+        if instance:
+            ace_stat = instance.get_ace_stat()
+            if ace_stat is not None:
+                return ace_stat
+
+        logger.error("No AceStream instance found with content ID %s", ace_content_id)
+        return None
+
+    # region Helpers
+    def _make_api_response_from_instance(self, instance: AcePoolEntry) -> AcePoolEntryForAPI:
+        """Create an AcePoolEntryForAPI instance from an AcePoolEntry instance."""
+        locked_in = instance.check_locked_in()
+        time_until_unlock = timedelta(seconds=0)
+        if locked_in:
+            time_until_unlock = instance.get_time_until_unlock()
+
+        total_time_running = timedelta(seconds=0)
+        if instance.ace_content_id != "":
+            total_time_running = datetime.now(tz=OUR_TIMEZONE) - instance.date_started
+
+        return AcePoolEntryForAPI(
+            ace_pid=instance.ace_pid,
+            ace_content_id=instance.ace_content_id,
+            date_started=instance.date_started,
+            last_used=instance.last_used,
+            locked_in=locked_in,
+            time_until_unlock=time_until_unlock,
+            time_running=total_time_running,
+            ace_hls_m3u8_url=instance.ace_hls_m3u8_url,
+        )
+
+    # region Poolboy
     def ace_poolboy(self) -> None:
         """Run the AcePoolboy to clean up instances."""
 
