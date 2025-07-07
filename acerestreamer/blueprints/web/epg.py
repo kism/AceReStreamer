@@ -1,6 +1,6 @@
 """Blueprint for EPG Endpoints."""
 
-from flask import Blueprint, Response, jsonify
+from flask import Blueprint, Response
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.instances import ace_scraper
