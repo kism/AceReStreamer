@@ -18,8 +18,7 @@ else:
 
 logger = get_logger(__name__)
 
-# EPG_LIFESPAN = timedelta(days=1)
-EPG_LIFESPAN = timedelta(hours=12)  # TODO: THIS IS TEMP TO DIAGNOSE EPG ISSUES
+EPG_LIFESPAN = timedelta(days=1)
 
 
 class EPG:
@@ -34,11 +33,11 @@ class EPG:
         self.last_updated: datetime | None = None
         self.saved_file_path: Path | None = None
 
-    def update(self, instance_path: Path | None) -> None:
+    def update(self, instance_path: Path | None) -> bool:
         """Update the EPG data from the configured URL."""
         if instance_path is None:
             logger.error("Instance path is not set, cannot update EPG %s", self.region_code)
-            return
+            return False
 
         directory_path = instance_path / "epg"
         if not directory_path.is_dir():
@@ -53,6 +52,9 @@ class EPG:
             if data_bytes:
                 self._write_to_file(data_bytes)
                 logger.info("EPG data for %s updated successfully", self.region_code)
+
+            return True
+        return False
 
     # region Getters
     def get_data(self) -> bytes | None:

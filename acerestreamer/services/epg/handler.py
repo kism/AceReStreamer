@@ -2,7 +2,7 @@
 
 import threading
 import time
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -34,7 +34,6 @@ class EPGHandler:
         self.epgs: list[EPG] = []
         self.condensed_epg: etree._Element | None = None
         self.instance_path: Path | None = None
-        self._last_condense_time: datetime = datetime.fromtimestamp(0, tz=UTC)  # Arbitrary old time
         self.set_of_tvg_ids: set[str] = set()
 
     def load_config(self, epg_conf_list: list[EPGInstanceConf], instance_path: Path | str | None = None) -> None:
@@ -78,15 +77,8 @@ class EPGHandler:
 
         return merged_data
 
-    def condense_epgs(self, *, force: bool = False) -> None:
+    def condense_epgs(self) -> None:
         """Get a condensed version of the merged EPG data."""
-        # Force is used after you have done a fresh download.
-        time_since_last_condense: timedelta = datetime.now(tz=OUR_TIMEZONE) - self._last_condense_time
-        time_to_update: bool = time_since_last_condense > EPG_CHECK_INTERVAL_MINIMUM  # Avoid unnecessary condense calls
-
-        if not force and self.condensed_epg is not None and not time_to_update:
-            return
-
         merged_epgs = self.merge_epgs()
 
         if not self.set_of_tvg_ids:
@@ -112,7 +104,6 @@ class EPGHandler:
         )
 
         self.condensed_epg = condensed_data
-        self._last_condense_time = datetime.now(tz=OUR_TIMEZONE)
 
     # region Setters
     def add_tvg_ids(self, tvg_ids: list[str]) -> None:
@@ -121,7 +112,7 @@ class EPGHandler:
             self.set_of_tvg_ids.add(tvg_id)
 
         # This needs to be forced, otherwise the list might be empty on startup
-        self.condense_epgs(force=True)
+        self.condense_epgs()
 
     # region Getters
     def get_condensed_epg(self) -> bytes:
@@ -197,10 +188,6 @@ class EPGHandler:
             logger.error("Instance path is not set, cannot get time to next update")
             return EPG_CHECK_INTERVAL_MINIMUM
 
-        if self._last_condense_time is None:
-            logger.error("Last condense time is not set, cannot get time to next update")
-            return EPG_CHECK_INTERVAL_MINIMUM  # There is probably no epg data yet, so short wait.
-
         current_time = datetime.now(tz=OUR_TIMEZONE)
 
         for epg in self.epgs:
@@ -224,17 +211,20 @@ class EPGHandler:
             """Thread function to update EPGs."""
             logger.info("Starting EPG update thread")
             while True:
+                epg_actually_updated = False
                 for epg in self.epgs:
                     try:
-                        epg.update(instance_path=self.instance_path)
+                        if epg.update(instance_path=self.instance_path):
+                            epg_actually_updated = True
                     except Exception:
                         logger.exception("Failed to update EPG %s", epg.region_code)
 
-                time.sleep(3)  # Bit silly but prevents double condense on startup
-                try:
-                    self.condense_epgs()
-                except Exception:
-                    logger.exception("Failed to condense EPGs")
+                if epg_actually_updated:
+                    time.sleep(3)  # Bit silly but prevents double condense on startup
+                    try:
+                        self.condense_epgs()
+                    except Exception:
+                        logger.exception("Failed to condense EPGs")
 
                 time.sleep(self._get_time_to_next_update().total_seconds())
 
