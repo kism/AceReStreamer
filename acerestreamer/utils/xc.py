@@ -7,13 +7,7 @@ from pathlib import Path
 from bidict import bidict
 from pydantic import BaseModel
 
-from acerestreamer.utils.constants import OUR_TIMEZONE, OUR_TIMEZONE_NAME
-
-from logging import basicConfig, getLogger
-
-
-logger = getLogger(__name__)
-basicConfig(level="WARNING", format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+from acerestreamer.utils.constants import OUR_TIMEZONE_NAME
 
 
 class XCUserInfo(BaseModel):
