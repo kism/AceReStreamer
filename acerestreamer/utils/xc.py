@@ -92,7 +92,7 @@ class ContentIDXCIdMapping:
         """Load the content ID to xc stream id mapping from a csv file."""
         if isinstance(instance_path, str):
             instance_path = Path(instance_path)
-        self.config_path = instance_path / "content_id_xc_id.csv"
+        self.config_path = instance_path / "content_id_xc_id_map.csv"
 
         if not self.config_path.exists():
             return
