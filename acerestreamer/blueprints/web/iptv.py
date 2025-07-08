@@ -50,7 +50,7 @@ def xc_get() -> Response | WerkzeugResponse:
             mimetype="application/vnd.apple.mpegurl",
         )
 
-    response = jsonify({"error": "Invalid request type. Expected 'type=m3u_plus'."})
+    response = jsonify({"error": "Invalid request type, Expected 'type=m3u_plus'"})
     response.status_code = HTTPStatus.BAD_REQUEST
     return response
 
