@@ -11,6 +11,7 @@ import requests
 from acerestreamer.services.epg import EPGHandler
 from acerestreamer.utils.content_id_infohash_mapping import content_id_infohash_mapping
 from acerestreamer.utils.logger import get_logger
+from acerestreamer.utils.xc import XCStream
 
 from .html import HTTPStreamScraper
 from .iptv import IPTVStreamScraper
@@ -241,6 +242,46 @@ class AceScraper:
         """Get the health of the streams."""
         return self._ace_quality.ace_streams
 
+    # region GET IPTV
+
+    def _get_streams_as_iptv(self, streams: list[FlatFoundAceStream], external_url: str) -> str:
+        """Get the found streams as an IPTV M3U8 string."""
+        m3u8_content = f'#EXTM3U url-tvg="{external_url}/epg"\n'
+
+        iptv_set = set()
+
+        # I used to filter this for whether the stream has ever worked,
+        # but sometimes sites change the id of their stream often...
+        for stream in streams:
+            logger.debug(stream)
+
+            # Country codes are 2 characters between square brackets, e.g. [US]
+            tvg_id = f'tvg-id="{stream.tvg_id}"'
+            tvg_logo = f'tvg-logo="{external_url}/tvg-logo/{stream.tvg_logo}"' if stream.tvg_logo else ""
+
+            m3u8_addition = f"#EXTINF:-1 {tvg_id} {tvg_logo},{stream.title}\n{external_url}/hls/{stream.content_id}"
+
+            iptv_set.add(m3u8_addition)
+
+        return m3u8_content + "\n".join(sorted(iptv_set))
+
+    def get_streams_as_iptv(self) -> str:
+        """Get the found streams as an IPTV M3U8 string."""
+        if not self.external_url:
+            logger.error("External URL is not set, cannot generate IPTV streams.")
+            return ""
+
+        external_url = self.external_url
+
+        return self._get_streams_as_iptv(
+            streams=self.get_streams_flat(),
+            external_url=external_url,
+        )
+
+    def get_streams_as_iptv_xc(self) -> list[XCStream]:
+        """Get the found streams as a list of XCStream objects."""
+        pass
+
     # region Quality
     def increment_quality(self, content_id: str, m3u_playlist: str = "") -> None:
         """Increment the quality of a stream by content_id."""
@@ -313,19 +354,6 @@ class AceScraper:
         n = len(unique_content_ids)
         msg = f"Found AceStreams: {n} unique streams across {len(self.streams)} site definitions."
         logger.info(msg)
-
-    def get_streams_as_iptv(self) -> str:
-        """Get the found streams as an IPTV M3U8 string."""
-        if not self.external_url:
-            logger.error("External URL is not set, cannot generate IPTV streams.")
-            return ""
-
-        external_url = self.external_url
-
-        return self.stream_name_processor.get_streams_as_iptv(
-            streams=self.get_streams_flat(),
-            external_url=external_url,
-        )
 
     def populate_missing_content_ids(self) -> None:
         """Populate missing content IDs for streams that have an infohash."""
