@@ -18,8 +18,8 @@ else:
 
 logger = get_logger(__name__)
 
-EPG_LIFESPAN = timedelta(days=1)
-MIN_TIME_BETWEEN_EPG_PROCESSING = timedelta(minutes=20)
+# EPG_LIFESPAN = timedelta(days=1)
+EPG_LIFESPAN = timedelta(hours=12)  # TODO: THIS IS TEMP TO DIAGNOSE EPG ISSUES
 
 
 class EPG:
