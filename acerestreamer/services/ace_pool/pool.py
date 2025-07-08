@@ -274,7 +274,7 @@ class AcePool:
 
                 instances_to_remove: list[str] = []
 
-                for instance in self.ace_instances.copy().values(): # copy to avoid runtime error
+                for instance in self.ace_instances.copy().values():  # copy to avoid runtime error
                     # If the instance is stale, remove it
                     if instance.check_if_stale():
                         instances_to_remove.append(instance.content_id)
