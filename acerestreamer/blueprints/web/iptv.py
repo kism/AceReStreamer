@@ -15,6 +15,7 @@ bp = Blueprint("acerestreamer_iptv", __name__)
 @bp.route("/iptv")
 @bp.route("/iptv.m3u")
 @bp.route("/iptv.m3u8")
+@bp.route("/get.php")  # XC Standard
 def iptv() -> Response | WerkzeugResponse:
     """Render the IPTV page."""
     auth_failure = assumed_auth_failure()

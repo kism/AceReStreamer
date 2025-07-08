@@ -13,8 +13,7 @@ epg_handler = ace_scraper.epg_handler
 
 @bp.route("/epg", methods=["GET"])
 @bp.route("/epg.xml", methods=["GET"])
-@bp.route("/xmltv", methods=["GET"])
-@bp.route("/xmltv.php", methods=["GET"])
+@bp.route("/xmltv.php", methods=["GET"]) # XC Standard
 def get_epg() -> Response | WerkzeugResponse:
     """Get the merged EPG data."""
     auth_failure = assumed_auth_failure()
