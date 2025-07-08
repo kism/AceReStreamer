@@ -23,7 +23,6 @@ logger = get_logger(__name__)
 
 EPG_CHECK_INTERVAL = timedelta(hours=1)
 EPG_CHECK_INTERVAL_MINIMUM = timedelta(minutes=1)  # Used if EPG is incomplete
-MIN_TIME_BETWEEN_EPG_PROCESSING = timedelta(minutes=20)
 ONE_WEEK_IN_SECONDS = timedelta(days=7).seconds
 
 
@@ -83,7 +82,7 @@ class EPGHandler:
         """Get a condensed version of the merged EPG data."""
         # Force is used after you have done a fresh download.
         time_since_last_condense: timedelta = datetime.now(tz=OUR_TIMEZONE) - self._last_condense_time
-        time_to_update: bool = time_since_last_condense > MIN_TIME_BETWEEN_EPG_PROCESSING
+        time_to_update: bool = time_since_last_condense > EPG_CHECK_INTERVAL_MINIMUM  # Avoid unnecessary condense calls
 
         if not force and self.condensed_epg is not None and not time_to_update:
             return
