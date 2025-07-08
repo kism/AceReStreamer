@@ -4,7 +4,7 @@ from http import HTTPStatus
 from pathlib import Path
 
 import requests
-from flask import Blueprint, Response, jsonify, request, send_file
+from flask import Blueprint, Response, jsonify, redirect, request, send_file
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.instances import ace_pool, ace_scraper
@@ -125,6 +125,32 @@ def hls_multistream(path: str) -> Response | WerkzeugResponse:
     ace_scraper.increment_quality(content_id, m3u_playlist=content_str)
 
     return Response(content_str, ace_resp.status_code)
+
+
+@bp.route("/live/a/ca/<path:path>")
+def xc_m3u8(path: str) -> Response | WerkzeugResponse:
+    """Serve the XC m3u8 file for Ace content."""
+    auth_failure = assumed_auth_failure()
+    if auth_failure:
+        return auth_failure
+
+    try:
+        xc_id = path.split(".")[0]
+        xc_id_int = int(xc_id)
+    except (ValueError, IndexError):
+        resp = jsonify({"error": "Invalid XC ID format"})
+        resp.status_code = HTTPStatus.BAD_REQUEST
+        return resp
+
+    content_id = ace_scraper.get_content_id_by_xc_id(xc_id_int)
+
+    if not content_id:
+        resp = jsonify({"error": "Content ID not found for the given XC ID"})
+        resp.status_code = HTTPStatus.NOT_FOUND
+        return resp
+
+    url = f"{current_app.are_conf.flask.SERVER_NAME}/hls/{content_id}"
+    return redirect(url, code=HTTPStatus.FOUND)
 
 
 # region /ace/c/ and /hls/c/ Content paths for regular and multistream

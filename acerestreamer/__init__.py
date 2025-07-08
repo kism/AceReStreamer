@@ -20,6 +20,7 @@ from acerestreamer.config import AceReStreamerConf
 from acerestreamer.utils.content_id_infohash_mapping import content_id_infohash_mapping
 from acerestreamer.utils.flask_helpers import FlaskAceReStreamer, cache, check_static_folder, register_error_handlers
 from acerestreamer.utils.logger import get_logger, setup_logger
+from acerestreamer.utils.xc import content_id_xc_id_mapping
 
 __version__ = "0.3.7"  # This is the version of the app, used in pyproject.toml, enforced in a test.
 PROGRAM_NAME = "Ace ReStreamer"
@@ -99,6 +100,9 @@ def create_app(
     content_id_infohash_mapping.load_config(
         instance_path=app.instance_path,
         ace_url=app.are_conf.app.ace_address,
+    )
+    content_id_xc_id_mapping.load_config(
+        instance_path=app.instance_path,
     )
 
     app.logger.info("Starting Web Server")

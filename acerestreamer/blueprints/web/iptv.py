@@ -65,7 +65,8 @@ def xc_iptv() -> Response | WerkzeugResponse:
     if request.args.get("action") == "get_live_categories":
         xc_resp = jsonify([xc.XCCategory().model_dump()])
     elif request.args.get("action") == "get_live_streams":
-        xc_resp = jsonify([xc.XCStream().model_dump()])
+        streams = [stream.model_dump() for stream in ace_scraper.get_streams_as_iptv_xc()]
+        xc_resp = jsonify(streams)
     elif (
         request.args.get("action") == "get_vod_categories"
         or request.args.get("action") == "get_vod_streams"
