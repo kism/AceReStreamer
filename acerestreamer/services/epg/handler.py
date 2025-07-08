@@ -64,7 +64,7 @@ class EPGHandler:
     # region Condense & Merge
     def merge_epgs(self) -> etree._Element:
         """Merge all EPG data into a single XML structure."""
-        logger.info("Merging EPG data from %d sources", len(self.epgs))
+        logger.debug("Merging EPG data from %d sources", len(self.epgs))
         merged_data = self._create_tv_element()  # Create a base XML element for the merged EPG
 
         for epg in self.epgs:
