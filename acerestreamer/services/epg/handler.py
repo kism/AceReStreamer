@@ -33,6 +33,7 @@ class EPGHandler:
         """Initialize the EPGHandler with a list of URLs."""
         self.epgs: list[EPG] = []
         self.condensed_epg: etree._Element | None = None
+        self.condensed_epg_bytes: bytes = b""
         self.instance_path: Path | None = None
         self.set_of_tvg_ids: set[str] = set()
 
@@ -46,7 +47,7 @@ class EPGHandler:
         for epg_conf in epg_conf_list:
             self.epgs.append(EPG(epg_conf=epg_conf))
 
-        self.update_epgs()
+        self._update_epgs()
 
         logger.info("Initialised EPGHandler with %d EPG configurations", len(epg_conf_list))
 
@@ -61,7 +62,7 @@ class EPGHandler:
         return tv_tag
 
     # region Condense & Merge
-    def merge_epgs(self) -> etree._Element:
+    def _merge_epgs(self) -> etree._Element:
         """Merge all EPG data into a single XML structure."""
         logger.debug("Merging EPG data from %d sources", len(self.epgs))
         merged_data = self._create_tv_element()  # Create a base XML element for the merged EPG
@@ -77,9 +78,9 @@ class EPGHandler:
 
         return merged_data
 
-    def condense_epgs(self) -> None:
+    def _condense_epgs(self) -> None:
         """Get a condensed version of the merged EPG data."""
-        merged_epgs = self.merge_epgs()
+        merged_epgs = self._merge_epgs()
 
         if not self.set_of_tvg_ids:
             logger.warning("No TVG IDs found in the current streams, skipping EPG condensation")
@@ -104,6 +105,7 @@ class EPGHandler:
         )
 
         self.condensed_epg = condensed_data
+        self.condensed_epg_bytes = etree.tostring(self.condensed_epg, encoding="utf-8", xml_declaration=True)
 
     # region Setters
     def add_tvg_ids(self, tvg_ids: list[str]) -> None:
@@ -112,16 +114,12 @@ class EPGHandler:
             self.set_of_tvg_ids.add(tvg_id)
 
         # This needs to be forced, otherwise the list might be empty on startup
-        self.condense_epgs()
+        self._condense_epgs()
 
     # region Getters
     def get_condensed_epg(self) -> bytes:
         """Get the condensed EPG data."""
-        if self.condensed_epg is None:
-            logger.error("No condensed EPG data available")
-            return b""
-
-        return etree.tostring(self.condensed_epg, encoding="utf-8", xml_declaration=True)
+        return self.condensed_epg_bytes
 
     def get_current_program(self, tvg_id: str) -> tuple[str, str]:
         """Get the current program for a given TVG ID."""
@@ -201,7 +199,7 @@ class EPGHandler:
         # Don't remove the additional wait time, i'm scared of a race condition
         return wait_time + EPG_CHECK_INTERVAL_MINIMUM
 
-    def update_epgs(self) -> None:
+    def _update_epgs(self) -> None:
         """Update all EPGs with the current instance path."""
         if self.instance_path is None:
             logger.error("Instance path is not set, cannot update EPGs")
@@ -222,10 +220,10 @@ class EPGHandler:
                 if epg_actually_updated:
                     time.sleep(3)  # Bit silly but prevents double condense on startup
                     try:
-                        self.condense_epgs()
+                        self._condense_epgs()
                     except Exception:
                         logger.exception("Failed to condense EPGs")
 
                 time.sleep(self._get_time_to_next_update().total_seconds())
 
-        threading.Thread(target=epg_update_thread, name="EPGHandler: update_epgs", daemon=True).start()
+        threading.Thread(target=epg_update_thread, name="EPGHandler: _update_epgs", daemon=True).start()

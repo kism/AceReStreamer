@@ -68,7 +68,7 @@ class StreamNameProcessor:
                 if len(row) == self._CSV_DESIRED_COLUMNS and not row[0].startswith("#"):
                     self.cache[row[0].strip()] = row[1].strip()
 
-    def do_replacements(self, name: str) -> str:
+    def _do_replacements(self, name: str) -> str:
         """Perform replacements in the M3U content."""
         for key, value in self.cache.items():
             if key in name:
@@ -86,7 +86,7 @@ class StreamNameProcessor:
 
         title = title.split("\n")[0].strip()  # Remove any newlines
         title = ACE_ID_PATTERN.sub("", title).strip()  # Remove any ace 40 digit hex ids from the title
-        title = self.do_replacements(title)
+        title = self._do_replacements(title)
         return title.strip()
 
     def candidates_regex_cleanup(self, candidate_titles: list[str], regex: str) -> list[str]:

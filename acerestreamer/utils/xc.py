@@ -100,7 +100,7 @@ class ContentIDXCIdMapping:
                     content_id, xc_id = row
                     self.content_id_xc_id_mapping[content_id] = int(xc_id)
 
-    def save_config(self) -> None:
+    def _save_config(self) -> None:
         """Save the content ID to infohash mapping to a JSON file."""
         if self.config_path is None:
             logger.error("Instance path is not set. Cannot save configuration.")
@@ -125,7 +125,7 @@ class ContentIDXCIdMapping:
         # If the content ID is not found, create a new xc stream id
         new_xc_id = self._get_next_xc_id()
         self.content_id_xc_id_mapping[content_id] = new_xc_id
-        self.save_config()
+        self._save_config()
         return new_xc_id
 
     def get_content_id(self, xc_id: int) -> str | None:

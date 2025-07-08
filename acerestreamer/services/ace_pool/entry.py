@@ -121,7 +121,7 @@ class AcePoolEntry:
         return datetime.now(tz=OUR_TIMEZONE) - self.date_started > LOCK_IN_TIME
 
     # region Check
-    def check_unused_longer_than_lock_in_reset(self) -> bool:
+    def _check_unused_longer_than_lock_in_reset(self) -> bool:
         """Check if the instance has been unused longer than the lock-in reset time."""
         time_now = datetime.now(tz=OUR_TIMEZONE)
         time_since_last_watched: timedelta = time_now - self.last_used
@@ -152,7 +152,7 @@ class AcePoolEntry:
         # If we have gone past the required time to unlock
         condition_three = self.get_time_until_unlock() < timedelta(seconds=1)
         # If it has been unused longer than the lock-in reset time
-        condition_four = self.check_unused_longer_than_lock_in_reset()
+        condition_four = self._check_unused_longer_than_lock_in_reset()
 
         if condition_one and condition_two and condition_three:
             logger.debug(

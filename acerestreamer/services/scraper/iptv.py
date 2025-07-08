@@ -32,13 +32,13 @@ class IPTVStreamScraper(ScraperCommon):
         found_streams: list[FoundAceStreams] = []
 
         for site in sites:
-            streams = self.scrape_iptv_playlist(site)
+            streams = self._scrape_iptv_playlist(site)
             if streams:
                 found_streams.append(streams)
 
         return found_streams
 
-    def scrape_iptv_playlist(self, site: ScrapeSiteIPTV) -> FoundAceStreams | None:
+    def _scrape_iptv_playlist(self, site: ScrapeSiteIPTV) -> FoundAceStreams | None:
         """Scrape the streams from the configured IPTV sites."""
         content = self._get_site_content(site)
         if not content:

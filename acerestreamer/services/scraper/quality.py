@@ -146,7 +146,7 @@ class AceQuality:
                     logger.error(msg)  # noqa: TRY400 Short error for requests
                     continue
 
-    def save_cache(self) -> None:
+    def _save_cache(self) -> None:
         """Save the current quality cache to a file."""
         if not self.cache_file:
             return
@@ -188,4 +188,4 @@ class AceQuality:
 
         logger.debug("Updated quality for Ace ID %s: %s", content_id, self.ace_streams[content_id].quality)
 
-        self.save_cache()
+        self._save_cache()

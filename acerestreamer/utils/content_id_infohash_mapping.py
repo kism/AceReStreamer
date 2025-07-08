@@ -38,7 +38,7 @@ class ContentIDInfohashMapping:
                     content_id, infohash = row
                     self.content_id_infohash_mapping[content_id] = infohash
 
-    def save_config(self) -> None:
+    def _save_config(self) -> None:
         """Save the content ID to infohash mapping to a JSON file."""
         if self.config_path is None:
             logger.error("Instance path is not set. Cannot save configuration.")
@@ -52,7 +52,7 @@ class ContentIDInfohashMapping:
     def add_mapping(self, content_id: str, infohash: str) -> None:
         """Add a mapping between content ID and infohash."""
         self.content_id_infohash_mapping[content_id] = infohash
-        self.save_config()
+        self._save_config()
 
     def get_infohash(self, content_id: str) -> str:
         """Get the infohash for a given content ID."""

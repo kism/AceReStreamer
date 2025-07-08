@@ -78,10 +78,10 @@ class AceScraper:
         self.html_scraper.load_config(instance_path=instance_path, stream_name_processor=self.stream_name_processor)
         self.iptv_scraper.load_config(instance_path=instance_path, stream_name_processor=self.stream_name_processor)
 
-        self.run_scrape()
+        self._run_scrape()
 
     # region Scrape
-    def run_scrape(self) -> None:
+    def _run_scrape(self) -> None:
         """Run the scraper to find AceStreams."""
 
         def run_scrape_thread() -> None:
@@ -105,33 +105,22 @@ class AceScraper:
 
                 # Populate ourself
                 self.streams = new_streams
-                self.print_streams()
+                self._print_streams()
 
                 # EPGs
                 tvg_id_list = [stream.tvg_id for found_streams in self.streams for stream in found_streams.stream_list]
                 self.epg_handler.add_tvg_ids(tvg_ids=tvg_id_list)
 
                 # For streams with only an infohash, populate the content_id using the api
-                self.populate_missing_content_ids()
+                self._populate_missing_content_ids()
 
                 if self._missing_quality:
                     time.sleep(60)
-                    self.populate_missing_content_ids()
+                    self._populate_missing_content_ids()
 
                 time.sleep(SCRAPE_INTERVAL)
 
         threading.Thread(target=run_scrape_thread, name="AceScraper: run_scrape", daemon=True).start()
-
-    # region Getters
-    def get_all_streams_by_source(self) -> list[FoundAceStreams]:
-        """Get the found streams as a list of dicts, ready to be turned into json."""
-        streams = list(self.streams)
-
-        for found_stream in streams:
-            for stream in found_stream.stream_list:
-                stream.quality = self._ace_quality.get_quality(stream.content_id).quality
-
-        return streams
 
     # region GET API
     def get_stream_by_content_id_api(self, content_id: str) -> FlatFoundAceStream:
@@ -151,35 +140,6 @@ class AceScraper:
             tvg_logo="",
             has_ever_worked=False,
         )
-
-    def get_streams_by_source(self, source_slug: str) -> list[FlatFoundAceStream] | None:
-        """Get the found streams for a specific source by its slug."""
-        for scraped_streams_listing in self.streams:
-            if scraped_streams_listing.site_slug == source_slug:
-                shortlist = []
-
-                for stream in scraped_streams_listing.stream_list:
-                    new_stream = FlatFoundAceStream(
-                        site_names=[scraped_streams_listing.site_name],
-                        quality=self._ace_quality.get_quality(stream.content_id).quality,
-                        title=stream.title,
-                        content_id=stream.content_id,
-                        infohash=stream.infohash,
-                        tvg_id=stream.tvg_id,
-                        tvg_logo=stream.tvg_logo,
-                        has_ever_worked=self._ace_quality.get_quality(stream.content_id).has_ever_worked,
-                    )
-
-                    program_title, program_description = self.epg_handler.get_current_program(tvg_id=stream.tvg_id)
-                    new_stream.program_title = program_title
-                    new_stream.program_description = program_description
-
-                    shortlist.append(new_stream)
-
-                return shortlist
-
-        logger.warning("No scraper source found with slug: %s", source_slug)
-        return None
 
     def get_streams_flat(self) -> list[FlatFoundAceStream]:
         """Get a list of streams, as a list of dicts, deduplicated by content_id."""
@@ -351,7 +311,7 @@ class AceScraper:
         return True
 
     # region Helpers
-    def print_streams(self) -> None:
+    def _print_streams(self) -> None:
         """Print the found streams."""
         if not self.streams:
             logger.warning("Scraper found no AceStreams.")
@@ -367,7 +327,7 @@ class AceScraper:
         msg = f"Found AceStreams: {n} unique streams across {len(self.streams)} site definitions."
         logger.info(msg)
 
-    def populate_missing_content_ids(self) -> None:
+    def _populate_missing_content_ids(self) -> None:
         """Populate missing content IDs for streams that have an infohash."""
         self._missing_quality = False  # Reset the flag
 

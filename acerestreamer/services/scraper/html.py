@@ -28,13 +28,13 @@ class HTTPStreamScraper(ScraperCommon):
         found_streams: list[FoundAceStreams] = []
 
         for site in sites:
-            streams = self.scrape_site(site)
+            streams = self._scrape_site(site)
             if streams:
                 found_streams.append(streams)
 
         return found_streams
 
-    def scrape_site(self, site: ScrapeSiteHTML) -> FoundAceStreams | None:
+    def _scrape_site(self, site: ScrapeSiteHTML) -> FoundAceStreams | None:
         """Scrape the streams from the configured sites."""
         streams_candidates: list[CandidateAceStream] = []
         cache_max_age = timedelta(hours=1)  # HTML Sources we need to scrape more often
@@ -107,14 +107,14 @@ class HTTPStreamScraper(ScraperCommon):
                     )
                 )
 
-        found_streams = self.process_candidates(streams_candidates, site)
+        found_streams = self._process_candidates(streams_candidates, site)
         return FoundAceStreams(
             site_name=site.name,
             site_slug=site.slug,
             stream_list=found_streams,
         )
 
-    def process_candidates(self, candidates: list[CandidateAceStream], site: ScrapeSiteHTML) -> list[FoundAceStream]:
+    def _process_candidates(self, candidates: list[CandidateAceStream], site: ScrapeSiteHTML) -> list[FoundAceStream]:
         """Process candidate streams to find valid AceStreams."""
         found_streams: list[FoundAceStream] = []
 
@@ -144,7 +144,7 @@ class HTTPStreamScraper(ScraperCommon):
                 # If there are multiple candidates, we can choose the first one
                 title = " / ".join(new_title_candidates)
 
-            url_no_uri = self.name_processor.extract_content_id_from_url(candidate.content_id)
+            content_id = self.name_processor.extract_content_id_from_url(candidate.content_id)
 
             if not self.name_processor.check_title_allowed(
                 title=title,
@@ -152,8 +152,8 @@ class HTTPStreamScraper(ScraperCommon):
             ):
                 continue
 
-            if not check_valid_content_id_or_infohash(url_no_uri):
-                logger.warning("Invalid Ace ID found in candidate: %s, skipping", url_no_uri)
+            if not check_valid_content_id_or_infohash(content_id):
+                logger.warning("Invalid Ace ID found in candidate: %s, skipping", content_id)
                 continue
 
             tvg_id = self.name_processor.get_tvg_id_from_title(title)
@@ -163,7 +163,7 @@ class HTTPStreamScraper(ScraperCommon):
             found_streams.append(
                 FoundAceStream(
                     title=title,
-                    content_id=url_no_uri,
+                    content_id=content_id,
                     tvg_id=tvg_id,
                     tvg_logo=tvg_logo,
                 )
