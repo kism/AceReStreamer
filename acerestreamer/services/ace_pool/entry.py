@@ -8,7 +8,6 @@ from pydantic import ValidationError
 
 from acerestreamer.utils import check_valid_content_id_or_infohash
 from acerestreamer.utils.constants import OUR_TIMEZONE
-from acerestreamer.utils.content_id_infohash_mapping import content_id_infohash_mapping
 from acerestreamer.utils.logger import get_logger
 
 from .constants import ACESTREAM_API_TIMEOUT
@@ -76,13 +75,6 @@ class AcePoolEntry:
         except (requests.RequestException, ValueError):
             response_json = {}
             logger.warning("Failed to fetch AceStream URLs for content_id %s", self.ace_middleware_url)
-
-        self.ace_hls_m3u8_url = ""
-        self.ace_stat_url = ""
-        self.ace_cmd_url = ""
-        self.infohash = ""
-
-        # FIXME: See if this is cooked
 
         if not response_json:
             logger.warning("No response from AceStream for content_id %s", self.content_id)
