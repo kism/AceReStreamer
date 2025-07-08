@@ -22,6 +22,7 @@ else:
 logger = get_logger(__name__)
 
 EPG_CHECK_INTERVAL = timedelta(hours=1)
+EPG_CHECK_INTERVAL_MINIMUM = timedelta(minutes=1)  # Used if EPG is incomplete
 MIN_TIME_BETWEEN_EPG_PROCESSING = timedelta(minutes=20)
 ONE_WEEK_IN_SECONDS = timedelta(days=7).seconds
 
@@ -189,6 +190,31 @@ class EPGHandler:
         return response
 
     # region Update Thread
+    def _get_time_to_next_update(self) -> timedelta:
+        """Get the time until the next EPG update."""
+        wait_time = EPG_CHECK_INTERVAL
+
+        if self.instance_path is None:
+            logger.error("Instance path is not set, cannot get time to next update")
+            return EPG_CHECK_INTERVAL_MINIMUM
+
+        if self._last_condense_time is None:
+            logger.error("Last condense time is not set, cannot get time to next update")
+            return EPG_CHECK_INTERVAL_MINIMUM  # There is probably no epg data yet, so short wait.
+
+        current_time = datetime.now(tz=OUR_TIMEZONE)
+
+        for epg in self.epgs:
+            if epg.last_updated is None:
+                return EPG_CHECK_INTERVAL_MINIMUM
+
+            time_delta_since_update = current_time - epg.last_updated
+
+            wait_time = min(wait_time, time_delta_since_update)
+
+        # Don't remove the additional wait time, i'm scared of a race condition
+        return wait_time + EPG_CHECK_INTERVAL_MINIMUM
+
     def update_epgs(self) -> None:
         """Update all EPGs with the current instance path."""
         if self.instance_path is None:
@@ -211,6 +237,6 @@ class EPGHandler:
                 except Exception:
                     logger.exception("Failed to condense EPGs")
 
-                time.sleep(EPG_CHECK_INTERVAL.total_seconds())
+                time.sleep(self._get_time_to_next_update().total_seconds())
 
         threading.Thread(target=epg_update_thread, name="EPGHandler: update_epgs", daemon=True).start()
