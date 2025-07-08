@@ -253,7 +253,8 @@ class AceScraper:
             logger.error("External URL is not set, cannot generate IPTV streams.")
             return ""
 
-        m3u8_content = f'#EXTM3U url-tvg="{self.external_url}/epg"\n'
+        # There are a few standards for the tag for the tvg url, most to least common x-tvg-url, tvg-url, url-tvg
+        m3u8_content = f'#EXTM3U x-tvg-url="{self.external_url}/epg"\n'
 
         iptv_set = set()
 
