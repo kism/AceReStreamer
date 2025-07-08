@@ -9,8 +9,8 @@ from pydantic import BaseModel, ConfigDict, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from acerestreamer.utils import slugify
-from acerestreamer.utils.logger import LoggingConf, get_logger
 from acerestreamer.utils.constants import OUR_TIMEZONE
+from acerestreamer.utils.logger import LoggingConf, get_logger
 
 # Logging should be all done at INFO level or higher as the log level hasn't been set yet
 # Modules should all setup logging like this so the log messages include the modules name.

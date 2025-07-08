@@ -8,6 +8,9 @@ from bidict import bidict
 from pydantic import BaseModel
 
 from acerestreamer.utils.constants import OUR_TIMEZONE_NAME
+from acerestreamer.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class XCUserInfo(BaseModel):
