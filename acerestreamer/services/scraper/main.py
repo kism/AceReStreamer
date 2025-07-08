@@ -102,11 +102,15 @@ class AceScraper:
                     )
                 )
 
+                # Populate ourself
                 self.streams = new_streams
                 self.print_streams()
-                self.epg_handler.set_of_tvg_ids = {
-                    stream.tvg_id for found_streams in self.streams for stream in found_streams.stream_list
-                }
+
+                # EPGs
+                tvg_id_list = [stream.tvg_id for found_streams in self.streams for stream in found_streams.stream_list]
+                self.epg_handler.add_tvg_ids(tvg_ids=tvg_id_list)
+
+                # For streams with only an infohash, populate the content_id using the api
                 self.populate_missing_content_ids()
 
                 if self._missing_quality:
