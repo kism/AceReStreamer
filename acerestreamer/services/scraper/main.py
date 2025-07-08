@@ -86,7 +86,7 @@ class AceScraper:
         def run_scrape_thread() -> None:
             """Thread function to run the scraper."""
             while True:
-                logger.info("Running AceStream scraper...")
+                logger.info("Running AceStream scraper")
 
                 new_streams = []
 
