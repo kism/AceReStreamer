@@ -114,6 +114,16 @@ class EPGHandler:
         self.condensed_epg = condensed_data
         self._last_condense_time = datetime.now(tz=OUR_TIMEZONE)
 
+    # region Setters
+    def add_tvg_ids(self, tvg_ids: list[str]) -> None:
+        """Set the TVG IDs for which EPG data should be condensed."""
+        for tvg_id in tvg_ids:
+            self.set_of_tvg_ids.add(tvg_id)
+
+        # This needs to be forced, otherwise the list might be empty on startup
+        self.condense_epgs(force=True)
+
+    # region Getters
     def get_condensed_epg(self) -> bytes:
         """Get the condensed EPG data."""
         if self.condensed_epg is None:
@@ -122,7 +132,6 @@ class EPGHandler:
 
         return etree.tostring(self.condensed_epg, encoding="utf-8", xml_declaration=True)
 
-    # region Getters
     def get_current_program(self, tvg_id: str) -> tuple[str, str]:
         """Get the current program for a given TVG ID."""
         if self.condensed_epg is None:
@@ -196,6 +205,7 @@ class EPGHandler:
                     except Exception:
                         logger.exception("Failed to update EPG %s", epg.region_code)
 
+                time.sleep(3)  # Bit silly but prevents double condense on startup
                 try:
                     self.condense_epgs()
                 except Exception:
