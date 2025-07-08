@@ -10,6 +10,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from acerestreamer.utils import slugify
 from acerestreamer.utils.logger import LoggingConf, get_logger
+from acerestreamer.utils.constants import OUR_TIMEZONE
 
 # Logging should be all done at INFO level or higher as the log level hasn't been set yet
 # Modules should all setup logging like this so the log messages include the modules name.
@@ -225,8 +226,7 @@ class AceReStreamerConf(BaseSettings):
         new_file_content_str = json.dumps(config_data)
 
         if existing_data != config_data:  # The new object will be valid, so we back up the old one
-            local_tz = datetime.datetime.now().astimezone().tzinfo
-            time_str = datetime.datetime.now(tz=local_tz).strftime("%Y-%m-%d_%H%M%S")
+            time_str = datetime.datetime.now(tz=OUR_TIMEZONE).strftime("%Y-%m-%d_%H%M%S")
             config_backup_dir = config_location.parent / "config_backups"
             config_backup_dir.mkdir(parents=True, exist_ok=True)
             backup_file = config_backup_dir / f"{config_location.stem}_{time_str}{config_location.suffix}.bak"

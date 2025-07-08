@@ -20,6 +20,7 @@ dependencies = [
     "lxml>=5.4.0",
     "psutil>=7.0.0",
     "bidict>=0.23.1",
+    "pytz>=2025.2",
 ]
 
 [dependency-groups]
@@ -29,6 +30,7 @@ type = [
     "types-colorama>=0.4.15.20240311",
     "types-requests>=2.32.0.20250602",
     "types-psutil>=7.0.0.20250601",
+    "types-pytz>=2025.2.0.20250516",
 ]
 lint = ["ruff"]
 test = [

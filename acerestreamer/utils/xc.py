@@ -1,20 +1,19 @@
 """Models for XC API responses."""
 
 import csv
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 from bidict import bidict
 from pydantic import BaseModel
 
-from acerestreamer.utils.constants import OUR_TIMEZONE
-from acerestreamer.utils.logger import get_logger
+from acerestreamer.utils.constants import OUR_TIMEZONE, OUR_TIMEZONE_NAME
 
-logger = get_logger(__name__)
+from logging import basicConfig, getLogger
 
-SAFE_TIMEZONE_NAME = "UTC"
-if OUR_TIMEZONE is not None:
-    SAFE_TIMEZONE_NAME = OUR_TIMEZONE.tzname(datetime.now(tz=OUR_TIMEZONE)) or "UTC"
+
+logger = getLogger(__name__)
+basicConfig(level="WARNING", format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 
 class XCUserInfo(BaseModel):
@@ -40,8 +39,8 @@ class XCServerInfo(BaseModel):
     port: int = 80
     https_port: int = 443
     server_protocol: str = "http"
-    timezone: str = SAFE_TIMEZONE_NAME
-    timestamp_now: int = int(datetime.now(tz=OUR_TIMEZONE).timestamp())
+    timezone: str = OUR_TIMEZONE_NAME
+    timestamp_now: int = int(datetime.now(tz=UTC).timestamp())  # This is a timestamp
     process: bool = True
 
 
