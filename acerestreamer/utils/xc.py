@@ -12,6 +12,8 @@ from acerestreamer.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
+MAX_TIME = str(int(datetime(9999, 12, 31, 23, 59, 59, tzinfo=UTC).timestamp()))
+
 
 class XCUserInfo(BaseModel):
     """Model for XC User Information."""
@@ -21,7 +23,7 @@ class XCUserInfo(BaseModel):
     message: str = "Welcome to AceRestreamer"
     auth: int = 1
     status: str = "Active"
-    exp_date: str = "1500000000"
+    exp_date: str = MAX_TIME
     is_trial: str = "0"
     active_cons: str = "0"
     created_at: str = "5000000000"
