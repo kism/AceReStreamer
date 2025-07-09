@@ -1,7 +1,7 @@
 """Models for XC API responses."""
 
 import csv
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from bidict import bidict
@@ -12,7 +12,10 @@ from acerestreamer.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-MAX_TIME = str(int(datetime(9999, 12, 31, 23, 59, 59, tzinfo=UTC).timestamp()))
+
+def _get_expiry_date() -> str:
+    """Get the expiry date in an epoch string."""
+    return str(int(datetime.now(tz=UTC).timestamp() + timedelta(days=365).total_seconds()))  # 1 year from now
 
 
 class XCUserInfo(BaseModel):
@@ -23,7 +26,7 @@ class XCUserInfo(BaseModel):
     message: str = "Welcome to AceRestreamer"
     auth: int = 1
     status: str = "Active"
-    exp_date: str = MAX_TIME
+    exp_date: str = _get_expiry_date()
     is_trial: str = "0"
     active_cons: str = "0"
     created_at: str = "5000000000"
