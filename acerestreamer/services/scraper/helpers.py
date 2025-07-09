@@ -1,6 +1,10 @@
 """Helper functions for AceStream scraper services."""
 
+from acerestreamer.utils.logger import get_logger
+
 from .models import FoundAceStream
+
+logger = get_logger(__name__)
 
 
 def create_unique_stream_list(streams: list[FoundAceStream]) -> dict[str, FoundAceStream]:
@@ -19,8 +23,15 @@ def create_unique_stream_list(streams: list[FoundAceStream]) -> dict[str, FoundA
                 existing_stream.tvg_logo = stream.tvg_logo
 
             # Prefer titles with brackets for country code
-            if not any(char in existing_stream.title for char in ["[", "]"]):
-                existing_stream.title = stream.title
+            if existing_stream.title != stream.title:
+                if not any(char in existing_stream.title for char in ["[", "]"]):
+                    existing_stream.title = stream.title
+                else:
+                    logger.warning(
+                        "Duplicate content_id found with different titles: %s vs %s",
+                        existing_stream.title,
+                        stream.title,
+                    )
 
         else:
             found_streams[stream.content_id] = stream
