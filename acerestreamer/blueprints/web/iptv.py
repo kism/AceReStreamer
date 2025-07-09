@@ -42,7 +42,7 @@ def xc_get() -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    known_args = ["type"]
+    known_args = ["type", "output"]
     log_unexpected_args(
         expected_args=known_args,
         received_args=list(request.args.keys()),

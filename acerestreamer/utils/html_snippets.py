@@ -6,6 +6,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from acerestreamer.utils.constants import TEMPLATES_DIRECTORY
 from acerestreamer.utils.logger import get_logger
+from acerestreamer.version import __version__
 
 SNIPPETS_DIRECTORY = TEMPLATES_DIRECTORY / "snippets"
 
@@ -14,8 +15,6 @@ logger = get_logger(__name__)  # Create a logger: acerestreamer.html_snippets, i
 
 def get_header_snippet(page_title: str) -> str:
     """Get the HTML header snippet with the given page title."""
-    from acerestreamer import __version__  # noqa: PLC0415,RUF100 # Avoid circular import by importing here
-
     git_head_log = Path.cwd() / ".git" / "logs" / "HEAD"
     git_head = Path.cwd() / ".git" / "HEAD"
     last_commit = ""

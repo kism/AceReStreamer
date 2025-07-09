@@ -10,6 +10,7 @@ from lxml import etree
 
 from acerestreamer.utils.constants import OUR_TIMEZONE
 from acerestreamer.utils.logger import get_logger
+from acerestreamer.version import PROGRAM_NAME, URL
 
 from .epg import EPG
 from .models import EPGApiResponse
@@ -54,8 +55,6 @@ class EPGHandler:
     # region Helpers
     def _create_tv_element(self) -> etree._Element:
         """Create a base XML element for the EPG data."""
-        from acerestreamer import PROGRAM_NAME, URL  # noqa: PLC0415 Avoid circular import
-
         tv_tag = etree.Element("tv")
         tv_tag.set("generator-info-name", PROGRAM_NAME)
         tv_tag.set("generator-info-url", URL)

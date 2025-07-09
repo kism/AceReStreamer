@@ -4,8 +4,8 @@ import argparse
 import sys
 from pathlib import Path
 
-from acerestreamer import __version__
 from acerestreamer.utils.logger import LOG_LEVELS, get_logger, setup_logger
+from acerestreamer.version import __version__
 
 from .models import (
     AceReStreamerConf,

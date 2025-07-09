@@ -21,10 +21,7 @@ from acerestreamer.utils.content_id_infohash_mapping import content_id_infohash_
 from acerestreamer.utils.flask_helpers import FlaskAceReStreamer, cache, check_static_folder, register_error_handlers
 from acerestreamer.utils.logger import get_logger, setup_logger
 from acerestreamer.utils.xc import content_id_xc_id_mapping
-
-__version__ = "0.3.7"  # This is the version of the app, used in pyproject.toml, enforced in a test.
-PROGRAM_NAME = "Ace ReStreamer"
-URL = "https://github.com/kism/ace-restreamer"
+from acerestreamer.version import PROGRAM_NAME, __version__
 
 
 def create_app(
