@@ -191,15 +191,14 @@ class EPGHandler:
             logger.error("Instance path is not set, cannot get time to next update")
             return EPG_CHECK_INTERVAL_MINIMUM
 
-        current_time = datetime.now(tz=OUR_TIMEZONE)
-
         for epg in self.epgs:
             if epg.last_updated is None:
                 return EPG_CHECK_INTERVAL_MINIMUM
 
-            time_delta_since_update = current_time - epg.last_updated
+            time_until_next_update_seconds = epg.get_seconds_until_next_update()
+            time_delta_until_next_update = timedelta(seconds=time_until_next_update_seconds)
 
-            wait_time = min(wait_time, time_delta_since_update)
+            wait_time = min(wait_time, time_delta_until_next_update)
 
         # Don't remove the additional wait time, i'm scared of a race condition
         time_to_wait = min(wait_time + EPG_CHECK_INTERVAL_MINIMUM, EPG_CHECK_INTERVAL)
