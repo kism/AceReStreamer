@@ -42,6 +42,9 @@ def xc_get() -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
+    msg = f"/get.php\nargs: {request.args}\nheaders: {request.headers}"
+    logger.info(msg)
+
     known_args = ["type", "output"]
     log_unexpected_args(
         expected_args=known_args,
