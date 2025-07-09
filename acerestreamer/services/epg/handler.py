@@ -84,26 +84,34 @@ class EPGHandler:
             logger.warning("No TVG IDs found in the current streams, skipping EPG condensation")
             return
 
-        condensed_data = self._create_tv_element()  # Create a base XML element for the merged EPG
+        new_condensed_data = self._create_tv_element()  # Create a base XML element for the merged EPG
 
         for channel in merged_epgs.findall("channel"):
             tvg_id = channel.get("id")
             if tvg_id in self.set_of_tvg_ids:
-                condensed_data.append(channel)
+                new_condensed_data.append(channel)
 
         for programme in merged_epgs.findall("programme"):
             tvg_id = programme.get("channel")
             if tvg_id in self.set_of_tvg_ids:
-                condensed_data.append(programme)
+                new_condensed_data.append(programme)
 
         logger.info(
             "Condensed EPG data created with %d channels and %d programmes",
-            len(condensed_data.findall("channel")),
-            len(condensed_data.findall("programme")),
+            len(new_condensed_data.findall("channel")),
+            len(new_condensed_data.findall("programme")),
         )
 
-        self.condensed_epg = condensed_data
-        self.condensed_epg_bytes = etree.tostring(self.condensed_epg, encoding="utf-8", xml_declaration=True)
+        # Update EPG ET, generate bytes local
+        self.condensed_epg = new_condensed_data
+        new_condensed_epg_bytes = etree.tostring(self.condensed_epg, encoding="utf-8", xml_declaration=True)
+
+        # Check bytes, local vs self.
+        if new_condensed_epg_bytes == self.condensed_epg_bytes:
+            logger.warning("Condensed EPG data is the same as before")
+
+        # Update the condensed EPG bytes
+        self.condensed_epg_bytes = new_condensed_epg_bytes
 
     # region Setters
     def add_tvg_ids(self, tvg_ids: list[str]) -> None:

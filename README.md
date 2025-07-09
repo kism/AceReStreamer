@@ -70,7 +70,6 @@ uv sync --no-group test --no-group type --no-group lint
   - administrative account
   - ~~json for the config file~~
 - categories
-- epg is getting fetched periodically, but the /epg endpoint doesnt return new data
 
 ### Apps that don't work
 
@@ -151,3 +150,4 @@ see iptv.html.j2
 - ~~fix epg thread~~
 - ~~xc api~~
 - ~~bit too much .values()~~
+- epg is getting fetched periodically, but the /epg endpoint doesnt return new data
