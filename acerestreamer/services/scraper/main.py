@@ -223,17 +223,19 @@ class AceScraper:
         """Get the found streams as a list of XCStream objects."""
         streams: list[XCStream] = []
 
+        current_stream_number = 1
         for stream in self.streams.values():
-            num = content_id_xc_id_mapping.get_xc_id(stream.content_id)
+            xc_id = content_id_xc_id_mapping.get_xc_id(stream.content_id)
             streams.append(
                 XCStream(
-                    num=num,
+                    num=current_stream_number,
                     name=stream.title,
-                    stream_id=num,
+                    stream_id=xc_id,
                     stream_icon=f"{self.external_url}/tvg-logo/{stream.tvg_logo}" if stream.tvg_logo else "",
                     epg_channel_id=stream.tvg_id,
                 )
             )
+            current_stream_number += 1
 
         return streams
 
