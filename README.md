@@ -71,6 +71,7 @@ uv sync --no-group test --no-group type --no-group lint
   - ~~json for the config file~~
 - categories
 - epg is getting fetched periodically, but the /epg endpoint doesnt return new data
+- bit too much .values()
 
 ### Apps that don't work
 

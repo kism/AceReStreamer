@@ -13,23 +13,22 @@ from acerestreamer.utils.content_id_infohash_mapping import content_id_infohash_
 from acerestreamer.utils.logger import get_logger
 from acerestreamer.utils.xc import XCStream, content_id_xc_id_mapping
 
+from .helpers import create_unique_stream_list
 from .html import HTTPStreamScraper
 from .iptv import IPTVStreamScraper
-from .models import AceScraperSourceApi, FlatFoundAceStream
+from .models import AceScraperSourceApi, FoundAceStream, FoundAceStreamAPI
 from .name_processor import StreamNameProcessor
 from .quality import AceQuality
 
 if TYPE_CHECKING:
     from acerestreamer.config.models import AceScrapeConf, EPGInstanceConf, ScrapeSiteHTML, ScrapeSiteIPTV
 
-    from .models import FoundAceStreams
     from .quality import Quality
 else:
     ScrapeSiteHTML = object
     ScrapeSiteIPTV = object
     EPGInstanceConf = object
     AceScrapeConf = object
-    FoundAceStreams = object
     Quality = object
 
 logger = get_logger(__name__)
@@ -45,7 +44,7 @@ class AceScraper:
         """Init the scraper."""
         self.external_url: str = ""
         self.ace_url: str = ""
-        self.streams: list[FoundAceStreams] = []
+        self.streams: dict[str, FoundAceStream] = {}
         self.html: list[ScrapeSiteHTML] = []
         self.iptv_m3u8: list[ScrapeSiteIPTV] = []
         self._ace_quality = AceQuality()
@@ -54,7 +53,6 @@ class AceScraper:
         self.html_scraper: HTTPStreamScraper = HTTPStreamScraper()
         self.iptv_scraper: IPTVStreamScraper = IPTVStreamScraper()
         self.currently_checking_quality: bool = False
-        self._missing_quality: bool = False
 
     def load_config(
         self,
@@ -89,48 +87,59 @@ class AceScraper:
             while True:
                 logger.info("Running AceStream scraper")
 
-                new_streams = []
+                found_html_streams = self.html_scraper.scrape_sites(sites=self.html)
+                found_iptv_streams = self.iptv_scraper.scrape_iptv_playlists(sites=self.iptv_m3u8)
 
-                new_streams.extend(
-                    self.html_scraper.scrape_sites(
-                        sites=self.html,
-                    )
-                )
+                found_streams = found_html_streams + found_iptv_streams
 
-                new_streams.extend(
-                    self.iptv_scraper.scrape_iptv_playlists(
-                        sites=self.iptv_m3u8,
-                    )
-                )
+                self.streams = create_unique_stream_list(found_streams)
+                self._populate_infohashes()
 
                 # Populate ourself
-                self.streams = new_streams
                 self._print_streams()
 
                 # EPGs
-                tvg_id_list = [stream.tvg_id for found_streams in self.streams for stream in found_streams.stream_list]
+                tvg_id_list = [stream.tvg_id for stream in self.streams.values()]
                 self.epg_handler.add_tvg_ids(tvg_ids=tvg_id_list)
 
                 # For streams with only an infohash, populate the content_id using the api
-                self._populate_missing_content_ids()
+                for _ in range(2):
+                    missing_content_id_streams = [
+                        stream for stream in found_streams if not stream.content_id and stream.infohash
+                    ]
+                    if len(missing_content_id_streams) == 0:
+                        break
 
-                if self._missing_quality:
+                    newly_populated_streams = self._populate_missing_content_ids(missing_content_id_streams)
+                    if len(newly_populated_streams) != 0:
+                        self.streams = create_unique_stream_list(list(self.streams.values()) + newly_populated_streams)
                     time.sleep(60)
-                    self._populate_missing_content_ids()
 
                 time.sleep(SCRAPE_INTERVAL)
 
         threading.Thread(target=run_scrape_thread, name="AceScraper: run_scrape", daemon=True).start()
 
     # region GET API
-    def get_stream_by_content_id_api(self, content_id: str) -> FlatFoundAceStream:
-        """Get a stream by its Ace ID, will use the first found matching FlatFoundAceStream by content_id."""
-        streams = self.get_streams_flat()
-        for found_stream in streams:
-            if found_stream.content_id == content_id:
-                return found_stream
+    def get_stream_by_content_id_api(self, content_id: str) -> FoundAceStreamAPI:
+        """Get a stream by its Ace ID, will use the first found matching FoundAceStreamAPI by content_id."""
+        if content_id in self.streams:
+            stream = self.streams[content_id]
+            program_title, program_description = self.epg_handler.get_current_program(tvg_id=stream.tvg_id)
 
-        return FlatFoundAceStream(  # Default return if no stream is found
+            return FoundAceStreamAPI(
+                site_names=stream.site_names,
+                quality=self._ace_quality.get_quality(content_id).quality,
+                has_ever_worked=self._ace_quality.get_quality(content_id).has_ever_worked,
+                title=stream.title,
+                content_id=stream.content_id,
+                infohash=stream.infohash,
+                tvg_id=stream.tvg_id,
+                tvg_logo=stream.tvg_logo,
+                program_title=program_title,
+                program_description=program_description,
+            )
+
+        return FoundAceStreamAPI(  # Default return if no stream is found
             site_names=["Unknown"],
             quality=self._ace_quality.default_quality,
             title=content_id,
@@ -141,38 +150,12 @@ class AceScraper:
             has_ever_worked=False,
         )
 
-    def get_streams_flat(self) -> list[FlatFoundAceStream]:
+    def get_stream_list_api(self) -> list[FoundAceStreamAPI]:
         """Get a list of streams, as a list of dicts, deduplicated by content_id."""
-        streams = [stream.model_dump() for stream in self.streams]
+        return [self.get_stream_by_content_id_api(content_id=content_id) for content_id in self.streams]
 
-        flat_streams: dict[str, FlatFoundAceStream] = {}
-        for found_stream in streams:
-            for stream in found_stream["stream_list"]:
-                program_title, program_description = self.epg_handler.get_current_program(tvg_id=stream["tvg_id"])
-
-                if stream["content_id"] in flat_streams:
-                    # If the stream already exists, we append the site name to the existing one
-                    existing_stream = flat_streams[stream["content_id"]]
-                    existing_stream.site_names.append(found_stream["site_name"])
-
-                else:
-                    new_stream: FlatFoundAceStream = FlatFoundAceStream(
-                        site_names=[found_stream["site_name"]],
-                        quality=self._ace_quality.get_quality(stream["content_id"]).quality,
-                        has_ever_worked=self._ace_quality.get_quality(stream["content_id"]).has_ever_worked,
-                        title=stream["title"],
-                        content_id=stream["content_id"],
-                        infohash=stream["infohash"],
-                        tvg_id=stream["tvg_id"],
-                        tvg_logo=stream["tvg_logo"],
-                        program_title=program_title,
-                        program_description=program_description,
-                    )
-                    flat_streams[stream["content_id"]] = new_stream
-
-        return list(flat_streams.values())
-
-    def get_scraper_sources_flat(self) -> list[AceScraperSourceApi]:
+    # region GET API Scraper
+    def get_scraper_sources_flat_api(self) -> list[AceScraperSourceApi]:
         """Get the sources for the scraper, as a flat list."""
         sources = [
             AceScraperSourceApi(
@@ -221,7 +204,7 @@ class AceScraper:
 
         # I used to filter this for whether the stream has ever worked,
         # but sometimes sites change the id of their stream often...
-        for stream in self.get_streams_flat():
+        for stream in self.streams.values():
             logger.debug(stream)
 
             # Country codes are 2 characters between square brackets, e.g. [US]
@@ -240,7 +223,7 @@ class AceScraper:
         """Get the found streams as a list of XCStream objects."""
         streams: list[XCStream] = []
 
-        for stream in self.get_streams_flat():
+        for stream in self.streams.values():
             num = content_id_xc_id_mapping.get_xc_id(stream.content_id)
             streams.append(
                 XCStream(
@@ -267,7 +250,7 @@ class AceScraper:
         def check_missing_quality_thread(base_url: str) -> None:
             self.currently_checking_quality = True
 
-            streams = self.get_streams_flat()
+            streams = self.get_stream_list_api()  # API method gets teh health information
             if not streams:
                 logger.warning("No streams found to check quality.")
                 self.currently_checking_quality = False
@@ -279,7 +262,7 @@ class AceScraper:
                 ]
             )
 
-            # We only iterate through streams from get_streams_flat()
+            # We only iterate through streams from get_stream_list_api()
             # since we don't want to health check streams that are not current per the scraper.
             # Don't enumerate here, and don't bother with list comprehension tbh
             n = 0
@@ -317,36 +300,41 @@ class AceScraper:
             logger.warning("Scraper found no AceStreams.")
             return
 
-        # Collect all unique content_ids
-        unique_content_ids = set()
-        for found_streams in self.streams:
-            for stream in found_streams.stream_list:
-                unique_content_ids.add(stream.content_id)
-
-        n = len(unique_content_ids)
+        n = len(self.streams)
         msg = f"Found AceStreams: {n} unique streams across {len(self.streams)} site definitions."
         logger.info(msg)
 
-    def _populate_missing_content_ids(self) -> None:
+    def _populate_infohashes(self) -> None:
+        """Populate infohashes for streams that have a content ID."""
+        for stream in self.streams.values():
+            if not stream.infohash:
+                stream.infohash = content_id_infohash_mapping.get_infohash(
+                    content_id=stream.content_id,
+                )
+
+    def _populate_missing_content_ids(self, streams: list[FoundAceStream]) -> list[FoundAceStream]:
         """Populate missing content IDs for streams that have an infohash."""
-        self._missing_quality = False  # Reset the flag
+        populated_streams: list[FoundAceStream] = []
 
-        for found_streams in self.streams:
-            for stream in found_streams.stream_list:
+        for stream in streams:
+            if not stream.content_id:
+                stream.content_id = content_id_infohash_mapping.get_content_id(
+                    infohash=stream.infohash,
+                )
+                if stream.content_id:
+                    populated_streams.append(stream)
+
+        for stream in streams:
+            if not stream.content_id:
+                stream.content_id = content_id_infohash_mapping.populate_from_api(
+                    infohash=stream.infohash,
+                )
                 if not stream.content_id:
-                    stream.content_id = content_id_infohash_mapping.get_content_id(
-                        infohash=stream.infohash,
+                    logger.error(
+                        "Failed to populate content ID for stream with infohash %s, skipping",
+                        stream.infohash,
                     )
-                elif not stream.infohash:
-                    stream.infohash = content_id_infohash_mapping.get_infohash(
-                        content_id=stream.content_id,
-                    )
+                else:
+                    populated_streams.append(stream)
 
-        for found_streams in self.streams:
-            for stream in found_streams.stream_list:
-                if not stream.content_id and stream.infohash:
-                    stream.content_id = content_id_infohash_mapping.populate_from_api(
-                        infohash=stream.infohash,
-                    )
-                    if stream.content_id == "":
-                        self._missing_quality = True
+        return populated_streams

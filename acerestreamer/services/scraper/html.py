@@ -10,7 +10,7 @@ from acerestreamer.utils import check_valid_content_id_or_infohash
 from acerestreamer.utils.logger import get_logger
 
 from .common import ScraperCommon
-from .models import CandidateAceStream, FoundAceStream, FoundAceStreams
+from .models import CandidateAceStream, FoundAceStream
 
 if TYPE_CHECKING:
     from acerestreamer.config import ScrapeSiteHTML
@@ -23,18 +23,18 @@ logger = get_logger(__name__)
 class HTTPStreamScraper(ScraperCommon):
     """Scraper for websites to find AceStream streams."""
 
-    def scrape_sites(self, sites: list[ScrapeSiteHTML]) -> list[FoundAceStreams]:
+    def scrape_sites(self, sites: list[ScrapeSiteHTML]) -> list[FoundAceStream]:
         """Scrape the streams from the configured sites."""
-        found_streams: list[FoundAceStreams] = []
+        found_streams: list[FoundAceStream] = []
 
         for site in sites:
             streams = self._scrape_site(site)
             if streams:
-                found_streams.append(streams)
+                found_streams.extend(streams)
 
         return found_streams
 
-    def _scrape_site(self, site: ScrapeSiteHTML) -> FoundAceStreams | None:
+    def _scrape_site(self, site: ScrapeSiteHTML) -> list[FoundAceStream]:
         """Scrape the streams from the configured sites."""
         streams_candidates: list[CandidateAceStream] = []
         cache_max_age = timedelta(hours=1)  # HTML Sources we need to scrape more often
@@ -52,7 +52,7 @@ class HTTPStreamScraper(ScraperCommon):
             except requests.RequestException as e:
                 error_short = type(e).__name__
                 logger.error("Error scraping site %s, %s", site.url, error_short)  # noqa: TRY400 Short error for requests
-                return None
+                return []
 
         soup = BeautifulSoup(scraped_site_str, "html.parser")
 
@@ -107,12 +107,7 @@ class HTTPStreamScraper(ScraperCommon):
                     )
                 )
 
-        found_streams = self._process_candidates(streams_candidates, site)
-        return FoundAceStreams(
-            site_name=site.name,
-            site_slug=site.slug,
-            stream_list=found_streams,
-        )
+        return self._process_candidates(streams_candidates, site)
 
     def _process_candidates(self, candidates: list[CandidateAceStream], site: ScrapeSiteHTML) -> list[FoundAceStream]:
         """Process candidate streams to find valid AceStreams."""
@@ -166,6 +161,7 @@ class HTTPStreamScraper(ScraperCommon):
                     content_id=content_id,
                     tvg_id=tvg_id,
                     tvg_logo=tvg_logo,
+                    site_names=[site.name],
                 )
             )
 

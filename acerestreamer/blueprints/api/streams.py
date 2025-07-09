@@ -39,7 +39,7 @@ def api_streams_flat() -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    streams = ace_scraper.get_streams_flat()
+    streams = ace_scraper.get_stream_list_api()
     streams_serialized = [stream.model_dump() for stream in streams]
 
     response = jsonify(streams_serialized)

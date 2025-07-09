@@ -43,9 +43,8 @@ def check_valid_content_id_or_infohash(content_id: str) -> bool:
 
     return True
 
-def log_unexpected_args(
-    expected_args: list[str], received_args: list[str], endpoint: str
-) -> None:
+
+def log_unexpected_args(expected_args: list[str], received_args: list[str], endpoint: str) -> None:
     """Log unexpected query parameters."""
     unexpected_args = [arg for arg in received_args if arg not in expected_args]
     if unexpected_args:

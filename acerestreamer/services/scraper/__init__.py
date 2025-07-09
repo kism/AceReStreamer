@@ -4,16 +4,14 @@ from acerestreamer.services.scraper.cache import ScraperCache
 from acerestreamer.services.scraper.main import AceScraper
 from acerestreamer.services.scraper.models import (
     CandidateAceStream,
-    FlatFoundAceStream,
     FoundAceStream,
-    FoundAceStreams,
+    FoundAceStreamAPI,
 )
 
 __all__ = [
     "AceScraper",
     "CandidateAceStream",
-    "FlatFoundAceStream",
     "FoundAceStream",
-    "FoundAceStreams",
+    "FoundAceStreamAPI",
     "ScraperCache",
 ]

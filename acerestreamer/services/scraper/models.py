@@ -22,6 +22,7 @@ class FoundAceStream(BaseModel):
     infohash: str = ""
     tvg_id: str
     tvg_logo: str
+    site_names: list[str]
     quality: int = -1
 
     @model_validator(mode="after")
@@ -46,14 +47,6 @@ class FoundAceStream(BaseModel):
         return self
 
 
-class FoundAceStreams(BaseModel):
-    """Model for a list of found AceStreams."""
-
-    site_name: str
-    site_slug: str
-    stream_list: list[FoundAceStream]
-
-
 class CandidateAceStream(BaseModel):
     """Model for a candidate AceStream."""
 
@@ -61,7 +54,7 @@ class CandidateAceStream(BaseModel):
     title_candidates: list[str] = []
 
 
-class FlatFoundAceStream(BaseModel):
+class FoundAceStreamAPI(BaseModel):
     """Flat model for a found AceStream."""
 
     site_names: list[str]

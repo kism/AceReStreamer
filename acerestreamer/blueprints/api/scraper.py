@@ -21,10 +21,10 @@ def api_streams_sources_flat() -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    streams = ace_scraper.get_scraper_sources_flat()
-    streams_serialized = [stream.model_dump() for stream in streams]
+    sources = ace_scraper.get_scraper_sources_flat_api()
+    sources_serialized = [source.model_dump() for source in sources]
 
-    response = jsonify(streams_serialized)
+    response = jsonify(sources_serialized)
     response.status_code = HTTPStatus.OK
     return response
 

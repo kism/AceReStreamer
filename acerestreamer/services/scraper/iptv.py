@@ -11,7 +11,7 @@ from acerestreamer.utils.constants import SUPPORTED_TVG_LOGO_EXTENSIONS
 from acerestreamer.utils.logger import get_logger
 
 from .common import ScraperCommon
-from .models import FoundAceStream, FoundAceStreams
+from .models import FoundAceStream
 
 if TYPE_CHECKING:
     from acerestreamer.config import ScrapeSiteIPTV, TitleFilter
@@ -27,36 +27,28 @@ TVG_LOGO_REGEX = re.compile(r'tvg-logo="([^"]+)"')
 class IPTVStreamScraper(ScraperCommon):
     """Scraper for IPTV sites to find AceStream streams."""
 
-    def scrape_iptv_playlists(self, sites: list[ScrapeSiteIPTV]) -> list[FoundAceStreams]:
+    def scrape_iptv_playlists(self, sites: list[ScrapeSiteIPTV]) -> list[FoundAceStream]:
         """Scrape the streams from the configured IPTV sites."""
-        found_streams: list[FoundAceStreams] = []
+        found_streams: list[FoundAceStream] = []
 
         for site in sites:
             streams = self._scrape_iptv_playlist(site)
             if streams:
-                found_streams.append(streams)
+                found_streams.extend(streams)
 
         return found_streams
 
-    def _scrape_iptv_playlist(self, site: ScrapeSiteIPTV) -> FoundAceStreams | None:
+    def _scrape_iptv_playlist(self, site: ScrapeSiteIPTV) -> list[FoundAceStream]:
         """Scrape the streams from the configured IPTV sites."""
         content = self._get_site_content(site)
         if not content:
-            return None
+            return []
 
         found_streams = self._parse_m3u_content(content, site)
 
         logger.debug("Found %d streams on IPTV site %s", len(found_streams), site.name)
 
-        return (
-            FoundAceStreams(
-                site_name=site.name,
-                site_slug=site.slug,
-                stream_list=found_streams,
-            )
-            if found_streams
-            else None
-        )
+        return found_streams
 
     def _get_site_content(self, site: ScrapeSiteIPTV) -> str | None:
         """Get site content from cache or by scraping."""
@@ -87,6 +79,7 @@ class IPTVStreamScraper(ScraperCommon):
         content_id: str,
         infohash: str,
         title_filter: TitleFilter,
+        site_name: str,
     ) -> FoundAceStream | None:
         """Parse EXTINF line and return title if valid."""
         extinf_parts = 2
@@ -113,6 +106,7 @@ class IPTVStreamScraper(ScraperCommon):
                 infohash=infohash,
                 tvg_id=tvg_id,
                 tvg_logo=tvg_logo,
+                site_names=[site_name],
             )
         except ValidationError:
             msg = "Validation error creating FoundAceStream object:\n"
@@ -151,6 +145,7 @@ class IPTVStreamScraper(ScraperCommon):
                     content_id=content_id,
                     infohash=infohash,
                     title_filter=site.title_filter,
+                    site_name=site.name,
                 )
                 if ace_stream is not None:
                     found_streams.append(ace_stream)
