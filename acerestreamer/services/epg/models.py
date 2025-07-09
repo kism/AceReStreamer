@@ -1,6 +1,8 @@
 """EPG API Models."""
 
-from pydantic import BaseModel
+from datetime import timedelta
+
+from pydantic import BaseModel, field_serializer
 
 
 class EPGApiResponse(BaseModel):
@@ -8,5 +10,28 @@ class EPGApiResponse(BaseModel):
 
     url: str
     region_code: str
-    seconds_since_last_updated: int
-    seconds_until_next_update: int
+    time_since_last_updated: timedelta
+    time_until_next_update: timedelta
+
+    @field_serializer("time_since_last_updated")
+    def serialize_time_since_last_updated(self, value: timedelta) -> int:
+        """Serialize time since last updated to seconds."""
+        return int(value.total_seconds())
+
+    @field_serializer("time_until_next_update")
+    def serialize_time_until_next_update(self, value: timedelta) -> int:
+        """Serialize time until next update to seconds."""
+        return int(value.total_seconds())
+
+
+class EPGApiHandlerResponse(BaseModel):
+    """Model for EPG API handler response."""
+
+    time_until_next_update: timedelta
+    tvg_ids: set[str]
+    epgs: list[EPGApiResponse]
+
+    @field_serializer("time_until_next_update")
+    def serialize_time_until_next_update(self, value: timedelta) -> int:
+        """Serialize time until next update to seconds."""
+        return int(value.total_seconds())

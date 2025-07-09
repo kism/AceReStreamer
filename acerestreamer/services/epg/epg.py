@@ -19,7 +19,7 @@ else:
 logger = get_logger(__name__)
 
 EPG_LIFESPAN = timedelta(days=1)
-ONE_WEEK_IN_SECONDS = timedelta(days=7).seconds
+ONE_WEEK = timedelta(days=7)
 
 
 class EPG:
@@ -72,23 +72,23 @@ class EPG:
             logger.warning("No saved file path defined or file does not exist for EPG %s", self.region_code)
             return None
 
-    def get_seconds_since_last_update(self) -> int:
+    def get_time_since_last_update(self) -> timedelta:
         """Get the number of seconds since the EPG was last updated."""
         if self.last_updated is None:
-            return ONE_WEEK_IN_SECONDS
+            return ONE_WEEK
 
         current_time = datetime.now(tz=OUR_TIMEZONE)
-        time_since_last_update = current_time - self.last_updated
-        return int(time_since_last_update.total_seconds())
+        return current_time - self.last_updated
 
-    def get_seconds_until_next_update(self) -> int:
+    def get_time_until_next_update(self) -> timedelta:
         """Get the number of seconds until the next EPG update."""
+        min_timedelta = timedelta(seconds=0)
         if self.last_updated is None:
-            return 0
+            return min_timedelta
 
         time_since_last_update = datetime.now(tz=OUR_TIMEZONE) - self.last_updated
         time_until_next_update = EPG_LIFESPAN - time_since_last_update
-        return max(0, int(time_until_next_update.total_seconds()))
+        return max(min_timedelta, time_until_next_update)
 
     # region Helpers
     def _time_to_update(self) -> bool:

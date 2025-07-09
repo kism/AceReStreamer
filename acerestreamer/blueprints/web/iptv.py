@@ -95,9 +95,8 @@ def xc_iptv() -> Response | WerkzeugResponse:
         xc_server_info = xc.XCServerInfo(
             url=ace_scraper.external_url,
         )
-        xc_resp = Response(
-            xc.XCApiResponse(server_info=xc_server_info).model_dump_json(), HTTPStatus.OK, mimetype="application/json"
-        )
+        xc_resp = jsonify(xc_server_info.model_dump())
+        xc_resp.status_code = HTTPStatus.OK
 
     xc_resp.status_code = HTTPStatus.OK
     return xc_resp
