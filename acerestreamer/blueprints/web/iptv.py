@@ -72,6 +72,9 @@ def xc_iptv() -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
+    msg = f"/player_api.php\nargs: {request.args}\nheaders: {request.headers}"
+    logger.info(msg)
+
     known_args = ["action", "username", "password"]
     log_unexpected_args(
         expected_args=known_args,
