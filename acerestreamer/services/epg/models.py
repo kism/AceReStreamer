@@ -35,3 +35,8 @@ class EPGApiHandlerResponse(BaseModel):
     def serialize_time_until_next_update(self, value: timedelta) -> int:
         """Serialize time until next update to seconds."""
         return int(value.total_seconds())
+
+    @field_serializer("tvg_ids")
+    def serialize_tvg_ids(self, value: set[str]) -> list[str]:
+        """Serialize TVG IDs to a list."""
+        return list(value)

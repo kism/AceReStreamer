@@ -18,6 +18,8 @@ def get_epgs() -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    response = jsonify(epg_handler.get_epgs_api().model_dump())
+    epg_response = epg_handler.get_epgs_api()
+
+    response = jsonify(epg_response.model_dump())
     response.status_code = 200
     return response

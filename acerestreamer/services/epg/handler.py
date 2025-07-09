@@ -12,8 +12,8 @@ from acerestreamer.utils.constants import OUR_TIMEZONE
 from acerestreamer.utils.logger import get_logger
 from acerestreamer.version import PROGRAM_NAME, URL
 
-from .epg import EPG
-from .models import EPGApiResponse, EPGApiHandlerResponse
+from .epg import EPG, EPG_LIFESPAN
+from .models import EPGApiHandlerResponse, EPGApiResponse
 
 if TYPE_CHECKING:
     from acerestreamer.config import EPGInstanceConf
@@ -22,7 +22,6 @@ else:
 
 logger = get_logger(__name__)
 
-EPG_CHECK_INTERVAL = timedelta(hours=1)
 EPG_CHECK_INTERVAL_MINIMUM = timedelta(minutes=1)  # Used if EPG is incomplete
 
 
@@ -118,7 +117,8 @@ class EPGHandler:
     def add_tvg_ids(self, tvg_ids: list[str]) -> None:
         """Set the TVG IDs for which EPG data should be condensed."""
         for tvg_id in tvg_ids:
-            self.set_of_tvg_ids.add(tvg_id)
+            if tvg_id != "":
+                self.set_of_tvg_ids.add(tvg_id)
 
         # This needs to be forced, otherwise the list might be empty on startup
         self._condense_epgs()
@@ -169,18 +169,15 @@ class EPGHandler:
     # region API
     def get_epgs_api(self) -> EPGApiHandlerResponse:
         """Get the names of all EPGs."""
-        epgs = []
-        for epg in self.epgs:
-            seconds_since_last_updated = epg.get_time_since_last_update()
-            seconds_until_next_update = epg.get_time_until_next_update()
-            epgs.append(
-                EPGApiResponse(
-                    url=epg.url,
-                    region_code=epg.region_code,
-                    time_since_last_updated=seconds_since_last_updated,
-                    time_until_next_update=seconds_until_next_update,
-                )
+        epgs = [
+            EPGApiResponse(
+                url=epg.url,
+                region_code=epg.region_code,
+                time_since_last_updated=epg.get_time_since_last_update(),
+                time_until_next_update=epg.get_time_until_next_update(),
             )
+            for epg in self.epgs
+        ]
 
         time_until_next_update = self.next_update_time - datetime.now(tz=OUR_TIMEZONE)
         return EPGApiHandlerResponse(
@@ -192,7 +189,7 @@ class EPGHandler:
     # region Update Thread
     def _get_time_to_next_update(self) -> timedelta:
         """Get the time until the next EPG update."""
-        wait_time = EPG_CHECK_INTERVAL
+        wait_time = EPG_LIFESPAN
 
         if self.instance_path is None:
             logger.error("Instance path is not set, cannot get time to next update")
@@ -205,7 +202,7 @@ class EPGHandler:
             wait_time = min(wait_time, epg.get_time_until_next_update())
 
         # Don't remove the additional wait time, i'm scared of a race condition
-        time_to_wait = min(wait_time + EPG_CHECK_INTERVAL_MINIMUM, EPG_CHECK_INTERVAL)
+        time_to_wait = min(wait_time + EPG_CHECK_INTERVAL_MINIMUM, EPG_LIFESPAN)
 
         logger.info(
             "Next EPG update in %s",
