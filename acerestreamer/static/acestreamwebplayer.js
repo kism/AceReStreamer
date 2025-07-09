@@ -1,8 +1,8 @@
 // region Global Variables
 let currentlyFetchingM3U8 = "";
 
-// region API/getStreamsFlat
-function getStreamsFlat() {
+// region API/getStreams
+function getStreams() {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
   return fetch("/api/streams", {
@@ -22,9 +22,9 @@ function getStreamsFlat() {
     .catch((error) => {
       clearTimeout(timeoutId); // Stop the timeout since we only care about the GET timing out
       if (error.name === "AbortError") {
-        console.error("getStreamsFlat Fetch request timed out");
+        console.error("getStreams Fetch request timed out");
       } else {
-        console.error(`getStreamsFlat Error: ${error.message}`);
+        console.error(`getStreams Error: ${error.message}`);
       }
       throw error;
     });
@@ -563,7 +563,7 @@ function populateAcePoolTable(aceInstances) {
     if (instance.content_id !== "") {
       getStream(instance.content_id)
         .then((streamInfo) => {
-          quality = streamInfo.quality || -1;
+          quality = streamInfo.quality ?? -1;
           if (quality === -1) {
             setStatusClass(td_quality, "neutral");
           } else if (quality < 20) {
@@ -621,7 +621,7 @@ function populateAcePoolTable(aceInstances) {
 function populateStreamTable() {
   const tableId = `stream-table`;
 
-  getStreamsFlat()
+  getStreams()
     .then((streams) => {
       const table = document.getElementById(tableId);
       table.innerHTML = ""; // Clear the table before adding new data
