@@ -7,7 +7,7 @@ from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.instances import ace_scraper
 from acerestreamer.services.authentication.helpers import assumed_auth_failure
-from acerestreamer.utils import xc
+from acerestreamer.utils import log_unexpected_args, xc
 from acerestreamer.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -42,6 +42,13 @@ def xc_get() -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
+    known_args = ["type"]
+    log_unexpected_args(
+        expected_args=known_args,
+        received_args=list(request.args.keys()),
+        endpoint="/get.php",
+    )
+
     if request.args.get("type") == "m3u_plus":
         m3u8 = ace_scraper.get_streams_as_iptv()
         return Response(
@@ -61,6 +68,13 @@ def xc_iptv() -> Response | WerkzeugResponse:
     auth_failure = assumed_auth_failure()
     if auth_failure:
         return auth_failure
+
+    known_args = ["action", "username", "password"]
+    log_unexpected_args(
+        expected_args=known_args,
+        received_args=list(request.args.keys()),
+        endpoint="/player_api.php",
+    )
 
     if request.args.get("action") == "get_live_categories":
         xc_resp = jsonify([xc.XCCategory().model_dump()])

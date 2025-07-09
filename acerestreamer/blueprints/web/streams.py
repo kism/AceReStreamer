@@ -4,7 +4,7 @@ from http import HTTPStatus
 from pathlib import Path
 
 import requests
-from flask import Blueprint, Response, jsonify, redirect, request, send_file
+from flask import Blueprint, Response, jsonify, request, send_file
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.instances import ace_pool, ace_scraper
@@ -127,6 +127,7 @@ def hls_multistream(path: str) -> Response | WerkzeugResponse:
     return Response(content_str, ace_resp.status_code)
 
 
+# region XC
 @bp.route("/live/a/ca/<path:path>")
 def xc_m3u8(path: str) -> Response | WerkzeugResponse:
     """Serve the XC m3u8 file for Ace content."""
@@ -149,8 +150,7 @@ def xc_m3u8(path: str) -> Response | WerkzeugResponse:
         resp.status_code = HTTPStatus.NOT_FOUND
         return resp
 
-    url = f"{current_app.are_conf.flask.SERVER_NAME}/hls/{content_id}"
-    return redirect(url, code=HTTPStatus.FOUND)
+    return hls_stream(content_id)
 
 
 # region /ace/c/ and /hls/c/ Content paths for regular and multistream
@@ -197,6 +197,7 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
     return response
 
 
+# region /tvg-logo/
 @bp.route("/tvg-logo/<path:path>")
 def tvg_logo(path: str) -> Response | WerkzeugResponse:
     """Serve the TVG logo from the local filesystem."""
