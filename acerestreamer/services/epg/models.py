@@ -9,3 +9,4 @@ class EPGApiResponse(BaseModel):
     url: str
     region_code: str
     seconds_since_last_updated: int
+    seconds_until_next_update: int

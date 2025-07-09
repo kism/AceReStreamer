@@ -167,6 +167,7 @@ def setup_logger(
         logging.getLogger("waitress").setLevel(logging.INFO)  # Prod web server, info has useful info.
         logging.getLogger("werkzeug").setLevel(logging.DEBUG)  # Only will be used in dev, debug logs incoming requests.
         logging.getLogger("urllib3").setLevel(logging.WARNING)  # Suppress urllib3 warnings, we don't care about them.
+        logging.getLogger("flask_caching").setLevel(logging.WARNING)  # Suppress messages when cache is hit.
 
         logger.debug("Logger configuration set!")
 

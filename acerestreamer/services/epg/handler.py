@@ -24,7 +24,6 @@ logger = get_logger(__name__)
 
 EPG_CHECK_INTERVAL = timedelta(hours=1)
 EPG_CHECK_INTERVAL_MINIMUM = timedelta(minutes=1)  # Used if EPG is incomplete
-ONE_WEEK_IN_SECONDS = timedelta(days=7).seconds
 
 
 class EPGHandler:
@@ -162,16 +161,15 @@ class EPGHandler:
     def get_epgs_api(self) -> list[EPGApiResponse]:
         """Get the names of all EPGs."""
         response = []
-        current_time = datetime.now(tz=OUR_TIMEZONE)
         for epg in self.epgs:
-            seconds_since_last_updated = (
-                int((current_time - epg.last_updated).total_seconds()) if epg.last_updated else ONE_WEEK_IN_SECONDS
-            )
+            seconds_since_last_updated = epg.get_seconds_since_last_update()
+            seconds_until_next_update = epg.get_seconds_until_next_update()
             response.append(
                 EPGApiResponse(
                     url=epg.url,
                     region_code=epg.region_code,
                     seconds_since_last_updated=seconds_since_last_updated,
+                    seconds_until_next_update=seconds_until_next_update,
                 )
             )
         return response
@@ -196,7 +194,14 @@ class EPGHandler:
             wait_time = min(wait_time, time_delta_since_update)
 
         # Don't remove the additional wait time, i'm scared of a race condition
-        return wait_time + EPG_CHECK_INTERVAL_MINIMUM
+        time_to_wait = min(wait_time + EPG_CHECK_INTERVAL_MINIMUM, EPG_CHECK_INTERVAL)
+
+        logger.info(
+            "Next EPG update in %s",
+            str(time_to_wait).split(".")[0],  # Remove microseconds
+        )
+
+        return time_to_wait
 
     def _update_epgs(self) -> None:
         """Update all EPGs with the current instance path."""
