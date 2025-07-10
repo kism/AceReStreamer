@@ -186,9 +186,9 @@ class IPTVStreamScraper(ScraperCommon):
             logger.warning("Unsupported TVG logo file extension for %s: %s", title, url_file_extension)
             return
 
-        logger.trace("Downloading TVG logo for %s from %s", title, tvg_logo_url)
+        logger.info("Downloading TVG logo for %s from %s", title, tvg_logo_url)
         try:
-            response = requests.get(tvg_logo_url, timeout=1)
+            response = requests.get(tvg_logo_url, timeout=5)
             response.raise_for_status()
         except requests.RequestException as e:
             error_short = type(e).__name__
