@@ -21,8 +21,8 @@
 <body>
     {{ rendered_header }}
     <h3>XTreme IPTV</h3>
-    <p>Add a playlist/source with your IPTV app, use the XC/XTreme setting when adding. If its not available, follow the
-        regular IPTV instructions.<br>
+    <p>Add a playlist/source with your IPTV app, use the XC/XTreme setting when adding. EPG should work automatically.
+        If its not available, follow the regular IPTV instructions.<br>
         Server/Portal URL: <code>{{ server_base_url }}</code><br>
         Username: <code>a</code><br>
         Password: <code>a</code>
@@ -38,8 +38,6 @@
     <p>EPG is available at, this should cover the default values:
         <code class="code-block">{{ server_base_url }}/epg</code>
         <code class="code-block">{{ server_base_url }}/epg.xml</code>
-        <code class="code-block">{{ server_base_url }}/xmltv</code>
-        <code class="code-block">{{ server_base_url }}/xmltv.php</code>
     </p>
     <p>Some apps will only work if this site is on https.</p>
     <h3>Recommended Apps</h3>
@@ -79,10 +77,16 @@
             <td>Good player for Android TV</td>
         </tr>
         <tr>
+            <td>iOS, Apple TV</td>
+            <td>UHF</td>
+            <td><a href="https://apps.apple.com/us/app/uhf-love-your-iptv/id6443751726">App Store</a></td>
+            <td>Best app I have used, has ads and a watermark if you don't pay. $60 AUD for a lifetime license.</td>
+        </tr>
+        <tr>
             <td>Roku<br>LG<br>Samsung</td>
             <td>IPTV Pro by X-PLAYERS</td>
             <td><a href="https://iptvproplayer.live/">Website</a></td>
-            <td>7 day trial, one-off paid IPTV app for Smart TVs</td>
+            <td>7 day trial, one-off paid IPTV app for Smart TVs, haven't tested EPG</td>
         </tr>
         <tr>
             <td>Android TV</td>
@@ -93,44 +97,17 @@
                 interface is weird.</td>
         </tr>
     </table>
-    <h4>Works, but hard to recommend</h4>
-    <table>
-        <tr>
-            <th>Platform</th>
-            <th>App</th>
-            <th>Link</th>
-            <th>Notes</th>
-        </tr>
-        <tr>
-            <td>Android, Android TV</td>
-            <td>ProgTV</td>
-            <td><a href="https://play.google.com/store/apps/details?id=com.progdvb.progtva">Link</a></td>
-            <td>Interface is a bit weird, likes to loop back when buffering fails.</td>
-        </tr>
-        <tr>
-            <td>iOS</td>
-            <td>Flex IPTV</td>
-            <td><a href="https://apps.apple.com/ae/app/flex-iptv/id1182930255">App Store</a></td>
-            <td>You need to toggle device rotation to get landscape mode, no EPG</td>
-        </tr>
-        <tr>
-            <td>Android</td>
-            <td>Live TV</td>
-            <td><a href="https://play.google.com/store/apps/details?id=com.cy8018.livetv">Google Play</a></td>
-            <td>Great, simple, no EPG</td>
-        </tr>
-        <tr>
-            <td>iOS, Apple TV</td>
-            <td>UHF</td>
-            <td><a href="https://apps.apple.com/us/app/uhf-love-your-iptv/id6443751726">App Store</a></td>
-            <td>Best app I have used, has ads and a watermark if you don't pay. $60 AUD for a lifetime license.</td>
-        </tr>
-    </table>
-    <h4>TESTED NOT WORKING</h4>
+    <h4>Tested to work, but not recommended</h4>
+    <p>
+        ProgTV<br>
+        Flex IPTV<br>
+        Live TV<br>
+    </p>
+    <h4>Tested, not working</h4>
     <p>
         Jellyfin app, will try fix<br>
-        UniTV, will try fix<br>
-        Purple Simple, will try fix<br>
+        UniTV<br>
+        Purple Simple<br>
         DangoPlayer<br>
         Opus<br>
         1-Stream Player by Purple<br>
