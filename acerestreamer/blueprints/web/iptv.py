@@ -92,12 +92,11 @@ def xc_iptv() -> Response | WerkzeugResponse:
         logger.warning("Unknown action '%s' in /player_api.php", request.args.get("action"))
         xc_resp = jsonify([])
     else:
-        xc_server_info = xc.XCServerInfo(
-            url=ace_scraper.external_url,
-        )
         xc_api_response = xc.XCApiResponse(
             user_info=xc.XCUserInfo(),
-            server_info=xc_server_info,
+            server_info=xc.XCServerInfo(
+                url=ace_scraper.external_url,
+            ),
         )
 
         xc_resp = jsonify(xc_api_response.model_dump())

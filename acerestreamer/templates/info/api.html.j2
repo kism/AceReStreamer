@@ -28,28 +28,12 @@
             <th>Description</th>
         </tr>
         <tr>
-            <td>/</td>
+            <td>/login</td>
             <td>Login page</td>
         </tr>
         <tr>
             <td>/stream</td>
             <td>Stream webplayer</td>
-        </tr>
-        <tr>
-            <td>/hls/</td>
-            <td>Reverse proxy for ace m3u8 files</td>
-        </tr>
-        <tr>
-            <td>/ace/c/</td>
-            <td>Proxy for ace stream .ts files</td>
-        </tr>
-        <tr>
-            <td>/iptv<br>/iptv.m3u<br>/iptv.m3u8</td>
-            <td>IPTV m3u8 playlist</td>
-        </tr>
-        <tr>
-            <td>/epg<br>/epg.xml<br>/xmltv<br>/xmltv.php</td>
-            <td>EPG XMLTV file</td>
         </tr>
         <tr>
             <td>/info/guide</td>
@@ -64,6 +48,55 @@
             <td>API information</td>
         </tr>
     </table>
+
+    <h3>Stream Endpoints</h3>
+    <table id="stream-endpoints" class="api-table">
+        <tr>
+            <td>/hls/</td>
+            <td>Reverse proxy for ace m3u8 files</td>
+        </tr>
+        <tr>
+            <td>/live/a/a/</td>
+            <td>Reverse proxy XC m3u8 locations</td>
+        </tr>
+        <tr>
+            <td>/ace/c/</td>
+            <td>Proxy for ace stream .ts files</td>
+        </tr>
+    </table>
+
+    <h3>IPTV Endpoints</h3>
+    <table id="iptv-endpoints" class="api-table">
+        <tr>
+            <td>/iptv<br>/iptv.m3u<br>/iptv.m3u8</td>
+            <td>IPTV m3u8 playlist</td>
+        </tr>
+        <tr>
+            <td>/get.php</td>
+            <td>IPTV m3u8 playlist, XC standard</td>
+        </tr>
+        <tr>
+            <td>/epg<br>/epg.xml</td>
+            <td>EPG XMLTV file</td>
+        </tr>
+        <tr>
+            <td>/xmltv.php</td>
+            <td>EPG XMLTV file, XC standard</td>
+        </tr>
+        <tr>
+            <td>/player_api.php</td>
+            <td>XC API 'Account information'</td>
+        </tr>
+        <tr>
+            <td>/player_api.php&action=get_live_streams</td>
+            <td>XC API channel list</td>
+        </tr>
+        <tr>
+            <td>/player_api.php&action=get_live_categories</td>
+            <td>XC API channel categories</td>
+        </tr>
+    </table>
+
     <h3>API Endpoints</h3>
     <table id="api-endpoints" class="api-table">
         <tr>
