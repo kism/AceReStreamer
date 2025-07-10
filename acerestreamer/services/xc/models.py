@@ -1,14 +1,11 @@
 """Pydantic models for XC (Xtreme Codes) IPTV services."""
 
-from datetime import UTC, datetime
 from typing import Self
 
 from pydantic import BaseModel, model_validator
 
 from acerestreamer.utils.constants import OUR_TIMEZONE_NAME
 from acerestreamer.utils.logger import get_logger
-
-from .helpers import get_expiry_date
 
 logger = get_logger(__name__)
 
@@ -35,7 +32,7 @@ class XCServerInfo(BaseModel):
     url: str
     port: int
     https_port: int | None
-    server_protocol: str = "http"
+    server_protocol: str
     timezone: str = OUR_TIMEZONE_NAME
     timestamp_now: int
     process: bool = True

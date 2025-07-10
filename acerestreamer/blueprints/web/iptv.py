@@ -10,7 +10,7 @@ from acerestreamer.instances import ace_scraper
 from acerestreamer.instances_mapping import category_xc_category_id_mapping
 from acerestreamer.services.authentication.helpers import assumed_auth_failure
 from acerestreamer.services.xc import helpers as xc_helpers
-from acerestreamer.services.xc.models import XCApiResponse, XCServerInfo, XCUserInfo
+from acerestreamer.services.xc import models as xc_models
 from acerestreamer.utils import log_unexpected_args
 from acerestreamer.utils.logger import get_logger
 
@@ -40,17 +40,17 @@ def iptv() -> Response | WerkzeugResponse:
 
 # region XC
 # Due to circular imports, this is here
-def _populate_xc_api_response(external_url: str, username: str, password: str) -> XCApiResponse:
+def _populate_xc_api_response(external_url: str, username: str, password: str) -> xc_models.XCApiResponse:
     """Populate the XC API response with user and server information."""
     http_port, https_port, protocol = xc_helpers.get_port_and_protocol_from_external_url(external_url)
 
-    return XCApiResponse(
-        user_info=XCUserInfo(
+    return xc_models.XCApiResponse(
+        user_info=xc_models.XCUserInfo(
             username=username,
             password=password,
             exp_date=xc_helpers.get_expiry_date(),
         ),
-        server_info=XCServerInfo(
+        server_info=xc_models.XCServerInfo(
             url=external_url,
             port=http_port,
             https_port=https_port,
