@@ -31,5 +31,3 @@ def get_port_and_protocol_from_external_url(external_url: str) -> tuple[int, int
         port = int(url_no_scheme.split(":")[1].split("/")[0])
 
     return http_port, https_port, protocol
-
-

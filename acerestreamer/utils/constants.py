@@ -18,7 +18,6 @@ for tz in pytz.all_timezones:  # Iterate through all timzones list[str]
         OUR_TIMEZONE_NAME = tz
         break
 
-
 # Lol
 STATIC_DIRECTORY = Path(__file__).parent.parent / "static"
 TEMPLATES_DIRECTORY = Path(__file__).parent.parent / "templates"

@@ -4,7 +4,6 @@ from acerestreamer.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-
 CONTENT_PATHS = ["/ace/c/", "/hls/c/", "/hls/m/"]
 
 

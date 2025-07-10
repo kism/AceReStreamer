@@ -33,7 +33,6 @@ ACE_URL_PREFIXES_INFOHASH = [
     "http://127.0.0.1:6878/ace/manifest.m3u8?infohash=",
 ]
 
-
 # Compiled regex patterns
 COUNTRY_CODE_PATTERN = re.compile(r"\[([A-Z]{2})\]")
 ACE_ID_PATTERN = re.compile(r"\b[0-9a-fA-F]{40}\b")

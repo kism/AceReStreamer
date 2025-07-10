@@ -51,6 +51,7 @@ class XCServerInfo(BaseModel):
             self.server_protocol = "http"
         return self
 
+
 class XCApiResponse(BaseModel):
     """Model for XC API Response."""
 

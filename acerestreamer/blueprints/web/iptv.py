@@ -89,7 +89,7 @@ def xc_iptv() -> Response | WerkzeugResponse:
         or request.args.get("action") == "get_series_categories"
         or request.args.get("action") == "get_series"
     ):
-        xc_resp = jsonify([])
+        xc_resp = jsonify([])  # We don't support these
     elif request.args.get("action", None):
         logger.warning("Unknown action '%s' in /player_api.php", request.args.get("action"))
         xc_resp = jsonify([])
