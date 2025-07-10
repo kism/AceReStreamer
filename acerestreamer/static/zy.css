@@ -71,12 +71,16 @@
     padding-left: 4px !important;
     padding-right: 4px !important;
   }
+
+  #api-output-body {
+    width: 100%;
+    min-width: 100%;
+  }
 }
 
 body {
-  font-family:
-    "Noto Sans Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-family: "Noto Sans Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   font-size: 14px;
   font-weight: 500;
   background-color: #1a1a1a;
@@ -621,6 +625,13 @@ nav ul {
 
 .api-table tr td:first-child {
   font-family: "Fira Code", Consolas, "Lucida Console", monospace;
+}
+
+#api-output-body {
+  max-width: 100%;
+  overflow-wrap: normal;
+  overflow-x: auto;
+  min-width: 400px;
 }
 
 /* #endregion */
