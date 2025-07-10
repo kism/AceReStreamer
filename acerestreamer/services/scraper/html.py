@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 import requests
 from bs4 import BeautifulSoup, Tag
 
+from acerestreamer.instances_mapping import category_xc_category_id_mapping
 from acerestreamer.utils import check_valid_content_id_or_infohash
 from acerestreamer.utils.logger import get_logger
 
@@ -159,6 +160,7 @@ class HTTPStreamScraper(ScraperCommon):
                 group_title="",
                 title=title,
             )
+            category_xc_category_id_mapping.get_xc_category_id(group_title)  # Populate
 
             found_streams.append(
                 FoundAceStream(

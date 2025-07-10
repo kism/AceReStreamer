@@ -1,4 +1,4 @@
-"""Models for XC API responses."""
+"""Content ID to XC ID Mapping."""
 
 import csv
 from pathlib import Path

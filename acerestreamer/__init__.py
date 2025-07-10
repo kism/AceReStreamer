@@ -67,6 +67,18 @@ def create_app(
     app.register_blueprint(api_bps.health_bp)
     app.register_blueprint(api_bps.streams_bp)
 
+    # Start the mapping objects, these first since the objects in the next section want them loaded
+    instances_mapping.content_id_infohash_mapping.load_config(
+        instance_path=app.instance_path,
+        ace_url=app.are_conf.app.ace_address,
+    )
+    instances_mapping.content_id_xc_id_mapping.load_config(
+        instance_path=app.instance_path,
+    )
+    instances_mapping.category_xc_category_id_mapping.load_config(
+        instance_path=app.instance_path,
+    )
+
     # Start the objects
     instances.ace_scraper.load_config(
         ace_scrape_settings=app.are_conf.scraper,
@@ -81,13 +93,6 @@ def create_app(
     instances.ip_allow_list.load_config(
         instance_path=app.instance_path,
         password=app.are_conf.app.password,
-    )
-    instances_mapping.content_id_infohash_mapping.load_config(
-        instance_path=app.instance_path,
-        ace_url=app.are_conf.app.ace_address,
-    )
-    instances_mapping.content_id_xc_id_mapping.load_config(
-        instance_path=app.instance_path,
     )
 
     app.logger.info("Starting Web Server")

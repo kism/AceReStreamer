@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 import requests
 from pydantic import ValidationError
 
+from acerestreamer.instances_mapping import category_xc_category_id_mapping
 from acerestreamer.utils import slugify
 from acerestreamer.utils.constants import SUPPORTED_TVG_LOGO_EXTENSIONS
 from acerestreamer.utils.logger import get_logger
@@ -99,6 +100,7 @@ class IPTVStreamScraper(ScraperCommon):
 
         group_title = self._extract_group_title(line)
         group_title = self.name_processor.populate_group_title(group_title, title)
+        category_xc_category_id_mapping.get_xc_category_id(group_title)  # Populate
 
         self._download_tvg_logo(parts[0], title)
         tvg_logo = self.name_processor.find_tvg_logo_image(title)

@@ -6,6 +6,7 @@ from flask import Blueprint, Response, jsonify, request
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.instances import ace_scraper
+from acerestreamer.instances_mapping import category_xc_category_id_mapping
 from acerestreamer.services.authentication.helpers import assumed_auth_failure
 from acerestreamer.services.xc import models as xc_models
 from acerestreamer.utils import log_unexpected_args
@@ -78,7 +79,8 @@ def xc_iptv() -> Response | WerkzeugResponse:
     )
 
     if request.args.get("action") == "get_live_categories":
-        xc_resp = jsonify([xc_models.XCCategory().model_dump()])
+        categories = category_xc_category_id_mapping.get_all_categories_api()
+        xc_resp = jsonify([category.model_dump() for category in categories])
     elif request.args.get("action") == "get_live_streams":
         streams = [stream.model_dump() for stream in ace_scraper.get_streams_as_iptv_xc()]
         xc_resp = jsonify(streams)

@@ -8,7 +8,11 @@ from typing import TYPE_CHECKING
 
 import requests
 
-from acerestreamer.instances_mapping import content_id_infohash_mapping, content_id_xc_id_mapping
+from acerestreamer.instances_mapping import (
+    category_xc_category_id_mapping,
+    content_id_infohash_mapping,
+    content_id_xc_id_mapping,
+)
 from acerestreamer.services.epg import EPGHandler
 from acerestreamer.services.xc.models import XCStream
 from acerestreamer.utils.logger import get_logger
@@ -228,6 +232,7 @@ class AceScraper:
         current_stream_number = 1
         for stream in self.streams.values():
             xc_id = content_id_xc_id_mapping.get_xc_id(stream.content_id)
+            xc_category_id = category_xc_category_id_mapping.get_xc_category_id(stream.group_title)
             streams.append(
                 XCStream(
                     num=current_stream_number,
@@ -235,6 +240,7 @@ class AceScraper:
                     stream_id=xc_id,
                     stream_icon=f"{self.external_url}/tvg-logo/{stream.tvg_logo}" if stream.tvg_logo else "",
                     epg_channel_id=stream.tvg_id,
+                    category_id=str(xc_category_id),
                 )
             )
             current_stream_number += 1

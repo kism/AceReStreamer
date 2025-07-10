@@ -70,7 +70,8 @@ uv sync --no-group test --no-group type --no-group lint
   - administrative account
   - ~~json for the config file~~
 - categories
-- put xc in api guide
+- XCServerInfo
+- ~~put xc in api guide~~
 
 ### Apps that don't work
 

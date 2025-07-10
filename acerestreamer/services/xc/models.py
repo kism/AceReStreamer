@@ -1,8 +1,9 @@
 """Pydantic models for XC (Xtreme Codes) IPTV services."""
 
 from datetime import UTC, datetime
+from typing import Self
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 from acerestreamer.utils.constants import OUR_TIMEZONE_NAME
 from acerestreamer.utils.logger import get_logger
@@ -50,9 +51,9 @@ class XCApiResponse(BaseModel):
 class XCCategory(BaseModel):
     """Model for XC Category."""
 
-    category_id: str = "1"
-    category_name: str = "All Channels"
-    parent_id: str = "0"
+    category_id: str
+    category_name: str
+    parent_id: int = 0
 
 
 class XCStream(BaseModel):
@@ -66,9 +67,15 @@ class XCStream(BaseModel):
     epg_channel_id: str = ""
     added: str = "1500000000"
     is_adult: str = "0"
-    category_id: str = "1"
-    category_ids: list[str] = ["1"]
+    category_id: str
+    category_ids: list[str] = []
     custom_sid: None = None
     tv_archive: str = "0"
     direct_source: str = ""
     tv_archive_duration: str = "0"
+
+    @model_validator(mode="after")
+    def create_category_ids(self) -> Self:
+        """Populate category_ids with category_id."""
+        self.category_ids = [self.category_id]
+        return self
