@@ -16,12 +16,12 @@ logger = get_logger(__name__)
 class XCUserInfo(BaseModel):
     """Model for XC User Information."""
 
-    username: str = "user"
-    password: str = "password"  # noqa: S105
+    username: str
+    password: str
     message: str = "Welcome to AceRestreamer"
     auth: int = 1
     status: str = "Active"
-    exp_date: str = get_expiry_date()
+    exp_date: str
     is_trial: str = "0"
     active_cons: str = "0"
     created_at: str = "5000000000"
@@ -33,18 +33,28 @@ class XCServerInfo(BaseModel):
     """Model for XC Server Information."""
 
     url: str
-    port: int = 80
-    https_port: int = 443
+    port: int
+    https_port: int | None
     server_protocol: str = "http"
     timezone: str = OUR_TIMEZONE_NAME
-    timestamp_now: int = int(datetime.now(tz=UTC).timestamp())  # This is a timestamp
+    timestamp_now: int
     process: bool = True
 
+    @model_validator(mode="after")
+    def validate_protocol(self) -> Self:
+        """Ensure the server protocol is either http or https."""
+        if self.server_protocol not in ["http", "https"]:
+            logger.error(
+                "Invalid server protocol '%s'. Defaulting to 'http'.",
+                self.server_protocol,
+            )
+            self.server_protocol = "http"
+        return self
 
 class XCApiResponse(BaseModel):
     """Model for XC API Response."""
 
-    user_info: XCUserInfo = XCUserInfo()
+    user_info: XCUserInfo
     server_info: XCServerInfo
 
 
