@@ -140,10 +140,15 @@ def xc_m3u8(path: str) -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
+    # Depending on the Client, it will either be in /a/a/1 or /a/a/1.m3u8 format
     try:
-        xc_id = path.split(".")[0]
-        xc_id_int = int(xc_id)
-    except (ValueError, IndexError):
+        xc_id_clean = path.split(".")[0]
+    except IndexError:
+        xc_id_clean = path
+
+    try:
+        xc_id_int = int(xc_id_clean)
+    except ValueError:
         resp = jsonify({"error": "Invalid XC ID format"})
         resp.status_code = HTTPStatus.BAD_REQUEST
         return resp
