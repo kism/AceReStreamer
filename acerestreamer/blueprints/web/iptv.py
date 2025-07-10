@@ -7,7 +7,8 @@ from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.instances import ace_scraper
 from acerestreamer.services.authentication.helpers import assumed_auth_failure
-from acerestreamer.utils import log_unexpected_args, xc
+from acerestreamer.services.xc import models as xc_models
+from acerestreamer.utils import log_unexpected_args
 from acerestreamer.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -34,7 +35,7 @@ def iptv() -> Response | WerkzeugResponse:
     )
 
 
-# region xc
+# region XC
 @bp.route("/get.php")
 def xc_get() -> Response | WerkzeugResponse:
     """Emulate an XC /get.php endpoint."""
@@ -77,7 +78,7 @@ def xc_iptv() -> Response | WerkzeugResponse:
     )
 
     if request.args.get("action") == "get_live_categories":
-        xc_resp = jsonify([xc.XCCategory().model_dump()])
+        xc_resp = jsonify([xc_models.XCCategory().model_dump()])
     elif request.args.get("action") == "get_live_streams":
         streams = [stream.model_dump() for stream in ace_scraper.get_streams_as_iptv_xc()]
         xc_resp = jsonify(streams)
@@ -92,9 +93,9 @@ def xc_iptv() -> Response | WerkzeugResponse:
         logger.warning("Unknown action '%s' in /player_api.php", request.args.get("action"))
         xc_resp = jsonify([])
     else:
-        xc_api_response = xc.XCApiResponse(
-            user_info=xc.XCUserInfo(),
-            server_info=xc.XCServerInfo(
+        xc_api_response = xc_models.XCApiResponse(
+            user_info=xc_models.XCUserInfo(),
+            server_info=xc_models.XCServerInfo(
                 url=ace_scraper.external_url,
             ),
         )

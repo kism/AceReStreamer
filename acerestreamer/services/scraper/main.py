@@ -10,8 +10,8 @@ import requests
 
 from acerestreamer.instances_mapping import content_id_infohash_mapping, content_id_xc_id_mapping
 from acerestreamer.services.epg import EPGHandler
+from acerestreamer.services.xc.models import XCStream
 from acerestreamer.utils.logger import get_logger
-from acerestreamer.utils.xc import XCStream
 
 from .helpers import create_unique_stream_list
 from .html import HTTPStreamScraper
