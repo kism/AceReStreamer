@@ -96,6 +96,3 @@ class ContentIDInfohashMapping:
             )
 
         return content_id
-
-
-content_id_infohash_mapping: ContentIDInfohashMapping = ContentIDInfohashMapping()

@@ -3,24 +3,12 @@
 from pathlib import Path
 from pprint import pformat
 
-from acerestreamer import instances
-from acerestreamer.blueprints.api import ace_pool as ace_pool_api_bp
-from acerestreamer.blueprints.api import auth as auth_api_bp
-from acerestreamer.blueprints.api import epg as epg_api_bp
-from acerestreamer.blueprints.api import health as health_api_bp
-from acerestreamer.blueprints.api import scraper as scraper_api_bp
-from acerestreamer.blueprints.api import streams as stream_api_bp
-from acerestreamer.blueprints.web import auth as auth_bp
-from acerestreamer.blueprints.web import epg as epg_bp
-from acerestreamer.blueprints.web import home as home_bp
-from acerestreamer.blueprints.web import info as info_bp
-from acerestreamer.blueprints.web import iptv as iptv_bp
-from acerestreamer.blueprints.web import streams as stream_bp
+from acerestreamer import instances, instances_mapping
+from acerestreamer.blueprints import api as api_bps
+from acerestreamer.blueprints import web as web_bps
 from acerestreamer.config import AceReStreamerConf
-from acerestreamer.utils.content_id_infohash_mapping import content_id_infohash_mapping
 from acerestreamer.utils.flask_helpers import FlaskAceReStreamer, cache, check_static_folder, register_error_handlers
 from acerestreamer.utils.logger import get_logger, setup_logger
-from acerestreamer.utils.xc import content_id_xc_id_mapping
 from acerestreamer.version import PROGRAM_NAME, __version__
 
 
@@ -66,18 +54,18 @@ def create_app(
 
     app.logger.trace(app_config_str)
 
-    app.register_blueprint(home_bp.bp)
-    app.register_blueprint(stream_bp.bp)
-    app.register_blueprint(auth_bp.bp)
-    app.register_blueprint(info_bp.bp)
-    app.register_blueprint(epg_bp.bp)
-    app.register_blueprint(iptv_bp.bp)
-    app.register_blueprint(ace_pool_api_bp.bp)
-    app.register_blueprint(auth_api_bp.bp)
-    app.register_blueprint(epg_api_bp.bp)
-    app.register_blueprint(scraper_api_bp.bp)
-    app.register_blueprint(health_api_bp.bp)
-    app.register_blueprint(stream_api_bp.bp)
+    app.register_blueprint(web_bps.home_bp)
+    app.register_blueprint(web_bps.streams_bp)
+    app.register_blueprint(web_bps.auth_bp)
+    app.register_blueprint(web_bps.info_bp)
+    app.register_blueprint(web_bps.epg_bp)
+    app.register_blueprint(web_bps.iptv_bp)
+    app.register_blueprint(api_bps.ace_pool_bp)
+    app.register_blueprint(api_bps.auth_bp)
+    app.register_blueprint(api_bps.epg_bp)
+    app.register_blueprint(api_bps.scraper_bp)
+    app.register_blueprint(api_bps.health_bp)
+    app.register_blueprint(api_bps.streams_bp)
 
     # Start the objects
     instances.ace_scraper.load_config(
@@ -94,11 +82,11 @@ def create_app(
         instance_path=app.instance_path,
         password=app.are_conf.app.password,
     )
-    content_id_infohash_mapping.load_config(
+    instances_mapping.content_id_infohash_mapping.load_config(
         instance_path=app.instance_path,
         ace_url=app.are_conf.app.ace_address,
     )
-    content_id_xc_id_mapping.load_config(
+    instances_mapping.content_id_xc_id_mapping.load_config(
         instance_path=app.instance_path,
     )
 

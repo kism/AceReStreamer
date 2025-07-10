@@ -139,6 +139,3 @@ class ContentIDXCIdMapping:
             return self.content_id_xc_id_mapping.inverse[xc_id]
         except KeyError:
             return None
-
-
-content_id_xc_id_mapping: ContentIDXCIdMapping = ContentIDXCIdMapping()
