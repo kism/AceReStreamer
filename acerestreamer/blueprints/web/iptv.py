@@ -12,6 +12,7 @@ from acerestreamer.services.authentication.helpers import assumed_auth_failure
 from acerestreamer.services.xc import helpers as xc_helpers
 from acerestreamer.services.xc import models as xc_models
 from acerestreamer.utils import log_unexpected_args
+from acerestreamer.utils.constants import OUR_TIMEZONE
 from acerestreamer.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -56,6 +57,7 @@ def _populate_xc_api_response(external_url: str, username: str, password: str) -
             https_port=https_port,
             server_protocol=protocol,
             timestamp_now=int(datetime.now(tz=UTC).timestamp()),
+            time_now=datetime.now(tz=OUR_TIMEZONE).strftime("%Y-%m-%d %H:%M:%S"),
         ),
     )
 

@@ -69,9 +69,6 @@ uv sync --no-group test --no-group type --no-group lint
 - bootstrap on first launch
   - administrative account
   - ~~json for the config file~~
-- categories
-- XCServerInfo
-- ~~put xc in api guide~~
 
 ### Apps that don't work
 
@@ -153,3 +150,6 @@ see iptv.html.j2
 - ~~xc api~~
 - ~~bit too much .values()~~
 - epg is getting fetched periodically, but the /epg endpoint doesnt return new data
+- ~~categories~~
+- ~~XCServerInfo~~
+- ~~put xc in api guide~~

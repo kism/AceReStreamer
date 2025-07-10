@@ -23,7 +23,7 @@ class XCUserInfo(BaseModel):
     active_cons: str = "0"
     created_at: str = "5000000000"
     max_connections: str = "100"
-    allowed_output_formats: list[str] = ["m3u8"]
+    allowed_output_formats: list[str] = ["m3u8"]  # Do I add .ts here? maybe?
 
 
 class XCServerInfo(BaseModel):
@@ -33,8 +33,10 @@ class XCServerInfo(BaseModel):
     port: int
     https_port: int | None
     server_protocol: str
+    # rtmp_port would go here, but naa null
     timezone: str = OUR_TIMEZONE_NAME
     timestamp_now: int
+    time_now: str
     process: bool = True
 
     @model_validator(mode="after")
