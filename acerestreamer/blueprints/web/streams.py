@@ -134,6 +134,7 @@ def hls_multistream(path: str) -> Response | WerkzeugResponse:
 
 # region XC
 @bp.route("/live/a/a/<path:path>")
+@bp.route("/a/a/<path:path>")
 def xc_m3u8(path: str) -> Response | WerkzeugResponse:
     """Serve the XC m3u8 file for Ace content."""
     auth_failure = assumed_auth_failure()
