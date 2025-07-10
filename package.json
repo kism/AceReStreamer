@@ -1,9 +1,10 @@
 {
   "dependencies": {
-    "hls.js": "^1.6.4"
+    "hls.js": "^1.6.4",
+    "xml-formatter": "^3.6.6"
   },
   "scripts": {
-    "postinstall": "cp node_modules/hls.js/dist/hls.min.js acerestreamer/static/hls.min.js && cp node_modules/hls.js/dist/hls.min.js.map acerestreamer/static/hls.min.js.map"
+    "postinstall": "./scripts/npm-post-install.sh"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.0.0"

@@ -9,7 +9,7 @@ from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.instances import ace_pool, ace_scraper
 from acerestreamer.services.authentication.helpers import assumed_auth_failure
-from acerestreamer.utils import replace_m3u_sources
+from acerestreamer.utils import check_valid_content_id_or_infohash, replace_m3u_sources
 from acerestreamer.utils.flask_helpers import get_current_app
 from acerestreamer.utils.logger import get_logger
 
@@ -28,6 +28,11 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
     auth_failure = assumed_auth_failure()
     if auth_failure:
         return auth_failure
+
+    if not check_valid_content_id_or_infohash(path):
+        msg = f"Invalid content ID or infohash: {path}"
+        logger.error("HLS stream error: %s", msg)
+        return jsonify({"error": msg}, HTTPStatus.BAD_REQUEST)
 
     instance_ace_hls_m3u8_url = ace_pool.get_instance_hls_url_by_content_id(path)
 

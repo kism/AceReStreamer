@@ -86,6 +86,9 @@ ignore = [
     "PLR0913", # KG Tests can have as many arguments as they want.
     "BLE001",  # KG Tests can use BaseException.
 ]
+"scripts/*.py" = [
+    "T201", # KG Print is fine in scripts.
+]
 
 
 [tool.ruff.lint.flake8-pytest-style]

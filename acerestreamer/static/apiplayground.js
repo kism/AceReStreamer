@@ -1,9 +1,33 @@
-function prettyFormatJson(json) {
+const xmlFormatter = require("xml-formatter");
+
+function escapeHtmlXML(unsafe) {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function prettyFormat(content) {
   try {
-    return JSON.stringify(JSON.parse(json), null, 2);
+    // Try format as JSON
+    return JSON.stringify(JSON.parse(content), null, 2);
   } catch (e) {
-    console.error("Error formatting JSON:", e);
-    return json; // Return the original string if parsing fails
+    // Try format as XML
+    try {
+      const formattedXml = xmlFormatter(content, {
+        indentation: "  ",
+        collapseContent: true,
+        lineSeparator: "\n",
+      });
+
+      // Escape HTML entities for proper display
+      return escapeHtmlXML(formattedXml);
+    } catch (xmlError) {
+      console.error("Error formatting JSON or XML:", e, xmlError);
+      return escapeHtmlXML(content); // Return original if both fail
+    }
   }
 }
 
@@ -24,7 +48,7 @@ function setStatusClass(element, status) {
 }
 
 function populateApiEndpointLinks() {
-  const apiEndpoints = document.querySelectorAll("#api-endpoints tr");
+  const apiEndpoints = document.querySelectorAll(".api-table tr");
 
   if (apiEndpoints.length === 0) {
     console.warn("No API endpoints found in the table.");
@@ -37,7 +61,11 @@ function populateApiEndpointLinks() {
     } else {
       pathCell.addEventListener("click", () => {
         const apiInput = document.getElementById("api-input");
-        const apiEndpoint = pathCell.textContent.trim();
+        const cellContent = pathCell.innerHTML;
+        // If cell contains <br>, only use the first part
+        const apiEndpoint = cellContent.includes("<br>")
+          ? cellContent.split("<br>")[0].trim()
+          : pathCell.textContent.trim();
         apiInput.value = apiEndpoint;
       });
       pathCell.classList.add("link");
@@ -64,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return response.text();
         })
         .then((text) => {
-          const formattedText = prettyFormatJson(text);
+          const formattedText = prettyFormat(text);
           apiOutputBody.innerHTML = `<pre>${formattedText}</pre>`;
         });
 

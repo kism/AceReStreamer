@@ -3,6 +3,7 @@ FROM node:24-alpine AS node_builder
 WORKDIR /app
 RUN mkdir -p /app/acerestreamer/static
 COPY package.json package-lock.json ./
+COPY scripts/npm-post-install.sh ./scripts/npm-post-install.sh
 RUN npm install
 
 # APP
