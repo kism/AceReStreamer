@@ -22,6 +22,7 @@ class FoundAceStream(BaseModel):
     infohash: str = ""
     tvg_id: str
     tvg_logo: str
+    group_title: str = ""
     site_names: list[str]
     quality: int = -1
 

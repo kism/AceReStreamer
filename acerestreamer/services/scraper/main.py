@@ -210,9 +210,11 @@ class AceScraper:
             # Country codes are 2 characters between square brackets, e.g. [US]
             tvg_id = f'tvg-id="{stream.tvg_id}"'
             tvg_logo = f'tvg-logo="{self.external_url}/tvg-logo/{stream.tvg_logo}"' if stream.tvg_logo else ""
+            group_category = f'group-title="{stream.group_title}"'
 
             m3u8_addition = (
-                f"#EXTINF:-1 {tvg_id} {tvg_logo},{stream.title}\n{self.external_url}/hls/{stream.content_id}"
+                f"#EXTINF:-1 {tvg_id} {tvg_logo} {group_category},{stream.title}\n"
+                f"{self.external_url}/hls/{stream.content_id}"
             )
 
             iptv_set.add(m3u8_addition)

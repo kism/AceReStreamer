@@ -22,6 +22,7 @@ else:
 logger = get_logger(__name__)
 
 TVG_LOGO_REGEX = re.compile(r'tvg-logo="([^"]+)"')
+GROUP_TITLE_REGEX = re.compile(r'group-title="([^"]+)"')
 
 
 class IPTVStreamScraper(ScraperCommon):
@@ -96,6 +97,9 @@ class IPTVStreamScraper(ScraperCommon):
         title = self.name_processor.cleanup_candidate_title(title)
         tvg_id = self.name_processor.get_tvg_id_from_title(title)
 
+        group_title = self._extract_group_title(line)
+        group_title = self.name_processor.populate_group_title(group_title, title)
+
         self._download_tvg_logo(parts[0], title)
         tvg_logo = self.name_processor.find_tvg_logo_image(title)
 
@@ -106,6 +110,7 @@ class IPTVStreamScraper(ScraperCommon):
                 infohash=infohash,
                 tvg_id=tvg_id,
                 tvg_logo=tvg_logo,
+                group_title=group_title,
                 site_names=[site_name],
             )
         except ValidationError:
@@ -192,3 +197,10 @@ class IPTVStreamScraper(ScraperCommon):
         tvg_logo_path.parent.mkdir(parents=True, exist_ok=True)
         with tvg_logo_path.open("wb") as file:
             file.write(response.content)
+
+    def _extract_group_title(self, line: str) -> str:
+        """Extract the group title from the line if it exists."""
+        match = GROUP_TITLE_REGEX.search(line)
+        if match:
+            return match.group(1).strip()
+        return ""

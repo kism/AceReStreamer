@@ -189,3 +189,54 @@ class StreamNameProcessor:
                 return f"{title_slug}.{extension}"
 
         return f"{title_slug}.png.notfound"  # Leave this as default, easier to add images to the instance folder later
+
+    def populate_group_title(self, group_title: str, title: str) -> str:
+        """Cleanup the group title."""
+        categories: dict[str, list[str]] = {
+            "sports": [
+                "football",
+                "soccer",
+                "basketball",
+                "nba",
+                "sport",
+                "tennis",
+                "espn",
+                "moto",
+                "formula 1",
+                "f1",
+                "hockey",
+                "cricket",
+                "rugby",
+                "golf",
+                "fórmula 1",
+            ],
+            "movies": [
+                "movie",
+                "cinema",
+                "film",
+            ],
+            "news": [
+                "news",
+            ],
+            "kids": [
+                "kids",
+                "children",
+            ],
+            "music": [
+                "music",
+                "concert",
+                "mtv",
+                "radio",
+            ],
+        }
+
+        # Put into sentence case
+        if group_title == "":
+            for category, keywords in categories.items():
+                if any(keyword in title.lower() for keyword in keywords):
+                    group_title = category
+                    break
+
+        group_title = group_title.strip().capitalize()
+
+        return group_title if group_title else "General"

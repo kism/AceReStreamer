@@ -155,12 +155,18 @@ class HTTPStreamScraper(ScraperCommon):
 
             tvg_logo = self.name_processor.find_tvg_logo_image(title)
 
+            group_title = self.name_processor.populate_group_title(
+                group_title="",
+                title=title,
+            )
+
             found_streams.append(
                 FoundAceStream(
                     title=title,
                     content_id=content_id,
                     tvg_id=tvg_id,
                     tvg_logo=tvg_logo,
+                    group_title=group_title,
                     site_names=[site.name],
                 )
             )

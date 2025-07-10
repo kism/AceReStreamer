@@ -24,8 +24,7 @@ function prettyFormat(content) {
 
       // Escape HTML entities for proper display
       return escapeHtmlXML(formattedXml);
-    } catch (xmlError) {
-      console.error("Error formatting JSON or XML:", e, xmlError);
+    } catch (_e) {
       return escapeHtmlXML(content); // Return original if both fail
     }
   }
