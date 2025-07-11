@@ -153,7 +153,7 @@ def xc_m3u8(_thing2: str, path: str) -> Response | WerkzeugResponse:
 
     content_id: str | None = None
 
-    logger.info(
+    logger.debug(
         "XC HLS: path='%s' args='%s' ua='%s'",
         request.path,
         ",".join(request.args.values()),
