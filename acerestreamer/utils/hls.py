@@ -7,7 +7,7 @@ logger = get_logger(__name__)
 CONTENT_PATHS = ["/ace/c/", "/hls/c/", "/hls/m/"]
 
 
-def replace_m3u_sources(m3u_content: str, ace_address: str, server_name: str) -> str:
+def replace_hls_m3u_sources(m3u_content: str, ace_address: str, server_name: str) -> str:
     """Replace Ace Stream sources in M3U content with a specified external server URL."""
     if not m3u_content:
         logger.warning("Received empty M3U content for replacement.")

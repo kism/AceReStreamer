@@ -34,7 +34,7 @@ def slugify(file_name: str | bytes) -> str:
 
 
 def check_valid_content_id_or_infohash(content_id: str) -> bool:
-    """Check if the AceStream ID is valid."""
+    """Check if the AceStream content_id or infohash is valid."""
     if len(content_id) != ACE_ID_LENGTH:
         return False
 

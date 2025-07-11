@@ -5,6 +5,7 @@ from pathlib import Path
 
 from bidict import bidict
 
+from acerestreamer.utils import check_valid_content_id_or_infohash
 from acerestreamer.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -33,7 +34,14 @@ class ContentIDXCIdMapping:
             for row in reader:
                 if len(row) == 2:  # noqa: PLR2004
                     content_id, xc_id = row
-                    self.content_id_xc_id_mapping[content_id] = int(xc_id)
+                    if check_valid_content_id_or_infohash(content_id) and xc_id.isdigit():
+                        self.content_id_xc_id_mapping[content_id] = int(xc_id)
+                    else:
+                        logger.warning(
+                            "Invalid content ID or XC stream id in mapping: %s, %s",
+                            content_id,
+                            xc_id,
+                        )
 
     def _save_config(self) -> None:
         """Save the content ID to XC ID mapping to a JSON file."""

@@ -122,6 +122,7 @@ class AceQuality:
                 logger.warning("Invalid Ace ID found in cache: %s", content_id)
 
         self.ace_streams = cleaned_cache
+        self._save_cache()
 
     def _load_cache(self) -> None:
         if self.cache_file and self.cache_file.exists():
@@ -131,6 +132,7 @@ class AceQuality:
 
                 ace_streams_dict = json.loads(cache_json_raw)
             except (json.JSONDecodeError, OSError):
+                self._clean_cache()
                 logger.exception("Error loading cache file: %s", self.cache_file)
                 return
 

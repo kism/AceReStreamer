@@ -33,8 +33,15 @@ class CategoryXCCategoryIDMapping:
             reader = csv.reader(file)
             for row in reader:
                 if len(row) == 2:  # noqa: PLR2004
-                    category_name, xc_id = row
-                    self.category_id_mapping[category_name] = int(xc_id)
+                    category_name, xc_category_id = row
+                    if xc_category_id.isdigit():
+                        self.category_id_mapping[category_name] = int(xc_category_id)
+                    else:
+                        logger.warning(
+                            "Invalid XC ID in mapping: %s, %s",
+                            category_name,
+                            xc_category_id,
+                        )
 
     def _save_config(self) -> None:
         """Save the category name to XC category ID mapping to a CSV file."""

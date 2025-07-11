@@ -9,7 +9,7 @@ from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.instances import ace_pool, ace_scraper
 from acerestreamer.services.authentication.helpers import assumed_auth_failure
-from acerestreamer.utils import check_valid_content_id_or_infohash, replace_m3u_sources
+from acerestreamer.utils import check_valid_content_id_or_infohash, replace_hls_m3u_sources
 from acerestreamer.utils.flask_helpers import get_current_app
 from acerestreamer.utils.logger import get_logger
 
@@ -86,7 +86,7 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
         response.status_code = HTTPStatus.BAD_REQUEST
         return response
 
-    content_str = replace_m3u_sources(
+    content_str = replace_hls_m3u_sources(
         m3u_content=content_str,
         ace_address=current_app.are_conf.app.ace_address,
         server_name=current_app.are_conf.flask.SERVER_NAME,
@@ -132,7 +132,7 @@ def hls_multistream(path: str) -> Response | WerkzeugResponse:
         response.status_code = HTTPStatus.BAD_REQUEST
         return response
 
-    content_str = replace_m3u_sources(
+    content_str = replace_hls_m3u_sources(
         m3u_content=content_str,
         ace_address=current_app.are_conf.app.ace_address,
         server_name=current_app.are_conf.flask.SERVER_NAME,

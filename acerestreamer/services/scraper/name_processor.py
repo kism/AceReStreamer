@@ -116,7 +116,7 @@ class StreamNameProcessor:
         """Extract the AceStream ID from a URL."""
         url = url.strip()
         for prefix in ACE_URL_PREFIXES_CONTENT_ID:
-            url = url.replace(prefix, "")
+            url = url.removeprefix(prefix)
 
         if "&" in url:
             url = url.split("&")[0]

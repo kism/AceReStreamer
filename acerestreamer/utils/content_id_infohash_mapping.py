@@ -6,6 +6,7 @@ from pathlib import Path
 import requests
 from bidict import bidict
 
+from acerestreamer.utils import check_valid_content_id_or_infohash
 from acerestreamer.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -36,7 +37,14 @@ class ContentIDInfohashMapping:
             for row in reader:
                 if len(row) == 2:  # noqa: PLR2004
                     content_id, infohash = row
-                    self.content_id_infohash_mapping[content_id] = infohash
+                    if check_valid_content_id_or_infohash(content_id) and check_valid_content_id_or_infohash(infohash):
+                        self.content_id_infohash_mapping[content_id] = infohash
+                    else:
+                        logger.warning(
+                            "Invalid content ID or infohash in mapping: %s, %s",
+                            content_id,
+                            infohash,
+                        )
 
     def _save_config(self) -> None:
         """Save the content ID to infohash mapping to a JSON file."""
