@@ -135,12 +135,9 @@ def hls_multistream(path: str) -> Response | WerkzeugResponse:
 
 # region XC
 # Depending on the Client, it will either be:
-# /a/a/<xc_id>            | Smarters Player, iMPlayer Android
-# /a/a/<xc_id>.m3u8       | UHF, M3UAndroid
-# /a/a/<tvg_id>.m3u8      |
-# /live/a/a/<xc_id>       |
-# /live/a/a/<xc_id>.m3u8  |
-# /live/a/a/<xc_id>.ts    | iMPlayer iOS, TiViMate (okay that m3u8 is the response)
+# /a/a/<xc_id>            | Smarters Player Lite (iOS), iMPlayer Android
+# /live/a/a/<xc_id>.m3u8  | UHF, M3UAndroid
+# /live/a/a/<xc_id>.ts    | iMPlayer iOS, TiViMate, Purple Simple (okay that m3u8 is the response)
 # /live/a/a/<tvg_id>.m3u8 | SparkleTV
 # One time UHF requested /a/b/ which I don't understand.
 @bp.route("/live/a/<_thing2>/<path>")
