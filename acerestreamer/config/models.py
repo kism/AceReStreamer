@@ -70,7 +70,7 @@ class ScrapeSiteHTML(BaseModel):
         elif self.slug != name_slug:
             logger.warning("You cannot manually set the slug. It will be generated from the name.")
 
-        self.slug = slugify(self.name)
+        self.slug = slugify(name_slug)
 
         return self
 
@@ -196,7 +196,7 @@ class EPGInstanceConf(BaseModel):
 
 
 class AceReStreamerConf(BaseSettings):
-    """Settings loaded from a TOML file."""
+    """Settings Definition."""
 
     model_config = SettingsConfigDict(extra="ignore")
 
@@ -208,7 +208,7 @@ class AceReStreamerConf(BaseSettings):
     epgs: list[EPGInstanceConf] = []
 
     def write_config(self, config_location: Path) -> None:
-        """Write the current settings to a TOML file."""
+        """Write the current settings to a JSON file."""
         config_location.parent.mkdir(parents=True, exist_ok=True)
 
         config_data = json.loads(self.model_dump_json())
