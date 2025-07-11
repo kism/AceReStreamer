@@ -62,7 +62,7 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
             logger.error("%s reverse proxy cannot connect to Ace", error_short)  # noqa: TRY400 Short error for requests
             error_msg, status = "Cannot connect to Ace", HTTPStatus.INTERNAL_SERVER_ERROR
         else:
-            logger.error("reverse proxy failure /hls/ %s %s %s", error_short, e.errno, e.strerror)  # noqa: TRY400 Short error for requests
+            logger.error("reverse proxy failure /hls/ %s", error_short)  # noqa: TRY400 Short error for requests
             error_msg, status = "Failed to fetch HLS stream", HTTPStatus.INTERNAL_SERVER_ERROR
             ace_scraper.increment_quality(path, "")
 
