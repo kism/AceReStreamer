@@ -32,14 +32,18 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
     if not check_valid_content_id_or_infohash(path):
         msg = f"Invalid content ID or infohash: {path}"
         logger.error("HLS stream error: %s", msg)
-        return jsonify({"error": msg}, HTTPStatus.BAD_REQUEST)
+        response = jsonify({"error": msg})
+        response.status_code = HTTPStatus.BAD_REQUEST
+        return response
 
     instance_ace_hls_m3u8_url = ace_pool.get_instance_hls_url_by_content_id(path)
 
     if not instance_ace_hls_m3u8_url:
         msg = f"Can't serve hls_stream, Ace pool is full: {path}"
         logger.error("HLS stream error: %s", msg)
-        return jsonify({"error": msg}, HTTPStatus.SERVICE_UNAVAILABLE)
+        response = jsonify({"error": msg})
+        response.status_code = HTTPStatus.SERVICE_UNAVAILABLE
+        return response
 
     logger.trace("HLS stream requested for path: %s", instance_ace_hls_m3u8_url)
 
@@ -62,7 +66,9 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
             error_msg, status = "Failed to fetch HLS stream", HTTPStatus.INTERNAL_SERVER_ERROR
             ace_scraper.increment_quality(path, "")
 
-        return jsonify({"error": error_msg}, status)
+        response = jsonify({"error": error_msg})
+        response.status_code = status
+        return response
 
     headers = [
         (name, value)
@@ -76,7 +82,9 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
         logger.error("Invalid HLS stream received for path: %s", path)
         logger.debug("Content received: %s", content_str[:1000])
         ace_scraper.increment_quality(path, "")
-        return jsonify({"error": "Invalid HLS stream", "m3u8": content_str}, HTTPStatus.BAD_REQUEST)
+        response = jsonify({"error": "Invalid HLS stream", "m3u8": content_str})
+        response.status_code = HTTPStatus.BAD_REQUEST
+        return response
 
     content_str = replace_m3u_sources(
         m3u_content=content_str,
@@ -120,7 +128,9 @@ def hls_multistream(path: str) -> Response | WerkzeugResponse:
         logger.error("Invalid HLS stream received for path: %s", path)
         logger.debug("Content received: %s", content_str[:1000])
         ace_scraper.increment_quality(content_id, "")
-        return jsonify({"error": "Invalid HLS stream", "m3u8": content_str}, HTTPStatus.BAD_REQUEST)
+        response = jsonify({"error": "Invalid HLS stream", "m3u8": content_str})
+        response.status_code = HTTPStatus.BAD_REQUEST
+        return response
 
     content_str = replace_m3u_sources(
         m3u_content=content_str,
@@ -174,14 +184,14 @@ def xc_m3u8(_thing2: str, path: str) -> Response | WerkzeugResponse:
         content_id = ace_scraper.get_content_id_by_tvg_id(path)
 
     if content_id is None:
-        resp = jsonify({"error": "Invalid XC ID format"})
-        resp.status_code = HTTPStatus.BAD_REQUEST
-        return resp
+        response = jsonify({"error": "Invalid XC ID format"})
+        response.status_code = HTTPStatus.BAD_REQUEST
+        return response
 
     if not content_id:
-        resp = jsonify({"error": "Content ID not found for the given XC ID"})
-        resp.status_code = HTTPStatus.NOT_FOUND
-        return resp
+        response = jsonify({"error": "Content ID not found for the given XC ID"})
+        response.status_code = HTTPStatus.NOT_FOUND
+        return response
 
     return hls_stream(content_id)
 
@@ -212,11 +222,15 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
     except requests.RequestException as e:
         error_short = type(e).__name__
         logger.error("%s reverse proxy failure %s", route_prefix, error_short)  # noqa: TRY400 Short error for requests
-        return jsonify({"error": "Failed to fetch HLS stream"}, HTTPStatus.INTERNAL_SERVER_ERROR)
+        response = jsonify({"error": "Failed to fetch HLS stream"})
+        response.status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+        return response
     except requests.Timeout as e:
         error_short = type(e).__name__
         logger.error("%s reverse proxy timeout %s %s %s", route_prefix, error_short, e.errno, e.strerror)  # noqa: TRY400 Short error for requests
-        return jsonify({"error": "Ace content timeout"}, HTTPStatus.REQUEST_TIMEOUT)
+        response = jsonify({"error": "Ace content timeout"})
+        response.status_code = HTTPStatus.REQUEST_TIMEOUT
+        return response
 
     headers = [
         (name, value)
