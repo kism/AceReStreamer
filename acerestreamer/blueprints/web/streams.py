@@ -142,6 +142,7 @@ def hls_multistream(path: str) -> Response | WerkzeugResponse:
 # /live/a/a/<xc_id>.m3u8  |
 # /live/a/a/<xc_id>.ts    | iMPlayer iOS, TiViMate (okay that m3u8 is the response)
 # /live/a/a/<tvg_id>.m3u8 | SparkleTV
+# One time UHF requested /a/b/ which I don't understand.
 @bp.route("/live/a/<_thing2>/<path>")
 @bp.route("/a/<_thing2>/<path>")
 def xc_m3u8(_thing2: str, path: str) -> Response | WerkzeugResponse:
