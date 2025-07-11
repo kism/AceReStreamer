@@ -95,7 +95,7 @@ def create_app(
         password=app.are_conf.app.password,
     )
 
-    app.logger.info("Starting Web Server")
+    app.logger.info("Starting Web Server: %s", app.are_conf.flask.SERVER_NAME)
     app.logger.info("%s version: %s", PROGRAM_NAME, __version__)
 
     register_error_handlers(app)

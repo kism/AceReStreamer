@@ -22,7 +22,7 @@ REVERSE_PROXY_TIMEOUT = 10  # Very high but alas
 
 
 # region /hls/
-@bp.route("/hls/<path:path>")
+@bp.route("/hls/<path>")
 def hls_stream(path: str) -> Response | WerkzeugResponse:
     """Reverse proxy the HLS from Ace."""
     auth_failure = assumed_auth_failure()
@@ -90,7 +90,7 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
 
 
 # region /hls/m/
-@bp.route("/hls/m/<path:path>")
+@bp.route("/hls/m/<path>")
 def hls_multistream(path: str) -> Response | WerkzeugResponse:
     """Reverse proxy the HLS multistream from Ace."""
     auth_failure = assumed_auth_failure()
@@ -141,8 +141,8 @@ def hls_multistream(path: str) -> Response | WerkzeugResponse:
 # /live/a/a/<xc_id>.m3u8  |
 # /live/a/a/<xc_id>.ts    | iMPlayer iOS, TiViMate (okay that m3u8 is the response)
 # /live/a/a/<tvg_id>.m3u8 | SparkleTV
-@bp.route("/live/a/a/<path:path>")
-@bp.route("/a/a/<path:path>")
+@bp.route("/live/a/<_>/<path>")
+@bp.route("/a/<_>/<path>")
 def xc_m3u8(path: str) -> Response | WerkzeugResponse:
     """Serve the XC m3u8 file for Ace content."""
     auth_failure = assumed_auth_failure()
@@ -188,8 +188,8 @@ def xc_m3u8(path: str) -> Response | WerkzeugResponse:
 
 
 # region /ace/c/ and /hls/c/ Content paths for regular and multistream
-@bp.route("/ace/c/<path:path>")
-@bp.route("/hls/c/<path:path>")
+@bp.route("/ace/c/<path>")
+@bp.route("/hls/c/<path>")
 def ace_content(path: str) -> Response | WerkzeugResponse:
     """Reverse proxy the Ace content."""
     auth_failure = assumed_auth_failure()
@@ -232,7 +232,7 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
 
 
 # region /tvg-logo/
-@bp.route("/tvg-logo/<path:path>")
+@bp.route("/tvg-logo/<path>")
 def tvg_logo(path: str) -> Response | WerkzeugResponse:
     """Serve the TVG logo from the local filesystem."""
     auth_failure = assumed_auth_failure()
