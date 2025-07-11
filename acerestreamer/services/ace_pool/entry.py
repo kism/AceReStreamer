@@ -200,7 +200,7 @@ class AcePoolEntry:
     def stop(self) -> None:
         """Stop the AceStream instance, only access this externally via remove_instance_by_content_id."""
         if not self.ace_cmd_url:
-            logger.warning("No stat URL for content_id %s, cannot stop instance", self.content_id)
+            logger.warning("No command URL for content_id %s, cannot stop instance", self.content_id)
             return
 
         url = f"{self.ace_cmd_url}?method=stop"
