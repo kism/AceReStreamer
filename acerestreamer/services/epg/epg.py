@@ -73,7 +73,7 @@ class EPG:
             return None
 
     def get_time_since_last_update(self) -> timedelta:
-        """Get the number of seconds since the EPG was last updated."""
+        """Get the time since the EPG was last updated."""
         if self.last_updated is None:
             return ONE_WEEK
 
@@ -81,7 +81,7 @@ class EPG:
         return current_time - self.last_updated
 
     def get_time_until_next_update(self) -> timedelta:
-        """Get the number of seconds until the next EPG update."""
+        """Get the time until the next EPG update."""
         min_timedelta = timedelta(seconds=0)
         if self.last_updated is None:
             return min_timedelta
