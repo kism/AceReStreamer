@@ -53,8 +53,11 @@ class EPG:
             if data_bytes:
                 self._write_to_file(data_bytes)
                 logger.info("EPG data for %s updated successfully", self.region_code)
+                return True
 
-            return True
+            logger.error("Failed to download EPG data for %s", self.region_code)
+            return False
+
         return False
 
     # region Getters
