@@ -235,7 +235,7 @@ class AceScraper:
 
         return m3u8_content + "\n".join(sorted(iptv_set))
 
-    def get_streams_as_iptv_xc(self) -> list[XCStream]:
+    def get_streams_as_iptv_xc(self, xc_category_filter: int | None) -> list[XCStream]:
         """Get the found streams as a list of XCStream objects."""
         streams: list[XCStream] = []
 
@@ -243,16 +243,17 @@ class AceScraper:
         for stream in self.streams.values():
             xc_id = content_id_xc_id_mapping.get_xc_id(stream.content_id)
             xc_category_id = category_xc_category_id_mapping.get_xc_category_id(stream.group_title)
-            streams.append(
-                XCStream(
-                    num=current_stream_number,
-                    name=stream.title,
-                    stream_id=xc_id,
-                    stream_icon=f"{self.external_url}/tvg-logo/{stream.tvg_logo}" if stream.tvg_logo else "",
-                    epg_channel_id=stream.tvg_id,
-                    category_id=str(xc_category_id),
+            if xc_category_filter is None or xc_category_id == xc_category_filter:
+                streams.append(
+                    XCStream(
+                        num=current_stream_number,
+                        name=stream.title,
+                        stream_id=xc_id,
+                        stream_icon=f"{self.external_url}/tvg-logo/{stream.tvg_logo}" if stream.tvg_logo else "",
+                        epg_channel_id=stream.tvg_id,
+                        category_id=str(xc_category_id),
+                    )
                 )
-            )
             current_stream_number += 1
 
         return streams

@@ -69,7 +69,7 @@ def xc_iptv() -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    known_args = ["action", "username", "password"]
+    known_args = ["action", "username", "password", "category_id"]
     log_unexpected_args(
         expected_args=known_args,
         received_args=list(request.args.keys()),
@@ -83,7 +83,9 @@ def xc_iptv() -> Response | WerkzeugResponse:
         categories = category_xc_category_id_mapping.get_all_categories_api()
         xc_resp = jsonify([category.model_dump() for category in categories])
     elif request.args.get("action") == "get_live_streams":
-        streams = [stream.model_dump() for stream in ace_scraper.get_streams_as_iptv_xc()]
+        category_id = request.args.get("category_id", "")
+        xc_category = int(category_id) if category_id.isdigit() else None
+        streams = [stream.model_dump() for stream in ace_scraper.get_streams_as_iptv_xc(xc_category)]
         xc_resp = jsonify(streams)
     elif (
         request.args.get("action") == "get_vod_categories"

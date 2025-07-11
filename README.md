@@ -69,7 +69,6 @@ uv sync --no-group test --no-group type --no-group lint
 - bootstrap on first launch
   - administrative account
   - ~~json for the config file~~
-- `<url>/player_api.php?username=<user>&password=<pwd>&action=get_live_streams&category_id=<X>`
 
 ### Apps that don't work
 
@@ -154,3 +153,4 @@ see iptv.html.j2
 - ~~categories~~
 - ~~XCServerInfo~~
 - ~~put xc in api guide~~
+- ~~`<url>/player_api.php?username=<user>&password=<pwd>&action=get_live_streams&category_id=<X>`~~
