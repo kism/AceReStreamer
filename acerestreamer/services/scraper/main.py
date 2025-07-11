@@ -269,36 +269,39 @@ class AceScraper:
             return False
 
         def check_missing_quality_thread(base_url: str) -> None:
-            self.currently_checking_quality = True
+            with contextlib.suppress(Exception):
+                self.currently_checking_quality = True
 
-            streams = self.get_stream_list_api()  # API method gets teh health information
-            if not streams:
-                logger.warning("No streams found to check quality.")
-                self.currently_checking_quality = False
-                return
+                streams = self.get_stream_list_api()  # API method gets the health information
+                if not streams:
+                    logger.warning("No streams found to check quality.")
+                    self.currently_checking_quality = False
+                    return
 
-            ace_streams_never_worked = len(
-                [  # We also check if the quality is zero, since maybe it started working
-                    content_id for content_id, _ in self._ace_quality.ace_streams.items()
-                ]
-            )
+                ace_streams_never_worked = len(
+                    [  # We also check if the quality is zero, since maybe it started working
+                        content_id
+                        for content_id, stream in self._ace_quality.ace_streams.items()
+                        if not stream.has_ever_worked or stream.quality == 0
+                    ]
+                )
 
-            # We only iterate through streams from get_stream_list_api()
-            # since we don't want to health check streams that are not current per the scraper.
-            # Don't enumerate here, and don't bother with list comprehension tbh
-            n = 0
-            for stream in streams:
-                if not stream.has_ever_worked or stream.quality == 0:
-                    n += 1
-                    stream_url = f"{base_url}/{stream.content_id}"
-                    logger.info("Checking Ace Stream %s (%d/%d)", stream_url, n, ace_streams_never_worked)
+                # We only iterate through streams from get_stream_list_api()
+                # since we don't want to health check streams that are not current per the scraper.
+                # Don't enumerate here, and don't bother with list comprehension tbh
+                n = 0
+                for stream in streams:
+                    if not stream.has_ever_worked or stream.quality == 0:
+                        n += 1
+                        stream_url = f"{base_url}/{stream.content_id}"
+                        logger.info("Checking Ace Stream %s (%d/%d)", stream_url, n, ace_streams_never_worked)
 
-                    for _ in range(3):
-                        with contextlib.suppress(requests.Timeout, requests.ConnectionError):
-                            requests.get(stream_url, timeout=10)
-                        time.sleep(1)
+                        for _ in range(3):
+                            with contextlib.suppress(requests.Timeout, requests.ConnectionError):
+                                requests.get(stream_url, timeout=10)
+                            time.sleep(1)
 
-                    time.sleep(10)
+                        time.sleep(10)
 
             self.currently_checking_quality = False
 
