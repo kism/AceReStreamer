@@ -141,9 +141,9 @@ def hls_multistream(path: str) -> Response | WerkzeugResponse:
 # /live/a/a/<xc_id>.m3u8  |
 # /live/a/a/<xc_id>.ts    | iMPlayer iOS, TiViMate (okay that m3u8 is the response)
 # /live/a/a/<tvg_id>.m3u8 | SparkleTV
-@bp.route("/live/a/<_>/<path>")
-@bp.route("/a/<_>/<path>")
-def xc_m3u8(path: str) -> Response | WerkzeugResponse:
+@bp.route("/live/a/<_thing2>/<path>")
+@bp.route("/a/<_thing2>/<path>")
+def xc_m3u8(_thing2: str, path: str) -> Response | WerkzeugResponse:
     """Serve the XC m3u8 file for Ace content."""
     auth_failure = assumed_auth_failure()
     if auth_failure:
@@ -159,7 +159,7 @@ def xc_m3u8(path: str) -> Response | WerkzeugResponse:
     )
 
     try:
-        xc_id_clean = path.split(".")[0] # Remove file extension if present, we actually don't care which one
+        xc_id_clean = path.split(".")[0]  # Remove file extension if present, we actually don't care which one
     except IndexError:
         xc_id_clean = path
 
