@@ -48,10 +48,10 @@ def api_ace_pool_content_id(content_id: str) -> Response | WerkzeugResponse:
 
     if request.method == "DELETE":
         ace_pool.remove_instance_by_content_id(content_id, caller="API")
-        response = jsonify({"message": "Ace ID removed successfully"}, HTTPStatus.OK)
+        response = jsonify({"message": "Ace ID removed successfully"})
         response.status_code = HTTPStatus.OK
     else:
-        response = jsonify({"ace_url": instance}, HTTPStatus.OK)
+        response = jsonify({"ace_url": instance})
         response.status_code = HTTPStatus.OK
 
     return response

@@ -12,7 +12,6 @@ __all__ = [
     "auth_bp",
     "epg_bp",
     "health_bp",
-    "iptv_bp",
     "scraper_bp",
     "streams_bp",
 ]
