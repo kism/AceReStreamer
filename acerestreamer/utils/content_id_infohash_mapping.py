@@ -64,6 +64,7 @@ class ContentIDInfohashMapping:
 
     def populate_from_api(self, infohash: str) -> str:
         """Populate the mapping from th Ace API from infohash, returning the content ID."""
+        logger.info("Populating missing content ID for infohash %s", infohash)
         content_id = ""
         url = f"{self.ace_url}/server/api?api_version=3&method=get_content_id&infohash="
 

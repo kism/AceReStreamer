@@ -117,8 +117,10 @@ class AceScraper:
                     newly_populated_streams = self._populate_missing_content_ids(missing_content_id_streams)
                     if len(newly_populated_streams) != 0:
                         self.streams = create_unique_stream_list(list(self.streams.values()) + newly_populated_streams)
+                        break
                     time.sleep(60)
 
+                self.print_warnings()
                 time.sleep(SCRAPE_INTERVAL)
 
         threading.Thread(target=run_scrape_thread, name="AceScraper: run_scrape", daemon=True).start()
@@ -189,9 +191,17 @@ class AceScraper:
         """Get the health of the streams."""
         return self._ace_quality.ace_streams
 
+    # region GET API XC
     def get_content_id_by_xc_id(self, xc_id: int) -> str | None:
         """Get the content ID by XC ID."""
         return content_id_xc_id_mapping.get_content_id(xc_id=xc_id)
+
+    def get_content_id_by_tvg_id(self, tvg_id: str) -> str | None:
+        """Get the content ID by TVG ID."""
+        for stream in self.streams.values():
+            if stream.tvg_id == tvg_id:
+                return stream.content_id
+        return None
 
     # region GET IPTV
     def get_streams_as_iptv(self) -> str:
@@ -348,3 +358,28 @@ class AceScraper:
                     populated_streams.append(stream)
 
         return populated_streams
+
+    def print_warnings(self) -> None:
+        """Print warnings for the state of self.streams, specifically for duplicates."""
+        unique_tvg_ids = set()
+        unique_infohashes = set()
+        unique_names = set()
+        for stream in self.streams.values():
+            if stream.tvg_id and stream.tvg_id in unique_tvg_ids:
+                logger.warning("Duplicate TVG ID found: %s", stream.tvg_id)
+            unique_tvg_ids.add(stream.tvg_id)
+
+            if stream.infohash and stream.infohash in unique_infohashes:
+                logger.warning("Duplicate infohash found: %s", stream.infohash)
+            unique_infohashes.add(stream.infohash)
+
+            if stream.title and stream.title in unique_names:
+                logger.warning("Duplicate name found: %s", stream.title)
+            unique_names.add(stream.title)
+
+        logger.warning(
+            "Scraper has %d unique TVG IDs, %d unique infohashes, and %d unique names.",
+            len(unique_tvg_ids),
+            len(unique_infohashes),
+            len(unique_names),
+        )

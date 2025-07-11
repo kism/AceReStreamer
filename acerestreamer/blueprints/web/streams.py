@@ -133,6 +133,14 @@ def hls_multistream(path: str) -> Response | WerkzeugResponse:
 
 
 # region XC
+# Depending on the Client, it will either be:
+# /a/a/<xc_id>            | Smarters Player
+# /a/a/<xc_id>.m3u8       | UHF
+# /a/a/<tvg_id>.m3u8      |
+# /live/a/a/<xc_id>       |
+# /live/a/a/<xc_id>.m3u8  |
+# /live/a/a/<xc_id>.ts    | iMPlayer (okay that m3u8 is the response)
+# /live/a/a/<tvg_id>.m3u8 | SparkleTV
 @bp.route("/live/a/a/<path:path>")
 @bp.route("/a/a/<path:path>")
 def xc_m3u8(path: str) -> Response | WerkzeugResponse:
@@ -141,20 +149,35 @@ def xc_m3u8(path: str) -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    # Depending on the Client, it will either be in /a/a/1 or /a/a/1.m3u8 format
+    content_id: str | None = None
+
+    logger.info(
+        "XC HLS: path='%s' args='%s' ua='%s'",
+        request.path,
+        ",".join(request.args.values()),
+        request.headers.get("User-Agent", ""),
+    )
+
     try:
-        xc_id_clean = path.split(".")[0]
+        xc_id_clean = path.split(".")[0] # Remove file extension if present, we actually don't care which one
     except IndexError:
         xc_id_clean = path
 
     try:
         xc_id_int = int(xc_id_clean)
+        content_id = ace_scraper.get_content_id_by_xc_id(xc_id_int)
     except ValueError:
+        if path.endswith(".m3u8"):
+            path = path.replace(".m3u8", "")
+        elif path.endswith(".m3u"):
+            path = path.replace(".m3u", "")
+
+        content_id = ace_scraper.get_content_id_by_tvg_id(path)
+
+    if content_id is None:
         resp = jsonify({"error": "Invalid XC ID format"})
         resp.status_code = HTTPStatus.BAD_REQUEST
         return resp
-
-    content_id = ace_scraper.get_content_id_by_xc_id(xc_id_int)
 
     if not content_id:
         resp = jsonify({"error": "Content ID not found for the given XC ID"})
