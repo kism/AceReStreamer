@@ -36,7 +36,7 @@ class ContentIDXCIdMapping:
                     self.content_id_xc_id_mapping[content_id] = int(xc_id)
 
     def _save_config(self) -> None:
-        """Save the content ID to infohash mapping to a JSON file."""
+        """Save the content ID to XC ID mapping to a JSON file."""
         if self.config_path is None:
             logger.error("Instance path is not set. Cannot save configuration.")
             return

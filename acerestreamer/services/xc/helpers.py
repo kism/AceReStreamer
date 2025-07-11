@@ -23,11 +23,11 @@ def get_port_and_protocol_from_external_url(external_url: str) -> tuple[int, int
 
     url_no_scheme = external_url.split("://")[-1]
     if ":" in url_no_scheme:
-        port = int(url_no_scheme.split(":")[1].split("/")[0])
-        if protocol == "https":
-            https_port = port
-        elif protocol == "http":
-            http_port = port
-        port = int(url_no_scheme.split(":")[1].split("/")[0])
+        port_str = url_no_scheme.split(":")[1].split("/")[0]
+        if port_str.isdigit():
+            if protocol == "https":
+                https_port = int(port_str)
+            elif protocol == "http":
+                http_port = int(port_str)
 
     return http_port, https_port, protocol

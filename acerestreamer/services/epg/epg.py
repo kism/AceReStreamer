@@ -35,7 +35,7 @@ class EPG:
         self.saved_file_path: Path | None = None
 
     def update(self, instance_path: Path | None) -> bool:
-        """Update the EPG data from the configured URL."""
+        """Update the EPG data from the configured URL, returns true if updated with new data."""
         if instance_path is None:
             logger.error("Instance path is not set, cannot update EPG %s", self.region_code)
             return False
@@ -56,7 +56,6 @@ class EPG:
                 return True
 
             logger.error("Failed to download EPG data for %s", self.region_code)
-            return False
 
         return False
 

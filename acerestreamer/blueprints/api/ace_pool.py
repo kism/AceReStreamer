@@ -64,15 +64,15 @@ def api_ace_pool_pid(pid: str) -> Response | WerkzeugResponse:
     if auth_failure:
         return auth_failure
 
-    try:
-        pid_int = int(pid)
-        instance = ace_pool.get_instance_by_pid_api(pid_int)
-        if instance is None:
-            response = pid_not_found_response(pid)
-        else:
-            response = jsonify(ace_pool.get_instance_by_pid_api(pid_int))
-    except ValueError:
+    if not pid.isdigit():
+        return pid_not_found_response(pid)
+
+    pid_int = int(pid)
+    instance = ace_pool.get_instance_by_pid_api(pid_int)
+    if instance is None:  # noqa: SIM108 Clearer this way
         response = pid_not_found_response(pid)
+    else:
+        response = jsonify(ace_pool.get_instance_by_pid_api(pid_int))
 
     return response
 
