@@ -1,4 +1,4 @@
-"""Pydantic models for XC (Xtreme Codes) IPTV services."""
+"""Pydantic models for XC (Xtream Codes) IPTV services."""
 
 from typing import Self
 

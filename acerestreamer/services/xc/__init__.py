@@ -1,1 +1,1 @@
-"""Service module for XC (Xtreme Codes) IPTV services."""
+"""Service module for XC (Xtream Codes) IPTV services."""
