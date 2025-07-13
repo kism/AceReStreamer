@@ -66,6 +66,7 @@ def create_app(
     app.register_blueprint(api_bps.scraper_bp)
     app.register_blueprint(api_bps.health_bp)
     app.register_blueprint(api_bps.streams_bp)
+    app.register_blueprint(api_bps.xc_bp)
 
     # Start the mapping objects, these first since the objects in the next section want them loaded
     instances_mapping.content_id_infohash_mapping.load_config(

@@ -51,7 +51,7 @@ def api_ace_pool_content_id(content_id: str) -> Response | WerkzeugResponse:
         response = jsonify({"message": "Ace ID removed successfully"})
         response.status_code = HTTPStatus.OK
     else:
-        response = jsonify({"ace_url": instance})
+        response = jsonify(instance.model_dump())
         response.status_code = HTTPStatus.OK
 
     return response
@@ -72,7 +72,7 @@ def api_ace_pool_pid(pid: str) -> Response | WerkzeugResponse:
     if instance is None:  # noqa: SIM108 Clearer this way
         response = pid_not_found_response(pid)
     else:
-        response = jsonify(ace_pool.get_instance_by_pid_api(pid_int))
+        response = jsonify(instance.model_dump())
 
     return response
 
@@ -98,7 +98,7 @@ def api_ace_pool_stats_content_id(content_id: str) -> Response | WerkzeugRespons
     if auth_failure:
         return auth_failure
 
-    ace_pool_stat = ace_pool.get_instance_by_content_id_api(content_id)
+    ace_pool_stat = ace_pool.get_stats_by_content_id(content_id)
 
     if ace_pool_stat is None:
         return instance_not_found_response(content_id, in_what="Ace pool")

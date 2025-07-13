@@ -9,6 +9,7 @@ from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.utils.constants import OUR_TIMEZONE
 from acerestreamer.utils.logger import get_logger
+from acerestreamer.version import __version__
 
 logger = get_logger(__name__)
 
@@ -23,7 +24,12 @@ def api_health() -> Response | WerkzeugResponse:
     threads_enumerated = threading.enumerate()
     thread_list = [{"name": thread.name, "is_alive": thread.is_alive()} for thread in threads_enumerated]
     memory = PROCESS.memory_info().rss / (1024 * 1024)
-    health_dict = {"time_zone": OUR_TIMEZONE.tzname(None), "threads": thread_list, "memory_usage_mb": memory}
+    health_dict = {
+        "version": __version__,
+        "time_zone": OUR_TIMEZONE.tzname(None),
+        "threads": thread_list,
+        "memory_usage_mb": memory,
+    }
     response = jsonify(health_dict)
     response.status_code = HTTPStatus.OK
     return response
