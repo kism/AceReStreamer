@@ -13,7 +13,7 @@ function prettyFormat(content) {
   try {
     // Try format as JSON
     return JSON.stringify(JSON.parse(content), null, 2);
-  } catch (e) {
+  } catch (_e) {
     // Try format as XML
     try {
       const formattedXml = xmlFormatter(content, {
