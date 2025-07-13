@@ -82,25 +82,9 @@ class CategoryXCCategoryIDMapping:
         if categories_in_use is None:
             categories_in_use = set()
 
-
         logger.info("Fetching all categories with IDs in use: %s", categories_in_use)
-        # return [
-        #     XCCategory(category_name=category_name, category_id=str(xc_category_id))
-        #     for category_name, xc_category_id in self.category_id_mapping.items()
-        #     if not categories_in_use or xc_category_id in categories_in_use
-        # ]
-
-        returnt = []
-        for category_name, xc_category_id in self.category_id_mapping.items():
-            condition_1 = categories_in_use is None
-            condition_2 = xc_category_id in categories_in_use
-            logger.info(
-                "Checking category '%s' with ID '%s': condition_1=%s, condition_2=%s",
-                category_name,
-                xc_category_id,
-                condition_1,
-                condition_2,
-            )
-            if condition_1 or condition_2:
-                returnt.append(XCCategory(category_name=category_name, category_id=str(xc_category_id)))
-        return returnt
+        return [
+            XCCategory(category_name=category_name, category_id=str(xc_category_id))
+            for category_name, xc_category_id in self.category_id_mapping.items()
+            if not categories_in_use or xc_category_id in categories_in_use
+        ]
