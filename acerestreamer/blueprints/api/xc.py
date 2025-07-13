@@ -8,7 +8,6 @@ from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.instances import ace_scraper
 from acerestreamer.instances_mapping import category_xc_category_id_mapping
-from acerestreamer.services.authentication.helpers import assumed_auth_failure
 from acerestreamer.services.xc import helpers as xc_helpers
 from acerestreamer.services.xc import models as xc_models
 from acerestreamer.utils import log_unexpected_args
@@ -46,10 +45,6 @@ def _populate_xc_api_response(external_url: str, username: str, password: str) -
 @bp.route("/player_api.php")
 def xc_iptv() -> Response | WerkzeugResponse:
     """Emulate an XC /player_api.php endpoint."""
-    auth_failure = assumed_auth_failure()
-    if auth_failure:
-        return auth_failure
-
     known_args = ["action", "username", "password", "category_id"]
     log_unexpected_args(
         expected_args=known_args,
@@ -101,10 +96,6 @@ def xc_iptv() -> Response | WerkzeugResponse:
 @bp.route("/get.php")
 def xc_get() -> Response | WerkzeugResponse:
     """Emulate an XC /get.php endpoint."""
-    auth_failure = assumed_auth_failure()
-    if auth_failure:
-        return auth_failure
-
     known_args = ["type", "output"]
     log_unexpected_args(
         expected_args=known_args,

@@ -4,7 +4,6 @@ from flask import Blueprint, Response, request
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.instances import ace_scraper
-from acerestreamer.services.authentication.helpers import assumed_auth_failure
 from acerestreamer.utils import log_unexpected_args
 
 bp = Blueprint("acerestreamer_epg", __name__)
@@ -17,10 +16,6 @@ epg_handler = ace_scraper.epg_handler
 @bp.route("/xmltv.php", methods=["GET"])  # XC Standard
 def get_epg() -> Response | WerkzeugResponse:
     """Get the merged EPG data."""
-    auth_failure = assumed_auth_failure()
-    if auth_failure:
-        return auth_failure
-
     known_args = ["username", "password"]
     log_unexpected_args(
         expected_args=known_args,

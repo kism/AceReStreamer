@@ -61,7 +61,6 @@ def create_app(
     app.register_blueprint(web_bps.epg_bp)
     app.register_blueprint(web_bps.iptv_bp)
     app.register_blueprint(api_bps.ace_pool_bp)
-    app.register_blueprint(api_bps.auth_bp)
     app.register_blueprint(api_bps.epg_bp)
     app.register_blueprint(api_bps.scraper_bp)
     app.register_blueprint(api_bps.health_bp)
@@ -90,10 +89,6 @@ def create_app(
     )
     instances.ace_pool.load_config(
         app_config=app.are_conf.app,
-    )
-    instances.ip_allow_list.load_config(
-        instance_path=app.instance_path,
-        password=app.are_conf.app.password,
     )
 
     app.logger.info("Starting Web Server: %s", app.are_conf.flask.SERVER_NAME)

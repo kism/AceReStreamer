@@ -8,7 +8,6 @@ from flask import Blueprint, Response, jsonify, request, send_file
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.instances import ace_pool, ace_scraper
-from acerestreamer.services.authentication.helpers import assumed_auth_failure
 from acerestreamer.utils import check_valid_content_id_or_infohash, replace_hls_m3u_sources
 from acerestreamer.utils.flask_helpers import get_current_app
 from acerestreamer.utils.logger import get_logger
@@ -25,10 +24,6 @@ REVERSE_PROXY_TIMEOUT = 10  # Very high but alas
 @bp.route("/hls/<path>")
 def hls_stream(path: str) -> Response | WerkzeugResponse:
     """Reverse proxy the HLS from Ace."""
-    auth_failure = assumed_auth_failure()
-    if auth_failure:
-        return auth_failure
-
     if not check_valid_content_id_or_infohash(path):
         msg = f"Invalid content ID or infohash: {path}"
         logger.error("HLS stream error: %s", msg)
@@ -102,10 +97,6 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
 @bp.route("/hls/m/<path:path>")
 def hls_multistream(path: str) -> Response | WerkzeugResponse:
     """Reverse proxy the HLS multistream from Ace."""
-    auth_failure = assumed_auth_failure()
-    if auth_failure:
-        return auth_failure
-
     content_id = ace_pool.get_instance_by_multistream_path(path)
 
     url = f"{current_app.are_conf.app.ace_address}/hls/m/{path}"
@@ -154,10 +145,6 @@ def hls_multistream(path: str) -> Response | WerkzeugResponse:
 @bp.route("/a/<_thing2>/<path>")
 def xc_m3u8(_thing2: str, path: str) -> Response | WerkzeugResponse:
     """Serve the XC m3u8 file for Ace content."""
-    auth_failure = assumed_auth_failure()
-    if auth_failure:
-        return auth_failure
-
     content_id: str | None = None
 
     logger.debug(
@@ -202,10 +189,6 @@ def xc_m3u8(_thing2: str, path: str) -> Response | WerkzeugResponse:
 @bp.route("/hls/c/<path:path>")
 def ace_content(path: str) -> Response | WerkzeugResponse:
     """Reverse proxy the Ace content."""
-    auth_failure = assumed_auth_failure()
-    if auth_failure:
-        return auth_failure
-
     # Determine the correct URL based on the request path
     if "/hls/c/" in request.path:
         url = f"{current_app.are_conf.app.ace_address}/hls/c/{path}"
@@ -249,10 +232,6 @@ def ace_content(path: str) -> Response | WerkzeugResponse:
 @bp.route("/tvg-logo/<path>")
 def tvg_logo(path: str) -> Response | WerkzeugResponse:
     """Serve the TVG logo from the local filesystem."""
-    auth_failure = assumed_auth_failure()
-    if auth_failure:
-        return auth_failure
-
     if current_app.static_folder is None:
         response = jsonify({"error": "Static folder not configured"})
         response.status_code = HTTPStatus.INTERNAL_SERVER_ERROR

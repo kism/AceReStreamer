@@ -6,7 +6,6 @@ from flask import Blueprint, Response, render_template
 from flask_caching import CachedResponse
 from werkzeug.wrappers import Response as WerkzeugResponse
 
-from acerestreamer.services.authentication.helpers import assumed_auth_failure
 from acerestreamer.utils import get_header_snippet
 from acerestreamer.utils.constants import TEMPLATES_DIRECTORY
 from acerestreamer.utils.flask_helpers import DEFAULT_CACHE_DURATION, cache, get_current_app
@@ -25,10 +24,6 @@ logger = get_logger(__name__)
 @cache.cached()
 def info_guide() -> Response | WerkzeugResponse | CachedResponse:
     """Render the guide page."""
-    auth_failure = assumed_auth_failure()
-    if auth_failure:
-        return auth_failure
-
     page_title = "Ace ReStreamer Guide"
 
     return CachedResponse(  # type: ignore[no-untyped-call] # Missing from flask-caching
@@ -48,10 +43,6 @@ def info_guide() -> Response | WerkzeugResponse | CachedResponse:
 @cache.cached()
 def info_iptv() -> Response | WerkzeugResponse:
     """Render the guide page."""
-    auth_failure = assumed_auth_failure()
-    if auth_failure:
-        return auth_failure
-
     page_title = "Ace ReStreamer IPTV Guide"
 
     return CachedResponse(  # type: ignore[no-untyped-call] # Missing from flask-caching
@@ -72,10 +63,6 @@ def info_iptv() -> Response | WerkzeugResponse:
 @cache.cached()
 def api() -> Response | WerkzeugResponse:
     """Render the API information page."""
-    auth_failure = assumed_auth_failure()
-    if auth_failure:
-        return auth_failure
-
     page_title = "Ace ReStreamer API Information"
 
     return CachedResponse(  # type: ignore[no-untyped-call] # Missing from flask-caching
@@ -95,10 +82,6 @@ def api() -> Response | WerkzeugResponse:
 @cache.cached()
 def health() -> Response | WerkzeugResponse:
     """Render the API information page."""
-    auth_failure = assumed_auth_failure()
-    if auth_failure:
-        return auth_failure
-
     page_title = "Ace ReStreamer Health"
 
     return CachedResponse(  # type: ignore[no-untyped-call] # Missing from flask-caching

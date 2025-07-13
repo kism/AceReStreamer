@@ -6,7 +6,6 @@ from flask import Blueprint, Response, jsonify
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.instances import ace_scraper
-from acerestreamer.services.authentication.helpers import assumed_auth_failure
 from acerestreamer.utils.flask_helpers import get_current_app
 from acerestreamer.utils.logger import get_logger
 
@@ -21,10 +20,6 @@ bp = Blueprint("acerestreamer_stream_api", __name__)
 @bp.route("/api/streams/content_id/<path:content_id>")
 def api_stream(content_id: str) -> Response | WerkzeugResponse:
     """API endpoint to get a specific stream by Ace ID."""
-    auth_failure = assumed_auth_failure()
-    if auth_failure:
-        return auth_failure
-
     stream = ace_scraper.get_stream_by_content_id_api(content_id)
 
     response = jsonify(stream.model_dump())
@@ -35,10 +30,6 @@ def api_stream(content_id: str) -> Response | WerkzeugResponse:
 @bp.route("/api/streams")
 def api_streams_flat() -> Response | WerkzeugResponse:
     """API endpoint to get the flat streams."""
-    auth_failure = assumed_auth_failure()
-    if auth_failure:
-        return auth_failure
-
     streams = ace_scraper.get_stream_list_api()
     streams_serialized = [stream.model_dump() for stream in streams]
 
@@ -50,10 +41,6 @@ def api_streams_flat() -> Response | WerkzeugResponse:
 @bp.route("/api/streams/health", methods=["GET"])
 def api_streams_health() -> Response | WerkzeugResponse:
     """API endpoint to get the streams."""
-    auth_failure = assumed_auth_failure()
-    if auth_failure:
-        return auth_failure
-
     streams = ace_scraper.get_streams_health()
     streams_dict = {content_id: quality.model_dump() for content_id, quality in streams.items()}
 
