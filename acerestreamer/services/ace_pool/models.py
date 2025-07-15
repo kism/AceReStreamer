@@ -2,7 +2,7 @@
 
 from datetime import datetime, timedelta
 
-from pydantic import BaseModel, field_serializer
+from pydantic import BaseModel, HttpUrl, field_serializer
 
 
 # region Stat
@@ -77,7 +77,7 @@ class AcePoolEntryForAPI(BaseModel):
     content_id: str
     last_used: datetime
     date_started: datetime
-    ace_hls_m3u8_url: str
+    ace_hls_m3u8_url: HttpUrl | None = None
 
     @field_serializer("time_until_unlock")
     def serialize_time_until_unlock(self, time_until_unlock: timedelta) -> int:
@@ -89,14 +89,23 @@ class AcePoolEntryForAPI(BaseModel):
         """Serialize the time running as a timestamp."""
         return time_running.seconds
 
+    @field_serializer("ace_hls_m3u8_url")
+    def serialize_ace_hls_m3u8_url(self, ace_hls_m3u8_url: HttpUrl | None) -> str | None:
+        """Serialize the Ace HLS M3U8 URL as a string."""
+        return ace_hls_m3u8_url.encoded_string() if ace_hls_m3u8_url else None
 
 # region AcePool
 class AcePoolForApi(BaseModel):
     """Model for the AcePool API response."""
 
     ace_version: str
-    ace_address: str
+    ace_address: HttpUrl | None
     max_size: int
     healthy: bool
     transcode_audio: bool
     ace_instances: list[AcePoolEntryForAPI]
+
+    @field_serializer("ace_address")
+    def serialize_ace_address(self, ace_address: HttpUrl | None) -> str | None:
+        """Serialize the Ace address as a string."""
+        return ace_address.encoded_string() if ace_address else None

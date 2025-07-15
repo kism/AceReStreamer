@@ -5,6 +5,8 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from pydantic import AnyUrl, ValidationError
+
 from acerestreamer.utils import check_valid_content_id_or_infohash, slugify
 from acerestreamer.utils.constants import SUPPORTED_TVG_LOGO_EXTENSIONS
 from acerestreamer.utils.logger import get_logger
@@ -112,36 +114,45 @@ class StreamNameProcessor:
             return f"{title_no_cc}.{country_code.lower()}"
         return ""
 
-    def extract_content_id_from_url(self, url: str) -> str:
-        """Extract the AceStream ID from a URL."""
-        url = url.strip()
-        for prefix in ACE_URL_PREFIXES_CONTENT_ID:
-            url = url.removeprefix(prefix)
+    def _extract_from_url(self, url: AnyUrl | str, prefix_list: list[str]) -> str:
+        """Extract a part of the URL based on the provided prefixes."""
+        if isinstance(url, str):
+            try:
+                url = AnyUrl(url)
+            except ValidationError:
+                logger.warning("Invalid URL provided, cannot extract: %s", url)
+                return ""
 
-        if "&" in url:
-            url = url.split("&")[0]
+        result = url.encoded_string()
 
-        if not check_valid_content_id_or_infohash(url):
-            return ""
+        for prefix in prefix_list:
+            if result.startswith(prefix):
+                result = result.removeprefix(prefix)
+                if check_valid_content_id_or_infohash(result):
+                    return result
 
-        return url
+        return ""
 
-    def extract_infohash_from_url(self, url: str) -> str:
+    def extract_content_id_from_url(self, url: AnyUrl | str) -> str:
+        """Extract the AceStream ID from a URI."""
+        return self._extract_from_url(url, ACE_URL_PREFIXES_CONTENT_ID)
+
+    def extract_infohash_from_url(self, url: AnyUrl | str) -> str:
         """Extract the AceStream infohash from a URL."""
-        url = url.strip()
-        for prefix in ACE_URL_PREFIXES_INFOHASH:
-            url = url.replace(prefix, "")
+        return self._extract_from_url(url, ACE_URL_PREFIXES_INFOHASH)
 
-        if "&" in url:
-            url = url.split("&")[0]
-
-        if not check_valid_content_id_or_infohash(url):
-            return ""
-
-        return url
-
-    def check_valid_ace_url(self, url: str) -> bool:
+    def check_valid_ace_url(self, url: AnyUrl | str) -> bool:
         """Check if the AceStream URL is valid."""
+        # Validate the URL format
+        if isinstance(url, str):
+            try:
+                url = AnyUrl(url)
+            except ValidationError:
+                return False
+
+        # Back to a string to check the prefixes
+        url = url.encoded_string()
+
         return any(url.startswith(prefix) for prefix in ACE_URL_PREFIXES_CONTENT_ID) or any(
             url.startswith(prefix) for prefix in ACE_URL_PREFIXES_INFOHASH
         )

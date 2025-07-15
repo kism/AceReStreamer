@@ -2,7 +2,7 @@
 
 from typing import Self
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, HttpUrl, field_serializer, model_validator
 
 from acerestreamer.utils.constants import OUR_TIMEZONE_NAME
 from acerestreamer.utils.logger import get_logger
@@ -29,7 +29,7 @@ class XCUserInfo(BaseModel):
 class XCServerInfo(BaseModel):
     """Model for XC Server Information."""
 
-    url: str
+    url: HttpUrl
     port: int
     https_port: int | None
     server_protocol: str
@@ -50,6 +50,10 @@ class XCServerInfo(BaseModel):
             self.server_protocol = "http"
         return self
 
+    @field_serializer("url")
+    def serialize_url(self, value: HttpUrl) -> str:
+        """Serialize URL to string."""
+        return value.encoded_string()
 
 class XCApiResponse(BaseModel):
     """Model for XC API Response."""

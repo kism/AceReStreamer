@@ -4,7 +4,7 @@ import contextlib
 from datetime import datetime, timedelta
 
 import requests
-from pydantic import ValidationError
+from pydantic import HttpUrl, ValidationError
 
 from acerestreamer.utils import check_valid_content_id_or_infohash
 from acerestreamer.utils.constants import OUR_TIMEZONE
@@ -26,7 +26,7 @@ class AcePoolEntry:
     def __init__(
         self,
         ace_pid: int,
-        ace_address: str,
+        ace_address: HttpUrl,
         content_id: str,
         infohash: str = "",
         *,
@@ -39,16 +39,14 @@ class AcePoolEntry:
 
         self._keep_alive_run_once = False
 
-        self.ace_hls_m3u8_url: str = ""
-        self.ace_stat_url: str = ""
-        self.ace_cmd_url: str = ""
+        self.ace_hls_m3u8_url: HttpUrl | None = None
+        self.ace_stat_url: HttpUrl | None = None
+        self.ace_cmd_url: HttpUrl | None = None
 
         self.ace_pid = ace_pid
         self.content_id = content_id
         self.infohash = infohash
         self.ace_address = ace_address
-        if not self.ace_address.endswith("/"):
-            self.ace_address += "/"
 
         self.ace_middleware_url = (  # https://docs.acestream.net/developers/start-playback/
             f"{self.ace_address}ace/manifest.m3u8"
@@ -92,8 +90,11 @@ class AcePoolEntry:
     # region Get
     def get_ace_stat(self) -> AcePoolStat | None:
         """Get the AceStream statistics for this instance."""
+        if not self.ace_stat_url:
+            logger.warning("No stat URL for content_id %s, cannot fetch stats", self.content_id)
+            return None
         try:
-            resp_stat = requests.get(self.ace_stat_url, timeout=ACESTREAM_API_TIMEOUT)
+            resp_stat = requests.get(self.ace_stat_url.encoded_string(), timeout=ACESTREAM_API_TIMEOUT)
             resp_stat.raise_for_status()
             resp_stat_json = resp_stat.json()
             return AcePoolStat(**resp_stat_json)
@@ -184,13 +185,13 @@ class AcePoolEntry:
         # Also check if the content_id is valid, as a failsafe
         self.populate_urls()
 
-        if not self.check_if_stale() and check_valid_content_id_or_infohash(self.content_id):
+        if not self.check_if_stale() and check_valid_content_id_or_infohash(self.content_id) and self.ace_hls_m3u8_url:
             # Keep Alive
             with contextlib.suppress(requests.RequestException):
                 if not self._keep_alive_run_once and self.ace_hls_m3u8_url != "":
                     logger.info("Keeping alive ace_pid %d with content_id %s", self.ace_pid, self.content_id)
                     self._keep_alive_run_once = True
-                resp = requests.get(self.ace_hls_m3u8_url, timeout=ACESTREAM_API_TIMEOUT)
+                resp = requests.get(self.ace_hls_m3u8_url.encoded_string(), timeout=ACESTREAM_API_TIMEOUT)
                 logger.trace("Keep alive, response: %s", resp.status_code)
 
         else:

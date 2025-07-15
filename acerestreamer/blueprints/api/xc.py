@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 from http import HTTPStatus
 
 from flask import Blueprint, Response, jsonify, request
+from pydantic import HttpUrl
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.instances import ace_scraper
@@ -21,8 +22,11 @@ bp = Blueprint("acerestreamer_api_xc", __name__)
 
 # region XC
 # Due to circular imports, this is here
-def _populate_xc_api_response(external_url: str, username: str, password: str) -> xc_models.XCApiResponse:
+def _populate_xc_api_response(external_url: HttpUrl | None, username: str, password: str) -> xc_models.XCApiResponse:
     """Populate the XC API response with user and server information."""
+    if not external_url:
+        external_url = HttpUrl("http://localhost")
+
     http_port, https_port, protocol = xc_helpers.get_port_and_protocol_from_external_url(external_url)
 
     return xc_models.XCApiResponse(

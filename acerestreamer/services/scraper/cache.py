@@ -3,6 +3,8 @@
 from datetime import datetime, timedelta
 from pathlib import Path
 
+from pydantic import HttpUrl
+
 from acerestreamer.utils import slugify
 from acerestreamer.utils.constants import OUR_TIMEZONE
 
@@ -21,7 +23,7 @@ class ScraperCache:
         self.cache_path = instance_path / "scraper_cache"
         self.cache_path.mkdir(parents=True, exist_ok=True)
 
-    def load_from_cache(self, url: str) -> str:
+    def load_from_cache(self, url: HttpUrl) -> str:
         """Load the content from cache if available."""
         load_path = self._get_cache_file_path(url)
         if load_path.exists():
@@ -29,7 +31,7 @@ class ScraperCache:
                 return file.read()
         return ""
 
-    def is_cache_valid(self, url: str, cache_max_age: timedelta = timedelta(days=1)) -> bool:
+    def is_cache_valid(self, url: HttpUrl, cache_max_age: timedelta = timedelta(days=1)) -> bool:
         """Check if the cache for the given URL is valid."""
         cache_path = self._get_cache_file_path(url)
         if cache_path.exists():
@@ -41,15 +43,15 @@ class ScraperCache:
 
         return False
 
-    def save_to_cache(self, url: str, content: str) -> None:
+    def save_to_cache(self, url: HttpUrl, content: str) -> None:
         """Save the content to cache."""
         save_path = self._get_cache_file_path(url)
         with save_path.open("w", encoding="utf-8") as file:
             file.write(content)
 
-    def _get_cache_file_path(self, url: str) -> Path:
+    def _get_cache_file_path(self, url: HttpUrl) -> Path:
         """Get the cache file path for a given URL."""
         if not self.cache_path:
             msg = "Cache path is not set. Call load_config() first."
             raise ValueError(msg)
-        return self.cache_path / f"{slugify(url)}.txt"
+        return self.cache_path / f"{slugify(url.encoded_string())}.txt"

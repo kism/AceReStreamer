@@ -5,6 +5,7 @@ from pathlib import Path
 
 import requests
 from bidict import bidict
+from pydantic import HttpUrl
 
 from acerestreamer.utils import check_valid_content_id_or_infohash
 from acerestreamer.utils.logger import get_logger
@@ -19,9 +20,9 @@ class ContentIDInfohashMapping:
         """Initialize the mapping."""
         self.content_id_infohash_mapping: bidict[str, str] = bidict()
         self.config_path: Path | None = None
-        self.ace_url: str | None = None
+        self.ace_url: HttpUrl | None = None
 
-    def load_config(self, instance_path: str | Path, ace_url: str) -> None:
+    def load_config(self, instance_path: str | Path, ace_url: HttpUrl) -> None:
         """Load the content ID to infohash mapping from a JSON file."""
         if isinstance(instance_path, str):
             instance_path = Path(instance_path)

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import requests
+from pydantic import HttpUrl
 
 from acerestreamer.instances_mapping import (
     category_xc_category_id_mapping,
@@ -46,8 +47,8 @@ class AceScraper:
     # region Initialization
     def __init__(self) -> None:
         """Init the scraper."""
-        self.external_url: str = ""
-        self.ace_url: str = ""
+        self.external_url: HttpUrl | None = None
+        self.ace_url: HttpUrl | None = None
         self.streams: dict[str, FoundAceStream] = {}
         self.html: list[ScrapeSiteHTML] = []
         self.iptv_m3u8: list[ScrapeSiteIPTV] = []
@@ -63,12 +64,15 @@ class AceScraper:
         ace_scrape_settings: AceScrapeConf,
         epg_conf_list: list[EPGInstanceConf],
         instance_path: Path | str,
-        external_url: str,
-        ace_url: str,
+        external_url: HttpUrl | str,
+        ace_url: HttpUrl,
     ) -> None:
         """Load the configuration for the scraper."""
         if isinstance(instance_path, str):
             instance_path = Path(instance_path)
+
+        if isinstance(external_url, str):
+            external_url = HttpUrl(external_url)
 
         self.external_url = external_url
         self.ace_url = ace_url
@@ -268,7 +272,7 @@ class AceScraper:
         if self.currently_checking_quality:
             return False
 
-        def check_missing_quality_thread(base_url: str) -> None:
+        def check_missing_quality_thread(base_url: HttpUrl) -> None:
             with contextlib.suppress(Exception):
                 self.currently_checking_quality = True
 

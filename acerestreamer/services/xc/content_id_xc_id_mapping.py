@@ -2,11 +2,17 @@
 
 import csv
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from bidict import bidict
 
 from acerestreamer.utils import check_valid_content_id_or_infohash
 from acerestreamer.utils.logger import get_logger
+
+if TYPE_CHECKING:
+    from pydantic import HttpUrl
+else:
+    HttpUrl = object
 
 logger = get_logger(__name__)
 
@@ -18,7 +24,7 @@ class ContentIDXCIdMapping:
         """Initialize the mapping."""
         self.content_id_xc_id_mapping: bidict[str, int] = bidict()
         self.config_path: Path | None = None
-        self.ace_url: str | None = None
+        self.ace_url: HttpUrl | None = None
 
     def load_config(self, instance_path: str | Path) -> None:
         """Load the content ID to xc stream id mapping from a csv file."""

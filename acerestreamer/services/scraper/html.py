@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 import requests
 from bs4 import BeautifulSoup, Tag
+from pydantic import AnyUrl
 
 from acerestreamer.instances_mapping import category_xc_category_id_mapping
 from acerestreamer.utils import check_valid_content_id_or_infohash
@@ -43,9 +44,9 @@ class HTTPStreamScraper(ScraperCommon):
         scraped_site_str = self.scraper_cache.load_from_cache(site.url)
 
         if not self.scraper_cache.is_cache_valid(site.url, cache_max_age):
-            logger.debug("Scraping streams from site: %s", site)
+            logger.debug("Scraping streams from site: %s", site.slug)
             try:
-                response = requests.get(site.url, timeout=10)
+                response = requests.get(site.url.encoded_string(), timeout=10)
                 response.raise_for_status()
                 response.encoding = "utf-8"  # Ensure the response is decoded correctly
                 scraped_site_str = response.text
@@ -68,10 +69,10 @@ class HTTPStreamScraper(ScraperCommon):
             # We are iterating through all links, we only want AceStream links
             if self.name_processor.check_valid_ace_url(link_href):
                 candidate_titles: list[str] = []
-                ace_stream_url: str = link_href.strip()
+                ace_uri: AnyUrl = AnyUrl(link_href)
 
                 # Skip URLs that are already added, maybe this can check if the second instance has a different title
-                if ace_stream_url in [stream.content_id for stream in streams_candidates]:
+                if ace_uri in [stream.ace_uri for stream in streams_candidates]:
                     continue
 
                 # Recurse through the parent tags to find a suitable title
@@ -103,10 +104,12 @@ class HTTPStreamScraper(ScraperCommon):
 
                 streams_candidates.append(
                     CandidateAceStream(
-                        content_id=ace_stream_url,
+                        ace_uri=ace_uri,
                         title_candidates=candidate_titles,
                     )
                 )
+            else:
+                logger.trace("Skipping non-AceStream link: %s", link_href)
 
         return self._process_candidates(streams_candidates, site)
 
@@ -140,7 +143,7 @@ class HTTPStreamScraper(ScraperCommon):
                 # If there are multiple candidates, we can choose the first one
                 title = " / ".join(new_title_candidates)
 
-            content_id = self.name_processor.extract_content_id_from_url(candidate.content_id)
+            content_id = self.name_processor.extract_content_id_from_url(candidate.ace_uri)
 
             if not self.name_processor.check_title_allowed(
                 title=title,

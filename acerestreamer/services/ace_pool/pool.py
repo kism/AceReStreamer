@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
 import requests
+from pydantic import HttpUrl
 
 from acerestreamer.utils import check_valid_content_id_or_infohash
 from acerestreamer.utils.constants import OUR_TIMEZONE
@@ -29,7 +30,7 @@ class AcePool:
 
     def __init__(self) -> None:
         """Initialize the AcePool."""
-        self.ace_address = ""
+        self.ace_address: HttpUrl | None = None
         self.max_size = 0
         self.transcode_audio = False
         self.ace_instances: dict[str, AcePoolEntry] = {}
@@ -111,8 +112,12 @@ class AcePool:
         logger.error("Ace pool is full, could not get available instance.")
         return None
 
-    def get_instance_hls_url_by_content_id(self, content_id: str) -> str | None:
+    def get_instance_hls_url_by_content_id(self, content_id: str) -> HttpUrl | None:
         """Find the AceStream instance URL for a given content_id, create a new instance if it doesn't exist."""
+        if not self.ace_address:
+            logger.error("Ace address is not set, cannot get instance URL.")
+            return None
+
         if not check_valid_content_id_or_infohash(content_id):
             logger.error("Invalid AceStream content ID: %s", content_id)
             return None
@@ -146,7 +151,8 @@ class AcePool:
             return ""
 
         for instance in self.ace_instances.values():
-            if ace_multistream_path in instance.ace_hls_m3u8_url:
+            # We could use .path here but this avoids dealing with None
+            if instance.ace_hls_m3u8_url and ace_multistream_path in instance.ace_hls_m3u8_url.encoded_string():
                 instance.update_last_used()
                 return instance.content_id
 
@@ -182,7 +188,11 @@ class AcePool:
 
     def get_instances_api(self) -> AcePoolForApi:
         """Get a list of AcePoolEntryForAPI instances for the API."""
-        instances = [self._make_api_response_from_instance(instance) for instance in self.ace_instances.values()]
+        if self.ace_address:
+            instances = [self._make_api_response_from_instance(instance) for instance in self.ace_instances.values()]
+        else:
+            logger.error("get_instances_api called, Ace address is not set, cannot get instances.")
+            instances = []
 
         return AcePoolForApi(
             ace_address=self.ace_address,

@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 from typing import Self
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, HttpUrl, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from acerestreamer.utils import slugify
@@ -24,7 +24,7 @@ class FlaskConf(BaseModel):
 
     DEBUG: bool = False
     TESTING: bool = False
-    SERVER_NAME: str = "http://127.0.0.1:5100"
+    SERVER_NAME: str = "http://127.0.0.1:5100" # This is internal to flask so it stays a string
 
 
 class TitleFilter(BaseModel):
@@ -46,19 +46,10 @@ class ScrapeSiteHTML(BaseModel):
 
     name: str = "Example HTML"
     slug: str = ""
-    url: str = "https://example.com"
+    url: HttpUrl = HttpUrl("https://example.com")
     target_class: str = ""  # Target html class
     check_sibling: bool = False
     title_filter: TitleFilter = TitleFilter()
-
-    @model_validator(mode="after")
-    def valid_url(self) -> Self:
-        """Validate the URL."""
-        self.url = self.url.strip()
-        if not self.url.startswith("http://") and not self.url.startswith("https://"):
-            msg = f"Error loading config: URL for {self.name} must start with 'http://' or 'https://'"
-            raise ValueError(msg)
-        return self
 
     @model_validator(mode="after")
     def generate_slug(self) -> Self:
@@ -82,17 +73,8 @@ class ScrapeSiteIPTV(BaseModel):
 
     name: str = "Example IPTV"
     slug: str = ""
-    url: str = "https://example.com/iptv.txt"
+    url: HttpUrl = HttpUrl("https://example.com/iptv.txt")
     title_filter: TitleFilter = TitleFilter()
-
-    @model_validator(mode="after")
-    def valid_url(self) -> Self:
-        """Validate the URL."""
-        self.url = self.url.strip()
-        if not self.url.startswith("http://") and not self.url.startswith("https://"):
-            msg = f"Error loading config: URL for {self.name} must start with 'http://' or 'https://'"
-            raise ValueError(msg)
-        return self
 
     @model_validator(mode="after")
     def generate_slug(self) -> Self:
@@ -147,19 +129,9 @@ class AppConf(BaseModel):
     model_config = ConfigDict(extra="ignore")  # Ignore extras for config related things
 
     password: str = ""
-    ace_address: str = "http://localhost:6878"
+    ace_address: HttpUrl = HttpUrl("http://localhost:6878")
     transcode_audio: bool = True
     ace_max_streams: int = 4
-
-    @model_validator(mode="after")
-    def valid_ace_address(self) -> Self:
-        """Validate the configuration."""
-        ace_address_temp = self.ace_address.strip().rstrip("/")
-        if not ace_address_temp.startswith("http://"):
-            msg = f"ace_address '{ace_address_temp}' must start with 'http://'"
-            raise ValueError(msg)
-        self.ace_address = ace_address_temp
-        return self
 
     @model_validator(mode="after")
     def validate_max_streams(self) -> Self:
@@ -192,7 +164,7 @@ class EPGInstanceConf(BaseModel):
 
     region_code: str = "UK"
     format: str = "xml.gz"
-    url: str = "https://www.open-epg.com/files/unitedkingdom1.xml.gz"
+    url: HttpUrl = HttpUrl("https://www.open-epg.com/files/unitedkingdom1.xml.gz")
 
 
 class AceReStreamerConf(BaseSettings):

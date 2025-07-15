@@ -5,7 +5,7 @@ import re
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 
 from acerestreamer.utils.constants import OUR_TIMEZONE
 from acerestreamer.utils.helpers import check_valid_content_id_or_infohash
@@ -99,9 +99,9 @@ class AceQuality:
         """Init AceQuality."""
         self.cache_file: Path | None = None
         self.ace_streams: dict[str, Quality] = {}
-        self.external_url: str = ""
+        self.external_url: HttpUrl | None = None
 
-    def load_config(self, instance_path: Path, external_url: str) -> None:
+    def load_config(self, instance_path: Path, external_url: HttpUrl) -> None:
         """Init AceQuality."""
         self.cache_file = instance_path / "ace_quality_cache.json"
         self.external_url = external_url

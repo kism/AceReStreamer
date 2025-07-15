@@ -4,7 +4,7 @@ import re
 from typing import TYPE_CHECKING
 
 import requests
-from pydantic import ValidationError
+from pydantic import HttpUrl, ValidationError
 
 from acerestreamer.instances_mapping import category_xc_category_id_mapping
 from acerestreamer.utils import slugify
@@ -59,9 +59,9 @@ class IPTVStreamScraper(ScraperCommon):
         if self.scraper_cache.is_cache_valid(site.url):
             return cached_content
 
-        logger.debug("Scraping streams from IPTV site: %s", site)
+        logger.debug("Scraping streams from IPTV site: %s", site.slug)
         try:
-            response = requests.get(site.url, timeout=10)
+            response = requests.get(site.url.encoded_string(), timeout=10)
             response.raise_for_status()
         except requests.RequestException as e:
             error_short = type(e).__name__
@@ -131,6 +131,9 @@ class IPTVStreamScraper(ScraperCommon):
         line_one = ""
 
         for line in lines:
+            if line.strip() == "#EXTM3U":
+                continue  # First line of a playlist, skip it
+
             line_normalised = line.replace("#EXTINF:-1,", "#EXTINF:-1").strip()
 
             # First line of an entry
@@ -141,7 +144,9 @@ class IPTVStreamScraper(ScraperCommon):
             # Second line of an entry, creates the ace stream object
             if (
                 not line.startswith("#EXTINF:")
-                and self.name_processor.check_valid_ace_url(line_normalised)
+                and self.name_processor.check_valid_ace_url(
+                    line_normalised
+                )  # This should be enough to validate that they are AnyUrl
                 and line_one
             ):
                 content_id = self.name_processor.extract_content_id_from_url(line_normalised)
@@ -161,7 +166,7 @@ class IPTVStreamScraper(ScraperCommon):
 
         return found_streams
 
-    def _download_tvg_logo(self, tvg_logo_url: str, title: str) -> None:
+    def _download_tvg_logo(self, line: str, title: str) -> None:
         """Download the TVG logo and return the local path."""
         if self.instance_path is None:
             return
@@ -173,14 +178,14 @@ class IPTVStreamScraper(ScraperCommon):
             if logo_path.is_file():
                 return
 
-        regex_result = TVG_LOGO_REGEX.search(tvg_logo_url)
+        regex_result = TVG_LOGO_REGEX.search(line)
 
         if not regex_result:
             return
 
-        tvg_logo_url = regex_result.group(1)
+        tvg_logo_url = HttpUrl(regex_result.group(1))
 
-        url_file_extension = tvg_logo_url.split(".")[-1]
+        url_file_extension = tvg_logo_url.encoded_string().split(".")[-1]
         url_file_extension = url_file_extension.split("?")[0]
         if url_file_extension.lower() not in SUPPORTED_TVG_LOGO_EXTENSIONS:
             logger.warning("Unsupported TVG logo file extension for %s: %s", title, url_file_extension)
@@ -188,7 +193,7 @@ class IPTVStreamScraper(ScraperCommon):
 
         logger.info("Downloading TVG logo for %s from %s", title, tvg_logo_url)
         try:
-            response = requests.get(tvg_logo_url, timeout=5)
+            response = requests.get(tvg_logo_url.encoded_string(), timeout=5)
             response.raise_for_status()
         except requests.RequestException as e:
             error_short = type(e).__name__

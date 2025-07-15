@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING, Self
 
-from pydantic import BaseModel, model_validator
+from pydantic import AnyUrl, BaseModel, HttpUrl, field_serializer, model_validator
 
 from acerestreamer.config.models import TitleFilter
 from acerestreamer.utils import check_valid_content_id_or_infohash
@@ -51,7 +51,7 @@ class FoundAceStream(BaseModel):
 class CandidateAceStream(BaseModel):
     """Model for a candidate AceStream."""
 
-    content_id: str
+    ace_uri: AnyUrl
     title_candidates: list[str] = []
 
 
@@ -82,7 +82,7 @@ class AceScraperSourceApi(BaseModel):
 
     name: str
     slug: str
-    url: str
+    url: HttpUrl
     title_filter: TitleFilter
     type: str
     check_sibling: bool | None = None
@@ -103,3 +103,8 @@ class AceScraperSourceApi(BaseModel):
                 raise ValueError(msg)
 
         return self
+
+    @field_serializer("url")
+    def serialize_url(self, value: HttpUrl) -> str:
+        """Serialize URL to string."""
+        return value.encoded_string()

@@ -5,6 +5,7 @@ from pathlib import Path
 
 import requests
 from flask import Blueprint, Response, jsonify, request, send_file
+from pydantic import HttpUrl
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from acerestreamer.instances import ace_pool, ace_scraper
@@ -43,7 +44,7 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
     logger.trace("HLS stream requested for path: %s", instance_ace_hls_m3u8_url)
 
     try:
-        ace_resp = requests.get(instance_ace_hls_m3u8_url, timeout=REVERSE_PROXY_TIMEOUT, stream=True)
+        ace_resp = requests.get(instance_ace_hls_m3u8_url.encoded_string(), timeout=REVERSE_PROXY_TIMEOUT, stream=True)
         ace_resp.raise_for_status()
     except requests.RequestException as e:
         error_short = type(e).__name__
@@ -84,7 +85,7 @@ def hls_stream(path: str) -> Response | WerkzeugResponse:
     content_str = replace_hls_m3u_sources(
         m3u_content=content_str,
         ace_address=current_app.are_conf.app.ace_address,
-        server_name=current_app.are_conf.flask.SERVER_NAME,
+        server_name=HttpUrl(current_app.are_conf.flask.SERVER_NAME),
     )
 
     ace_scraper.increment_quality(path, m3u_playlist=content_str)
@@ -126,7 +127,7 @@ def hls_multistream(path: str) -> Response | WerkzeugResponse:
     content_str = replace_hls_m3u_sources(
         m3u_content=content_str,
         ace_address=current_app.are_conf.app.ace_address,
-        server_name=current_app.are_conf.flask.SERVER_NAME,
+        server_name=HttpUrl(current_app.are_conf.flask.SERVER_NAME),
     )
 
     ace_scraper.increment_quality(content_id, m3u_playlist=content_str)

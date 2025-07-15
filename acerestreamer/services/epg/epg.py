@@ -121,7 +121,7 @@ class EPG:
         logger.info("Downloading EPG data from %s", self.url)
         data: bytes = b""
         try:
-            response = requests.get(self.url, timeout=10)
+            response = requests.get(self.url.encoded_string(), timeout=10)
             response.raise_for_status()
             data = response.content
 
