@@ -142,15 +142,15 @@ class IPTVStreamScraper(ScraperCommon):
                 continue
 
             # Second line of an entry, creates the ace stream object
+            valid_ace_uri = self.name_processor.check_valid_ace_uri(line_normalised)
+
             if (
                 not line.startswith("#EXTINF:")
-                and self.name_processor.check_valid_ace_url(
-                    line_normalised
-                )  # This should be enough to validate that they are AnyUrl
+                and valid_ace_uri is not None
                 and line_one
             ):
-                content_id = self.name_processor.extract_content_id_from_url(line_normalised)
-                infohash = self.name_processor.extract_infohash_from_url(line_normalised)
+                content_id = self.name_processor.extract_content_id_from_url(valid_ace_uri)
+                infohash = self.name_processor.extract_infohash_from_url(valid_ace_uri)
 
                 ace_stream = self._found_ace_stream_from_extinf_line(
                     line=line_one,

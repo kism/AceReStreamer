@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 
 import requests
 from bs4 import BeautifulSoup, Tag
-from pydantic import AnyUrl
 
 from acerestreamer.instances_mapping import category_xc_category_id_mapping
 from acerestreamer.utils import check_valid_content_id_or_infohash
@@ -67,12 +66,13 @@ class HTTPStreamScraper(ScraperCommon):
                 continue
 
             # We are iterating through all links, we only want AceStream links
-            if self.name_processor.check_valid_ace_url(link_href):
+            valid_ace_uri = self.name_processor.check_valid_ace_uri(link_href)
+
+            if valid_ace_uri is not None:
                 candidate_titles: list[str] = []
-                ace_uri: AnyUrl = AnyUrl(link_href)
 
                 # Skip URLs that are already added, maybe this can check if the second instance has a different title
-                if ace_uri in [stream.ace_uri for stream in streams_candidates]:
+                if valid_ace_uri in [stream.ace_uri for stream in streams_candidates]:
                     continue
 
                 # Recurse through the parent tags to find a suitable title
@@ -104,7 +104,7 @@ class HTTPStreamScraper(ScraperCommon):
 
                 streams_candidates.append(
                     CandidateAceStream(
-                        ace_uri=ace_uri,
+                        ace_uri=valid_ace_uri,
                         title_candidates=candidate_titles,
                     )
                 )

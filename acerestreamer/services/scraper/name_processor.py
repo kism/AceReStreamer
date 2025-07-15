@@ -114,15 +114,8 @@ class StreamNameProcessor:
             return f"{title_no_cc}.{country_code.lower()}"
         return ""
 
-    def _extract_from_url(self, url: AnyUrl | str, prefix_list: list[str]) -> str:
+    def _extract_from_url(self, url: AnyUrl, prefix_list: list[str]) -> str:
         """Extract a part of the URL based on the provided prefixes."""
-        if isinstance(url, str):
-            try:
-                url = AnyUrl(url)
-            except ValidationError:
-                logger.warning("Invalid URL provided, cannot extract: %s", url)
-                return ""
-
         result = url.encoded_string()
 
         for prefix in prefix_list:
@@ -133,29 +126,34 @@ class StreamNameProcessor:
 
         return ""
 
-    def extract_content_id_from_url(self, url: AnyUrl | str) -> str:
+    def extract_content_id_from_url(self, url: AnyUrl) -> str:
         """Extract the AceStream ID from a URI."""
         return self._extract_from_url(url, ACE_URL_PREFIXES_CONTENT_ID)
 
-    def extract_infohash_from_url(self, url: AnyUrl | str) -> str:
+    def extract_infohash_from_url(self, url: AnyUrl) -> str:
         """Extract the AceStream infohash from a URL."""
         return self._extract_from_url(url, ACE_URL_PREFIXES_INFOHASH)
 
-    def check_valid_ace_url(self, url: AnyUrl | str) -> bool:
+    def check_valid_ace_uri(self, url: AnyUrl | str) -> AnyUrl | None:
         """Check if the AceStream URL is valid."""
         # Validate the URL format
         if isinstance(url, str):
             try:
                 url = AnyUrl(url)
             except ValidationError:
-                return False
+                return None
 
         # Back to a string to check the prefixes
-        url = url.encoded_string()
+        url_str = url.encoded_string()
 
-        return any(url.startswith(prefix) for prefix in ACE_URL_PREFIXES_CONTENT_ID) or any(
-            url.startswith(prefix) for prefix in ACE_URL_PREFIXES_INFOHASH
+        valid = any(url_str.startswith(prefix) for prefix in ACE_URL_PREFIXES_CONTENT_ID) or any(
+            url_str.startswith(prefix) for prefix in ACE_URL_PREFIXES_INFOHASH
         )
+
+        if not valid:
+            return None
+
+        return url
 
     def check_title_allowed(self, title: str, title_filter: TitleFilter) -> bool:
         """Check if the title contains any disallowed words."""
