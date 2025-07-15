@@ -20,6 +20,8 @@ else:
 
 logger = get_logger(__name__)
 
+HTML_CACHE_MAX_AGE = timedelta(hours=1)  # HTML Sources we need to scrape more often
+
 
 class HTTPStreamScraper(ScraperCommon):
     """Scraper for websites to find AceStream streams."""
@@ -38,7 +40,7 @@ class HTTPStreamScraper(ScraperCommon):
     def _scrape_site(self, site: ScrapeSiteHTML) -> list[FoundAceStream]:
         """Scrape the streams from the configured sites."""
         streams_candidates: list[CandidateAceStream] = []
-        cache_max_age = timedelta(hours=1)  # HTML Sources we need to scrape more often
+        cache_max_age = HTML_CACHE_MAX_AGE
 
         scraped_site_str = self.scraper_cache.load_from_cache(site.url)
 
