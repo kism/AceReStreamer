@@ -21,10 +21,7 @@ services:
 
   # In your config, ensure "ace_address": "http://acestream-http-proxy:6878",
   acerestreamer:
-    # build: # Build locally
-    #   context: .
-    #   dockerfile: docker/Dockerfile.combined
-    # image: acerestreamer:latest # Build per README.md
+    # image: acerestreamer:latest # docker buildx build --network=host --file docker/Dockerfile.combined . -t acerestreamer
     image: ghcr.io/kism/acerestreamer:latest # From GitHub Container Registry
 
     environment:

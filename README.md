@@ -98,3 +98,4 @@ see iptv.html.j2
 - big cleanup
 - async everything?
 - name the loggers
+- AceStream Backend Information red on failure
