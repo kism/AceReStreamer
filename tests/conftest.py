@@ -1,58 +1,89 @@
-"""The conftest.py file serves as a means of providing fixtures for an entire directory.
+"""Test configuration and fixtures.
 
-Fixtures defined in a conftest.py can be used by any test in that package without needing to import them.
+This module MUST set up the test environment before any application imports.
 """
 
+import os
 import shutil
+import tempfile
 from pathlib import Path
 
+# CRITICAL: Set environment variables BEFORE any acere imports
+# This must happen at module level, before pytest fixtures
+# Prevent .env file from being loaded during tests
+os.environ["ACERE_TESTING"] = "1"
+
+_test_instance_dir = Path(tempfile.mkdtemp(prefix="acere_test_"))
+os.environ["INSTANCE_DIR"] = str(_test_instance_dir)
+
+# Create necessary subdirectories
+(_test_instance_dir / "tvg_logos").mkdir(exist_ok=True)
+(_test_instance_dir / "epg").mkdir(exist_ok=True)
+(_test_instance_dir / "playlists").mkdir(exist_ok=True)
+(_test_instance_dir / "scraper_cache").mkdir(exist_ok=True)
+
+# Create a minimal test config with test superuser password
+config_file = _test_instance_dir / "config.json"
+shutil.copyfile(
+    Path(__file__).parent / "configs" / "test_valid.json",
+    config_file,
+)
+
+# NOW we can import the application modules
+from collections.abc import Generator
+
 import pytest
+from fastapi.testclient import TestClient
+from sqlmodel import Session, delete
 
-from acerestreamer import create_app
-from acerestreamer.config import AceReStreamerConf
+from acere.core.db import engine, init_db
+from acere.instances.config import settings
+from acere.main import app
+from acere.models import User
+from tests.utils.user import authentication_token_from_username
+from tests.utils.utils import get_superuser_token_headers
 
-TEST_CONFIGS_LOCATION = Path.cwd() / "tests" / "configs"
-
-
-def pytest_configure():
-    """This is a magic function for adding things to pytest?"""
-    pytest.TEST_CONFIGS_LOCATION = TEST_CONFIGS_LOCATION
-
-
-@pytest.fixture
-def app(tmp_path, get_test_config):
-    """This fixture uses the default config within the flask app."""
-    return create_app(test_config=get_test_config("testing_true_valid.json"), instance_path=tmp_path)
+# Store the test password before init_db clears it
+TEST_SUPERUSER_PASSWORD = "pytestpassword123"
 
 
-@pytest.fixture
-def client(app):
-    """This returns a test client for the default app()."""
-    return app.test_client()
+@pytest.fixture(scope="session", autouse=True)
+def temp_instance_dir() -> Generator[Path]:
+    """Provide the temporary instance directory for tests."""
+    yield _test_instance_dir
+
+    # Cleanup: Remove the temporary directory after all tests
+    if _test_instance_dir.exists() and _test_instance_dir.name.startswith(
+        "acere_test_"
+    ):
+        shutil.rmtree(_test_instance_dir)
 
 
-@pytest.fixture
-def get_test_config(tmp_path, place_test_config):
-    """Function returns a function, which is how it needs to be."""
+@pytest.fixture(scope="session", autouse=True)
+def db(temp_instance_dir: Path) -> Generator[Session]:
+    with Session(engine) as session:
+        init_db(session)
+        # After init_db, restore the password for tests to use
+        settings.FIRST_SUPERUSER_PASSWORD = TEST_SUPERUSER_PASSWORD
+        yield session
+        statement = delete(User)
+        session.exec(statement)
+        session.commit()
 
-    def _get_test_config(config_name):
-        place_test_config(config_name, tmp_path)
-        return AceReStreamerConf.load_config(Path(tmp_path) / "config.json")
 
-    return _get_test_config
+@pytest.fixture(scope="module")
+def client() -> Generator[TestClient]:
+    with TestClient(app) as c:
+        yield c
 
 
-@pytest.fixture
-def place_test_config():
-    """Fixture that places a config in the tmp_path.
+@pytest.fixture(scope="module")
+def superuser_token_headers(client: TestClient) -> dict[str, str]:
+    return get_superuser_token_headers(client)
 
-    Returns: a function to place a config in the tmp_path.
-    """
 
-    def _place_test_config(config_name: str, path: str) -> None:
-        """Place config in tmp_path by name."""
-        filepath = TEST_CONFIGS_LOCATION / config_name
-        config_path = Path(path) / "config.json"
-        shutil.copyfile(filepath, config_path)
-
-    return _place_test_config
+@pytest.fixture(scope="module")
+def normal_user_token_headers(client: TestClient, db: Session) -> dict[str, str]:
+    return authentication_token_from_username(
+        client=client, username="pytestuser", db=db
+    )

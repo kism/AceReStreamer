@@ -16,9 +16,9 @@ Install uv <https://docs.astral.sh/uv/getting-started/installation/>
 Run ace stream, I use docker
 
 ```bash
-docker run -t -p 127.0.0.1:6878:6878 ghcr.io/martinbjeldbak/acestream-http-proxy
+docker run -d -t -p 127.0.0.1:6878:6878 ghcr.io/martinbjeldbak/acestream-http-proxy
 # Or if you are in a situation without UPnP, you will need to port forward 8621
-docker run -t -p 127.0.0.1:6878:6878 -p 8621:8621 ghcr.io/martinbjeldbak/acestream-http-proxy
+docker run -d -t -p 127.0.0.1:6878:6878 -p 8621:8621 ghcr.io/martinbjeldbak/acestream-http-proxy
 ```
 
 Or even better, use docker compose
@@ -27,130 +27,74 @@ Or even better, use docker compose
 docker compose up -d
 ```
 
-### Get node_modules
+### Frontend
 
 ```bash
-nvm use 24
+cd frontend
+nvm use
 npm install
 ```
 
-### Run Dev
+Run frontend dev server
+
+```bash
+npm run dev
+```
+
+Build frontend to be served by the backend. You will need to ensure that `VITE_API_URL` in `.env` is not set, to ensure portability.
+
+```bash
+npm run build-dev
+```
+
+### Backend
 
 ```bash
 uv venv
-source .venv/bin/activate
 uv sync
-flask --app acerestreamer run --port 5100
 ```
 
-### Run Prod
+Run development server
 
 ```bash
-uv venv
-source .venv/bin/activate
-uv sync --no-group test --no-group type --no-group lint
-
-.venv/bin/waitress-serve \
-    --listen "127.0.0.1:5100" \
-    --trusted-proxy '*' \
-    --trusted-proxy-headers 'x-forwarded-for x-forwarded-proto x-forwarded-port' \
-    --log-untrusted-proxy-headers \
-    --clear-untrusted-proxy-headers \
-    --threads 4 \
-    --call acerestreamer:create_app
+fastapi dev --reload --port 5100 --entrypoint acere.main:app
+fastapi dev --reload  --host 0.0.0.0 --port 5100 --entrypoint acere.main:app # To be accessable from other hosts
 ```
 
-## todo
+Run production server
+
+```bash
+uvicorn --workers 1 acere.main:app --host 0.0.0.0 --port 5100
+```
+
+If you want to serve the frontend with fastapi, in `config.json` set `FRONTEND_HOST: ""`
+
+If you want to use the Vite dev server, or another server to serve the frontend, in `config.json` set `FRONTEND_HOST: "http://localhost:5173"`
+
+### Docker
+
+```bash
+docker buildx build --file docker/Dockerfile.combined . -t acerestreamer
+```
+
+```bash
+docker buildx build --file docker/Dockerfile.backend . -t acerestreamer-backend
+docker buildx build --build-arg VITE_API_URL="https://api.example.com" --file docker/Dockerfile.frontend ./frontend -t acerestreamer-frontend
+```
 
 ### Features
-
-- pytest
-- vitest?
-- bootstrap on first launch
-  - administrative account
-  - ~~json for the config file~~
 
 ### Apps that don't work
 
 see iptv.html.j2
 
-### Done
+## todo
 
-- ~~publish~~
-  - ~~streams/flat~~
-  - ~~streams/by_source~~
-- ~~breadcrumb~~
-- ~~less recursion in patient search i think~~
-- ~~scraper list~~
-  - ~~populate quality~~
-  - ~~cache the quality~~
-- ~~figure out types for get_streams and get_streams_flat~~
-  - ~~pydantic to replace typedict?~~
-- ~~actually set stream id in js~~
-- ~~use unauthorised for endpoints that require auth~~
-- ~~player stopped by default~~
-- ~~add about page~~
-- ~~add table sorting~~
-- ~~iptv support~~
-- ~~instructions page~~
-- ~~scraper global settings~~
-  - ~~frequency~~
-  - ~~forbidden titles~~
-- ~~investigate if I need to reload nginx~~
-- ~~get media info from hls.js~~ impossible
-- ~~investigate .copy()~~
-- ~~login page~~
-- ~~document iptv clients~~
-- ~~resize video player on page load, maybe mobile only~~
-- ~~api playground~~
-- ~~caching for pages~~
-- ~~biome~~
-- ~~cache the sources~~
-- ~~reload player on failure a couple of times~~
-- ~~keep locked in streams alive~~
-- ~~pools api~~
-- ~~ace_pool more verbose api~~
-- ~~ace_pool on info on /stream~~
-- ~~health check the ace pool~~
-- ~~chromecast / airplay support~~ abandoned chromecast, airplay might work
-- ~~ace pool keep alive status~~
-- ~~group the fetchers~~
-- ~~actually fetch from sites in a thread~~
-- ~~api reference~~
-- ~~get content_id from ace/manifest.m3u8 yeah? It redirects~~
-- ~~keep alive~~
-  - ~~fix weird keepalive clear issue, maybe do a governor thread~~
-- ~~use the pid= in the m3u8 GETs~~
-- ~~free up instance if it hasn't ever locked in, and it hasn't used in whatever~~
-- ~~fix threading issues~~
-- ~~fix nginx generation~~
-- ~~no objects that could be None, anywhere~~
-- maybe get all the instances ace_scraper and such into `__init__.py`
-- ~~make the iptv scraper and the html scraper inherit from a common base class~~
-- ~~replace `/api/streams/health/check_all`~~
-- ~~only iterate through found streams for big health check~~
-- ~~channel logos~~
-- ~~deduplicate iptv~~
-- ~~epg~~
-  - ~~implement~~
-  - ~~merge~~
-  - ~~fetch on a schedule~~
-  - ~~epg in api~~
-  - ~~filtered epg, e.g. only serve an epg for streams that are available~~
-  - ~~correct epg xml metadata~~
-- ~~determine stream health from m3u8~~
-- ~~[use the middleware](https://docs.acestream.net/developers/start-playback/)~~
-- ~~cleanup streampaths~~
-- ~~iptv api~~
-  - ~~more on the iptv guide~~
-- ~~more epg stats in api~~
-- ~~rework api locations~~
-- ~~fix api playground~~
-- ~~fix epg thread~~
-- ~~xc api~~
-- ~~bit too much .values()~~
-- epg is getting fetched periodically, but the /epg endpoint doesnt return new data
-- ~~categories~~
-- ~~XCServerInfo~~
-- ~~put xc in api guide~~
-- ~~`<url>/player_api.php?username=<user>&password=<pwd>&action=get_live_streams&category_id=<X>`~~
+- No auth mode
+- consistent theming
+- stream restarting in hls.js
+- stricter ruff rules
+- readme
+- big cleanup
+- async everything?
+- name the loggers

@@ -1,130 +1,134 @@
 [project]
-name = "acerestreamer"
-version = "0.3.8"
-description = "Ace Restreamer, a web interface, scraper, and restreamer for Ace Stream."
-readme = "README.md"
-license = { file = "LICENSE.md" }
-authors = [{ name = "Kieran Gee", email = "kieran.lost.the.game@gmail.com" }]
-requires-python = "~=3.13.0"
+name = "acere"
+version = "1.0.0b1"
+description = ""
+requires-python = ">=3.14,<4.0"
 dependencies = [
-    "flask>=3.1, <4",
-    "waitress>=3.0",
+    # From Template
+    "fastapi[standard]>=0.118.0",
+    "sqlmodel<1.0.0,>=0.0.25",
     "pydantic>=2.11",
-    "pydantic-settings>=2.9",
-    "requests>=2.32.3",
-    "bs4>=0.0.2",
-    "colorama>=0.4.6",
+    "pydantic-settings>=2.11",
+    "pyjwt<3.0.0,>=2.10.1",
+    "uvicorn>=0.37.0",
+    # Mine
+    "requests>=2.32.5",
+    "beautifulsoup4>=4.14.2",
     "jinja2>=3.1.6",
-    "flask-caching>=2.3.1",
-    "werkzeug>=3.1.3",
-    "lxml>=5.4.0",
-    "psutil>=7.0.0",
-    "bidict>=0.23.1",
+    "lxml>=6.0.2",
+    "psutil>=7.1.0",
     "pytz>=2025.2",
+    "aiohttp[speedups]>=3.13.0", # Requires python 3.14+ for zstd support
+    "rich>=14.1.0",
+    "argon2-cffi>=25.1.0",
 ]
 
-[dependency-groups]
+[project.optional-dependencies]
 type = [
     "mypy",
+    "ty",
+    "types-passlib>=1.7.7",
     "lxml-stubs>=0.5.1",
-    "types-colorama>=0.4.15.20240311",
     "types-requests>=2.32.0.20250602",
     "types-psutil>=7.0.0.20250601",
     "types-pytz>=2025.2.0.20250516",
 ]
 lint = ["ruff"]
 test = [
-    "pytest",
-    "tomlkit>=0.13",
+    "pytest >=9.0",
     "pytest-cov",
     "pytest-mock",
     "pytest-random-order",
     "detect-test-pollution",
+    "pytest-asyncio",
+    "pytest-socket>=0.7.0",
 ]
-profile = ["pympler>=1.1", "snakeviz"]
 
-[tool.uv]
-default-groups = ["test", "type", "lint", "profile"]
+
+[build-system]
+requires = ["uv_build>=0.8.15,<0.9.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = ["acere"]
+module-root = ""
+
+[project.scripts]
+acerestreamer-scrape = "acere.cli.scraper:__main__.main"
 
 [tool.ruff]
-cache-dir = "~/.cache/ruff"
-target-version = "py313"
-line-length = 120
+target-version = "py314"
 
 [tool.ruff.lint]
-extend-fixable = ["B", "I001"] # KG I think this means something...
-extend-unsafe-fixes = [
-    "F401",
-] # KG I don't like that this is fixed automatically (this doesnt work?)
-select = ["ALL"] # KG Include absolutely all of Ruff's rules.
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+    "ARG001", # unused arguments in functions
+    "T201",   # print statements are not allowed
+]
 ignore = [
-    # Modules
-    "DJ", # KG Django not required
-
-    # Specific rules
-    "TD002",  # KG Verbose TODO, only I work on this project
-    "TD003",  # KG Verbose TODO, only I work on this project
-    "ISC001", # KG conflict in the formatter
-    "COM812", # KG conflict in the formatter
+    "E501", # line too long, handled by black
+    "B008", # do not perform function calls in argument defaults
+    "W191", # indentation contains tabs
+    "B904", # Allow raising exceptions without from e, for HTTPException
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*.py" = [
-    # Modules
-    "ARG", # KG Unused function args -> fixtures nevertheless are functionally relevant
-    "FBT", # KG Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
-    "ANN", # KG Don't care about annotations in tests
-    "D",   # KG Don't care about docstrings in tests
-
-    # Specific rules
-    "S101",    # KG asserts allowed in tests.
-    "SLF001",  # KG Accessing private members is needed for testing.
-    "INP001",  # KG __init__.py not needed for PyTest.
-    "PT004",   # KG monkeypatch doesn't return.
-    "S311",    # KG I'll assume no real crypto will be done in PyTest.
-    "S105",    # KG Hardcoded fake passwords are fine in tests.
-    "PLR0913", # KG Tests can have as many arguments as they want.
-    "BLE001",  # KG Tests can use BaseException.
-]
-"scripts/*.py" = [
-    "T201", # KG Print is fine in scripts.
+    "S101",   # Allow use of assert in tests
+    "ARG001", # Allow unused arguments in tests (fixtures)
+    "E402",   # I do some dumb imports in tests
 ]
 
 
-[tool.ruff.lint.flake8-pytest-style]
-fixture-parentheses = false
+[tool.ruff.lint.pyupgrade]
+keep-runtime-typing = true
 
-[tool.ruff.lint.pydocstyle]
-convention = "google"
+[tool.coverage.run]
+source = ["acere"]
+context = "test"
 
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-docstring-code-format = true
-docstring-code-line-length = 40
 
-[tool.pytest.ini_options]
-addopts = [
-    "--cov-context=test",
-    "--cov=acerestreamer",
-    "--cov-report=term",
-    "--cov-report=html",
-]
-testpaths = ["tests"]
+[tool.coverage.report]
+show_missing = false
+sort = "-Cover"
 
 [tool.coverage.html]
 show_contexts = true
 
+[tool.pytest.ini_options]
+addopts = [
+    "--cov=acere",
+    "--cov-report=term",
+    "--cov-report=html",
+    "--disable-socket",
+    "--allow-hosts=127.0.0.1,127.0.1.1",
+    "--asyncio-mode=auto",
+]
+
+
 [tool.mypy]
-files = ["acerestreamer"]
-namespace_packages = true
-explicit_package_bases = true
-show_error_codes = true
 strict = true
+files = ["acere"]
+exclude = ["venv", ".venv"]
+show_error_codes = true
 enable_error_code = [
     "ignore-without-code",
     "redundant-expr",
     "truthy-bool",
     "type-arg",
+    "unused-awaitable",
+    "possibly-undefined",
+    "redundant-self",
 ]
-exclude = ["tests/*"]
+
+[[tool.ty.overrides]]
+# Not sure what ty is upset about here
+include = ["acere/main.py"]
+[tool.ty.overrides.rules]
+"invalid-argument-type" = "ignore"

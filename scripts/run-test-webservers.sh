@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 
-
 cd tests/test_sites || exit 1
-
-
 
 PORT=8999
 HOST="http://localhost:$PORT"

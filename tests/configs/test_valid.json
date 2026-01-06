@@ -1,0 +1,7 @@
+{
+  "logging": {
+    "level": "DEBUG",
+    "simple": true
+  },
+  "FIRST_SUPERUSER_PASSWORD": "pytestpassword123"
+}

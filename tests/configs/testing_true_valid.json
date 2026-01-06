@@ -1,9 +1,0 @@
-{
-  "app": {
-    "password": "testpassword"
-  },
-  "flask": {
-    "TESTING": true
-  },
-  "logging": {}
-}
