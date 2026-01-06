@@ -3,6 +3,12 @@
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff"
   },
+  "[css]": {
+    "editor.defaultFormatter": null
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
   "[markdown]": {
     "editor.formatOnSave": true,
     "editor.formatOnPaste": true
@@ -12,5 +18,18 @@
   "python.terminal.activateEnvInCurrentTerminal": true,
   "python.testing.pytestArgs": ["tests"],
   "python.testing.unittestEnabled": false,
-  "python.testing.pytestEnabled": true
+  "python.testing.pytestEnabled": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports.biome": "explicit"
+  },
+  "mypy.dmypyExecutable": "${workspaceFolder}/.venv/bin/dmypy",
+  "biome.configurationPath": "${workspaceFolder}/frontend/biome.json",
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "files.associations": {
+    "*.json.bak": "json"
+  },
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python"
+
 }

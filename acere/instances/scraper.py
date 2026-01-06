@@ -1,0 +1,28 @@
+"""Scraper instance."""
+
+from acere.constants import INSTANCE_DIR
+from acere.instances.config import settings
+from acere.services.scraper import AceScraper
+
+_ace_scraper: AceScraper | None = None
+
+
+def set_ace_scraper(scraper: AceScraper) -> None:
+    """Set the global AceScraper instance."""
+    global _ace_scraper
+    _ace_scraper = scraper
+    _ace_scraper.load_config(
+        ace_scrape_conf=settings.scraper,
+        epg_conf_list=settings.epgs,
+        instance_path=INSTANCE_DIR,
+        external_url=settings.EXTERNAL_URL,
+        ace_url=settings.app.ace_address,
+    )
+    _ace_scraper.start_scrape_thread()
+
+
+def get_ace_scraper() -> AceScraper:
+    """Get the global AceScraper instance."""
+    if _ace_scraper is None:
+        raise ValueError("AceScraper instance is not set.")
+    return _ace_scraper

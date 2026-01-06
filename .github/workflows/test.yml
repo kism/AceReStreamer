@@ -1,5 +1,5 @@
 ---
-name: Test (PyTest)
+name: Test
 
 on:
   push:
@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        python-version: ["3.11", "3.12", "3.13"] # Don't bother with beta versions, slow on github. https://github.com/actions/python-versions/releases
+        python-version: ["3.14"] # Don't bother with beta versions, slow on github. https://github.com/actions/python-versions/releases
     steps:
       - uses: actions/checkout@v4
 
@@ -26,7 +26,7 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
 
       - name: Install the project
-        run: uv sync --no-group type --no-group lint --no-group profile
+        run: uv sync --extra test
 
       - name: Test with pytest
         run: uv run pytest --cov-report=xml # xml report needed for codecov, other settings from pyproject.toml

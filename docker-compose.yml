@@ -7,7 +7,13 @@ services:
       - "8621:8621" # P2P
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://127.0.0.1:6878/webui/api/service?method=get_version"]
+      test:
+        [
+          "CMD",
+          "curl",
+          "--fail",
+          "http://127.0.0.1:6878/webui/api/service?method=get_version",
+        ]
       interval: 60s
       timeout: 10s
       retries: 3
@@ -15,17 +21,22 @@ services:
 
   # In your config, ensure "ace_address": "http://acestream-http-proxy:6878",
   acerestreamer:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    # image: ghcr.io/kism/acerestreamer:latest
+    # build: # Build locally
+    #   context: .
+    #   dockerfile: docker/Dockerfile.combined
+    # image: acerestreamer:latest # Build per README.md
+    image: ghcr.io/kism/acerestreamer:latest # From GitHub Container Registry
+
+    environment:
+      ACERE_EXTERNAL_URL: "https://example.com" # Change to your domain
+      ACERE_APP__ACE_ADDRESS: "http://acestream-http-proxy:6878" # Leave this as is
     ports:
       - "5100:5100"
     volumes:
       - ./instance:/app/instance
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--spider", "http://127.0.1:5100/api/health"]
+      test: ["CMD", "curl", "--spider", "http://127.0.1:5100/api/v1/health"]
       interval: 60s
       timeout: 10s
       retries: 3

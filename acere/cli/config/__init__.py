@@ -1,0 +1,1 @@
+"""CLI for config generation."""

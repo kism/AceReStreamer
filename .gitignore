@@ -1,13 +1,24 @@
 # This repo
 test_site
-hls.min.js
-hls.min.js.map
 profiler
 *.m3u
 *.php*
 acerestreamer.svg
 test.py
-acerestreamer/static/xml-formatter.js
+_garbo
+docker-compose_prod.yml
+
+# Generated static
+acere/static/index.html
+acere/static/assets
+
+# fun temp files
+
+out.html
+out.json
+
+# Generated Static
+frontend_old/static/js/*
 
 # Javascript, if we want to use eslint/scss-lintbiome for checking the html/css/javascript
 node_modules
@@ -175,3 +186,4 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+

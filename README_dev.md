@@ -1,5 +1,11 @@
 # Acestream Webplayer Development Guide
 
+## Sync frontend and backend
+
+```bash
+./scripts/generate-client.sh
+```
+
 ## Run test sites to scrape
 
 ```bash
