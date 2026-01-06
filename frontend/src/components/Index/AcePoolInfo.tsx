@@ -120,7 +120,11 @@ export function AcePoolInfo() {
         </Table.Header>
         <Table.Body>
           <Table.Row opacity={isPlaceholderData ? 0.5 : 1}>
-            <Table.Cell textAlign={"center"} p={2}>
+            <Table.Cell
+              textAlign={"center"}
+              p={2}
+              color={!acePoolData.ace_version || acePoolData.ace_version === "unknown" ? "red.500" : undefined}
+            >
               {acePoolData.ace_version || "N/A"}
             </Table.Cell>
             <Table.Cell textAlign={"center"} p={2}>
@@ -129,7 +133,11 @@ export function AcePoolInfo() {
             <Table.Cell textAlign={"center"} p={2}>
               {acePoolData.transcode_audio ? "Yes" : "No"}
             </Table.Cell>
-            <Table.Cell textAlign={"center"} p={2}>
+            <Table.Cell
+              textAlign={"center"}
+              p={2}
+              color={!acePoolData.healthy ? "red.500" : undefined}
+            >
               {acePoolData.healthy ? "Healthy" : "Unhealthy"}
             </Table.Cell>
           </Table.Row>
