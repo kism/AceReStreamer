@@ -123,7 +123,12 @@ export function AcePoolInfo() {
             <Table.Cell
               textAlign={"center"}
               p={2}
-              color={!acePoolData.ace_version || acePoolData.ace_version === "unknown" ? "red.500" : undefined}
+              color={
+                !acePoolData.ace_version ||
+                acePoolData.ace_version === "unknown"
+                  ? "red.500"
+                  : undefined
+              }
             >
               {acePoolData.ace_version || "N/A"}
             </Table.Cell>
