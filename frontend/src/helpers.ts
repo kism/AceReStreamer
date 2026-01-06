@@ -10,7 +10,7 @@ export function baseUrl() {
     return stripTrailingSlashes(configured)
   }
 
-  if (typeof window !== "undefined" && window.location?.origin) {
+  if (window?.location?.origin) {
     return window.location.origin
   }
 

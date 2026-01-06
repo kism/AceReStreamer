@@ -7,7 +7,6 @@ import "@fontsource/noto-sans/500.css"
 export const system = createSystem(defaultConfig, {
   globalCss: {
     html: {
-      color: "text.main",
       fontSize: "16px",
       fontWeight: "500",
       fontFamily:
@@ -18,16 +17,19 @@ export const system = createSystem(defaultConfig, {
       margin: 0,
       padding: 0,
     },
+    ".chakra-theme": {
+      color: "text.main",
+    },
   },
   theme: {
-    tokens: {
+    semanticTokens: {
       colors: {
         text: {
-          heading: { value: "#ffffff" },
-          main: { value: "#cccccc" },
+          heading: { value: { base: "gray.900", _dark: "white" } },
+          main: { value: { base: "gray.800", _dark: "gray.200" } },
         },
         ui: {
-          main: { value: "#008080" },
+          main: { value: { base: "teal.600", _dark: "teal.300" } },
         },
       },
     },
