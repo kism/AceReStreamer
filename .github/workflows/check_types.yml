@@ -53,11 +53,11 @@ jobs:
   ts:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: ./frontend
     steps:
       - uses: actions/checkout@v4
-
-      - name: Change directory to frontend
-        run: cd frontend
 
       - name: Read Node.js version from .nvmrc
         id: node_version

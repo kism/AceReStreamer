@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test"
 
-import { randomEmail, randomPassword } from "./utils/random"
+import { randomPassword, randomUserName } from "./utils/random"
 
 test.use({ storageState: { cookies: [], origins: [] } })
 
@@ -53,13 +53,13 @@ test("Log In link is visible", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Log In" })).toBeVisible()
 })
 
-test("Sign up with valid name, email, and password", async ({ page }) => {
+test("Sign up with valid name, username, and password", async ({ page }) => {
   const full_name = "Test User"
-  const email = randomEmail()
+  const username = randomUserName()
   const password = randomPassword()
 
   await page.goto("/signup")
-  await fillForm(page, full_name, email, password, password)
+  await fillForm(page, full_name, username, password, password)
   await page.getByRole("button", { name: "Sign Up" }).click()
 })
 
@@ -80,19 +80,19 @@ test("Sign up with invalid email", async ({ page }) => {
 
 test("Sign up with existing email", async ({ page }) => {
   const fullName = "Test User"
-  const email = randomEmail()
+  const username = randomUserName()
   const password = randomPassword()
 
   // Sign up with an email
   await page.goto("/signup")
 
-  await fillForm(page, fullName, email, password, password)
+  await fillForm(page, fullName, username, password, password)
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   // Sign up again with the same email
   await page.goto("/signup")
 
-  await fillForm(page, fullName, email, password, password)
+  await fillForm(page, fullName, username, password, password)
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   await page
@@ -102,12 +102,12 @@ test("Sign up with existing email", async ({ page }) => {
 
 test("Sign up with weak password", async ({ page }) => {
   const fullName = "Test User"
-  const email = randomEmail()
+  const username = randomUserName()
   const password = "weak"
 
   await page.goto("/signup")
 
-  await fillForm(page, fullName, email, password, password)
+  await fillForm(page, fullName, username, password, password)
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   await expect(
@@ -117,13 +117,13 @@ test("Sign up with weak password", async ({ page }) => {
 
 test("Sign up with mismatched passwords", async ({ page }) => {
   const fullName = "Test User"
-  const email = randomEmail()
+  const username = randomUserName()
   const password = randomPassword()
   const password2 = randomPassword()
 
   await page.goto("/signup")
 
-  await fillForm(page, fullName, email, password, password2)
+  await fillForm(page, fullName, username, password, password2)
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   await expect(page.getByText("Passwords do not match")).toBeVisible()
@@ -131,12 +131,12 @@ test("Sign up with mismatched passwords", async ({ page }) => {
 
 test("Sign up with missing full name", async ({ page }) => {
   const fullName = ""
-  const email = randomEmail()
+  const username = randomUserName()
   const password = randomPassword()
 
   await page.goto("/signup")
 
-  await fillForm(page, fullName, email, password, password)
+  await fillForm(page, fullName, username, password, password)
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   await expect(page.getByText("Full Name is required")).toBeVisible()
@@ -144,12 +144,12 @@ test("Sign up with missing full name", async ({ page }) => {
 
 test("Sign up with missing email", async ({ page }) => {
   const fullName = "Test User"
-  const email = ""
+  const username = ""
   const password = randomPassword()
 
   await page.goto("/signup")
 
-  await fillForm(page, fullName, email, password, password)
+  await fillForm(page, fullName, username, password, password)
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   await expect(page.getByText("Email is required")).toBeVisible()
@@ -157,12 +157,12 @@ test("Sign up with missing email", async ({ page }) => {
 
 test("Sign up with missing password", async ({ page }) => {
   const fullName = ""
-  const email = randomEmail()
+  const username = randomUserName()
   const password = ""
 
   await page.goto("/signup")
 
-  await fillForm(page, fullName, email, password, password)
+  await fillForm(page, fullName, username, password, password)
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   await expect(page.getByText("Password is required")).toBeVisible()
