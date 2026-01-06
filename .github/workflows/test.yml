@@ -1,5 +1,5 @@
 ---
-name: Test (PyTest)
+name: Test
 
 on:
   push:

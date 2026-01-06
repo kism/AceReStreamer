@@ -191,18 +191,18 @@ def hls_multi(path: str, token: str = "") -> Response:
 # /live/u/p/<xc_id>.m3u8  | UHF, M3UAndroid
 # /live/u/p/<xc_id>.ts    | iMPlayer iOS, TiViMate, Purple Simple (okay that m3u8 is the response)
 # /live/u/p/<tvg_id>.m3u8 | SparkleTV
-@router.get("/live/{_username}/{_password}/{path}", response_class=Response)
+@router.get("/live/{_path_username}/{_path_password}/{path}", response_class=Response)
 def xc_m3u8(
     request: Request,
-    _username: str = "",
-    _password: str = "",
+    _path_username: str = "",
+    _path_password: str = "",
     path: str = "",
     password: str = Query("", alias="password"),
     username: str = Query("", alias="username"),
 ) -> Response:
     """Serve the XC m3u8 file for Ace content."""
-    username = username or _username
-    password = password or _password
+    username = username or _path_username
+    password = password or _path_password
 
     stream_token = check_xc_auth(username=username, stream_token=password)
 

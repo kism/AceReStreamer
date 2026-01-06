@@ -3,5 +3,6 @@
     "level": "DEBUG",
     "simple": true
   },
-  "FIRST_SUPERUSER_PASSWORD": "pytestpassword123"
+  "FIRST_SUPERUSER_PASSWORD": "pytestpassword123",
+  "FRONTEND_HOST": "http://localhost:5173"
 }

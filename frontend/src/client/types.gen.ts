@@ -492,10 +492,10 @@ export type MediaStreamHlsMultiData = {
 export type MediaStreamHlsMultiResponse = (unknown);
 
 export type MediaStreamXcM3U8Data = {
-    password: string;
     password?: string;
     path: string;
-    username: string;
+    pathPassword: string;
+    pathUsername: string;
     username?: string;
 };
 

@@ -406,8 +406,8 @@ export class MediaStreamService {
      * Xc M3U8
      * Serve the XC m3u8 file for Ace content.
      * @param data The data for the request.
-     * @param data.username
-     * @param data.password
+     * @param data.pathUsername
+     * @param data.pathPassword
      * @param data.path
      * @param data.password
      * @param data.username
@@ -417,10 +417,10 @@ export class MediaStreamService {
     public static xcM3U8(data: MediaStreamXcM3U8Data): CancelablePromise<MediaStreamXcM3U8Response> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/live/{_username}/{_password}/{path}',
+            url: '/live/{_path_username}/{_path_password}/{path}',
             path: {
-                _username: data.username,
-                _password: data.password,
+                _path_username: data.pathUsername,
+                _path_password: data.pathPassword,
                 path: data.path
             },
             query: {

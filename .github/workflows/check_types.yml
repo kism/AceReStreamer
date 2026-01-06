@@ -1,5 +1,5 @@
 ---
-name: Type Check (Mypy)
+name: Type Check
 
 on:
   push:
@@ -55,6 +55,9 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+
+      - name: Change directory to frontend
+        run: cd frontend
 
       - name: Read Node.js version from .nvmrc
         id: node_version
