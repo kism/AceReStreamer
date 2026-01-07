@@ -2,7 +2,7 @@
 from pathlib import Path
 
 __author__ = "Kieran Gee"
-__version__ = "1.0.0b1"  # This is the version of the app, used in pyproject.toml, enforced in a test.
+__version__ = "1.0.0b2"  # This is the version of the app, used in pyproject.toml, enforced in a test.
 PROGRAM_NAME = "AceReStreamer"
 URL = "https://github.com/kism/ace-restreamer"
 
