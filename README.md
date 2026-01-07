@@ -101,3 +101,4 @@ see iptv.html.j2
 - async everything?
 - name the loggers
 - case insensitive username
+- better names of unknown streams
