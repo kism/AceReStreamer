@@ -1,15 +1,12 @@
-import {
-  Box,
-  Button,
-  Heading,
-  HStack,
-  Table,
-  Text,
-  VStack,
-} from "@chakra-ui/react"
-import { CopyToClipboard } from "react-copy-to-clipboard-ts"
-import { FiCopy } from "react-icons/fi"
+import { Box, Heading, HStack, Text, VStack } from "@chakra-ui/react"
 import { Code } from "@/components/ui/code"
+import { CopyButton } from "@/components/ui/copy-button"
+import {
+  AppTableRoot,
+  TableBody,
+  TableCell,
+  TableRow,
+} from "@/components/ui/table"
 import baseURL from "@/helpers"
 
 const VITE_API_URL = baseURL()
@@ -36,49 +33,45 @@ export function IptvInfo({ user }: IptvInfoProps) {
   return (
     <VStack gap={6} align="stretch">
       <Box>
-        <Heading size="lg">Xtream IPTV</Heading>
+        <Heading>Xtream IPTV</Heading>
         <Text>
           Add a playlist/source with your IPTV app, use the XC/Xtream setting
           when adding. EPG should work automatically. If its not available,
           follow the regular IPTV instructions.
         </Text>
-        <Table.Root my={2} size="sm" variant="outline">
-          <Table.Body>
+        <AppTableRoot preset="outlineSm" my={2}>
+          <TableBody>
             {[
               { name: "Server/Portal URL", value: serverAddress },
               { name: "Username", value: username },
               { name: "Password", value: password },
             ].map(({ name, value }) => (
-              <Table.Row key={name}>
-                <Table.Cell bg="bg.subtle" whiteSpace="nowrap" width="1%">
+              <TableRow key={name}>
+                <TableCell bg="bg.subtle" whiteSpace="nowrap" width="1%">
                   {name}
-                </Table.Cell>
-                <Table.Cell>
+                </TableCell>
+                <TableCell>
                   <HStack>
                     <Code>{value}</Code>
-                    <CopyToClipboard text={value}>
-                      <Button size="xs">
-                        <FiCopy />
-                      </Button>
-                    </CopyToClipboard>
+                    <CopyButton text={value} />
                   </HStack>
-                </Table.Cell>
-              </Table.Row>
+                </TableCell>
+              </TableRow>
             ))}
-          </Table.Body>
-        </Table.Root>
+          </TableBody>
+        </AppTableRoot>
         <Text>If authentication is disabled, any value will work.</Text>
       </Box>
 
       <Box>
-        <Heading size="lg">IPTV</Heading>
+        <Heading>IPTV</Heading>
         <Text>
           Depending on the app, you might need to use an alternate Playlist or
           EPG url.
         </Text>
         <Text>Some apps will only work if this site is on https.</Text>
-        <Table.Root my={2} size="sm" variant="outline">
-          <Table.Body>
+        <AppTableRoot preset="outlineSm" my={2}>
+          <TableBody>
             {[
               { name: "Playlist URL", url: playlistUrl },
               { name: "Playlist URL (.m3u)", url: playlistM3uUrl },
@@ -86,24 +79,20 @@ export function IptvInfo({ user }: IptvInfoProps) {
               { name: "EPG URL", url: epgUrl },
               { name: "EPG URL (.xml)", url: epgXmlUrl },
             ].map(({ name, url }) => (
-              <Table.Row key={name}>
-                <Table.Cell bg="bg.subtle" whiteSpace="nowrap" width="1%">
+              <TableRow key={name}>
+                <TableCell bg="bg.subtle" whiteSpace="nowrap" width="1%">
                   {name}
-                </Table.Cell>
-                <Table.Cell>
+                </TableCell>
+                <TableCell>
                   <HStack>
                     <Code>{url}</Code>
-                    <CopyToClipboard text={url}>
-                      <Button size="xs">
-                        <FiCopy />
-                      </Button>
-                    </CopyToClipboard>
+                    <CopyButton text={url} />
                   </HStack>
-                </Table.Cell>
-              </Table.Row>
+                </TableCell>
+              </TableRow>
             ))}
-          </Table.Body>
-        </Table.Root>
+          </TableBody>
+        </AppTableRoot>
       </Box>
     </VStack>
   )

@@ -40,8 +40,8 @@ const FlexMenuItem: React.FC<FlexProps> = ({ children, ...rest }) => {
   return (
     <Flex
       gap={4}
-      px={4}
       py={2}
+      px={4}
       _hover={{ background: "gray.subtle" }}
       alignItems="center"
       fontSize="sm"

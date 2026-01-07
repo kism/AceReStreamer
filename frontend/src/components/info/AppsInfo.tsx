@@ -1,5 +1,13 @@
-import { Box, Heading, Table, Text } from "@chakra-ui/react"
+import { Box, Heading, Text, VStack } from "@chakra-ui/react"
 import { Link } from "@/components/ui/link"
+import {
+  AppTableRoot,
+  TableBody,
+  TableCell,
+  TableColumnHeader,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 export function AppsInfo() {
   const apps = [
@@ -122,100 +130,100 @@ export function AppsInfo() {
   ]
 
   return (
-    <Box>
-      <Heading size="lg">Recommended Apps</Heading>
-      <Text>
-        Many apps are made to be players for their subscription IPTV services,
-        and on the side offer loading external playlists. These recommendations
-        are tested, free and don't nag you to pay.
-      </Text>
+    <VStack gap={2} align="stretch">
+      <Box>
+        <Heading>Recommended Apps</Heading>
+        <Text>
+          Many apps are made to be players for their subscription IPTV services,
+          and on the side offer loading external playlists. These
+          recommendations are tested, free and don't nag you to pay.
+        </Text>
+      </Box>
 
-      <Heading>Tested to work</Heading>
-      <Table.Root my={2} size="sm" variant="outline">
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeader>Platform</Table.ColumnHeader>
-            <Table.ColumnHeader>App</Table.ColumnHeader>
-            <Table.ColumnHeader>m3u8</Table.ColumnHeader>
-            <Table.ColumnHeader>XC</Table.ColumnHeader>
-            <Table.ColumnHeader>EPG</Table.ColumnHeader>
-            <Table.ColumnHeader>Link</Table.ColumnHeader>
-            <Table.ColumnHeader>Notes</Table.ColumnHeader>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {apps.map((app) => (
-            <Table.Row key={app.name}>
-              <Table.Cell>
-                {app.platform.map((p, i) => (
-                  <span key={p}>
-                    {p}
-                    {i < app.platform.length - 1 && <br />}
-                  </span>
-                ))}
-              </Table.Cell>
-              <Table.Cell>{app.name}</Table.Cell>
-              <Table.Cell>{app.m3u8}</Table.Cell>
-              <Table.Cell>{app.xc}</Table.Cell>
-              <Table.Cell>{app.epg}</Table.Cell>
-              <Table.Cell>
-                {app.links.map((link, i) => (
-                  <span key={link.url}>
-                    <Link
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {link.label}
-                    </Link>
-                    {i < app.links.length - 1 && ", "}
-                  </span>
-                ))}
-              </Table.Cell>
-              <Table.Cell>
-                {Array.isArray(app.notes)
-                  ? app.notes.map((note, i) => (
-                      <span key={i}>
-                        {note}
-                        {i < app.notes.length - 1 && <br />}
-                      </span>
-                    ))
-                  : app.notes}
-              </Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table.Root>
+      <Box>
+        <Heading size={"sm"}>Tested to work</Heading>
+        <AppTableRoot preset="outlineSm" my={2}>
+          <TableHeader>
+            <TableRow>
+              <TableColumnHeader>Platform</TableColumnHeader>
+              <TableColumnHeader>App</TableColumnHeader>
+              <TableColumnHeader>m3u8</TableColumnHeader>
+              <TableColumnHeader>XC</TableColumnHeader>
+              <TableColumnHeader>EPG</TableColumnHeader>
+              <TableColumnHeader>Link</TableColumnHeader>
+              <TableColumnHeader>Notes</TableColumnHeader>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {apps.map((app) => (
+              <TableRow key={app.name}>
+                <TableCell>
+                  {app.platform.map((p, i) => (
+                    <span key={p}>
+                      {p}
+                      {i < app.platform.length - 1 && <br />}
+                    </span>
+                  ))}
+                </TableCell>
+                <TableCell>{app.name}</TableCell>
+                <TableCell>{app.m3u8}</TableCell>
+                <TableCell>{app.xc}</TableCell>
+                <TableCell>{app.epg}</TableCell>
+                <TableCell>
+                  {app.links.map((link, i) => (
+                    <span key={link.url}>
+                      <Link
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {link.label}
+                      </Link>
+                      {i < app.links.length - 1 && ", "}
+                    </span>
+                  ))}
+                </TableCell>
+                <TableCell>
+                  {Array.isArray(app.notes)
+                    ? app.notes.map((note, i) => (
+                        <span key={i}>
+                          {note}
+                          {i < app.notes.length - 1 && <br />}
+                        </span>
+                      ))
+                    : app.notes}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </AppTableRoot>
+      </Box>
 
-      <Heading>Tested to work, but not recommended</Heading>
-      <Text>
-        ProgTV, Weird skipping/looping issue
-        <br />
-        Purple Simple, must set HLS and use internal software player, no
-        acceleration
-      </Text>
-
-      <Heading>Tested, not working</Heading>
-      <Text>
-        Jellyfin app, will try fix
-        <br />
-        UniTV
-        <br />
-        DangoPlayer
-        <br />
-        Opus
-        <br />
-        1-Stream Player by Purple
-        <br />
-      </Text>
-    </Box>
+      <Box>
+        <Heading size={"sm"}>Tested to work, but not recommended</Heading>
+        <Text>ProgTV, Weird skipping/looping issue</Text>
+        <Text>IPTV Smarters, Ads unless you pay, interface not great</Text>
+        <Text>
+          Purple Simple, must set HLS and use internal software player, no
+          acceleration
+        </Text>
+      </Box>
+      <Box>
+        <Heading size={"sm"}>Tested, not working</Heading>
+        <Text>Jellyfin app, will try fix</Text>
+        <Text>UniTV</Text>
+        <Text>DangoPlayer</Text>
+        <Text>Opus</Text>
+        <Text>1-Stream Player by Purple</Text>
+      </Box>
+    </VStack>
   )
 }
 
 export function OtherIptvSources() {
   return (
     <Box>
-      <Heading size="lg">More IPTV Sources</Heading>
+      <Heading>More IPTV Sources</Heading>
       <Text>
         <Link
           href="https://bugsfreeweb.github.io/LiveTVCollector/"

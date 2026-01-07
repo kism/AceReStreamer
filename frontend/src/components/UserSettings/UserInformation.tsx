@@ -1,22 +1,14 @@
-import {
-  Box,
-  Button,
-  Container,
-  Flex,
-  Heading,
-  Input,
-  Text,
-} from "@chakra-ui/react"
+import { Box, Container, Flex, Heading, Input, Text } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { type SubmitHandler, useForm } from "react-hook-form"
-
 import {
   type ApiError,
   type UserPublic,
   UsersService,
   type UserUpdateMe,
 } from "@/client"
+import { Button } from "@/components/ui/button"
 import useAuth from "@/hooks/useAuth"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError, usernamePattern } from "@/utils"

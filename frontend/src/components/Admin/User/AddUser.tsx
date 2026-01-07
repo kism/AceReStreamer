@@ -1,5 +1,4 @@
 import {
-  Button,
   DialogActionTrigger,
   DialogTitle,
   Flex,
@@ -13,6 +12,7 @@ import { Controller, type SubmitHandler, useForm } from "react-hook-form"
 import { FaPlus } from "react-icons/fa"
 import { type UserCreate, UsersService } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
+import { Button } from "@/components/ui/button"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError, usernamePattern } from "@/utils"
 import { Checkbox } from "../../ui/checkbox"

@@ -1,4 +1,4 @@
-import { Badge, Container, Flex, Heading, Table } from "@chakra-ui/react"
+import { Badge, Container, Flex, Heading } from "@chakra-ui/react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { type UserPublic, UsersService } from "@/client"
@@ -11,6 +11,13 @@ import {
   PaginationPrevTrigger,
   PaginationRoot,
 } from "@/components/ui/pagination.tsx"
+import {
+  AppTableRoot,
+  TableBody,
+  TableCell,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 const PER_PAGE = 5
 
@@ -41,44 +48,42 @@ function UsersTable() {
 
   return (
     <>
-      <Table.Root size={{ base: "sm", md: "md" }}>
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeader w="sm">Full name</Table.ColumnHeader>
-            <Table.ColumnHeader w="sm">Username</Table.ColumnHeader>
-            <Table.ColumnHeader w="sm">Role</Table.ColumnHeader>
-            <Table.ColumnHeader w="sm">Status</Table.ColumnHeader>
-            <Table.ColumnHeader w="sm">Actions</Table.ColumnHeader>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
+      <AppTableRoot preset="outlineSm">
+        <TableHeader>
+          <TableRow>
+            <TableCell>Full name</TableCell>
+            <TableCell>Username</TableCell>
+            <TableCell>Role</TableCell>
+            <TableCell>Status</TableCell>
+            <TableCell>Actions</TableCell>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {users?.map((user) => (
-            <Table.Row key={user.id} opacity={isPlaceholderData ? 0.5 : 1}>
-              <Table.Cell color={!user.full_name ? "gray" : "inherit"}>
+            <TableRow key={user.id} opacity={isPlaceholderData ? 0.5 : 1}>
+              <TableCell color={!user.full_name ? "gray" : "inherit"}>
                 {user.full_name || "N/A"}
                 {currentUser?.id === user.id && (
                   <Badge ml="1" colorScheme="teal">
                     You
                   </Badge>
                 )}
-              </Table.Cell>
-              <Table.Cell truncate maxW="sm">
+              </TableCell>
+              <TableCell truncate maxW="sm">
                 {user.username}
-              </Table.Cell>
-              <Table.Cell>
-                {user.is_superuser ? "Superuser" : "User"}
-              </Table.Cell>
-              <Table.Cell>{user.is_active ? "Active" : "Inactive"}</Table.Cell>
-              <Table.Cell>
+              </TableCell>
+              <TableCell>{user.is_superuser ? "Superuser" : "User"}</TableCell>
+              <TableCell>{user.is_active ? "Active" : "Inactive"}</TableCell>
+              <TableCell>
                 <UserActionsMenu
                   user={user}
                   disabled={currentUser?.id === user.id}
                 />
-              </Table.Cell>
-            </Table.Row>
+              </TableCell>
+            </TableRow>
           ))}
-        </Table.Body>
-      </Table.Root>
+        </TableBody>
+      </AppTableRoot>
       <Flex justifyContent="flex-end" mt={4}>
         <PaginationRoot
           count={count}

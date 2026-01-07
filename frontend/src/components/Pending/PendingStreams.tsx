@@ -1,43 +1,46 @@
-import { Table } from "@chakra-ui/react"
 import { FiBarChart } from "react-icons/fi"
+import {
+  AppTableRoot,
+  TableBody,
+  TableCell,
+  TableColumnHeader,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { SkeletonText } from "../ui/skeleton"
+import { AppTableScrollArea } from "../ui/table"
 
 const PendingStreams = () => (
-  <Table.ScrollArea borderWidth="1px" rounded="md" height="100vh">
-    <Table.Root
-      size={{ base: "sm", md: "md" }}
-      interactive
-      stickyHeader
-      tableLayout="fixed"
-    >
-      <Table.Header>
-        <Table.Row bg="bg.subtle">
-          <Table.ColumnHeader p={2} textAlign="center" width="30px">
+  <AppTableScrollArea preset="fullscreen">
+    <AppTableRoot preset="interactiveSticky">
+      <TableHeader>
+        <TableRow bg="bg.subtle">
+          <TableColumnHeader p={2} textAlign="center" width="30px">
             <FiBarChart style={{ margin: "0 auto" }} />
-          </Table.ColumnHeader>
-          <Table.ColumnHeader p={2} width="40%">
+          </TableColumnHeader>
+          <TableColumnHeader p={2} width="40%">
             Stream
-          </Table.ColumnHeader>
-          <Table.ColumnHeader p={2} width="auto">
+          </TableColumnHeader>
+          <TableColumnHeader p={2} width="auto">
             Program
-          </Table.ColumnHeader>
-        </Table.Row>
-      </Table.Header>
-      <Table.Body>
-        <Table.Row>
-          <Table.Cell>
+          </TableColumnHeader>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        <TableRow>
+          <TableCell>
             <SkeletonText noOfLines={1} />
-          </Table.Cell>
-          <Table.Cell>
+          </TableCell>
+          <TableCell>
             <SkeletonText noOfLines={1} />
-          </Table.Cell>
-          <Table.Cell>
+          </TableCell>
+          <TableCell>
             <SkeletonText noOfLines={1} />
-          </Table.Cell>
-        </Table.Row>
-      </Table.Body>
-    </Table.Root>
-  </Table.ScrollArea>
+          </TableCell>
+        </TableRow>
+      </TableBody>
+    </AppTableRoot>
+  </AppTableScrollArea>
 )
 
 export default PendingStreams

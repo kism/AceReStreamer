@@ -1,5 +1,4 @@
 import {
-  Button,
   DialogActionTrigger,
   DialogRoot,
   DialogTrigger,
@@ -12,9 +11,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { Controller, type SubmitHandler, useForm } from "react-hook-form"
 import { FaExchangeAlt } from "react-icons/fa"
-
 import { type UserPublic, UsersService, type UserUpdate } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
+import { Button } from "@/components/ui/button"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError, usernamePattern } from "@/utils"
 import { Checkbox } from "../../ui/checkbox"
@@ -84,7 +83,7 @@ const EditUser = ({ user }: EditUserProps) => {
       onOpenChange={({ open }) => setIsOpen(open)}
     >
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm">
+        <Button variant="ghost">
           <FaExchangeAlt fontSize="16px" />
           Edit User
         </Button>

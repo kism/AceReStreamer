@@ -1,9 +1,9 @@
-import { Box, Button, Container, Heading, VStack } from "@chakra-ui/react"
+import { Box, Container, Heading, VStack } from "@chakra-ui/react"
 import { useMutation } from "@tanstack/react-query"
 import { type SubmitHandler, useForm } from "react-hook-form"
 import { FiLock } from "react-icons/fi"
-
 import { type ApiError, type UpdatePassword, UsersService } from "@/client"
+import { Button } from "@/components/ui/button"
 import useCustomToast from "@/hooks/useCustomToast"
 import { confirmPasswordRules, handleError, passwordRules } from "@/utils"
 import { PasswordInput } from "../ui/password-input"

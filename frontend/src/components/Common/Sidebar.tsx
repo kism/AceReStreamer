@@ -1,7 +1,6 @@
-import { Box, Flex, IconButton, Link, Text } from "@chakra-ui/react"
+import { Box, Flex, Text, VStack } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
-import { useState } from "react"
-import { FaAngleLeft, FaAngleRight, FaBars } from "react-icons/fa"
+
 import "@fontsource/fira-code/700.css"
 
 import { HealthService } from "@/client"
@@ -12,47 +11,50 @@ import {
   DrawerCloseTrigger,
   DrawerContent,
   DrawerRoot,
-  DrawerTrigger,
 } from "../ui/drawer"
 import SidebarItems from "./SidebarItems"
 
-const Sidebar = () => {
+interface SidebarProps {
+  mobileOpen: boolean
+  onMobileOpenChange: (open: boolean) => void
+  desktopOpen: boolean
+}
+
+const AceReStreamerLogo = () => (
+  <Text fontSize="2xl" fontWeight="700" fontFamily="'Fira Code', monospace">
+    AceReStreamer
+  </Text>
+)
+
+const Sidebar = ({
+  mobileOpen,
+  onMobileOpenChange,
+  desktopOpen,
+}: SidebarProps) => {
   const { user: currentUser } = useAuth()
   const { data: healthData } = useQuery({
     queryKey: ["health"],
     queryFn: HealthService.health,
   })
-  const [open, setOpen] = useState(false)
-  const [desktopOpen, setDesktopOpen] = useState(true)
 
   return (
     <>
       {/* Mobile */}
       <DrawerRoot
         placement="start"
-        open={open}
-        onOpenChange={(e) => setOpen(e.open)}
+        open={mobileOpen}
+        onOpenChange={(e) => onMobileOpenChange(e.open)}
       >
         <DrawerBackdrop />
-        <DrawerTrigger asChild>
-          <IconButton
-            variant="ghost"
-            color="inherit"
-            display={{ base: "flex", md: "none" }}
-            aria-label="Open Menu"
-            position="absolute"
-            zIndex="100"
-            m={4}
-          >
-            <FaBars />
-          </IconButton>
-        </DrawerTrigger>
-        <DrawerContent maxW="xs">
+        <DrawerContent bg="bg.emphasized" maxW="270px">
           <DrawerCloseTrigger />
           <DrawerBody>
-            <Flex flexDir="column" justify="space-between">
+            <Flex flexDir="column" justify="space-between" h="full">
               <Box>
-                <SidebarItems onClose={() => setOpen(false)} />
+                <VStack py={2} gap={2} align="stretch">
+                  <AceReStreamerLogo />
+                  <SidebarItems onClose={() => onMobileOpenChange(false)} />
+                </VStack>
               </Box>
               {currentUser?.username && (
                 <Box>
@@ -79,7 +81,7 @@ const Sidebar = () => {
         position="relative"
         bg="bg.emphasized"
         w="auto"
-        pr={desktopOpen ? 5 : 0}
+        px={desktopOpen ? 2 : 0}
         h="100vh"
         transition="width 0.3s ease"
         overflow="hidden"
@@ -87,33 +89,16 @@ const Sidebar = () => {
         <Flex direction="column" w="full" h="full">
           <Flex
             align="center"
-            gap={desktopOpen ? 2 : 0}
-            p={desktopOpen ? 2 : 1}
-            pt={desktopOpen ? 2 : 3}
+            gap={2}
+            p={2}
+            pt={2}
+            display={desktopOpen ? "flex" : "none"}
           >
-            <IconButton
-              variant="ghost"
-              color="inherit"
-              aria-label="Toggle Menu"
-              onClick={() => setDesktopOpen(!desktopOpen)}
-              size={desktopOpen ? "sm" : "xs"}
-            >
-              {desktopOpen ? <FaAngleLeft /> : <FaAngleRight />}
-            </IconButton>
-
-            <Link href="/" display={desktopOpen ? "block" : "none"}>
-              <Text
-                fontSize="2xl"
-                fontWeight="700"
-                fontFamily="'Fira Code', monospace"
-              >
-                AceReStreamer
-              </Text>
-            </Link>
+            <AceReStreamerLogo />
           </Flex>
 
           {desktopOpen && (
-            <Box flex="1" p={4} pt={0}>
+            <Box flex="1" p={2} pt={0}>
               <Flex flexDir="column" justify="space-between" h="full">
                 <Box>
                   <SidebarItems />

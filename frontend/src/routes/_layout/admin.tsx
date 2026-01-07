@@ -1,8 +1,9 @@
-import { Heading, Tabs, VStack } from "@chakra-ui/react"
+import { Tabs, VStack } from "@chakra-ui/react"
 import { createFileRoute } from "@tanstack/react-router"
 import ScraperManagement from "@/components/Admin/ScraperManagement"
 import UserManagement from "@/components/Admin/UserManagement"
 import useAuth from "@/hooks/useAuth"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 const tabsConfig = [
   { value: "users", title: "Users", component: UserManagement },
@@ -14,6 +15,7 @@ export const Route = createFileRoute("/_layout/admin")({
 })
 
 function AdminSettings() {
+  usePageTitle("Admin Settings")
   const { user: currentUser } = useAuth()
   const finalTabs = currentUser?.is_superuser
     ? tabsConfig.slice(0, 3)
@@ -25,8 +27,6 @@ function AdminSettings() {
 
   return (
     <VStack gap={6} align="stretch">
-      <Heading size="lg">Admin Settings</Heading>
-
       <Tabs.Root defaultValue="users" variant="subtle">
         <Tabs.List>
           {finalTabs.map((tab) => (
