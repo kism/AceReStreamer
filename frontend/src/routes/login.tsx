@@ -2,7 +2,6 @@ import { Container, Input, Text } from "@chakra-ui/react"
 import { createFileRoute, redirect } from "@tanstack/react-router"
 import { type SubmitHandler, useForm } from "react-hook-form"
 import { FiLock, FiUser } from "react-icons/fi"
-
 import type { Body_Login_login_access_token as AccessToken } from "@/client"
 import { Button } from "@/components/ui/button"
 import { Field } from "@/components/ui/field"

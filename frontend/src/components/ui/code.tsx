@@ -5,15 +5,9 @@ import * as React from "react"
 
 import "@fontsource/fira-code/500.css"
 
-
-
-
-
 export const Code: React.FC<CodeProps> = ({ children, ...rest }) => {
-    return <ChakraCode p="1" fontSize="sm" fontFamily="'Fira Code', monospace" fontWeight="500" {...rest}>{children}</ChakraCode>
+    return <ChakraCode rounded={"0"} px="2" py="1" fontSize="sm" fontFamily="'Fira Code', monospace" fontWeight="500" {...rest}>{children}</ChakraCode>
 }
-
-
 
 export const CodeBlock: React.FC<CodeProps> = ({ children, ...rest }) => {
     return (

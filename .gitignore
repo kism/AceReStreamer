@@ -8,6 +8,9 @@ test.py
 _garbo
 docker-compose_prod.yml
 
+# Tanstack
+.tanstack
+
 # Generated static
 acere/static/index.html
 acere/static/assets

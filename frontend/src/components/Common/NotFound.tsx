@@ -1,5 +1,6 @@
-import { Button, Center, Flex, Text } from "@chakra-ui/react"
+import { Center, Flex, Text } from "@chakra-ui/react"
 import { Link } from "@tanstack/react-router"
+import { Button } from "@/components/ui/button"
 
 const NotFound = () => {
   return (

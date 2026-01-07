@@ -1,8 +1,17 @@
-import { Box, EmptyState, Table, VStack } from "@chakra-ui/react"
+import { Box, EmptyState, VStack } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { FiBarChart, FiSearch } from "react-icons/fi"
 import { StreamsService } from "@/client"
 import PendingStreams from "@/components/Pending/PendingStreams"
+import {
+  AppTableRoot,
+  AppTableScrollArea,
+  TableBody,
+  TableCell,
+  TableColumnHeader,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { loadPlayStream } from "@/hooks/useVideoPlayer"
 import { QualityCell } from "./QualityCell"
 
@@ -49,21 +58,19 @@ export function StreamTable() {
   }
 
   return (
-    <Table.ScrollArea borderWidth="1px" rounded="md" height="100vh">
-      <Table.Root size={{ base: "sm", md: "md" }} interactive stickyHeader>
-        <Table.Header>
-          <Table.Row bg="bg.subtle">
-            <Table.ColumnHeader p={2} textAlign="center" width="30px">
+    <AppTableScrollArea preset="fullscreen">
+      <AppTableRoot preset="interactiveSticky">
+        <TableHeader>
+          <TableRow bg="bg.subtle">
+            <TableColumnHeader width="30px">
               <FiBarChart style={{ margin: "0 auto" }} />
-            </Table.ColumnHeader>
-            <Table.ColumnHeader p={2} width="90%">
-              Stream
-            </Table.ColumnHeader>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
+            </TableColumnHeader>
+            <TableColumnHeader width="90%">Stream</TableColumnHeader>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {items?.map((item) => (
-            <Table.Row
+            <TableRow
               key={item.title}
               opacity={isPlaceholderData ? 0.5 : 1}
               cursor={isPlaceholderData ? "default" : "pointer"}
@@ -72,7 +79,7 @@ export function StreamTable() {
               }}
             >
               <QualityCell quality={item.quality} p={1} />
-              <Table.Cell py={1} px={2} overflow="hidden" maxW="0">
+              <TableCell overflow="hidden" maxW="0">
                 <Box
                   whiteSpace="nowrap"
                   overflow="hidden"
@@ -88,11 +95,11 @@ export function StreamTable() {
                 >
                   {item.program_title || "?"}
                 </Box>
-              </Table.Cell>
-            </Table.Row>
+              </TableCell>
+            </TableRow>
           ))}
-        </Table.Body>
-      </Table.Root>
-    </Table.ScrollArea>
+        </TableBody>
+      </AppTableRoot>
+    </AppTableScrollArea>
   )
 }

@@ -1,7 +1,15 @@
-import { Box, HStack, Link, Table, Text } from "@chakra-ui/react"
+import { Box, Heading, HStack, Link, Text } from "@chakra-ui/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { FiAlertTriangle, FiSearch } from "react-icons/fi"
 import { AcePoolService, StreamsService } from "@/client"
+import {
+  AppTableRoot,
+  TableBody,
+  TableCell,
+  TableColumnHeader,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import baseURL from "@/helpers"
 import { loadPlayStream } from "@/hooks/useVideoPlayer"
 import { QualityCell } from "./QualityCell"
@@ -24,11 +32,11 @@ function InstanceQuality({ contentId }: { contentId: string }) {
   return (
     <>
       <QualityCell quality={data?.quality ?? -1} />
-      <Table.Cell textAlign={"center"} p={2}>
+      <TableCell textAlign={"center"} p={2}>
         <Link onClick={() => loadPlayStream(data?.content_id)}>
           {data?.title || "N/A"}
         </Link>
-      </Table.Cell>
+      </TableCell>
     </>
   )
 }
@@ -74,7 +82,7 @@ export function AcePoolInfo() {
 
   return (
     <Box>
-      <Text>AceStream Backend Information</Text>
+      <Heading size="sm">AceStream Backend Information</Heading>
       {acePoolData && acePoolData.external_url !== VITE_API_URL && (
         <Box p={2} border={"1px solid orange"} my={2}>
           <HStack>
@@ -101,26 +109,18 @@ export function AcePoolInfo() {
           </HStack>
         </Box>
       )}
-      <Table.Root size="sm" variant="outline" maxW="400px" mt={2}>
-        <Table.Header>
-          <Table.Row>
-            <Table.Cell textAlign={"center"} p={2}>
-              Version
-            </Table.Cell>
-            <Table.Cell textAlign={"center"} p={2}>
-              Streams
-            </Table.Cell>
-            <Table.Cell textAlign={"center"} p={2}>
-              Transcode Audio
-            </Table.Cell>
-            <Table.Cell textAlign={"center"} p={2}>
-              Health
-            </Table.Cell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          <Table.Row opacity={isPlaceholderData ? 0.5 : 1}>
-            <Table.Cell
+      <AppTableRoot preset="outlineSm" maxW="400px" mt={2}>
+        <TableHeader>
+          <TableRow>
+            <TableColumnHeader p={2}>Version</TableColumnHeader>
+            <TableColumnHeader p={2}>Streams</TableColumnHeader>
+            <TableColumnHeader p={2}>Transcode Audio</TableColumnHeader>
+            <TableColumnHeader p={2}>Health</TableColumnHeader>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow opacity={isPlaceholderData ? 0.5 : 1}>
+            <TableCell
               textAlign={"center"}
               p={2}
               color={
@@ -131,73 +131,77 @@ export function AcePoolInfo() {
               }
             >
               {acePoolData.ace_version || "N/A"}
-            </Table.Cell>
-            <Table.Cell textAlign={"center"} p={2}>
+            </TableCell>
+            <TableCell textAlign={"center"} p={2}>
               {acePoolData.ace_instances.length}/{acePoolData.max_size ?? "N/A"}
-            </Table.Cell>
-            <Table.Cell textAlign={"center"} p={2}>
+            </TableCell>
+            <TableCell textAlign={"center"} p={2}>
               {acePoolData.transcode_audio ? "Yes" : "No"}
-            </Table.Cell>
-            <Table.Cell
+            </TableCell>
+            <TableCell
               textAlign={"center"}
               p={2}
               color={!acePoolData.healthy ? "red.500" : undefined}
             >
               {acePoolData.healthy ? "Healthy" : "Unhealthy"}
-            </Table.Cell>
-          </Table.Row>
-        </Table.Body>
-      </Table.Root>
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </AppTableRoot>
       {acePoolData.ace_instances.length !== 0 && (
         <Box mt={4}>
-          <Text>Currently loaded streams</Text>
-          <Table.Root size="sm" variant="outline" mt={2}>
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeader textAlign={"center"} p={2}>
+          <Heading size="sm">Currently loaded streams</Heading>
+          <AppTableRoot preset="outlineSm" mt={2}>
+            <TableHeader>
+              <TableRow>
+                <TableColumnHeader textAlign={"center"} p={2}>
                   #
-                </Table.ColumnHeader>
-                <Table.ColumnHeader textAlign={"center"} p={2}>
+                </TableColumnHeader>
+                <TableColumnHeader textAlign={"center"} p={2}>
                   Status
-                </Table.ColumnHeader>
-                <Table.ColumnHeader textAlign={"center"} p={2}>
+                </TableColumnHeader>
+                <TableColumnHeader textAlign={"center"} p={2}>
                   Quality
-                </Table.ColumnHeader>
-                <Table.ColumnHeader textAlign={"center"} p={2}>
+                </TableColumnHeader>
+                <TableColumnHeader textAlign={"center"} p={2}>
                   Currently Playing
-                </Table.ColumnHeader>
-                <Table.ColumnHeader textAlign={"center"} p={2}>
+                </TableColumnHeader>
+                <TableColumnHeader textAlign={"center"} p={2}>
                   Make Available
-                </Table.ColumnHeader>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
+                </TableColumnHeader>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {acePoolData.ace_instances.map((instance, index) => (
-                <Table.Row key={index}>
-                  <Table.Cell textAlign={"center"} p={2}>
+                <TableRow key={index}>
+                  <TableCell textAlign={"center"} p={2}>
                     {instance.ace_pid}
-                  </Table.Cell>
-                  <Table.Cell textAlign={"center"} p={2}>
+                  </TableCell>
+                  <TableCell textAlign={"center"} p={2}>
                     {instance.locked_in
                       ? `🔒 Locked for (${Math.floor((instance.time_until_unlock ?? 0) / 60)}:${((instance.time_until_unlock ?? 0) % 60).toString().padStart(2, "0")})`
                       : "Available"}
-                  </Table.Cell>
+                  </TableCell>
                   <InstanceQuality contentId={instance.content_id} />
-                  <Table.Cell textAlign={"center"} p={2}>
-                    <Link
-                      colorPalette="red"
-                      onClick={() =>
-                        deleteStreamMutation.mutate(instance.content_id)
-                      }
-                      cursor="pointer"
-                    >
-                      Free
-                    </Link>
-                  </Table.Cell>
-                </Table.Row>
+                  <TableCell textAlign={"center"} p={2}>
+                    {instance.locked_in ? (
+                      <Link
+                        colorPalette="red"
+                        onClick={() =>
+                          deleteStreamMutation.mutate(instance.content_id)
+                        }
+                        cursor="pointer"
+                      >
+                        Free
+                      </Link>
+                    ) : (
+                      "-"
+                    )}
+                  </TableCell>
+                </TableRow>
               ))}
-            </Table.Body>
-          </Table.Root>
+            </TableBody>
+          </AppTableRoot>
         </Box>
       )}
     </Box>

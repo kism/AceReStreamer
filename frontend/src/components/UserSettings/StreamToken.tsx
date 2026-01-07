@@ -1,7 +1,8 @@
-import { Box, Button, Table, Text } from "@chakra-ui/react"
+import { Box, Container, Flex, Heading, Text } from "@chakra-ui/react"
 import { useEffect, useState } from "react"
-
 import { UsersService } from "@/client"
+import { Button } from "@/components/ui/button"
+import { Code } from "@/components/ui/code"
 import {
   DialogActionTrigger,
   DialogBody,
@@ -53,63 +54,58 @@ const StreamToken = () => {
   }
 
   return (
-    <Box>
-      <Table.Root size="sm" variant="outline">
-        <Table.Body>
-          <Table.Row>
-            <Table.Cell bg="bg.subtle" whiteSpace="nowrap" width="1%">
-              Stream Token
-            </Table.Cell>
-            <Table.Cell>
-              <Text fontFamily="monospace" wordBreak="break-all">
-                {token || "No token available"}
-              </Text>
-            </Table.Cell>
-            <Table.Cell width="1%">
-              <DialogRoot open={open} onOpenChange={(e) => setOpen(e.open)}>
-                <DialogTrigger asChild>
-                  <Button size="sm">Regenerate</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Confirm Regeneration</DialogTitle>
-                  </DialogHeader>
-                  <DialogCloseTrigger />
-                  <DialogBody>
-                    <Text>
-                      Are you sure you want to regenerate your stream token?
-                      This will invalidate your current token.
-                    </Text>
-                  </DialogBody>
-                  <DialogFooter>
-                    <DialogActionTrigger asChild>
-                      <Button variant="outline">Cancel</Button>
-                    </DialogActionTrigger>
-                    <Button
-                      colorPalette="red"
-                      onClick={async () => {
-                        setOpen(false)
-                        setLoading(true)
-                        try {
-                          const newToken = await regenerateStreamToken()
-                          setToken(newToken)
-                        } catch (error) {
-                          console.error("Failed to regenerate token:", error)
-                        } finally {
-                          setLoading(false)
-                        }
-                      }}
-                    >
-                      Regenerate
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </DialogRoot>
-            </Table.Cell>
-          </Table.Row>
-        </Table.Body>
-      </Table.Root>
-    </Box>
+    <Container maxW="full">
+      <Heading size="sm" py={4}>
+        Stream Token
+      </Heading>
+      <Box w={{ sm: "full", md: "sm" }}>
+        <Code color={!token ? "gray" : "inherit"}>
+          {token || "No token available"}
+        </Code>
+
+        <Flex mt={4} gap={3}>
+          <DialogRoot open={open} onOpenChange={(e) => setOpen(e.open)}>
+            <DialogTrigger asChild>
+              <Button variant="solid">Regenerate</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Confirm Regeneration</DialogTitle>
+              </DialogHeader>
+              <DialogCloseTrigger />
+              <DialogBody>
+                <Text>
+                  Are you sure you want to regenerate your stream token? This
+                  will invalidate your current token.
+                </Text>
+              </DialogBody>
+              <DialogFooter>
+                <DialogActionTrigger asChild>
+                  <Button variant="outline">Cancel</Button>
+                </DialogActionTrigger>
+                <Button
+                  colorPalette="red"
+                  onClick={async () => {
+                    setOpen(false)
+                    setLoading(true)
+                    try {
+                      const newToken = await regenerateStreamToken()
+                      setToken(newToken)
+                    } catch (error) {
+                      console.error("Failed to regenerate token:", error)
+                    } finally {
+                      setLoading(false)
+                    }
+                  }}
+                >
+                  Regenerate
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </DialogRoot>
+        </Flex>
+      </Box>
+    </Container>
   )
 }
 

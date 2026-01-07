@@ -1,4 +1,4 @@
-import { Table } from "@chakra-ui/react"
+import { TableCell } from "@/components/ui/table"
 
 export function QualityCell({ quality, ...props }: { quality: number } & any) {
   let color = "black"
@@ -13,8 +13,8 @@ export function QualityCell({ quality, ...props }: { quality: number } & any) {
   }
 
   return (
-    <Table.Cell textAlign={"center"} fontWeight={600} color={color} {...props}>
+    <TableCell textAlign={"center"} fontWeight={600} color={color} {...props}>
       {quality === -1 ? "?" : quality}
-    </Table.Cell>
+    </TableCell>
   )
 }

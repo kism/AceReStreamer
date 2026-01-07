@@ -92,9 +92,12 @@ see iptv.html.j2
 
 - No auth mode
 - consistent theming
+  - button sizes
+  - inconsistent close button
 - stream restarting in hls.js
 - stricter ruff rules
 - readme
 - big cleanup
 - async everything?
 - name the loggers
+- case insensitive username

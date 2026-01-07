@@ -1,16 +1,10 @@
-import {
-  Box,
-  Button,
-  Collapsible,
-  Flex,
-  Heading,
-  VStack,
-} from "@chakra-ui/react"
+import { Box, Collapsible, Flex, Heading, VStack } from "@chakra-ui/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useCallback, useState } from "react"
 import { FaAngleDown, FaAngleUp } from "react-icons/fa"
 import { ScraperService } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
+import { Button } from "@/components/ui/button"
 import { Code, CodeBlock } from "@/components/ui/code"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"

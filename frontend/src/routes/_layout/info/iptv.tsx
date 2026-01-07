@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { UsersService } from "@/client"
 import { AppsInfo, OtherIptvSources } from "@/components/info/AppsInfo"
 import { IptvInfo } from "@/components/info/IptvInfo"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 async function getUser() {
   const streamTokenService = UsersService.readUserMe()
@@ -18,6 +19,7 @@ export const Route = createFileRoute("/_layout/info/iptv")({
 })
 
 function InfoIptv() {
+  usePageTitle("IPTV Info")
   const { user } = Route.useLoaderData()
 
   return (

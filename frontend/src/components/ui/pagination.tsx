@@ -1,8 +1,8 @@
 "use client"
+import { Button } from "@/components/ui/button"
 
 import type { ButtonProps, TextProps } from "@chakra-ui/react"
 import {
-  Button,
   Pagination as ChakraPagination,
   IconButton,
   Text,

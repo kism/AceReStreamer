@@ -1,10 +1,10 @@
-import { Button, DialogTitle, Text } from "@chakra-ui/react"
+import { DialogTitle, Text } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { FiTrash2 } from "react-icons/fi"
-
 import { UsersService } from "@/client"
+import { Button } from "@/components/ui/button"
 import {
   DialogActionTrigger,
   DialogBody,

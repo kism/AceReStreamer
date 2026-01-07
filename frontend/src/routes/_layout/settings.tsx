@@ -1,4 +1,4 @@
-import { Heading, Tabs, VStack } from "@chakra-ui/react"
+import { Tabs, VStack } from "@chakra-ui/react"
 import { createFileRoute } from "@tanstack/react-router"
 
 import Appearance from "@/components/UserSettings/Appearance"
@@ -6,6 +6,7 @@ import ChangePassword from "@/components/UserSettings/ChangePassword"
 import StreamToken from "@/components/UserSettings/StreamToken"
 import UserInformation from "@/components/UserSettings/UserInformation"
 import useAuth from "@/hooks/useAuth"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 const tabsConfig = [
   { value: "my-profile", title: "My profile", component: UserInformation },
@@ -19,6 +20,7 @@ export const Route = createFileRoute("/_layout/settings")({
 })
 
 function UserSettings() {
+  usePageTitle("User Settings")
   const { user: currentUser } = useAuth()
 
   if (!currentUser) {
@@ -27,8 +29,6 @@ function UserSettings() {
 
   return (
     <VStack gap={6} align="stretch">
-      <Heading size="lg">User Settings</Heading>
-
       <Tabs.Root defaultValue="my-profile" variant="subtle">
         <Tabs.List>
           {tabsConfig.map((tab) => (
