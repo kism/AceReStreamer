@@ -21,9 +21,7 @@ def test_authenticate_user(db: Session) -> None:
     password = random_lower_string()
     user_in = UserCreate(username=username, password=password)
     user = crud.create_user(session=db, user_create=user_in)
-    authenticated_user = crud.authenticate(
-        session=db, username=username, password=password
-    )
+    authenticated_user = crud.authenticate(session=db, username=username, password=password)
     assert authenticated_user
     assert user.username == authenticated_user.username
 

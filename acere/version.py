@@ -1,8 +1,9 @@
 """Version Metadata."""
+
 from pathlib import Path
 
 __author__ = "Kieran Gee"
-__version__ = "1.0.0b1"  # This is the version of the app, used in pyproject.toml, enforced in a test.
+__version__ = "1.0.0b2"  # This is the version of the app, used in pyproject.toml, enforced in a test.
 PROGRAM_NAME = "AceReStreamer"
 URL = "https://github.com/kism/ace-restreamer"
 
@@ -25,9 +26,10 @@ def get_version_str() -> str:
             current_branch = f.read().strip().split("/")[-1]
 
     return (
-        f"v{__version__}"
+        f"{__version__}"
         f"{('-' + current_branch) if current_branch else ''}"
         f"{('/' + last_commit + '') if last_commit else ''}"
     )
+
 
 VERSION_FULL = get_version_str()

@@ -36,9 +36,7 @@ class APISiteResponseItem(BaseModel):
 class APIStreamScraper(ScraperCommon):
     """API Scraper object."""
 
-    async def scrape_api_endpoints(
-        self, sites: list[ScrapeSiteAPI]
-    ) -> list[FoundAceStream]:
+    async def scrape_api_endpoints(self, sites: list[ScrapeSiteAPI]) -> list[FoundAceStream]:
         """Scrape the streams from the configured API sites."""
         found_streams: list[FoundAceStream] = []
 
@@ -63,9 +61,7 @@ class APIStreamScraper(ScraperCommon):
             log_aiohttp_exception(logger, site.url, e)
             return []
 
-        logger.debug(
-            "Scraped %d items from API site: %s", len(response_json), site.name
-        )
+        logger.debug("Scraped %d items from API site: %s", len(response_json), site.name)
         stream_list: list[APISiteResponseItem] = []
         for item in response_json:
             try:
@@ -76,9 +72,7 @@ class APIStreamScraper(ScraperCommon):
         for stream in stream_list:
             title = self.name_processor.cleanup_candidate_title(stream.name)
 
-            if not self.name_processor.check_title_allowed(
-                title=title, title_filter=site.title_filter
-            ):
+            if not self.name_processor.check_title_allowed(title=title, title_filter=site.title_filter):
                 continue
 
             tvg_id = self.name_processor.get_tvg_id_from_title(title)
@@ -87,9 +81,7 @@ class APIStreamScraper(ScraperCommon):
             tvg_logo = self.name_processor.find_tvg_logo_image(title)
 
             # We call it fresh if availability is 100%
-            last_found_time = (
-                stream.availability_updated_at if stream.availability < 1 else 0
-            )
+            last_found_time = stream.availability_updated_at if stream.availability < 1 else 0
 
             streams.append(
                 FoundAceStream(

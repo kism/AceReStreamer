@@ -111,9 +111,7 @@ class AcePoolEntryForAPI(BaseModel):
         return time_running.seconds
 
     @field_serializer("ace_hls_m3u8_url")
-    def serialize_ace_hls_m3u8_url(
-        self, ace_hls_m3u8_url: HttpUrl | None
-    ) -> str | None:
+    def serialize_ace_hls_m3u8_url(self, ace_hls_m3u8_url: HttpUrl | None) -> str | None:
         """Serialize the Ace HLS M3U8 URL as a string."""
         return ace_hls_m3u8_url.encoded_string() if ace_hls_m3u8_url else None
 

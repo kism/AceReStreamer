@@ -30,9 +30,7 @@ class EPG:
         """Initialize the EPG entry with a URL."""
         self.url = epg_conf.url
         self.format = epg_conf.format
-        self._extracted_format = self.format.replace(
-            ".gz", ""
-        )  # Remove .gz for internal use
+        self._extracted_format = self.format.replace(".gz", "")  # Remove .gz for internal use
         self.region_code = epg_conf.region_code
         self.last_updated: datetime | None = None
         self.saved_file_path: Path | None = None
@@ -40,9 +38,7 @@ class EPG:
     async def update(self, instance_path: Path | None) -> bool:
         """Update the EPG data from the configured URL, returns true if updated with new data."""
         if instance_path is None:
-            logger.error(
-                "Instance path is not set, cannot update EPG %s", self.region_code
-            )
+            logger.error("Instance path is not set, cannot update EPG %s", self.region_code)
             return False
 
         directory_path = instance_path / "epg"
@@ -50,9 +46,7 @@ class EPG:
             logger.info("Creating EPG directory at %s", directory_path)
             directory_path.mkdir(parents=True, exist_ok=True)
 
-        self.saved_file_path = (
-            directory_path / f"{self.region_code}.{self._extracted_format}"
-        )
+        self.saved_file_path = directory_path / f"{self.region_code}.{self._extracted_format}"
 
         if self._time_to_update():
             data_bytes = await self._download_epg()
@@ -80,7 +74,7 @@ class EPG:
                     error_short,
                     self.saved_file_path,
                     e,
-                )  # noqa: TRY400 Short error for requests
+                )
                 return None
         else:
             logger.warning(

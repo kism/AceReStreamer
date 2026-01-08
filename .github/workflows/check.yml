@@ -9,6 +9,10 @@ on:
     paths-ignore:
       - "**/README.md"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check_py:
     runs-on: ubuntu-latest

@@ -120,9 +120,7 @@ class HTMLStreamScraper(ScraperCommon):
 
         return self._process_candidates(streams_candidates, site)
 
-    def _process_candidates(
-        self, candidates: list[CandidateAceStream], site: ScrapeSiteHTML
-    ) -> list[FoundAceStream]:
+    def _process_candidates(self, candidates: list[CandidateAceStream], site: ScrapeSiteHTML) -> list[FoundAceStream]:
         """Process candidate streams to find valid AceStreams."""
         found_streams: list[FoundAceStream] = []
 
@@ -152,9 +150,7 @@ class HTMLStreamScraper(ScraperCommon):
                 # If there are multiple candidates, we can choose the first one
                 title = " / ".join(new_title_candidates)
 
-            content_id = self.name_processor.extract_content_id_from_url(
-                candidate.ace_uri
-            )
+            content_id = self.name_processor.extract_content_id_from_url(candidate.ace_uri)
 
             if not self.name_processor.check_title_allowed(
                 title=title,
@@ -163,9 +159,7 @@ class HTMLStreamScraper(ScraperCommon):
                 continue
 
             if not check_valid_content_id_or_infohash(content_id):
-                logger.warning(
-                    "Invalid Ace ID found in candidate: %s, skipping", content_id
-                )
+                logger.warning("Invalid Ace ID found in candidate: %s, skipping", content_id)
                 continue
 
             tvg_id = self.name_processor.get_tvg_id_from_title(title)
@@ -176,9 +170,7 @@ class HTMLStreamScraper(ScraperCommon):
                 group_title="",
                 title=title,
             )
-            if (
-                self.category_xc_category_id_mapping
-            ):  # Populate if we aren't running in adhoc mode
+            if self.category_xc_category_id_mapping:  # Populate if we aren't running in adhoc mode
                 self.category_xc_category_id_mapping.get_xc_category_id(group_title)
 
             found_streams.append(
@@ -197,26 +189,18 @@ class HTMLStreamScraper(ScraperCommon):
 
         return found_streams
 
-    def _check_candidate(
-        self, target_html_class: str, html_tag: Tag | None
-    ) -> list[str]:
+    def _check_candidate(self, target_html_class: str, html_tag: Tag | None) -> list[str]:
         """Check if the tag has the target class."""
         if not html_tag or not isinstance(html_tag, Tag):
             return []
         html_classes = html_tag.get("class", None)
 
-        html_classes_good = (
-            [""]
-            if not html_classes or not isinstance(html_classes, list)
-            else html_classes
-        )
+        html_classes_good = [""] if not html_classes or not isinstance(html_classes, list) else html_classes
 
         candidate_titles: list[str] = []
         for html_class in html_classes_good:
             if html_class == target_html_class:
-                candidate_title = self.name_processor.cleanup_candidate_title(
-                    html_tag.get_text()
-                )
+                candidate_title = self.name_processor.cleanup_candidate_title(html_tag.get_text())
                 candidate_titles.append(candidate_title)
 
         return candidate_titles

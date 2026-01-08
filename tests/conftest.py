@@ -53,9 +53,7 @@ def temp_instance_dir() -> Generator[Path]:
     yield _test_instance_dir
 
     # Cleanup: Remove the temporary directory after all tests
-    if _test_instance_dir.exists() and _test_instance_dir.name.startswith(
-        "acere_test_"
-    ):
+    if _test_instance_dir.exists() and _test_instance_dir.name.startswith("acere_test_"):
         shutil.rmtree(_test_instance_dir)
 
 
@@ -84,6 +82,4 @@ def superuser_token_headers(client: TestClient) -> dict[str, str]:
 
 @pytest.fixture(scope="module")
 def normal_user_token_headers(client: TestClient, db: Session) -> dict[str, str]:
-    return authentication_token_from_username(
-        client=client, username="pytestuser", db=db
-    )
+    return authentication_token_from_username(client=client, username="pytestuser", db=db)

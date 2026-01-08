@@ -39,7 +39,19 @@ export function StreamTable() {
 
   if (items.length === 0) {
     return (
-      <Box>
+      <AppTableScrollArea preset="fullscreen">
+        <AppTableRoot preset="interactiveSticky">
+          <TableHeader>
+            {/* Due to sticky header we set bg.subtle */}
+            <TableRow bg="bg.subtle">
+              <TableColumnHeader width="30px">
+                <FiBarChart style={{ margin: "0 auto" }} />
+              </TableColumnHeader>
+              <TableColumnHeader width="90%">Stream</TableColumnHeader>
+            </TableRow>
+          </TableHeader>
+          <TableBody />
+        </AppTableRoot>
         <EmptyState.Root>
           <EmptyState.Content>
             <EmptyState.Indicator>
@@ -53,7 +65,7 @@ export function StreamTable() {
             </VStack>
           </EmptyState.Content>
         </EmptyState.Root>
-      </Box>
+      </AppTableScrollArea>
     )
   }
 
@@ -61,6 +73,7 @@ export function StreamTable() {
     <AppTableScrollArea preset="fullscreen">
       <AppTableRoot preset="interactiveSticky">
         <TableHeader>
+          {/* Due to sticky header we set bg.subtle */}
           <TableRow bg="bg.subtle">
             <TableColumnHeader width="30px">
               <FiBarChart style={{ margin: "0 auto" }} />

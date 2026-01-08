@@ -7,7 +7,10 @@
     "editor.defaultFormatter": null
   },
   "[typescript]": {
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "DONOTFORMATFROMHERE"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "DONOTFORMATFROMHERE"
   },
   "[markdown]": {
     "editor.formatOnSave": true,
@@ -23,13 +26,8 @@
     "source.organizeImports.biome": "explicit"
   },
   "mypy.dmypyExecutable": "${workspaceFolder}/.venv/bin/dmypy",
-  "biome.configurationPath": "${workspaceFolder}/frontend/biome.json",
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "biomejs.biome"
-  },
   "files.associations": {
     "*.json.bak": "json"
   },
   "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python"
-
 }

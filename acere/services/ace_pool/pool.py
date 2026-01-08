@@ -62,9 +62,7 @@ class AcePool:
             healthy = True
         except requests.RequestException as e:
             error_short = type(e).__name__
-            logger.error(
-                "Ace Instance %s is not healthy: %s", self.ace_address, error_short
-            )  # noqa: TRY400 Short error for requests
+            logger.error("Ace Instance %s is not healthy: %s", self.ace_address, error_short)  # noqa: TRY400 Short error for requests
             healthy = False
         except Exception as e:  # noqa: BLE001 Last resort
             error_short = type(e).__name__
@@ -72,7 +70,7 @@ class AcePool:
                 "Ace Instance %s is not healthy for a weird reason: %s",
                 self.ace_address,
                 e,
-            )  # noqa: TRY400 Short error for requests
+            )
             healthy = False
 
         self.ace_version = version_data.get("result", {}).get("version", "unknown")
@@ -86,9 +84,7 @@ class AcePool:
         if caller != "":
             caller = f"{caller}: "
         if content_id in self.ace_instances:
-            logger.info(
-                "%sRemoving AceStream instance with content_id %s", caller, content_id
-            )
+            logger.info("%sRemoving AceStream instance with content_id %s", caller, content_id)
             with contextlib.suppress(KeyError):
                 self.ace_instances[content_id].stop()
                 del self.ace_instances[content_id]
@@ -99,35 +95,25 @@ class AcePool:
     # region Getters
     def get_available_instance_number(self) -> int | None:
         """Get the next available AceStream instance URL."""
-        instance_numbers = [
-            instance.ace_pid for instance in self.ace_instances.values()
-        ]
+        instance_numbers = [instance.ace_pid for instance in self.ace_instances.values()]
 
-        for n in range(
-            1, self.max_size + 1
-        ):  # Minimum instance number is 1, per the API
+        for n in range(1, self.max_size + 1):  # Minimum instance number is 1, per the API
             if n not in instance_numbers:
                 return n
 
         shortlist_instances_to_reclaim = [  # We will try to reclaim a non-locked-in instance
-            instance
-            for instance in self.ace_instances.values()
-            if not instance.check_locked_in()
+            instance for instance in self.ace_instances.values() if not instance.check_locked_in()
         ]
 
         if shortlist_instances_to_reclaim:
-            best_instance = min(
-                shortlist_instances_to_reclaim, key=lambda x: x.last_used
-            )
+            best_instance = min(shortlist_instances_to_reclaim, key=lambda x: x.last_used)
 
             logger.info(
                 "Found available AceStream instance: %s, reclaiming it.",
                 best_instance.ace_pid,
             )
             ace_pid = best_instance.ace_pid
-            self.remove_instance_by_content_id(
-                best_instance.content_id, caller="get_available_instance_number"
-            )
+            self.remove_instance_by_content_id(best_instance.content_id, caller="get_available_instance_number")
             return ace_pid
 
         logger.error("Ace pool is full, could not get available instance.")
@@ -168,9 +154,7 @@ class AcePool:
         """Find the AceStream instance content_id for a given multistream path."""
         ace_multistream_path = ace_multistream_path.split("/")[0]
         if not ace_multistream_path:
-            logger.warning(
-                "No multistream path provided, cannot get AceStream instance."
-            )
+            logger.warning("No multistream path provided, cannot get AceStream instance.")
             return ""
 
         for instance in self.ace_instances.values():
@@ -193,9 +177,7 @@ class AcePool:
         return None
 
     # region GET API
-    def get_instance_by_content_id_api(
-        self, content_id: str
-    ) -> AcePoolEntryForAPI | None:
+    def get_instance_by_content_id_api(self, content_id: str) -> AcePoolEntryForAPI | None:
         """Get the AcePoolEntry instance by its content ID."""
         instance = self.ace_instances.get(content_id)
         if instance:
@@ -216,14 +198,9 @@ class AcePool:
     def get_instances_api(self) -> AcePoolForApi:
         """Get a list of AcePoolEntryForAPI instances for the API."""
         if self.ace_address:
-            instances = [
-                self._make_api_response_from_instance(instance)
-                for instance in self.ace_instances.values()
-            ]
+            instances = [self._make_api_response_from_instance(instance) for instance in self.ace_instances.values()]
         else:
-            logger.error(
-                "get_instances_api called, Ace address is not set, cannot get instances."
-            )
+            logger.error("get_instances_api called, Ace address is not set, cannot get instances.")
             instances = []
 
         return AcePoolForApi(
@@ -284,9 +261,7 @@ class AcePool:
         return None
 
     # region Helpers
-    def _make_api_response_from_instance(
-        self, instance: AcePoolEntry
-    ) -> AcePoolEntryForAPI:
+    def _make_api_response_from_instance(self, instance: AcePoolEntry) -> AcePoolEntryForAPI:
         """Create an AcePoolEntryForAPI instance from an AcePoolEntry instance."""
         locked_in = instance.check_locked_in()
         time_until_unlock = timedelta(seconds=0)
@@ -320,23 +295,17 @@ class AcePool:
 
                 instances_to_remove: list[str] = []
 
-                for (
-                    instance
-                ) in self.ace_instances.copy().values():  # copy to avoid runtime error
+                for instance in self.ace_instances.copy().values():  # copy to avoid runtime error
                     # If the instance is stale, remove it
                     if instance.check_if_stale():
                         instances_to_remove.append(instance.content_id)
                     else:  # Otherwise, try keep it alive
                         instance.keep_alive()
 
-                for content_id in (
-                    instances_to_remove
-                ):  # Separate loop to avoid modifying the dict while iterating
+                for content_id in instances_to_remove:  # Separate loop to avoid modifying the dict while iterating
                     self.remove_instance_by_content_id(content_id, caller="ace_poolboy")
 
         if not self._ace_poolboy_running:
             self._ace_poolboy_running = True
             logger.info("Starting ace_poolboy_thread (%s)", self._instance_id)
-        threading.Thread(
-            target=ace_poolboy_thread, name="AcePool: ace_poolboy", daemon=True
-        ).start()
+        threading.Thread(target=ace_poolboy_thread, name="AcePool: ace_poolboy", daemon=True).start()

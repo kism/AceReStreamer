@@ -43,9 +43,7 @@ def get_by_content_id(content_id: str) -> AcePoolEntryForAPI:
     if result is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail=MessageResponseModel(
-                message=content_id_not_found_tmp_str.format(content_id=content_id)
-            ),
+            detail=MessageResponseModel(message=content_id_not_found_tmp_str.format(content_id=content_id)),
         )
 
     return result
@@ -59,9 +57,7 @@ def delete_by_content_id(content_id: str) -> MessageResponseModel:
     if instance is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail=MessageResponseModel(
-                message=content_id_not_found_tmp_str.format(content_id=content_id)
-            ),
+            detail=MessageResponseModel(message=content_id_not_found_tmp_str.format(content_id=content_id)),
         )
 
     ace_pool.remove_instance_by_content_id(content_id, caller="API")
@@ -105,9 +101,7 @@ def stats_by_content_id(content_id: str) -> AcePoolStat:
     if ace_pool_stat is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail=MessageResponseModel(
-                message=content_id_not_found_tmp_str.format(content_id=content_id)
-            ),
+            detail=MessageResponseModel(message=content_id_not_found_tmp_str.format(content_id=content_id)),
         )
 
     return ace_pool_stat
@@ -124,9 +118,7 @@ def stats_by_pid(pid: str) -> AcePoolStat:
         if ace_pool_stat is None:
             raise HTTPException(
                 status_code=HTTPStatus.NOT_FOUND,
-                detail=MessageResponseModel(
-                    message=pid_not_found_tmp_str.format(pid=pid)
-                ),
+                detail=MessageResponseModel(message=pid_not_found_tmp_str.format(pid=pid)),
             )
 
         return ace_pool_stat

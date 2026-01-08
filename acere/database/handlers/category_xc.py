@@ -15,9 +15,7 @@ class CategoryXCCategoryIDDatabaseHandler(BaseDatabaseHandler):
         """Get the XC category ID for a given category name."""
         with self._get_session() as session:
             result = session.exec(
-                select(CategoryXCCategoryID).where(
-                    CategoryXCCategoryID.category == category_name
-                )
+                select(CategoryXCCategoryID).where(CategoryXCCategoryID.category == category_name)
             ).first()
             if isinstance(result, CategoryXCCategoryID):
                 return result.xc_category_id
@@ -31,15 +29,11 @@ class CategoryXCCategoryIDDatabaseHandler(BaseDatabaseHandler):
         """Get the category name for a given XC category ID."""
         with self._get_session() as session:
             result = session.exec(
-                select(CategoryXCCategoryID).where(
-                    CategoryXCCategoryID.xc_category_id == xc_category_id
-                )
+                select(CategoryXCCategoryID).where(CategoryXCCategoryID.xc_category_id == xc_category_id)
             ).first()
             return result.category if result else None
 
-    def get_all_categories_api(
-        self, categories_in_use: set[int] | None
-    ) -> list[XCCategory]:
+    def get_all_categories_api(self, categories_in_use: set[int] | None) -> list[XCCategory]:
         """Get all categories as a list of XCCategory objects."""
         with self._get_session() as session:
             categories = session.exec(select(CategoryXCCategoryID)).all()

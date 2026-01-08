@@ -142,7 +142,7 @@ export function AppsInfo() {
 
       <Box>
         <Heading size={"sm"}>Tested to work</Heading>
-        <AppTableRoot preset="outlineSm" my={2}>
+        <AppTableRoot preset="outlineSm">
           <TableHeader>
             <TableRow>
               <TableColumnHeader>Platform</TableColumnHeader>

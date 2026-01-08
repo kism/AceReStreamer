@@ -17,4 +17,3 @@ class BaseDatabaseHandler:
         """Get a database session as a context manager."""
         with Session(engine) as session:
             yield session
-

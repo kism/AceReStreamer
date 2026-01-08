@@ -56,8 +56,10 @@ class UsersPublic(SQLModel):
     data: list[UserPublic]
     count: int
 
+
 class StreamToken(SQLModel):
     stream_token: str
+
 
 # Generic message
 class Message(SQLModel):

@@ -27,7 +27,7 @@ function AdminSettings() {
 
   return (
     <VStack gap={6} align="stretch">
-      <Tabs.Root defaultValue="users" variant="subtle">
+      <Tabs.Root size="sm" defaultValue="users" variant="subtle">
         <Tabs.List>
           {finalTabs.map((tab) => (
             <Tabs.Trigger key={tab.value} value={tab.value}>

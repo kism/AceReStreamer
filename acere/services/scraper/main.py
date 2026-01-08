@@ -89,9 +89,7 @@ class AceScraper:
         self.external_url = external_url
         self.ace_url = ace_url
         self._ace_quality.clean_table()
-        self.epg_handler.load_config(
-            epg_conf_list=epg_conf_list, instance_path=instance_path
-        )
+        self.epg_handler.load_config(epg_conf_list=epg_conf_list, instance_path=instance_path)
 
         self._config = ace_scrape_conf
 
@@ -126,9 +124,7 @@ class AceScraper:
                 async def find_streams() -> list[FoundAceStream]:
                     tasks = [
                         self.html_scraper.scrape_sites(sites=self._config.html),
-                        self.iptv_scraper.scrape_iptv_playlists(
-                            sites=self._config.iptv_m3u8
-                        ),
+                        self.iptv_scraper.scrape_iptv_playlists(sites=self._config.iptv_m3u8),
                         self.api_scraper.scrape_api_endpoints(sites=self._config.api),
                     ]
 
@@ -158,20 +154,14 @@ class AceScraper:
                 # For streams with only an infohash, populate the content_id using the api
                 for _ in range(2):
                     missing_content_id_streams = [
-                        stream
-                        for stream in found_streams
-                        if not stream.content_id and stream.infohash
+                        stream for stream in found_streams if not stream.content_id and stream.infohash
                     ]
                     if len(missing_content_id_streams) == 0:
                         break
 
-                    newly_populated_streams = self._populate_missing_content_ids(
-                        missing_content_id_streams
-                    )
+                    newly_populated_streams = self._populate_missing_content_ids(missing_content_id_streams)
                     if len(newly_populated_streams) != 0:
-                        self.streams = create_unique_stream_list(
-                            list(self.streams.values()) + newly_populated_streams
-                        )
+                        self.streams = create_unique_stream_list(list(self.streams.values()) + newly_populated_streams)
                         break
                     time.sleep(60)
 
@@ -181,9 +171,7 @@ class AceScraper:
         for thread in self._scrape_threads:
             thread.join(timeout=1)
 
-        thread = threading.Thread(
-            target=run_scrape_thread, name="AceScraper: run_scrape", daemon=True
-        )
+        thread = threading.Thread(target=run_scrape_thread, name="AceScraper: run_scrape", daemon=True)
         thread.start()
 
         self._scrape_threads = [thread]
@@ -193,16 +181,12 @@ class AceScraper:
         """Get a stream by its Ace ID, will use the first found matching FoundAceStreamAPI by content_id."""
         if content_id in self.streams:
             stream = self.streams[content_id]
-            program_title, program_description = self.epg_handler.get_current_program(
-                tvg_id=stream.tvg_id
-            )
+            program_title, program_description = self.epg_handler.get_current_program(tvg_id=stream.tvg_id)
 
             return FoundAceStreamAPI(
                 site_names=stream.site_names,
                 quality=self._ace_quality.get_quality(content_id).quality,
-                has_ever_worked=self._ace_quality.get_quality(
-                    content_id
-                ).has_ever_worked,
+                has_ever_worked=self._ace_quality.get_quality(content_id).has_ever_worked,
                 title=stream.title,
                 content_id=stream.content_id,
                 infohash=stream.infohash,
@@ -219,8 +203,7 @@ class AceScraper:
         return [
             stream
             for content_id in self.streams
-            if (stream := self.get_stream_by_content_id_api(content_id=content_id))
-            is not None
+            if (stream := self.get_stream_by_content_id_api(content_id=content_id)) is not None
         ]
 
     # region GET API Scraper
@@ -291,9 +274,7 @@ class AceScraper:
 
         # There are a few standards for the tag for the tvg url, most to least common x-tvg-url, url-tvg, tvg-url
         epg_url = HttpUrl(f"{self.external_url}epg")
-        m3u8_content = (
-            f'#EXTM3U x-tvg-url="{epg_url}" url-tvg="{epg_url}" refresh="3600"\n'
-        )
+        m3u8_content = f'#EXTM3U x-tvg-url="{epg_url}" url-tvg="{epg_url}" refresh="3600"\n'
 
         iptv_set = set()
 
@@ -304,9 +285,7 @@ class AceScraper:
 
             external_url_tvg = HttpUrl(self.external_url.encoded_string() + "tvg-logo/")
 
-            line_one = create_extinf_line(
-                stream, tvg_url_base=external_url_tvg, token=token
-            )
+            line_one = create_extinf_line(stream, tvg_url_base=external_url_tvg, token=token)
             line_two = f"{self.external_url}hls/{stream.content_id}"
             if token:
                 line_two += f"?token={token}"
@@ -331,9 +310,7 @@ class AceScraper:
         current_stream_number = 1
         for stream in self.streams.values():
             xc_id = self._content_id_xc_id_mapping.get_xc_id(stream.content_id)
-            xc_category_id = self._category_xc_category_id_mapping.get_xc_category_id(
-                stream.group_title
-            )
+            xc_category_id = self._category_xc_category_id_mapping.get_xc_category_id(stream.group_title)
             if xc_category_filter is None or xc_category_id == xc_category_filter:
                 streams.append(
                     XCStream(
@@ -354,9 +331,7 @@ class AceScraper:
     # region Quality
     def increment_quality(self, content_id: str, m3u_playlist: str = "") -> None:
         """Increment the quality of a stream by content_id."""
-        self._ace_quality.increment_quality(
-            content_id=content_id, m3u_playlist=m3u_playlist
-        )
+        self._ace_quality.increment_quality(content_id=content_id, m3u_playlist=m3u_playlist)
 
     async def check_missing_quality(self) -> bool:
         """Check the quality of all streams.
@@ -372,13 +347,9 @@ class AceScraper:
         async def check_missing_quality_thread(base_url: HttpUrl) -> None:
             try:
                 self.currently_checking_quality = True
-                await asyncio.sleep(
-                    0
-                )  # This await means the task returns faster I think
+                await asyncio.sleep(0)  # This await means the task returns faster I think
 
-                streams = (
-                    self.get_stream_list_api()
-                )  # API method gets the health information
+                streams = self.get_stream_list_api()  # API method gets the health information
                 if not streams:
                     logger.warning("No streams found to check quality.")
                     self.currently_checking_quality = False
@@ -409,11 +380,11 @@ class AceScraper:
 
                         for _ in range(3):
                             with contextlib.suppress(
-                                requests.Timeout, requests.ConnectionError, requests.RequestException
+                                requests.Timeout,
+                                requests.ConnectionError,
+                                requests.RequestException,
                             ):
-                                hls(
-                                    path=stream.content_id, authentication_override=True
-                                )
+                                hls(path=stream.content_id, authentication_override=True)
                             await asyncio.sleep(1)
 
                         await asyncio.sleep(10)
@@ -448,9 +419,7 @@ class AceScraper:
                     content_id=stream.content_id,
                 )
 
-    def _populate_missing_content_ids(
-        self, streams: list[FoundAceStream]
-    ) -> list[FoundAceStream]:
+    def _populate_missing_content_ids(self, streams: list[FoundAceStream]) -> list[FoundAceStream]:
         """Populate missing content IDs for streams that have an infohash."""
         populated_streams: list[FoundAceStream] = []
 

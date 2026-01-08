@@ -1,6 +1,6 @@
 "use client"
 
-import { ChakraProvider } from "@chakra-ui/react"
+import { Box, ChakraProvider } from "@chakra-ui/react"
 import { type PropsWithChildren } from "react"
 import { system } from "../../theme"
 import { ColorModeProvider } from "./color-mode"
@@ -13,7 +13,7 @@ export function CustomProvider(props: PropsWithChildren) {
         defaultTheme="system"
         enableSystem
       >
-        <div className="chakra-theme">{props.children}</div>
+        <Box color="text.main">{props.children}</Box>
       </ColorModeProvider>
       <Toaster />
     </ChakraProvider>

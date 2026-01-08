@@ -9,6 +9,11 @@ on:
     paths-ignore:
       - "**/README.md"
       - "**/README*.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   pytest:
     runs-on: ubuntu-latest

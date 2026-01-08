@@ -35,10 +35,7 @@ def check_single_worker() -> None:
     logger = get_logger(__name__)
     if WORKER_LOCK_FILE.exists():
         msg = [
-            (
-                "This application does not support multiple workers. "
-                "Another worker instance is already running. "
-            ),
+            ("This application does not support multiple workers. Another worker instance is already running. "),
             "Please run with --workers 1 or remove the --workers flag.",
             "Or the application crashed previously and the lock file was not removed.",
         ]
@@ -64,9 +61,7 @@ if not IN_OPEN_API_MODE:
     logger = get_logger(__name__)
 
     FRONTEND_INFO = (
-        "Serving internally"
-        if settings.FRONTEND_HOST == ""
-        else f"Frontend server: {settings.FRONTEND_HOST}"
+        "Serving internally" if settings.FRONTEND_HOST == "" else f"Frontend server: {settings.FRONTEND_HOST}"
     )
 
     msg = f""">>>

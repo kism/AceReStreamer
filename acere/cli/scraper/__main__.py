@@ -34,9 +34,7 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.app_config is None:
-        logger.error(
-            "No application configuration path provided. Use --app-config to specify a path."
-        )
+        logger.error("No application configuration path provided. Use --app-config to specify a path.")
         sys.exit(1)
 
     instance_path = args.app_config.parent

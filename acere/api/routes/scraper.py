@@ -100,9 +100,7 @@ def remove_source(slug: str) -> MessageResponseModel:
     if not success:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
-            detail=MessageResponseModel(
-                message="Unable to delete", errors=[msg]
-            ).model_dump_json(),
+            detail=MessageResponseModel(message="Unable to delete", errors=[msg]).model_dump_json(),
         )
 
     settings.write_config()

@@ -8,9 +8,7 @@ from pydantic import HttpUrl
 # from acere.utils.logger import CustomLogger
 
 
-def log_aiohttp_exception(
-    logger: CustomLogger, site_url: HttpUrl, exception: ClientError
-) -> None:
+def log_aiohttp_exception(logger: CustomLogger, site_url: HttpUrl, exception: ClientError) -> None:
     """Log details of an aiohttp exception."""
     error_name = type(exception).__name__
     error_status = getattr(exception, "status", "N/A")

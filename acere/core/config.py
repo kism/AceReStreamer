@@ -31,7 +31,7 @@ from acere.utils.logger import LoggingConf, get_logger
 def parse_cors(v: Any) -> list[str] | str:
     if isinstance(v, str) and not v.startswith("["):
         return [i.strip() for i in v.split(",")]
-    elif isinstance(v, list | str):
+    if isinstance(v, list | str):
         return v
     raise ValueError(v)
 
@@ -80,11 +80,7 @@ class ScrapeSiteGeneric(BaseModel):
                 name_temp = self.url.host
             if self.url.path:
                 path_segments = self.url.path.strip("/").split("/")
-                name_temp = (
-                    path_segments[0] + "-" + path_segments[-1]
-                    if len(path_segments) >= 2
-                    else path_segments[-1]
-                )  # noqa: PLR2004
+                name_temp = path_segments[0] + "-" + path_segments[-1] if len(path_segments) >= 2 else path_segments[-1]  # noqa: PLR2004
 
             self.name = name_temp
 
@@ -221,9 +217,9 @@ class AceScrapeConf(BaseModel):
     def _slugify(cls, value: str) -> str:
         return slugify(value)
 
-    def _print_results(self, type: str) -> None:
+    def _print_results(self, source_type: str) -> None:
         total_scraper_count = len(self.html) + len(self.iptv_m3u8) + len(self.api)
-        logger.info("Added new %s source, total sources: %d", type, total_scraper_count)
+        logger.info("Added new %s source, total sources: %d", source_type, total_scraper_count)
 
     def add_iptv_source(self, new_site: ScrapeSiteIPTV) -> tuple[bool, str]:
         """Add an IPTV source, no options."""
@@ -322,9 +318,7 @@ class AceScrapeConf(BaseModel):
             logger.warning(site.name)
 
         try:
-            validated = self.model_validate(
-                {model_to_validate: without_source_to_remove}
-            )
+            validated = self.model_validate({model_to_validate: without_source_to_remove})
         except Exception as e:
             return False, str(e)
 
@@ -360,7 +354,9 @@ class AppConf(BaseModel):
         n_very_high_streams = 20
 
         if value < n_min_streams:
-            msg = f"ace_max_streams '{value}' must be at least {n_min_streams}, setting to default of {n_default_streams}"
+            msg = (
+                f"ace_max_streams '{value}' must be at least {n_min_streams}, setting to default of {n_default_streams}"
+            )
             logger.warning(msg)
             value = n_default_streams
 
@@ -413,9 +409,7 @@ class AceReStreamerConf(BaseSettings):
     SECRET_KEY: str = ""
     FIRST_SUPERUSER: str = "admin"
     FIRST_SUPERUSER_PASSWORD: str = ""
-    BACKEND_CORS_ORIGINS: Annotated[
-        list[AnyUrl] | str, BeforeValidator(parse_cors)
-    ] = []
+    BACKEND_CORS_ORIGINS: Annotated[list[AnyUrl] | str, BeforeValidator(parse_cors)] = []
 
     @classmethod
     def settings_customise_sources(
@@ -452,9 +446,7 @@ class AceReStreamerConf(BaseSettings):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def all_cors_origins(self) -> list[str]:
-        return [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS] + [
-            self.FRONTEND_HOST
-        ]
+        return [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS] + [self.FRONTEND_HOST]
 
     def write_config(self, config_path: Path | None = None) -> None:
         """Write the current settings to a JSON file."""
@@ -475,18 +467,11 @@ class AceReStreamerConf(BaseSettings):
 
         new_file_content_str = json.dumps(config_data)
 
-        if (
-            existing_data != config_data
-        ):  # The new object will be valid, so we back up the old one
-            time_str = datetime.datetime.now(tz=OUR_TIMEZONE).strftime(
-                "%Y-%m-%d_%H%M%S"
-            )
+        if existing_data != config_data:  # The new object will be valid, so we back up the old one
+            time_str = datetime.datetime.now(tz=OUR_TIMEZONE).strftime("%Y-%m-%d_%H%M%S")
             config_backup_dir = config_path.parent / "config_backups"
             config_backup_dir.mkdir(parents=True, exist_ok=True)
-            backup_file = (
-                config_backup_dir
-                / f"{config_path.stem}_{time_str}{config_path.suffix}.bak"
-            )
+            backup_file = config_backup_dir / f"{config_path.stem}_{time_str}{config_path.suffix}.bak"
             logger.warning(
                 "Validation has changed the config file, backing up the old one to %s",
                 backup_file,

@@ -41,9 +41,7 @@ class ContentIdInfohashDatabaseHandler(BaseDatabaseHandler):
     def get_infohash(self, content_id: str) -> str:
         """Get infohash by content_id."""
         with self._get_session() as session:
-            mapping = session.exec(
-                select(ContentIdInfohash).where(ContentIdInfohash.content_id == content_id)
-            ).first()
+            mapping = session.exec(select(ContentIdInfohash).where(ContentIdInfohash.content_id == content_id)).first()
             if isinstance(mapping, ContentIdInfohash):
                 return mapping.infohash
         return ""
@@ -51,9 +49,7 @@ class ContentIdInfohashDatabaseHandler(BaseDatabaseHandler):
     def get_content_id(self, infohash: str) -> str:
         """Get content_id by infohash."""
         with self._get_session() as session:
-            mapping = session.exec(
-                select(ContentIdInfohash).where(ContentIdInfohash.infohash == infohash)
-            ).first()
+            mapping = session.exec(select(ContentIdInfohash).where(ContentIdInfohash.infohash == infohash)).first()
             if isinstance(mapping, ContentIdInfohash):
                 return mapping.content_id
         return ""

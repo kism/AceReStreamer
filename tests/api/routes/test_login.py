@@ -1,4 +1,3 @@
-
 from fastapi.testclient import TestClient
 
 from acere.constants import API_V1_STR
@@ -28,9 +27,7 @@ def test_get_access_token_incorrect_password(client: TestClient) -> None:
     assert r.status_code == 400
 
 
-def test_use_access_token(
-    client: TestClient, superuser_token_headers: dict[str, str]
-) -> None:
+def test_use_access_token(client: TestClient, superuser_token_headers: dict[str, str]) -> None:
     r = client.post(
         f"{API_V1_STR}/login/test-token",
         headers=superuser_token_headers,
@@ -40,9 +37,7 @@ def test_use_access_token(
     assert "is_superuser" in result
 
 
-def test_reset_password_invalid_token(
-    client: TestClient, superuser_token_headers: dict[str, str]
-) -> None:
+def test_reset_password_invalid_token(client: TestClient, superuser_token_headers: dict[str, str]) -> None:
     data = {"new_password": "changethis", "token": "invalid"}
     r = client.post(
         f"{API_V1_STR}/reset-password/",

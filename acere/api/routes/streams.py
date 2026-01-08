@@ -12,9 +12,7 @@ from acere.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-router = APIRouter(
-    prefix="/streams", tags=["Streams"], dependencies=[Depends(get_current_user)]
-)
+router = APIRouter(prefix="/streams", tags=["Streams"], dependencies=[Depends(get_current_user)])
 
 
 # region /api/stream(s)

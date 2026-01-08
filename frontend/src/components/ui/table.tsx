@@ -18,6 +18,7 @@ const presetRootProps: Record<TablePreset, Partial<
     size: { base: "sm", md: "md" },
     interactive: true,
     stickyHeader: true,
+    margin: "0"
   },
 }
 
@@ -33,7 +34,7 @@ export const AppTableRoot = React.forwardRef<
   const { preset, ...rest } = props
   const baseProps = preset ? presetRootProps[preset] : undefined
 
-  return <Table.Root ref={ref} {...baseProps} {...rest} />
+  return <Table.Root  my={2} ref={ref} {...baseProps} {...rest} />
 })
 
 export type TableScrollAreaPreset = "fullscreen"
@@ -93,7 +94,7 @@ export const TableColumnHeader = React.forwardRef<
   React.ComponentRef<typeof Table.ColumnHeader>,
   React.ComponentProps<typeof Table.ColumnHeader>
 >(function TableColumnHeader(props, ref) {
-  return <Table.ColumnHeader ref={ref} px={2} py={1} fontWeight={"bold"} {...props} />
+  return <Table.ColumnHeader  textAlign={"center"} ref={ref} px={2} py={1} fontWeight={"bold"} {...props} />
 })
 
 export const TableRowHeader = React.forwardRef<
