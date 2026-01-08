@@ -3,7 +3,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { type UserPublic, UsersService } from "@/client"
 import AddUser from "@/components/Admin/User/AddUser"
-import { UserActionsMenu } from "@/components/Common/UserActionsMenu"
+import DeleteUser from "@/components/Admin/User/DeleteUser"
+import EditUser from "@/components/Admin/User/EditUser"
 import PendingUsers from "@/components/Pending/PendingUsers"
 import {
   PaginationItems,
@@ -75,10 +76,18 @@ function UsersTable() {
               <TableCell>{user.is_superuser ? "Superuser" : "User"}</TableCell>
               <TableCell>{user.is_active ? "Active" : "Inactive"}</TableCell>
               <TableCell>
-                <UserActionsMenu
-                  user={user}
-                  disabled={currentUser?.id === user.id}
-                />
+                <Flex gap={2}>
+                  <EditUser
+                    user={user}
+                    size="xs"
+                    disabled={currentUser?.id === user.id}
+                  />
+                  <DeleteUser
+                    id={user.id}
+                    size="xs"
+                    disabled={currentUser?.id === user.id}
+                  />
+                </Flex>
               </TableCell>
             </TableRow>
           ))}

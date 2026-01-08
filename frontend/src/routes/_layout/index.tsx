@@ -83,7 +83,7 @@ function WebPlayer() {
             onClick={() => setIsExpanded(!isExpanded)}
           >
             {isExpanded ? <FiMinimize2 /> : <FiMaximize2 />}
-            Expand player
+            {isExpanded ? "Restore Layout" : "Expand Player"}
           </IconButton>
         </HStack>
 
@@ -94,7 +94,7 @@ function WebPlayer() {
       {/* Right pane - Items Table */}
       <Flex
         direction="column"
-        flex={{ base: "1", lg: "1" }}
+        flex={{ base: "0 0 auto", lg: "1" }}
         maxW={{ base: "100%", lg: isExpanded ? "100%" : "300px" }}
         minW="200px"
       >

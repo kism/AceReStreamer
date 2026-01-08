@@ -11,9 +11,7 @@ from acere.models import User, UserCreate
 from tests.utils.utils import random_lower_string
 
 
-def test_get_users_superuser_me(
-    client: TestClient, superuser_token_headers: dict[str, str]
-) -> None:
+def test_get_users_superuser_me(client: TestClient, superuser_token_headers: dict[str, str]) -> None:
     r = client.get(f"{API_V1_STR}/users/me", headers=superuser_token_headers)
     current_user = r.json()
     assert current_user
@@ -22,9 +20,7 @@ def test_get_users_superuser_me(
     assert current_user["username"] == settings.FIRST_SUPERUSER
 
 
-def test_get_existing_user(
-    client: TestClient, superuser_token_headers: dict[str, str], db: Session
-) -> None:
+def test_get_existing_user(client: TestClient, superuser_token_headers: dict[str, str], db: Session) -> None:
     username = random_lower_string()
     password = random_lower_string()
     user_in = UserCreate(username=username, password=password)
@@ -68,9 +64,7 @@ def test_get_existing_user_current_user(client: TestClient, db: Session) -> None
     assert existing_user.username == api_user["username"]
 
 
-def test_get_existing_user_permissions_error(
-    client: TestClient, normal_user_token_headers: dict[str, str]
-) -> None:
+def test_get_existing_user_permissions_error(client: TestClient, normal_user_token_headers: dict[str, str]) -> None:
     r = client.get(
         f"{API_V1_STR}/users/{uuid.uuid4()}",
         headers=normal_user_token_headers,
@@ -97,9 +91,7 @@ def test_create_user_existing_username(
     assert "_id" not in created_user
 
 
-def test_create_user_by_normal_user(
-    client: TestClient, normal_user_token_headers: dict[str, str]
-) -> None:
+def test_create_user_by_normal_user(client: TestClient, normal_user_token_headers: dict[str, str]) -> None:
     username = random_lower_string()
     password = random_lower_string()
     data = {"username": username, "password": password}
@@ -111,9 +103,7 @@ def test_create_user_by_normal_user(
     assert r.status_code == 403
 
 
-def test_retrieve_users(
-    client: TestClient, superuser_token_headers: dict[str, str], db: Session
-) -> None:
+def test_retrieve_users(client: TestClient, superuser_token_headers: dict[str, str], db: Session) -> None:
     username = random_lower_string()
     password = random_lower_string()
     user_in = UserCreate(username=username, password=password)
@@ -133,9 +123,7 @@ def test_retrieve_users(
         assert "username" in item
 
 
-def test_update_user_me(
-    client: TestClient, normal_user_token_headers: dict[str, str], db: Session
-) -> None:
+def test_update_user_me(client: TestClient, normal_user_token_headers: dict[str, str], db: Session) -> None:
     full_name = "Updated Name"
     username = random_lower_string()
     data = {"full_name": full_name, "username": username}
@@ -156,9 +144,7 @@ def test_update_user_me(
     assert user_db.full_name == full_name
 
 
-def test_update_password_me(
-    client: TestClient, superuser_token_headers: dict[str, str], db: Session
-) -> None:
+def test_update_password_me(client: TestClient, superuser_token_headers: dict[str, str], db: Session) -> None:
     new_password = random_lower_string()
     data = {
         "current_password": settings.FIRST_SUPERUSER_PASSWORD,
@@ -195,9 +181,7 @@ def test_update_password_me(
     assert verify_password(settings.FIRST_SUPERUSER_PASSWORD, user_db.hashed_password)
 
 
-def test_update_password_me_incorrect_password(
-    client: TestClient, superuser_token_headers: dict[str, str]
-) -> None:
+def test_update_password_me_incorrect_password(client: TestClient, superuser_token_headers: dict[str, str]) -> None:
     new_password = random_lower_string()
     data = {"current_password": new_password, "new_password": new_password}
     r = client.patch(
@@ -228,9 +212,7 @@ def test_update_user_me_username_exists(
     assert r.json()["detail"] == "User with this username already exists"
 
 
-def test_update_password_me_same_password_error(
-    client: TestClient, superuser_token_headers: dict[str, str]
-) -> None:
+def test_update_password_me_same_password_error(client: TestClient, superuser_token_headers: dict[str, str]) -> None:
     data = {
         "current_password": settings.FIRST_SUPERUSER_PASSWORD,
         "new_password": settings.FIRST_SUPERUSER_PASSWORD,
@@ -242,9 +224,7 @@ def test_update_password_me_same_password_error(
     )
     assert r.status_code == 400
     updated_user = r.json()
-    assert (
-        updated_user["detail"] == "New password cannot be the same as the current one"
-    )
+    assert updated_user["detail"] == "New password cannot be the same as the current one"
 
 
 def test_register_user(client: TestClient, db: Session) -> None:
@@ -285,9 +265,7 @@ def test_register_user_already_exists_error(client: TestClient) -> None:
     assert r.json()["detail"] == "The user with this username already exists in the system"
 
 
-def test_update_user(
-    client: TestClient, superuser_token_headers: dict[str, str], db: Session
-) -> None:
+def test_update_user(client: TestClient, superuser_token_headers: dict[str, str], db: Session) -> None:
     username = random_lower_string()
     password = random_lower_string()
     user_in = UserCreate(username=username, password=password)
@@ -311,9 +289,7 @@ def test_update_user(
     assert user_db.full_name == "Updated_full_name"
 
 
-def test_update_user_not_exists(
-    client: TestClient, superuser_token_headers: dict[str, str]
-) -> None:
+def test_update_user_not_exists(client: TestClient, superuser_token_headers: dict[str, str]) -> None:
     data = {"full_name": "Updated_full_name"}
     r = client.patch(
         f"{API_V1_STR}/users/{uuid.uuid4()}",
@@ -324,9 +300,7 @@ def test_update_user_not_exists(
     assert r.json()["detail"] == "The user with this id does not exist in the system"
 
 
-def test_update_user_username_exists(
-    client: TestClient, superuser_token_headers: dict[str, str], db: Session
-) -> None:
+def test_update_user_username_exists(client: TestClient, superuser_token_headers: dict[str, str], db: Session) -> None:
     username = random_lower_string()
     password = random_lower_string()
     user_in = UserCreate(username=username, password=password)
@@ -378,9 +352,7 @@ def test_delete_user_me(client: TestClient, db: Session) -> None:
     assert user_db is None
 
 
-def test_delete_user_me_as_superuser(
-    client: TestClient, superuser_token_headers: dict[str, str]
-) -> None:
+def test_delete_user_me_as_superuser(client: TestClient, superuser_token_headers: dict[str, str]) -> None:
     r = client.delete(
         f"{API_V1_STR}/users/me",
         headers=superuser_token_headers,
@@ -390,9 +362,7 @@ def test_delete_user_me_as_superuser(
     assert response["detail"] == "Super users are not allowed to delete themselves"
 
 
-def test_delete_user_super_user(
-    client: TestClient, superuser_token_headers: dict[str, str], db: Session
-) -> None:
+def test_delete_user_super_user(client: TestClient, superuser_token_headers: dict[str, str], db: Session) -> None:
     username = random_lower_string()
     password = random_lower_string()
     user_in = UserCreate(username=username, password=password)
@@ -409,9 +379,7 @@ def test_delete_user_super_user(
     assert result is None
 
 
-def test_delete_user_not_found(
-    client: TestClient, superuser_token_headers: dict[str, str]
-) -> None:
+def test_delete_user_not_found(client: TestClient, superuser_token_headers: dict[str, str]) -> None:
     r = client.delete(
         f"{API_V1_STR}/users/{uuid.uuid4()}",
         headers=superuser_token_headers,
@@ -423,9 +391,7 @@ def test_delete_user_not_found(
 def test_delete_user_current_super_user_error(
     client: TestClient, superuser_token_headers: dict[str, str], db: Session
 ) -> None:
-    super_user = crud.get_user_by_username(
-        session=db, username=settings.FIRST_SUPERUSER
-    )
+    super_user = crud.get_user_by_username(session=db, username=settings.FIRST_SUPERUSER)
     assert super_user
     user_id = super_user.id
 

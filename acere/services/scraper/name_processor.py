@@ -80,15 +80,11 @@ class StreamNameProcessor:
             title = title.removeprefix(prefix)
 
         title = title.split("\n")[0].strip()  # Remove any newlines
-        title = ACE_ID_PATTERN.sub(
-            "", title
-        ).strip()  # Remove any ace 40 digit hex ids from the title
+        title = ACE_ID_PATTERN.sub("", title).strip()  # Remove any ace 40 digit hex ids from the title
         title = self._do_replacements(title)
         return title.strip()
 
-    def candidates_regex_cleanup(
-        self, candidate_titles: list[str], regex: str
-    ) -> list[str]:
+    def candidates_regex_cleanup(self, candidate_titles: list[str], regex: str) -> list[str]:
         """Cleanup the title using a regex."""
         if regex == "":
             return candidate_titles
@@ -144,9 +140,9 @@ class StreamNameProcessor:
         # Back to a string to check the prefixes
         url_str = url.encoded_string()
 
-        valid = any(
-            url_str.startswith(prefix) for prefix in ACE_URL_PREFIXES_CONTENT_ID
-        ) or any(url_str.startswith(prefix) for prefix in ACE_URL_PREFIXES_INFOHASH)
+        valid = any(url_str.startswith(prefix) for prefix in ACE_URL_PREFIXES_CONTENT_ID) or any(
+            url_str.startswith(prefix) for prefix in ACE_URL_PREFIXES_INFOHASH
+        )
 
         if not valid:
             return None
@@ -201,9 +197,7 @@ class StreamNameProcessor:
             if logo_path.is_file():
                 return f"{title_slug}.{extension}"
 
-        logger.warning(
-            "TVG logo not found, download manually and name it: %s.png", title_slug
-        )
+        logger.warning("TVG logo not found, download manually and name it: %s.png", title_slug)
 
         return ""
 
@@ -211,7 +205,6 @@ class StreamNameProcessor:
         """Cleanup the group title."""
         # Put into sentence case
         for category, keywords in self._category_mapping.items():
-
             # For example, if the catetory is Sports but the group title is sport
             if any(keyword in group_title.lower() for keyword in keywords):
                 group_title = category

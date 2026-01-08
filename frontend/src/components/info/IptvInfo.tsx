@@ -39,27 +39,29 @@ export function IptvInfo({ user }: IptvInfoProps) {
           when adding. EPG should work automatically. If its not available,
           follow the regular IPTV instructions.
         </Text>
-        <AppTableRoot preset="outlineSm" my={2}>
-          <TableBody>
-            {[
-              { name: "Server/Portal URL", value: serverAddress },
-              { name: "Username", value: username },
-              { name: "Password", value: password },
-            ].map(({ name, value }) => (
-              <TableRow key={name}>
-                <TableCell bg="bg.subtle" whiteSpace="nowrap" width="1%">
-                  {name}
-                </TableCell>
-                <TableCell>
-                  <HStack>
-                    <Code>{value}</Code>
-                    <CopyButton text={value} />
-                  </HStack>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </AppTableRoot>
+        <Box maxWidth="fit-content">
+          <AppTableRoot preset="outlineSm">
+            <TableBody>
+              {[
+                { name: "Server/Portal URL", value: serverAddress },
+                { name: "Username", value: username },
+                { name: "Password", value: password },
+              ].map(({ name, value }) => (
+                <TableRow key={name}>
+                  <TableCell bg="bg.subtle" whiteSpace="nowrap" width="1%">
+                    {name}
+                  </TableCell>
+                  <TableCell>
+                    <HStack>
+                      <Code>{value}</Code>
+                      <CopyButton text={value} />
+                    </HStack>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </AppTableRoot>
+        </Box>
         <Text>If authentication is disabled, any value will work.</Text>
       </Box>
 
@@ -70,29 +72,31 @@ export function IptvInfo({ user }: IptvInfoProps) {
           EPG url.
         </Text>
         <Text>Some apps will only work if this site is on https.</Text>
-        <AppTableRoot preset="outlineSm" my={2}>
-          <TableBody>
-            {[
-              { name: "Playlist URL", url: playlistUrl },
-              { name: "Playlist URL (.m3u)", url: playlistM3uUrl },
-              { name: "Playlist URL (.m3u8)", url: playlistM3u8Url },
-              { name: "EPG URL", url: epgUrl },
-              { name: "EPG URL (.xml)", url: epgXmlUrl },
-            ].map(({ name, url }) => (
-              <TableRow key={name}>
-                <TableCell bg="bg.subtle" whiteSpace="nowrap" width="1%">
-                  {name}
-                </TableCell>
-                <TableCell>
-                  <HStack>
-                    <Code>{url}</Code>
-                    <CopyButton text={url} />
-                  </HStack>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </AppTableRoot>
+        <Box maxWidth="fit-content">
+          <AppTableRoot preset="outlineSm">
+            <TableBody>
+              {[
+                { name: "Playlist URL", url: playlistUrl },
+                { name: "Playlist URL (.m3u)", url: playlistM3uUrl },
+                { name: "Playlist URL (.m3u8)", url: playlistM3u8Url },
+                { name: "EPG URL", url: epgUrl },
+                { name: "EPG URL (.xml)", url: epgXmlUrl },
+              ].map(({ name, url }) => (
+                <TableRow key={name}>
+                  <TableCell bg="bg.subtle" whiteSpace="nowrap" width="1%">
+                    {name}
+                  </TableCell>
+                  <TableCell>
+                    <HStack>
+                      <Code>{url}</Code>
+                      <CopyButton text={url} />
+                    </HStack>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </AppTableRoot>
+        </Box>
       </Box>
     </VStack>
   )

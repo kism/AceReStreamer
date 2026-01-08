@@ -1,7 +1,7 @@
 import * as fs from "node:fs"
 import { routeTree } from "../src/routeTree.gen"
 
-function collectPaths(route: any, parentPath: string = ""): string[] {
+function collectAppPaths(route: any, parentPath: string = ""): string[] {
   const paths: string[] = []
 
   // Get path from the route's options if available
@@ -19,15 +19,44 @@ function collectPaths(route: any, parentPath: string = ""): string[] {
   // Recursively collect from children
   if (route.children) {
     for (const child of Object.values(route.children)) {
-      paths.push(...collectPaths(child, fullPath))
+      paths.push(...collectAppPaths(child, fullPath))
     }
   }
 
   return paths
 }
 
-const allPaths = collectPaths(routeTree)
-const uniquePaths = [...new Set(allPaths)].filter((p) => p && p !== "").sort()
+function collectPublicPaths(): string[] {
+  const publicDirectory = "./public"
+
+  const paths: string[] = []
+
+  function walkDir(currentPath: string, urlPath: string) {
+    const entries = fs.readdirSync(currentPath, { withFileTypes: true })
+
+    for (const entry of entries) {
+      const entryPath = `${currentPath}/${entry.name}`
+      const entryUrlPath = `${urlPath}/${entry.name}`.replace(/\/+/g, "/")
+
+      if (entry.isDirectory()) {
+        walkDir(entryPath, entryUrlPath)
+      } else {
+        paths.push(entryUrlPath)
+      }
+    }
+  }
+
+  walkDir(publicDirectory, "")
+
+  return paths
+}
+
+const appPaths = collectAppPaths(routeTree)
+const publicPaths = collectPublicPaths()
+
+const uniquePaths = [...new Set([...appPaths, ...publicPaths])]
+  .filter((p) => p && p !== "")
+  .sort()
 
 // Check if output path argument is provided
 const outputPath = process.argv[2]

@@ -3,8 +3,9 @@ import { useQuery } from "@tanstack/react-query"
 
 import "@fontsource/fira-code/700.css"
 
-import { HealthService } from "@/client"
+import { type HealthHealthResponse, HealthService } from "@/client"
 import useAuth from "@/hooks/useAuth"
+import packageJson from "../../../package.json"
 import {
   DrawerBackdrop,
   DrawerBody,
@@ -25,6 +26,43 @@ const AceReStreamerLogo = () => (
     AceReStreamer
   </Text>
 )
+
+interface VersionBlockProps {
+  healthData: HealthHealthResponse | null
+}
+
+function VersionBlock({ healthData }: VersionBlockProps) {
+  const textProps = {
+    fontSize: "xs",
+    p: 2,
+    truncate: true,
+    maxW: "sm",
+    color: "fg.muted",
+  }
+
+  const backendVersion = healthData?.version ?? "unknown"
+  const backendVersionFull = healthData?.version_full ?? "unknown"
+
+  const frontendVersionFull = `${packageJson.version}-${__GIT_BRANCH__}/${__GIT_COMMIT__}`
+  const frontendVersion = packageJson.version
+
+  if (
+    //If we have full version information from both and they match
+    backendVersionFull === frontendVersionFull ||
+    //If the short versions match, and there is no git info from the backend
+    (backendVersion === frontendVersion &&
+      backendVersion === backendVersionFull)
+  ) {
+    return <Text {...textProps}>{backendVersionFull}</Text>
+  }
+
+  return (
+    <Box>
+      <Text {...textProps}>{frontendVersion}</Text>
+      {backendVersion && <Text {...textProps}>{backendVersion}</Text>}
+    </Box>
+  )
+}
 
 const Sidebar = ({
   mobileOpen,
@@ -61,11 +99,7 @@ const Sidebar = ({
                   <Text fontSize="sm" p={2} truncate maxW="sm">
                     Logged in as: {currentUser.username}
                   </Text>
-                  {healthData?.version_full && (
-                    <Text fontSize="xs" px={2} pb={2} color="fg.muted">
-                      {healthData.version_full}
-                    </Text>
-                  )}
+                  <VersionBlock healthData={healthData ?? null} />
                 </Box>
               )}
             </Flex>
@@ -108,11 +142,7 @@ const Sidebar = ({
                     <Text fontSize="sm" p={2} truncate maxW="sm">
                       Logged in as: {currentUser.username}
                     </Text>
-                    {healthData?.version_full && (
-                      <Text fontSize="xs" px={2} pb={2} color="fg.muted">
-                        {healthData.version_full}
-                      </Text>
-                    )}
+                    <VersionBlock healthData={healthData ?? null} />
                   </Box>
                 )}
               </Flex>

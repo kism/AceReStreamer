@@ -45,7 +45,9 @@ class LoggingConf(BaseModel):
         """Validate the logging level."""
         if isinstance(self.level, int):
             if self.level < MIN_LOG_LEVEL_INT or self.level > MAX_LOG_LEVEL_INT:
-                msg = f"Invalid logging level {self.level}, must be between {MIN_LOG_LEVEL_INT} and {MAX_LOG_LEVEL_INT}."
+                msg = (
+                    f"Invalid logging level {self.level}, must be between {MIN_LOG_LEVEL_INT} and {MAX_LOG_LEVEL_INT}."
+                )
                 logger.warning(msg)
                 logger.warning("Defaulting logging level to 'INFO'.")
                 self.level = "INFO"
@@ -120,19 +122,13 @@ def setup_logger(
         in_logger = logging.getLogger()  # Get the root logger
 
     # If the logger doesn't have a console handler (root logger doesn't by default)
-    if not any(
-        isinstance(handler, (RichHandler, StreamHandler))
-        for handler in in_logger.handlers
-    ):
+    if not any(isinstance(handler, (RichHandler, StreamHandler)) for handler in in_logger.handlers):
         _add_console_handler(settings, in_logger)
 
     _set_log_level(settings, in_logger)
 
     # If we are logging to a file
-    if (
-        not any(isinstance(handler, FileHandler) for handler in in_logger.handlers)
-        and settings.path
-    ):
+    if not any(isinstance(handler, FileHandler) for handler in in_logger.handlers) and settings.path:
         _add_file_handler(in_logger, settings.path)
 
     logging.getLogger("uvicorn").setLevel(logging.DEBUG)
@@ -224,13 +220,10 @@ def _add_file_handler(in_logger: logging.Logger, log_path: Path) -> None:
         err = "You are trying to log to a directory, try a file"
         raise IsADirectoryError(err) from exc
     except PermissionError as exc:
-        err = "The user running this does not have access to the file: " + str(
-            log_path.resolve()
-        )
+        err = "The user running this does not have access to the file: " + str(log_path.resolve())
         raise PermissionError(err) from exc
 
     formatter = logging.Formatter(SIMPLE_LOG_FORMAT_DEBUG)
     file_handler.setFormatter(formatter)
     in_logger.addHandler(file_handler)
     logger.info("Logging to file: %s", log_path)
-

@@ -29,7 +29,7 @@ function UserSettings() {
 
   return (
     <VStack gap={6} align="stretch">
-      <Tabs.Root defaultValue="my-profile" variant="subtle">
+      <Tabs.Root size="sm" defaultValue="my-profile" variant="subtle">
         <Tabs.List>
           {tabsConfig.map((tab) => (
             <Tabs.Trigger key={tab.value} value={tab.value}>

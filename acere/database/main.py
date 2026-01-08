@@ -11,7 +11,6 @@ class DatabaseInstance:
 
     def __init__(self) -> None:
         """Initialize the database instance."""
-
         databse_path = Path("./instance/acerestreamer.db")
 
         self._engine = create_engine(f"sqlite:///{databse_path}")

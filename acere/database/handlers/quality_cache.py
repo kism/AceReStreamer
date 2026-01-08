@@ -33,9 +33,7 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
     def get_quality(self, content_id: str) -> Quality:
         """Get the quality for a given content_id."""
         with self._get_session() as session:
-            result = session.exec(
-                select(AceQualityCache).where(AceQualityCache.content_id == content_id)
-            ).first()
+            result = session.exec(select(AceQualityCache).where(AceQualityCache.content_id == content_id)).first()
             if result:
                 return Quality(
                     quality=result.quality,
@@ -50,9 +48,7 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
     def set_quality(self, content_id: str, quality: Quality) -> None:
         """Set the quality for a given content_id."""
         with self._get_session() as session:
-            result = session.exec(
-                select(AceQualityCache).where(AceQualityCache.content_id == content_id)
-            ).first()
+            result = session.exec(select(AceQualityCache).where(AceQualityCache.content_id == content_id)).first()
             if not result:
                 result = AceQualityCache(content_id=content_id)
                 session.add(result)
@@ -69,7 +65,8 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
             for entry in all_entries:
                 if not check_valid_content_id_or_infohash(entry.content_id):
                     logger.error(
-                        "Found invalid content_id in quality cache: %s", entry.content_id
+                        "Found invalid content_id in quality cache: %s",
+                        entry.content_id,
                     )
                     session.delete(entry)
             session.commit()

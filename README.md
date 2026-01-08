@@ -91,9 +91,6 @@ see iptv.html.j2
 ## todo
 
 - No auth mode
-- consistent theming
-  - button sizes
-  - inconsistent close button
 - stream restarting in hls.js
 - stricter ruff rules
 - readme
@@ -102,3 +99,4 @@ see iptv.html.j2
 - name the loggers
 - case insensitive username
 - better names of unknown streams
+- embed commit and branch in container builds?

@@ -18,9 +18,7 @@ QUALITY_ON_FIRST_SUCCESS = 20
 MIN_QUALITY = 0
 MAX_QUALITY = 99
 
-NEW_STREAM_THRESHOLD = (
-    20  # If the TS number is below this, we are more lenient with the quality rating
-)
+NEW_STREAM_THRESHOLD = 20  # If the TS number is below this, we are more lenient with the quality rating
 
 
 # region: Quality
@@ -48,9 +46,7 @@ class Quality(BaseModel):
             ts_number_result = RE_EXTRACT_TS_NUMBER.search(last_line)
             ts_number = ts_number_result.group(1) if ts_number_result else None
             if not isinstance(ts_number, str):
-                logger.warning(
-                    "Could not extract TS number from last line: %s", last_line
-                )
+                logger.warning("Could not extract TS number from last line: %s", last_line)
                 return  # Weird
             ts_number_int: int = int(ts_number)
 
@@ -81,9 +77,7 @@ class Quality(BaseModel):
                 seconds_int = float(seconds.group(1))
                 self._next_segment_expected = timedelta(seconds=seconds_int)
 
-        if (
-            rating > 0
-        ):  # If it works at all, we set the quality to a minimum of QUALITY_ON_FIRST_SUCCESS
+        if rating > 0:  # If it works at all, we set the quality to a minimum of QUALITY_ON_FIRST_SUCCESS
             self.quality = max(QUALITY_ON_FIRST_SUCCESS, self.quality)
             self.has_ever_worked = True
 

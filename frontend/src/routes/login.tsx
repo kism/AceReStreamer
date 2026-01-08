@@ -2,7 +2,10 @@ import { Container, Input, Text } from "@chakra-ui/react"
 import { createFileRoute, redirect } from "@tanstack/react-router"
 import { type SubmitHandler, useForm } from "react-hook-form"
 import { FiLock, FiUser } from "react-icons/fi"
-import type { Body_Login_login_access_token as AccessToken } from "@/client"
+import {
+  type Body_Login_login_access_token as AccessToken,
+  HealthService,
+} from "@/client"
 import { Button } from "@/components/ui/button"
 import { Field } from "@/components/ui/field"
 import { InputGroup } from "@/components/ui/input-group"
@@ -10,6 +13,8 @@ import { PasswordInput } from "@/components/ui/password-input"
 import useAuth, { isLoggedIn } from "@/hooks/useAuth"
 import { passwordRules, usernamePattern } from "../utils"
 import "@fontsource/fira-code/700.css"
+import { useQuery } from "@tanstack/react-query"
+import useCustomToast from "../hooks/useCustomToast"
 
 export const Route = createFileRoute("/login")({
   component: Login,
@@ -21,6 +26,20 @@ export const Route = createFileRoute("/login")({
     }
   },
 })
+
+function getHealth() {
+  const { data: _healthData, error } = useQuery({
+    queryKey: ["health"],
+    queryFn: HealthService.health,
+  })
+
+  const { showErrorToast } = useCustomToast()
+
+  if (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    showErrorToast(`Cannot reach backend: ${errorMessage}`)
+  }
+}
 
 function Login() {
   const { loginMutation, error, resetError } = useAuth()
@@ -48,6 +67,7 @@ function Login() {
       // error is handled by useAuth hook
     }
   }
+  getHealth()
 
   return (
     <Container

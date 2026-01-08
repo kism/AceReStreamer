@@ -70,9 +70,7 @@ def generate_app_config_file(
         if overwrite
         else f"Generating configuration file at {app_config_path}"
     )
-    _check_config_path(
-        app_config_path, ".json", expect_config=False, overwrite=overwrite
-    )
+    _check_config_path(app_config_path, ".json", expect_config=False, overwrite=overwrite)
 
     logger.info(msg)
 
@@ -87,15 +85,11 @@ def generate_app_config_file(
 
     logger.info("Including HTML scraper in the configuration.")
     config.scraper.html.clear()
-    config.scraper.html.append(
-        ScrapeSiteHTML(name="Example HTML", url=HttpUrl("https://example.com"))
-    )
+    config.scraper.html.append(ScrapeSiteHTML(name="Example HTML", url=HttpUrl("https://example.com")))
 
     logger.info("Including IPTV M3U8 scraper in the configuration.")
     config.scraper.iptv_m3u8.clear()
-    config.scraper.iptv_m3u8.append(
-        ScrapeSiteIPTV(name="Example IPTV", url=HttpUrl("https://example.com/iptv.txt"))
-    )
+    config.scraper.iptv_m3u8.append(ScrapeSiteIPTV(name="Example IPTV", url=HttpUrl("https://example.com/iptv.txt")))
 
     config.epgs.clear()
     config.epgs.append(EPGInstanceConf())
@@ -105,9 +99,7 @@ def generate_app_config_file(
 
 def main() -> None:
     """Main CLI for config generation."""
-    parser = argparse.ArgumentParser(
-        description=f"Acestream Webplayer CLI {__version__} for generating config."
-    )
+    parser = argparse.ArgumentParser(description=f"Acestream Webplayer CLI {__version__} for generating config.")
     parser.add_argument(
         "--app-config",
         type=Path,
@@ -125,9 +117,7 @@ def main() -> None:
     setup_logger()
 
     if args.app_config is None:
-        logger.error(
-            "No application configuration path provided. Use --app-config to specify a path."
-        )
+        logger.error("No application configuration path provided. Use --app-config to specify a path.")
         sys.exit(1)
 
     logger.info("Acestream Webplayer Config CLI %s", __version__)

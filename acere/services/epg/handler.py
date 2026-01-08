@@ -55,9 +55,7 @@ class EPGHandler:
 
         self._update_epgs()
 
-        logger.info(
-            "Initialised EPGHandler with %d EPG configurations", len(epg_conf_list)
-        )
+        logger.info("Initialised EPGHandler with %d EPG configurations", len(epg_conf_list))
 
     # region Helpers
     def _create_tv_element(self) -> etree._Element:
@@ -71,17 +69,13 @@ class EPGHandler:
     def _merge_epgs(self) -> etree._Element:
         """Merge all EPG data into a single XML structure."""
         logger.debug("Merging EPG data from %d sources", len(self.epgs))
-        merged_data = (
-            self._create_tv_element()
-        )  # Create a base XML element for the merged EPG
+        merged_data = self._create_tv_element()  # Create a base XML element for the merged EPG
 
         for epg in self.epgs:
             epg_data = epg.get_data()
             if epg_data is not None:
                 merged_data.extend(
-                    etree.fromstring(
-                        epg_data
-                    )  # Parse the EPG data and extend the merged_data
+                    etree.fromstring(epg_data)  # Parse the EPG data and extend the merged_data
                 )
             else:
                 logger.warning("EPG data for %s is None, skipping", epg.region_code)
@@ -93,14 +87,10 @@ class EPGHandler:
         merged_epgs = self._merge_epgs()
 
         if not self.set_of_tvg_ids:
-            logger.warning(
-                "No TVG IDs found in the current streams, skipping EPG condensation"
-            )
+            logger.warning("No TVG IDs found in the current streams, skipping EPG condensation")
             return
 
-        new_condensed_data = (
-            self._create_tv_element()
-        )  # Create a base XML element for the merged EPG
+        new_condensed_data = self._create_tv_element()  # Create a base XML element for the merged EPG
 
         for channel in merged_epgs.findall("channel"):
             tvg_id = channel.get("id")
@@ -120,9 +110,7 @@ class EPGHandler:
 
         # Update EPG ET, generate bytes local
         self.condensed_epg = new_condensed_data
-        new_condensed_epg_bytes = etree.tostring(
-            self.condensed_epg, encoding="utf-8", xml_declaration=True
-        )
+        new_condensed_epg_bytes = etree.tostring(self.condensed_epg, encoding="utf-8", xml_declaration=True)
 
         # Check bytes, local vs self.
         if new_condensed_epg_bytes == self.condensed_epg_bytes:
@@ -251,9 +239,7 @@ class EPGHandler:
 
             for i, result in enumerate(results):
                 if isinstance(result, Exception):
-                    logger.exception(
-                        "Failed to update EPG %s: %s", self.epgs[i].region_code, result
-                    )
+                    logger.exception("Failed to update EPG %s: %s", self.epgs[i].region_code, result)
                 elif result:
                     any_epg_updated = True
 
@@ -273,9 +259,7 @@ class EPGHandler:
                         logger.exception("Failed to condense EPGs")
 
                 time_until_next_update = self._get_time_to_next_update()
-                self.next_update_time = (
-                    datetime.now(tz=OUR_TIMEZONE) + time_until_next_update
-                )
+                self.next_update_time = datetime.now(tz=OUR_TIMEZONE) + time_until_next_update
 
                 time.sleep(time_until_next_update.total_seconds())
 
@@ -283,8 +267,6 @@ class EPGHandler:
             if thread.is_alive():
                 thread.join(timeout=1)
 
-        thread = threading.Thread(
-            target=epg_update_thread, name="EPGHandler: _update_epgs", daemon=True
-        )
+        thread = threading.Thread(target=epg_update_thread, name="EPGHandler: _update_epgs", daemon=True)
         thread.start()
         self._update_threads.append(thread)

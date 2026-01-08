@@ -27,20 +27,11 @@ def generate_readme(instance_path: Path, external_base_url: HttpUrl | None) -> N
 
     for found_playlist in found_playlists:
         playlist_type = next(
-            (
-                playlist_name
-                for playlist_name in M3U_URI_SCHEMES
-                if playlist_name in found_playlist.stem
-            ),
+            (playlist_name for playlist_name in M3U_URI_SCHEMES if playlist_name in found_playlist.stem),
             "unknown",
         )
 
-        playlist_name_nice = (
-            found_playlist.stem.replace(playlist_type, "")
-            .replace("_", " ")
-            .replace("-", " ")
-            .strip()
-        )
+        playlist_name_nice = found_playlist.stem.replace(playlist_type, "").replace("_", " ").replace("-", " ").strip()
 
         if playlist_name_nice not in result_playlists:
             result_playlists[playlist_name_nice] = []
@@ -53,9 +44,7 @@ def generate_readme(instance_path: Path, external_base_url: HttpUrl | None) -> N
         )
         result_playlists[playlist_name_nice].sort(key=lambda x: x.type)
 
-    env = Environment(
-        loader=FileSystemLoader(Path(__file__).parent / "templates"), autoescape=True
-    )
+    env = Environment(loader=FileSystemLoader(Path(__file__).parent / "templates"), autoescape=True)
     template = env.get_template("README.md.j2")
     readme_content = template.render(
         playlists=result_playlists,

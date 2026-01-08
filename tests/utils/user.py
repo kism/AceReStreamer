@@ -7,9 +7,7 @@ from acere.models import User, UserCreate, UserUpdate
 from tests.utils.utils import random_lower_string
 
 
-def user_authentication_headers(
-    *, client: TestClient, username: str, password: str
-) -> dict[str, str]:
+def user_authentication_headers(*, client: TestClient, username: str, password: str) -> dict[str, str]:
     data = {"username": username, "password": password}
 
     r = client.post(f"{API_V1_STR}/login/access-token", data=data)
@@ -27,9 +25,7 @@ def create_random_user(db: Session) -> User:
     return user
 
 
-def authentication_token_from_username(
-    *, client: TestClient, username: str, db: Session
-) -> dict[str, str]:
+def authentication_token_from_username(*, client: TestClient, username: str, db: Session) -> dict[str, str]:
     """
     Return a valid token for the user with given username.
 
@@ -46,6 +42,4 @@ def authentication_token_from_username(
             raise Exception("User id not set")
         user = crud.update_user(session=db, db_user=user, user_in=user_in_update)
 
-    return user_authentication_headers(
-        client=client, username=username, password=password
-    )
+    return user_authentication_headers(client=client, username=username, password=password)

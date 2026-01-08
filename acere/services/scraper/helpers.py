@@ -55,9 +55,7 @@ def create_extinf_line(stream: FoundAceStream, tvg_url_base: HttpUrl | None, tok
         final_url_base = tvg_url_base.encoded_string().removesuffix("/")
     out = [
         "#EXTINF:-1",
-        f'tvg-logo="{final_url_base}/{stream.tvg_logo}{token_str}"'
-        if stream.tvg_logo and final_url_base
-        else "",
+        f'tvg-logo="{final_url_base}/{stream.tvg_logo}{token_str}"' if stream.tvg_logo and final_url_base else "",
         f'tvg-id="{stream.tvg_id}"',
         f'group-title="{stream.group_title}"',
         f'x-last-found="{stream.last_found_time}"',

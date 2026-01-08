@@ -28,9 +28,7 @@ def init_db(session: Session) -> None:
 
     SQLModel.metadata.create_all(engine)
 
-    user = session.exec(
-        select(User).where(User.username == settings.FIRST_SUPERUSER)
-    ).first()
+    user = session.exec(select(User).where(User.username == settings.FIRST_SUPERUSER)).first()
     if not user:
         password_clear = settings.FIRST_SUPERUSER_PASSWORD
         if not password_clear or password_clear.strip() == "":

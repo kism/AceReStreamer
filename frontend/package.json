@@ -9,7 +9,6 @@
     "build-dev": "tsc -p tsconfig.build.json && vite build --outDir ../acere/static",
     "typecheck": "tsc --noEmit",
     "lint": "biome check --write --unsafe --no-errors-on-unmatched --files-ignore-unknown=true ./",
-    "format": "biome format --write ./",
     "preview": "vite preview",
     "generate-client": "openapi-ts"
   },

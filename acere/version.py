@@ -1,4 +1,5 @@
 """Version Metadata."""
+
 from pathlib import Path
 
 __author__ = "Kieran Gee"
@@ -25,9 +26,10 @@ def get_version_str() -> str:
             current_branch = f.read().strip().split("/")[-1]
 
     return (
-        f"v{__version__}"
+        f"{__version__}"
         f"{('-' + current_branch) if current_branch else ''}"
         f"{('/' + last_commit + '') if last_commit else ''}"
     )
+
 
 VERSION_FULL = get_version_str()

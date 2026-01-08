@@ -31,16 +31,12 @@ class ScraperCache:
                 return file.read()
         return ""
 
-    def is_cache_valid(
-        self, url: HttpUrl, cache_max_age: timedelta = timedelta(days=1)
-    ) -> bool:
+    def is_cache_valid(self, url: HttpUrl, cache_max_age: timedelta = timedelta(days=1)) -> bool:
         """Check if the cache for the given URL is valid."""
         cache_path = self._get_cache_file_path(url)
         if cache_path.exists():
             time_now = datetime.now(tz=OUR_TIMEZONE)
-            file_mod_time = datetime.fromtimestamp(
-                cache_path.stat().st_mtime, tz=OUR_TIMEZONE
-            )
+            file_mod_time = datetime.fromtimestamp(cache_path.stat().st_mtime, tz=OUR_TIMEZONE)
 
             if time_now - file_mod_time < cache_max_age:
                 return True

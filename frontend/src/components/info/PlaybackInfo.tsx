@@ -35,11 +35,13 @@ export function PlaybackInfo() {
 
       <Box>
         <VStack gap={4} align="stretch">
-          <Heading>Playing with an External Media Player</Heading>
-          <Text>
-            To play a stream with an external player, copy the Direct (stream)
-            URL
-          </Text>
+          <Box>
+            <Heading>Playing with an External Media Player</Heading>
+            <Text>
+              To play a stream with an external player, copy the Direct (stream)
+              URL.
+            </Text>
+          </Box>
 
           <Box>
             <Heading size="sm">VLC (Linux, MacOS, Windows)</Heading>

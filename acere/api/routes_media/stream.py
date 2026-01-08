@@ -142,9 +142,7 @@ def hls_multi(path: str, token: str = "") -> Response:
     ace_scraper = get_ace_scraper()
 
     content_id = ace_pool.get_instance_by_multistream_path(path)
-    url = HttpUrl(
-        f"{settings.app.ace_address.encoded_string()}/hls/m/{path}"
-    ).encoded_string()
+    url = HttpUrl(f"{settings.app.ace_address.encoded_string()}/hls/m/{path}").encoded_string()
 
     try:
         ace_resp = requests.get(url, timeout=REVERSE_PROXY_TIMEOUT, stream=True)
@@ -154,9 +152,7 @@ def hls_multi(path: str, token: str = "") -> Response:
         logger.error("reverse proxy failure /hls/m/ %s", error_short)  # noqa: TRY400 Short error for requests
         error_msg = "Failed to fetch HLS multistream"
 
-        raise HTTPException(
-            status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=error_msg
-        ) from e
+        raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=error_msg) from e
 
     content_str = ace_resp.content.decode("utf-8", errors="replace")
 
@@ -164,9 +160,7 @@ def hls_multi(path: str, token: str = "") -> Response:
         logger.error("Invalid HLS stream received for path: %s", path)
         logger.debug("Content received: %s", content_str[:1000])
         ace_scraper.increment_quality(content_id, "")
-        response_body = MessageResponseModel(
-            message="Invalid HLS stream", errors=[content_str]
-        ).model_dump_json()
+        response_body = MessageResponseModel(message="Invalid HLS stream", errors=[content_str]).model_dump_json()
         return Response(
             content=response_body,
             media_type="application/json",
@@ -233,9 +227,7 @@ def xc_m3u8(
         content_id = ace_scraper.get_content_id_by_tvg_id(path)
 
     if content_id is None:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST, detail="Invalid XC ID format"
-        )
+        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="Invalid XC ID format")
 
     if not content_id:
         raise HTTPException(
@@ -270,9 +262,7 @@ def ace_content(path: str, request: Request, token: str = "") -> Response:
     except requests.RequestException as e:
         error_short = type(e).__name__
         logger.error("%s reverse proxy failure %s", route_prefix, error_short)  # noqa: TRY400 Short error for requests
-        response_body = MessageResponseModel(
-            message="Failed to fetch HLS stream"
-        ).model_dump_json()
+        response_body = MessageResponseModel(message="Failed to fetch HLS stream").model_dump_json()
         return Response(
             content=response_body,
             media_type="application/json",
@@ -286,10 +276,8 @@ def ace_content(path: str, request: Request, token: str = "") -> Response:
             error_short,
             e.errno,
             e.strerror,
-        )  # noqa: TRY400 Short error for requests
-        response_body = MessageResponseModel(
-            message="Ace content timeout"
-        ).model_dump_json()
+        )
+        response_body = MessageResponseModel(message="Ace content timeout").model_dump_json()
         return Response(
             content=response_body,
             media_type="application/json",
@@ -302,9 +290,7 @@ def ace_content(path: str, request: Request, token: str = "") -> Response:
         if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS
     ]
 
-    response = Response(
-        content=resp.content, status_code=resp.status_code, headers=dict(headers)
-    )
+    response = Response(content=resp.content, status_code=resp.status_code, headers=dict(headers))
 
     response.headers["Content-Type"] = "video/MP2T"
 
@@ -335,6 +321,4 @@ def tvg_logo(path: str, token: str = "") -> FileResponse:
             headers={"Cache-Control": "public, max-age=3600"},
         )
 
-    return FileResponse(
-        path=logo_path, headers={"Cache-Control": "public, max-age=3600"}
-    )
+    return FileResponse(path=logo_path, headers={"Cache-Control": "public, max-age=3600"})

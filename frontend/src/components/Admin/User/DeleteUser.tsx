@@ -17,7 +17,15 @@ import {
 } from "@/components/ui/dialog"
 import useCustomToast from "@/hooks/useCustomToast"
 
-const DeleteUser = ({ id }: { id: string }) => {
+const DeleteUser = ({
+  id,
+  size = "sm",
+  disabled = false,
+}: {
+  id: string
+  size?: "xs" | "sm" | "md" | "lg"
+  disabled?: boolean
+}) => {
   const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
   const { showSuccessToast, showErrorToast } = useCustomToast()
@@ -57,7 +65,12 @@ const DeleteUser = ({ id }: { id: string }) => {
       onOpenChange={({ open }) => setIsOpen(open)}
     >
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" colorPalette="red">
+        <Button
+          variant="ghost"
+          size={size}
+          colorPalette="red"
+          disabled={disabled}
+        >
           <FiTrash2 fontSize="16px" />
           Delete User
         </Button>

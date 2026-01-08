@@ -13,9 +13,7 @@ from acere.crud import authenticate_stream_token
 
 def get_expiry_date() -> str:
     """Get the expiry date in an epoch string."""
-    return str(
-        int(datetime.now(tz=UTC).timestamp() + timedelta(days=365).total_seconds())
-    )  # 1 year from now
+    return str(int(datetime.now(tz=UTC).timestamp() + timedelta(days=365).total_seconds()))  # 1 year from now
 
 
 def get_port_and_protocol_from_external_url(
@@ -36,11 +34,8 @@ def get_port_and_protocol_from_external_url(
 
 def check_xc_auth(username: str, stream_token: str) -> str:
     """Check if the provided username and password are valid, return stream token if valid."""
-
     with Session(engine) as session:
-        result = authenticate_stream_token(
-            session=session, username=username, stream_token=stream_token
-        )
+        result = authenticate_stream_token(session=session, username=username, stream_token=stream_token)
     if result is not None:
         return result.stream_token
 

@@ -38,9 +38,7 @@ def _populate_xc_api_response(
     """Populate the XC API response with user and server information."""
     external_url = HttpUrl(settings.EXTERNAL_URL)
 
-    http_port, https_port, protocol = get_port_and_protocol_from_external_url(
-        external_url
-    )
+    http_port, https_port, protocol = get_port_and_protocol_from_external_url(external_url)
 
     return XCApiResponse(
         user_info=XCUserInfo(
@@ -64,7 +62,7 @@ def _populate_xc_api_response(
     "/player_api.php",
     responses={
         200: {
-            "description": "XC API Response depending on action parameter. XCApiResponse, list[XCCategory], list[XCStream]",
+            "description": "XC API Response depending on action parameter. XCApiResponse, list[XCCategory], list[XCStream]",  # noqa: E501
         },
     },
     response_model=None,
@@ -75,17 +73,16 @@ def xc_iptv_router(
     password: str = "",
     category_id: str = "",
 ) -> XCApiResponse | list[XCCategory] | list[XCStream]:
-    """
-    Route XC API requests to appropriate handlers.
+    """Route XC API requests to appropriate handlers.
     Actions: get_live_categories, get_live_streams, get_vod_categories, get_vod_streams, get_series_categories, get_series.
-    """
+    """  # noqa: E501
     stream_token = check_xc_auth(username=username, stream_token=password)
 
     if action == "get_live_categories":
         return _get_live_categories()
-    elif action == "get_live_streams":
+    if action == "get_live_streams":
         return _get_live_streams(category_id, token=stream_token)
-    elif action in [
+    if action in [
         "get_vod_categories",
         "get_vod_streams",
         "get_series_categories",
@@ -95,29 +92,22 @@ def xc_iptv_router(
             status_code=HTTPStatus.NOT_IMPLEMENTED,
             detail=f"Action '{action}' is not implemented",
         )
-    elif action != "":
-        logger.error(
-            "XC client tried an unknown action '%s' in /player_api.php", action
-        )
+    if action != "":
+        logger.error("XC client tried an unknown action '%s' in /player_api.php", action)
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail=f"Unknown action '{action}'",
         )
-    else:
-        return _populate_xc_api_response(username=username, password=password)
+    return _populate_xc_api_response(username=username, password=password)
 
 
 def _get_live_categories() -> list[XCCategory]:
     """Get live TV categories."""
     # Get all the categories that are actually in use
     ace_scraper = get_ace_scraper()
-    categories_in_use = {
-        stream.category_id for stream in ace_scraper.get_streams_as_iptv_xc(None)
-    }
+    categories_in_use = {stream.category_id for stream in ace_scraper.get_streams_as_iptv_xc(None)}
     # Convert them to integers because the XC 'spec' says they should be strings, despite being numeric
-    categories_in_use_int = {
-        int(cat_id) for cat_id in categories_in_use if cat_id.isdigit()
-    }
+    categories_in_use_int = {int(cat_id) for cat_id in categories_in_use if cat_id.isdigit()}
     # Get a list of XCCategory objects
     return category_xc_category_id_mapping.get_all_categories_api(categories_in_use_int)
 
@@ -143,9 +133,7 @@ def _get_unknown_action(action: str) -> MessageResponseModel:
 def xc_get(
     username: str = Query("", alias="username"),
     password: str = Query("", alias="password"),
-    type_: str = Query(
-        "", alias="type"
-    ),  # Fastapi fixes this as type is a reserved word
+    type_: str = Query("", alias="type"),  # Fastapi fixes this as type is a reserved word
 ) -> Response | MessageResponseModel:
     """Emulate an XC /get.php endpoint."""
     stream_token = check_xc_auth(username=username, stream_token=password)
@@ -169,9 +157,7 @@ def _get_m3u_plus(token: str) -> Response:
 
 def _get_invalid_request_type() -> MessageResponseModel:
     """Handle invalid request types."""
-    return MessageResponseModel(
-        message="Invalid request type", errors=["Expected: 'type=m3u_plus'"]
-    )
+    return MessageResponseModel(message="Invalid request type", errors=["Expected: 'type=m3u_plus'"])
 
 
 # endregion /status.php

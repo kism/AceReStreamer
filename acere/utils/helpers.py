@@ -14,20 +14,19 @@ _DOUBLE_SPACE_PATTERN = re.compile(r"\s{2,}")
 _HEX_PATTERN = re.compile(r"^[0-9a-fA-F]+$")
 
 
-def slugify(input: str | bytes) -> str:
+def slugify(slug_input: str | bytes) -> str:
     """Convert a string to a slug."""
-    if isinstance(input, bytes):
-        input = input.decode()
+    if isinstance(slug_input, bytes):
+        slug_input = slug_input.decode()
 
     # Generate Slug, everything that isn't alphanumeric is now a space, which will become a hyphen later
-    input = _NON_ALPHANUMERIC_PATTERN.sub(" ", input)
+    slug_input = _NON_ALPHANUMERIC_PATTERN.sub(" ", slug_input)
 
     # Remove excess spaces
-    input = _DOUBLE_SPACE_PATTERN.sub(" ", input)
+    slug_input = _DOUBLE_SPACE_PATTERN.sub(" ", slug_input)
 
     # Remove prefix and suffix whitespace, replace anything left as a hyphen
-    return input.strip().replace(" ", "-").lower()
-
+    return slug_input.strip().replace(" ", "-").lower()
 
 def check_valid_content_id_or_infohash(content_id: str) -> bool:
     """Check if the AceStream content_id or infohash is valid."""

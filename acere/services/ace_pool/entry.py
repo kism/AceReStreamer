@@ -67,9 +67,7 @@ class AcePoolEntry:
             resp.raise_for_status()
             middleware_response = AceMiddlewareResponseFull(**resp.json())
         except (requests.RequestException, ValueError):
-            response_json = (
-                (resp.json() if resp.content else {}) if resp is not None else {}
-            )
+            response_json = (resp.json() if resp.content else {}) if resp is not None else {}
             logger.warning(
                 "Failed to fetch AceStream URLs for content_id %s\n%s",
                 self.ace_middleware_url,
@@ -116,18 +114,14 @@ class AcePoolEntry:
         stat_url = self._middleware_info.stat_url
 
         try:
-            resp_stat = requests.get(
-                stat_url.encoded_string(), timeout=ACESTREAM_API_TIMEOUT
-            )
+            resp_stat = requests.get(stat_url.encoded_string(), timeout=ACESTREAM_API_TIMEOUT)
             resp_stat.raise_for_status()
             resp_stat_json = resp_stat.json()
             return AcePoolStat(**resp_stat_json)
         except requests.RequestException:
             pass
         except ValidationError:
-            logger.exception(
-                "Failed to parse AceStream stat for content_id %s", self.content_id
-            )
+            logger.exception("Failed to parse AceStream stat for content_id %s", self.content_id)
             logger.info("Did ace stream change their API?\n%s", resp_stat_json)
 
         return None
@@ -137,17 +131,11 @@ class AcePoolEntry:
         time_now = datetime.now(tz=OUR_TIMEZONE)
         time_since_last_watched: timedelta = time_now - self.last_used
         time_since_date_started: timedelta = time_now - self.date_started
-        return min(
-            LOCK_IN_RESET_MAX, (time_since_date_started - time_since_last_watched)
-        )
+        return min(LOCK_IN_RESET_MAX, (time_since_date_started - time_since_last_watched))
 
     def get_time_until_unlock(self) -> timedelta:
         """Get the time until the instance is unlocked."""
-        return (
-            self.last_used
-            + self.get_required_time_until_unlock()
-            - datetime.now(tz=OUR_TIMEZONE)
-        )
+        return self.last_used + self.get_required_time_until_unlock() - datetime.now(tz=OUR_TIMEZONE)
 
     def check_running_long_enough_to_lock_in(self) -> bool:
         """Check if the instance has been running long enough to be locked in."""
@@ -231,10 +219,7 @@ class AcePoolEntry:
         ):
             # Keep Alive
             with contextlib.suppress(requests.RequestException):
-                if (
-                    not self._keep_alive_run_once
-                    and self._middleware_info.playback_url != ""
-                ):
+                if not self._keep_alive_run_once and self._middleware_info.playback_url != "":
                     logger.info(
                         "Keeping alive ace_pid %d with content_id %s",
                         self.ace_pid,
@@ -272,9 +257,7 @@ class AcePoolEntry:
         try:
             resp = requests.get(url, timeout=ACESTREAM_API_TIMEOUT)
             resp.raise_for_status()
-            logger.info(
-                "Stopped AceStream instance with content_id %s", self.content_id
-            )
+            logger.info("Stopped AceStream instance with content_id %s", self.content_id)
         except requests.RequestException as e:
             error_short = type(e).__name__
             logger.error(  # noqa: TRY400 Short error for requests

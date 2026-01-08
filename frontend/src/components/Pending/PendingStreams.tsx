@@ -14,23 +14,16 @@ const PendingStreams = () => (
   <AppTableScrollArea preset="fullscreen">
     <AppTableRoot preset="interactiveSticky">
       <TableHeader>
+        {/* Due to sticky header we set bg.subtle */}
         <TableRow bg="bg.subtle">
-          <TableColumnHeader p={2} textAlign="center" width="30px">
+          <TableColumnHeader width="30px">
             <FiBarChart style={{ margin: "0 auto" }} />
           </TableColumnHeader>
-          <TableColumnHeader p={2} width="40%">
-            Stream
-          </TableColumnHeader>
-          <TableColumnHeader p={2} width="auto">
-            Program
-          </TableColumnHeader>
+          <TableColumnHeader width="90%">Stream</TableColumnHeader>
         </TableRow>
       </TableHeader>
       <TableBody>
         <TableRow>
-          <TableCell>
-            <SkeletonText noOfLines={1} />
-          </TableCell>
           <TableCell>
             <SkeletonText noOfLines={1} />
           </TableCell>

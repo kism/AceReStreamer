@@ -9,11 +9,29 @@ import {
   TableRowHeader,
 } from "@/components/ui/table"
 import { useStreamStatus } from "@/hooks/useVideoPlayer"
+
+function calculateMaxWidth(streamURL: string) {
+  const minWidth = 300
+  const maxWidth = 1200
+  const textWidth = streamURL.length * 11 // Approximate width per character
+
+  if (textWidth < minWidth) {
+    return `${minWidth}px`
+  }
+  if (textWidth > maxWidth) {
+    return `${maxWidth}px`
+  }
+  return `${textWidth}px`
+}
+
 export function NowPlayingTable() {
   const streamStatus = useStreamStatus()
 
   return (
-    <AppTableRoot preset="outlineSm" width="100%">
+    <AppTableRoot
+      preset="outlineSm"
+      maxW={calculateMaxWidth(streamStatus.streamURL)}
+    >
       <TableBody>
         <TableRow>
           <TableRowHeader>Player</TableRowHeader>
@@ -25,13 +43,14 @@ export function NowPlayingTable() {
         </TableRow>
         <TableRow>
           <TableRowHeader>Direct URL</TableRowHeader>
-          <TableCell maxW={0}>
+          <TableCell maxWidth={0} minWidth={0}>
             <HStack gap={2} minWidth={0}>
               <Code
-                overflowWrap="anywhere"
-                wordBreak="break-all"
-                whiteSpace="normal"
+                overflowX="auto"
+                whiteSpace="nowrap"
                 display="block"
+                flex={1}
+                minWidth={0}
               >
                 {streamStatus.streamURL}
               </Code>

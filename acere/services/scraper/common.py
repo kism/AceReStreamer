@@ -16,9 +16,7 @@ class ScraperCommon:
         self.scraper_cache: ScraperCache = ScraperCache()
         self.name_processor: StreamNameProcessor = StreamNameProcessor()
         self.instance_path: Path | None = None
-        self.category_xc_category_id_mapping: (
-            CategoryXCCategoryIDDatabaseHandler | None
-        ) = None
+        self.category_xc_category_id_mapping: CategoryXCCategoryIDDatabaseHandler | None = None
 
     def load_config(
         self,

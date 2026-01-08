@@ -1,15 +1,16 @@
 import { TableCell } from "@/components/ui/table"
+import { QUALITY_COLORS } from "./constants"
 
 export function QualityCell({ quality, ...props }: { quality: number } & any) {
   let color = "black"
   if (quality === -1) {
-    color = "gray"
+    color = QUALITY_COLORS.unknown
   } else if (quality > 80) {
-    color = "green.500"
+    color = QUALITY_COLORS.good
   } else if (quality >= 20) {
-    color = "yellow.500"
+    color = QUALITY_COLORS.medium
   } else {
-    color = "red.500"
+    color = QUALITY_COLORS.poor
   }
 
   return (

@@ -8,9 +8,7 @@ from acere.models import User, UserCreate, UserUpdate
 
 
 def create_user(*, session: Session, user_create: UserCreate) -> User:
-    db_obj = User.model_validate(
-        user_create, update={"hashed_password": get_password_hash(user_create.password)}
-    )
+    db_obj = User.model_validate(user_create, update={"hashed_password": get_password_hash(user_create.password)})
     session.add(db_obj)
     session.commit()
     session.refresh(db_obj)
@@ -46,9 +44,7 @@ def authenticate(*, session: Session, username: str, password: str) -> User | No
     return db_user
 
 
-def authenticate_stream_token(
-    *, session: Session, username: str, stream_token: str
-) -> User | None:
+def authenticate_stream_token(*, session: Session, username: str, stream_token: str) -> User | None:
     db_user = get_user_by_username(session=session, username=username)
     if not db_user:
         return None

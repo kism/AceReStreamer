@@ -29,13 +29,15 @@ import { Field } from "../../ui/field"
 
 interface EditUserProps {
   user: UserPublic
+  size?: "xs" | "sm" | "md" | "lg"
+  disabled?: boolean
 }
 
 interface UserUpdateForm extends UserUpdate {
   confirm_password?: string
 }
 
-const EditUser = ({ user }: EditUserProps) => {
+const EditUser = ({ user, size = "sm", disabled = false }: EditUserProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
   const { showSuccessToast } = useCustomToast()
@@ -83,7 +85,7 @@ const EditUser = ({ user }: EditUserProps) => {
       onOpenChange={({ open }) => setIsOpen(open)}
     >
       <DialogTrigger asChild>
-        <Button variant="ghost">
+        <Button variant="ghost" size={size} disabled={disabled}>
           <FaExchangeAlt fontSize="16px" />
           Edit User
         </Button>
