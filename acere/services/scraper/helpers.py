@@ -1,10 +1,16 @@
 """Helper functions for AceStream scraper services."""
 
-from pydantic import HttpUrl
+from typing import TYPE_CHECKING
 
 from acere.utils.logger import get_logger
 
-from .models import FoundAceStream
+if TYPE_CHECKING:
+    from pydantic import HttpUrl
+
+    from .models import FoundAceStream
+else:
+    HttpUrl = object
+    FoundAceStream = object
 
 logger = get_logger(__name__)
 

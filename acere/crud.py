@@ -1,5 +1,4 @@
 import secrets
-from typing import Any
 
 from sqlmodel import Session, select
 
@@ -15,7 +14,7 @@ def create_user(*, session: Session, user_create: UserCreate) -> User:
     return db_obj
 
 
-def update_user(*, session: Session, db_user: User, user_in: UserUpdate) -> Any:
+def update_user(*, session: Session, db_user: User, user_in: UserUpdate) -> User:
     user_data = user_in.model_dump(exclude_unset=True)
     extra_data = {}
     if "password" in user_data:

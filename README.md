@@ -84,18 +84,17 @@ docker buildx build --build-arg VITE_API_URL="https://api.example.com" --file do
 
 ### Features
 
-### Apps that don't work
-
-see iptv.html.j2
+- Stream
+- User management
+- m3u8 and xtream code iptv support
 
 ## todo
 
 - No auth mode
 - stream restarting in hls.js
-- stricter ruff rules
 - readme
 - big cleanup
-- async everything?
-- embed commit and branch in container builds?
-- switch to uvloop all around?
-- switch to aiohttp all around
+
+  - ~~rename routes directories~~
+
+- more test coverage

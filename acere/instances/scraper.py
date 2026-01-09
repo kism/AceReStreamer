@@ -1,8 +1,14 @@
 """Scraper instance."""
 
+from typing import TYPE_CHECKING
+
 from acere.constants import INSTANCE_DIR
 from acere.instances.config import settings
-from acere.services.scraper import AceScraper
+
+if TYPE_CHECKING:
+    from acere.services.scraper import AceScraper
+else:
+    AceScraper = object
 
 _ace_scraper: AceScraper | None = None
 

@@ -1,16 +1,16 @@
 import os
 import random
-from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager, suppress
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from fastapi import FastAPI
-from fastapi.routing import APIRoute
+from fastapi.middleware.gzip import GZipMiddleware
 from rich import traceback
 from sqlmodel import Session, select
 from starlette.middleware.cors import CORSMiddleware
 
-from acere.api.main import api_router, api_router_xc, frontend_router, media_router
+from acere.api.main import api_router, api_router_xc, frontend_router, hls_router, iptv_router
 from acere.constants import API_V1_STR, SETTINGS_FILE
 from acere.core.db import engine, init_db
 from acere.instances.ace_pool import set_ace_pool
@@ -20,6 +20,15 @@ from acere.services.ace_pool.pool import AcePool
 from acere.services.scraper import AceScraper
 from acere.utils.logger import get_logger, setup_logger
 from acere.version import PROGRAM_NAME, __version__
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+
+    from fastapi.routing import APIRoute
+else:
+    AsyncIterator = object
+    APIRoute = object
+
 
 # Don't put anything on stdout if we are generating openapi json
 IN_OPEN_API_MODE: bool = os.getenv("IN_OPEN_API_MODE", "false").lower() == "true"
@@ -108,6 +117,16 @@ app = FastAPI(
     generate_unique_id_function=custom_generate_unique_id,
     lifespan=lifespan,
 )
+app.add_middleware(GZipMiddleware, minimum_size=300)
+app.include_router(api_router, prefix=API_V1_STR)
+app.include_router(api_router_xc)
+app.include_router(frontend_router)
+app.include_router(iptv_router)
+
+hls_app = FastAPI()
+hls_app.include_router(hls_router)
+app.mount("/", hls_app)
+
 
 # Set all CORS enabled origins
 if settings.all_cors_origins:
@@ -119,10 +138,6 @@ if settings.all_cors_origins:
         allow_headers=["*"],
     )
 
-app.include_router(api_router, prefix=API_V1_STR)
-app.include_router(api_router_xc)
-app.include_router(media_router)
-app.include_router(frontend_router)
 
 if IN_OPEN_API_MODE:
     defaults = settings.force_load_defaults()

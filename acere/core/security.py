@@ -13,7 +13,7 @@ ph = PasswordHasher()
 ALGORITHM = "HS256"
 
 
-def create_access_token(subject: str | Any, expires_delta: timedelta) -> str:
+def create_access_token(subject: str | Any, expires_delta: timedelta) -> str:  # noqa: ANN401 We stringify subject
     expire = datetime.now(UTC) + expires_delta
     to_encode = {"exp": expire, "sub": str(subject)}
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
@@ -32,5 +32,4 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def get_password_hash(password: str) -> str:
-    # return pwd_context.hash(password)
     return ph.hash(password)

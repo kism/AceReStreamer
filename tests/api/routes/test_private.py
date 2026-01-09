@@ -1,11 +1,16 @@
 import uuid
 from http import HTTPStatus
+from typing import TYPE_CHECKING
 
-from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
 from acere.constants import API_V1_STR
 from acere.models import User
+
+if TYPE_CHECKING:
+    from fastapi.testclient import TestClient
+else:
+    TestClient = object
 
 
 def test_create_user(client: TestClient, db: Session) -> None:

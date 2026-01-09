@@ -48,7 +48,7 @@ class HTMLStreamScraper(ScraperCommon):
         if not self.scraper_cache.is_cache_valid(site.url, cache_max_age):
             logger.debug("Scraping streams from HTML site: %s", site.name)
             try:
-                async with aiohttp.ClientSession() as session:  # noqa: SIM117
+                async with aiohttp.ClientSession() as session:
                     async with session.get(site.url.encoded_string()) as response:
                         response.raise_for_status()
                         scraped_site_str = await response.text()
@@ -167,6 +167,9 @@ class HTMLStreamScraper(ScraperCommon):
                 if match_strength >= best_strength:  # We are okay with more candidates of the same strength
                     new_title = self.name_processor.trim_title(title)
                     new_title_candidates.append(new_title)
+
+            for title in new_title_candidates:
+                title.strip()
 
             if len(new_title_candidates) == 1:
                 title = new_title_candidates[0]

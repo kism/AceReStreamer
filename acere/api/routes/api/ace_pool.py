@@ -1,19 +1,27 @@
 """AcePool API Blueprint."""
 
 from http import HTTPStatus
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, HTTPException
 
 from acere.api.deps import get_current_user
 from acere.instances.ace_pool import get_ace_pool
-from acere.services.ace_pool.models import (
-    AcePoolAllStatsApi,
-    AcePoolEntryForAPI,
-    AcePoolForApi,
-    AcePoolStat,
-)
 from acere.utils.api_models import MessageResponseModel
 from acere.utils.logger import get_logger
+
+if TYPE_CHECKING:
+    from acere.services.ace_pool.models import (
+        AcePoolAllStatsApi,
+        AcePoolEntryForAPI,
+        AcePoolForApi,
+        AcePoolStat,
+    )
+else:
+    AcePoolAllStatsApi = object
+    AcePoolEntryForAPI = object
+    AcePoolForApi = object
+    AcePoolStat = object
 
 logger = get_logger(__name__)
 
@@ -50,7 +58,7 @@ def get_by_content_id(content_id: str) -> AcePoolEntryForAPI:
 
 
 @router.delete("/content_id/{content_id}")
-def delete_by_content_id(content_id: str) -> MessageResponseModel:
+async def delete_by_content_id(content_id: str) -> MessageResponseModel:
     """API endpoint to delete an Ace instance from the Ace pool."""
     ace_pool = get_ace_pool()
     instance = ace_pool.get_instance_by_content_id_api(content_id)
@@ -60,7 +68,7 @@ def delete_by_content_id(content_id: str) -> MessageResponseModel:
             detail=MessageResponseModel(message=content_id_not_found_tmp_str.format(content_id=content_id)),
         )
 
-    ace_pool.remove_instance_by_content_id(content_id, caller="API")
+    await ace_pool.remove_instance_by_content_id(content_id, caller="API")
     return MessageResponseModel(message="Ace ID removed successfully")
 
 
@@ -86,17 +94,17 @@ def get_by_pid(pid: str) -> AcePoolEntryForAPI:
 
 
 @router.get("/stats")
-def stats() -> AcePoolAllStatsApi:
+async def stats() -> AcePoolAllStatsApi:
     """API endpoint to get Ace pool stats."""
     ace_pool = get_ace_pool()
-    return ace_pool.get_all_stats()
+    return await ace_pool.get_all_stats()
 
 
 @router.get("/stats/content_id/{content_id}")
-def stats_by_content_id(content_id: str) -> AcePoolStat:
+async def stats_by_content_id(content_id: str) -> AcePoolStat:
     """API endpoint to get Ace pool stats by Ace content ID."""
     ace_pool = get_ace_pool()
-    ace_pool_stat = ace_pool.get_stats_by_content_id(content_id)
+    ace_pool_stat = await ace_pool.get_stats_by_content_id(content_id)
 
     if ace_pool_stat is None:
         raise HTTPException(
@@ -108,12 +116,12 @@ def stats_by_content_id(content_id: str) -> AcePoolStat:
 
 
 @router.get("/stats/pid/{pid}")
-def stats_by_pid(pid: str) -> AcePoolStat:
+async def stats_by_pid(pid: str) -> AcePoolStat:
     """API endpoint to get Ace pool stats by PID."""
     ace_pool = get_ace_pool()
     try:
         pid_int = int(pid)
-        ace_pool_stat = ace_pool.get_stats_by_pid(pid_int)
+        ace_pool_stat = await ace_pool.get_stats_by_pid(pid_int)
 
         if ace_pool_stat is None:
             raise HTTPException(

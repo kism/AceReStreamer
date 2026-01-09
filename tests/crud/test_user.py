@@ -1,10 +1,16 @@
+from typing import TYPE_CHECKING
+
 from fastapi.encoders import jsonable_encoder
-from sqlmodel import Session
 
 from acere import crud
 from acere.core.security import verify_password
 from acere.models import User, UserCreate, UserUpdate
 from tests.test_utils.user_utils import random_lower_string
+
+if TYPE_CHECKING:
+    from sqlmodel import Session
+else:
+    Session = object
 
 
 def test_create_user(db: Session) -> None:

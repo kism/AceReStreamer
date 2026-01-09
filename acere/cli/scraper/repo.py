@@ -1,6 +1,11 @@
 """Misc file generation for file mode."""
 
-from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
+else:
+    Path = object
 
 GIT_ATTRIBUTES = """*.woff2 filter=lfs diff=lfs merge=lfs -text
 *.ico filter=lfs diff=lfs merge=lfs -text

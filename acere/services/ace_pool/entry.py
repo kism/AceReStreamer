@@ -3,7 +3,7 @@
 import contextlib
 from datetime import datetime, timedelta
 
-import requests
+import aiohttp
 from pydantic import HttpUrl, ValidationError
 
 from acere.utils.constants import OUR_TIMEZONE
@@ -32,7 +32,7 @@ class AcePoolEntry:
         *,
         transcode_audio: bool,
     ) -> None:
-        """Initialize an AceStream pool entry."""
+        """Initialize an AceStream pool entry. Does not populate URLs, use async create() method."""
         if not check_valid_content_id_or_infohash(content_id):
             msg = f"AcePoolEntry: Invalid AceStream content_id: {content_id}"
             raise ValueError(msg)
@@ -53,25 +53,40 @@ class AcePoolEntry:
         )
 
         self._middleware_info: AceMiddlewareResponse | None = None
-        self.populate_urls()
 
         # Required to ensure that this actually gets the current time
         self.date_started = datetime.now(tz=OUR_TIMEZONE)
         self.last_used = datetime.now(tz=OUR_TIMEZONE)
 
-    def populate_urls(self) -> None:
+    @classmethod
+    async def create(
+        cls,
+        ace_pid: int,
+        ace_address: HttpUrl,
+        content_id: str,
+        infohash: str = "",
+        *,
+        transcode_audio: bool,
+    ) -> AcePoolEntry:
+        """Create and initialize an AceStream pool entry asynchronously, populating URLs."""
+        instance = cls(ace_pid, ace_address, content_id, infohash, transcode_audio=transcode_audio)
+        await instance.populate_urls()
+        return instance
+
+    async def populate_urls(self) -> None:
         """Populate the AceStream URLs for this instance."""
-        resp = None
         try:
-            resp = requests.get(self.ace_middleware_url, timeout=ACESTREAM_API_TIMEOUT)
-            resp.raise_for_status()
-            middleware_response = AceMiddlewareResponseFull(**resp.json())
-        except (requests.RequestException, ValueError):
-            response_json = (resp.json() if resp.content else {}) if resp is not None else {}
+            timeout = aiohttp.ClientTimeout(total=ACESTREAM_API_TIMEOUT)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(self.ace_middleware_url) as resp:
+                    resp.raise_for_status()
+                    response_json = await resp.json()
+                    middleware_response = AceMiddlewareResponseFull(**response_json)
+        except (aiohttp.ClientError, ValueError) as e:
             logger.warning(
-                "Failed to fetch AceStream URLs for content_id %s\n%s",
+                "Failed to fetch AceStream URLs for content_id %s: %s",
                 self.ace_middleware_url,
-                response_json,
+                str(e),
             )
             return
 
@@ -101,7 +116,7 @@ class AcePoolEntry:
 
         return self._middleware_info.playback_url
 
-    def get_ace_stat(self) -> AcePoolStat | None:
+    async def get_ace_stat(self) -> AcePoolStat | None:
         """Get the AceStream statistics for this instance."""
         resp_stat_json = {}
         if not self._middleware_info:
@@ -114,11 +129,13 @@ class AcePoolEntry:
         stat_url = self._middleware_info.stat_url
 
         try:
-            resp_stat = requests.get(stat_url.encoded_string(), timeout=ACESTREAM_API_TIMEOUT)
-            resp_stat.raise_for_status()
-            resp_stat_json = resp_stat.json()
-            return AcePoolStat(**resp_stat_json)
-        except requests.RequestException:
+            timeout = aiohttp.ClientTimeout(total=ACESTREAM_API_TIMEOUT)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(stat_url.encoded_string()) as resp_stat:
+                    resp_stat.raise_for_status()
+                    resp_stat_json = await resp_stat.json()
+                    return AcePoolStat(**resp_stat_json)
+        except aiohttp.ClientError:
             pass
         except ValidationError:
             logger.exception("Failed to parse AceStream stat for content_id %s", self.content_id)
@@ -199,11 +216,11 @@ class AcePoolEntry:
         return stale
 
     # region Health
-    def keep_alive(self) -> None:
+    async def keep_alive(self) -> None:
         """The keep_alive method, should be called by poolboy thread."""
         # If we are locked in, we keep the stream alive
         # Also check if the content_id is valid, as a failsafe
-        self.populate_urls()
+        await self.populate_urls()
 
         if not self._middleware_info:
             logger.warning(
@@ -218,7 +235,7 @@ class AcePoolEntry:
             and self._middleware_info.playback_url
         ):
             # Keep Alive
-            with contextlib.suppress(requests.RequestException):
+            with contextlib.suppress(aiohttp.ClientError):
                 if not self._keep_alive_run_once and self._middleware_info.playback_url != "":
                     logger.info(
                         "Keeping alive ace_pid %d with content_id %s",
@@ -226,17 +243,16 @@ class AcePoolEntry:
                         self.content_id,
                     )
                     self._keep_alive_run_once = True
-                resp = requests.get(
-                    self._middleware_info.playback_url.encoded_string(),
-                    timeout=ACESTREAM_API_TIMEOUT,
-                )
-                logger.trace("Keep alive, response: %s", resp.status_code)
+                timeout = aiohttp.ClientTimeout(total=ACESTREAM_API_TIMEOUT)
+                async with aiohttp.ClientSession(timeout=timeout) as session:
+                    async with session.get(self._middleware_info.playback_url.encoded_string()) as resp:
+                        logger.trace("Keep alive, response: %s", resp.status)
 
         else:
             logger.trace("Not keeping alive %s, not locked in", self.ace_address)
 
     # region Control
-    def stop(self) -> None:
+    async def stop(self) -> None:
         """Stop the AceStream instance, only access this externally via remove_instance_by_content_id."""
         if not self._middleware_info:
             logger.warning(
@@ -255,10 +271,12 @@ class AcePoolEntry:
         url = f"{self._middleware_info.command_url}?method=stop"
 
         try:
-            resp = requests.get(url, timeout=ACESTREAM_API_TIMEOUT)
-            resp.raise_for_status()
-            logger.info("Stopped AceStream instance with content_id %s", self.content_id)
-        except requests.RequestException as e:
+            timeout = aiohttp.ClientTimeout(total=ACESTREAM_API_TIMEOUT)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(url) as resp:
+                    resp.raise_for_status()
+                    logger.info("Stopped AceStream instance with content_id %s", self.content_id)
+        except aiohttp.ClientError as e:
             error_short = type(e).__name__
             logger.error(
                 "%s Failed to stop AceStream instance with content_id %s: ",

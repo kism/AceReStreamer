@@ -53,7 +53,7 @@ class APIStreamScraper(ScraperCommon):
 
         logger.debug("Scraping streams from API site: %s", site.name)
         try:
-            async with aiohttp.ClientSession() as session:  # noqa: SIM117
+            async with aiohttp.ClientSession() as session:
                 async with session.get(site.url.encoded_string()) as response:
                     response.raise_for_status()
                     response_json = await response.json()

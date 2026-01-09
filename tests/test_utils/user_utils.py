@@ -1,10 +1,14 @@
 import random
 import string
-
-from fastapi.testclient import TestClient
+from typing import TYPE_CHECKING
 
 from acere.constants import API_V1_STR
 from acere.instances.config import settings
+
+if TYPE_CHECKING:
+    from fastapi.testclient import TestClient
+else:
+    TestClient = object
 
 
 def random_lower_string() -> str:

@@ -11,9 +11,10 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import baseURL from "@/helpers"
-import { loadPlayStream } from "@/hooks/useVideoPlayer"
 import { STATUS_COLORS } from "./constants"
 import { QualityCell } from "./QualityCell"
+
+const loadVideoPlayerModule = () => import("@/hooks/useVideoPlayer")
 
 const VITE_API_URL = baseURL()
 
@@ -40,7 +41,13 @@ function InstanceQuality({ contentId }: { contentId: string }) {
         whiteSpace="nowrap"
         textAlign={"center"}
       >
-        <Link onClick={() => loadPlayStream(data?.content_id)}>
+        <Link
+          onClick={() =>
+            loadVideoPlayerModule().then((module) => {
+              module.loadPlayStream(data?.content_id)
+            })
+          }
+        >
           {data?.title || "N/A"}
         </Link>
       </TableCell>

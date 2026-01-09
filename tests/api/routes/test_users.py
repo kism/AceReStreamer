@@ -1,7 +1,7 @@
 import uuid
 from http import HTTPStatus
+from typing import TYPE_CHECKING
 
-from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
 from acere import crud
@@ -10,6 +10,11 @@ from acere.core.security import verify_password
 from acere.instances.config import settings
 from acere.models import User, UserCreate
 from tests.test_utils.user_utils import random_lower_string
+
+if TYPE_CHECKING:
+    from fastapi.testclient import TestClient
+else:
+    TestClient = object
 
 
 def test_get_users_superuser_me(client: TestClient, superuser_token_headers: dict[str, str]) -> None:

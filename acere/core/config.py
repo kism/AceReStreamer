@@ -2,8 +2,7 @@ import datetime
 import json
 import os
 import secrets
-from pathlib import Path
-from typing import Annotated, Any, Literal, Self
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Self
 
 from pydantic import (
     AnyUrl,
@@ -28,8 +27,13 @@ from acere.utils.constants import OUR_TIMEZONE
 from acere.utils.helpers import slugify
 from acere.utils.logger import LoggingConf, get_logger
 
+if TYPE_CHECKING:
+    from pathlib import Path
+else:
+    Path = object
 
-def parse_cors(v: Any) -> list[str] | str:
+
+def parse_cors(v: Any) -> list[str] | str:  # noqa: ANN401 JSON things
     if isinstance(v, str) and not v.startswith("["):
         return [i.strip() for i in v.split(",")]
     if isinstance(v, list | str):
@@ -54,7 +58,20 @@ class TitleFilter(BaseModel):
     always_include_words: list[str] = []
     exclude_words: list[str] = []
     include_words: list[str] = []
-    regex_postprocessing: str = ""
+    regex_postprocessing: list[str] = []
+
+    @field_validator("regex_postprocessing", mode="before")
+    def ensure_list(cls, value: str | list[str]) -> list[str]:
+        """Ensure the regex_postprocessing is a list."""
+        if isinstance(value, str):
+            value = [value]
+
+        # Make unique, remove empty strings
+        value = list(set(value))
+        if "" in value:
+            value.remove("")
+
+        return value
 
 
 class ScrapeSiteGeneric(BaseModel):

@@ -3,7 +3,7 @@
 from pathlib import Path
 
 __author__ = "Kieran Gee"
-__version__ = "1.0.0b3"  # This is the version of the app, used in pyproject.toml, enforced in a test.
+__version__ = "1.0.0b4"  # This is the version of the app, used in pyproject.toml, enforced in a test.
 PROGRAM_NAME = "AceReStreamer"
 URL = "https://github.com/kism/ace-restreamer"
 
@@ -19,7 +19,7 @@ def get_version_str() -> str:
         with git_head_log.open("r") as f:
             lines = f.readlines()
             if lines:  # pragma: no cover # This doesn't get hit in CI
-                last_commit = lines[-1].strip().split(" ")[0][:7]  # Get the last commit hash, first 7 characters
+                last_commit = lines[-1].strip().split(" ")[1][:7]  # Get the current commit hash, first 7 characters
 
     if git_head.is_file():
         with git_head.open("r") as f:

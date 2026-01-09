@@ -34,6 +34,10 @@ ENV PYTHONPATH=/app
 COPY ./pyproject.toml /app/
 COPY ./uv.lock /app/
 
+# For versioning metadata
+COPY .git/HEAD /app/.git/HEAD
+COPY .git/logs/HEAD /app/.git/logs/HEAD
+
 COPY ./acere /app/acere
 
 # Sync the project

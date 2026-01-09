@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import requests
+import aiohttp
 from pydantic import HttpUrl
 
 from acere.core.config import HTMLScraperFilter
@@ -120,6 +120,9 @@ class AceScraper:
 
         def run_scrape_thread() -> None:
             """Thread function to run the scraper."""
+            async_loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(async_loop)
+
             while True:
                 logger.info("Running AceStream scraper (%s)", self._instance_id)
 
@@ -141,7 +144,7 @@ class AceScraper:
 
                     return found_streams
 
-                found_streams = asyncio.run(find_streams())
+                found_streams = async_loop.run_until_complete(find_streams())
 
                 self.streams = create_unique_stream_list(found_streams)
                 self._populate_infohashes()
@@ -161,7 +164,9 @@ class AceScraper:
                     if len(missing_content_id_streams) == 0:
                         break
 
-                    newly_populated_streams = self._populate_missing_content_ids(missing_content_id_streams)
+                    newly_populated_streams = async_loop.run_until_complete(
+                        self._populate_missing_content_ids(missing_content_id_streams)
+                    )
                     if len(newly_populated_streams) != 0:
                         self.streams = create_unique_stream_list(list(self.streams.values()) + newly_populated_streams)
                         break
@@ -338,7 +343,7 @@ class AceScraper:
         This is an async function since threading doesn't get app context no matter how hard I try.
         Bit of a hack.
         """
-        from acere.api.routes_media.stream import hls  # Avoid circular import  # noqa: PLC0415
+        from acere.api.routes.hls import hls  # Avoid circular import  # noqa: PLC0415
 
         if self.currently_checking_quality:
             return False
@@ -379,11 +384,10 @@ class AceScraper:
 
                         for _ in range(3):
                             with contextlib.suppress(
-                                requests.Timeout,
-                                requests.ConnectionError,
-                                requests.RequestException,
+                                aiohttp.ClientError,
+                                asyncio.TimeoutError,
                             ):
-                                hls(path=stream.content_id, authentication_override=True)
+                                await hls(path=stream.content_id, authentication_override=True)
                             await asyncio.sleep(1)
 
                         await asyncio.sleep(10)
@@ -420,7 +424,7 @@ class AceScraper:
                     content_id=stream.content_id,
                 )
 
-    def _populate_missing_content_ids(self, streams: list[FoundAceStream]) -> list[FoundAceStream]:
+    async def _populate_missing_content_ids(self, streams: list[FoundAceStream]) -> list[FoundAceStream]:
         """Populate missing content IDs for streams that have an infohash."""
         populated_streams: list[FoundAceStream] = []
 
@@ -434,7 +438,7 @@ class AceScraper:
 
         for stream in streams:
             if not stream.content_id:
-                stream.content_id = self._content_id_infohash_mapping.populate_from_api(
+                stream.content_id = await self._content_id_infohash_mapping.populate_from_api(
                     infohash=stream.infohash,
                 )
                 if not stream.content_id:

@@ -1,15 +1,22 @@
 import { Box, Flex, Heading, HStack, IconButton } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { useEffect, useState } from "react"
+import { lazy, Suspense, useEffect, useState } from "react"
 import { FiMaximize2, FiMinimize2, FiRefreshCw } from "react-icons/fi"
 import { StreamsService } from "@/client"
 import { AcePoolInfo } from "@/components/Index/AcePoolInfo"
 import { NowPlayingTable } from "@/components/Index/NowPlayingTable"
 import { StreamTable } from "@/components/Index/StreamTable"
-import { VideoPlayer } from "@/components/Index/VideoPlayer"
 import { usePageTitle } from "@/hooks/usePageTitle"
-import { loadPlayStream, loadStream } from "@/hooks/useVideoPlayer"
+
+const VideoPlayer = lazy(() =>
+  import("@/components/Index/VideoPlayer").then((module) => ({
+    default: module.VideoPlayer,
+  })),
+)
+
+// Lazy load video player functions to avoid loading hls.js on initial page load
+const loadVideoPlayerModule = () => import("@/hooks/useVideoPlayer")
 
 export const Route = createFileRoute("/_layout/")({
   component: WebPlayer,
@@ -38,7 +45,9 @@ function WebPlayer() {
 
   useEffect(() => {
     if (window.location.hash) {
-      loadStream(window.location.hash.substring(1))
+      loadVideoPlayerModule().then((module) => {
+        module.loadStream(window.location.hash.substring(1))
+      })
     }
   }, []) // Run once on mount
 
@@ -57,7 +66,22 @@ function WebPlayer() {
               : "No Program Information"}
           </Heading>
         </Box>
-        <VideoPlayer />
+        <Suspense
+          fallback={
+            <Box
+              w="100%"
+              aspectRatio={16 / 9}
+              bg="gray.800"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+            >
+              Loading player...
+            </Box>
+          }
+        >
+          <VideoPlayer />
+        </Suspense>
         <HStack>
           <IconButton
             aria-label="Reload stream"
@@ -67,7 +91,9 @@ function WebPlayer() {
             onClick={() => {
               const currentStreamId = window.location.hash.substring(1)
               if (currentStreamId) {
-                loadPlayStream(currentStreamId)
+                loadVideoPlayerModule().then((module) => {
+                  module.loadPlayStream(currentStreamId)
+                })
               }
             }}
           >

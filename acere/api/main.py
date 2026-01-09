@@ -2,7 +2,8 @@ from fastapi import APIRouter
 
 from acere.instances.config import settings
 
-from .routes import (
+from .routes import frontend, hls
+from .routes.api import (
     ace_pool,
     config,
     epg,
@@ -14,15 +15,11 @@ from .routes import (
     users,
     xc,
 )
-from .routes_frontend import frontend
-from .routes_media import (
+from .routes.iptv import (
     epg as epg_xml,
 )
-from .routes_media import (
+from .routes.iptv import (
     iptv as iptv_m3u8,
-)
-from .routes_media import (
-    stream as stream_media,
 )
 
 api_router = APIRouter()
@@ -41,10 +38,12 @@ if settings.ENVIRONMENT == "local":
 api_router_xc = APIRouter()
 api_router_xc.include_router(xc.router)
 
-media_router = APIRouter()
-media_router.include_router(stream_media.router)
-media_router.include_router(iptv_m3u8.router)
-media_router.include_router(epg_xml.router)
+hls_router = APIRouter()
+hls_router.include_router(hls.router)
 
 frontend_router = APIRouter()
 frontend_router.include_router(frontend.router)
+
+iptv_router = APIRouter()
+iptv_router.include_router(epg_xml.router)
+iptv_router.include_router(iptv_m3u8.router)

@@ -1,8 +1,11 @@
 """CLI for scrape mode."""
 
 import argparse
+import asyncio
 import sys
 from pathlib import Path
+
+import uvloop
 
 from acere.core.config import AceReStreamerConf
 from acere.utils.logger import get_logger, setup_logger
@@ -14,8 +17,10 @@ from .repo import generate_misc
 
 logger = get_logger(__name__)
 
+uvloop.install()
 
-def main() -> None:
+
+async def main() -> None:
     """Cli for adhoc scrape mode."""
     msg = f"Acestream Scrape CLI {__version__}"
     parser = argparse.ArgumentParser(description=msg)
@@ -58,7 +63,7 @@ def main() -> None:
     setup_logger(settings=conf.logging)
 
     logger.info("Starting scrape...")
-    pl_cr.scrape()
+    await pl_cr.scrape()
 
     logger.info("Generating README.md")
 
@@ -70,4 +75,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

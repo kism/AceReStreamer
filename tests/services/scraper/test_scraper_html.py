@@ -1,4 +1,4 @@
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from pydantic import HttpUrl
@@ -8,6 +8,12 @@ from acere.services.scraper.html import HTMLStreamScraper
 from acere.services.scraper.name_processor import StreamNameProcessor
 
 from . import SCRAPER_TEST_SITES
+from .utils import common_title_check
+
+if TYPE_CHECKING:
+    from pathlib import Path
+else:
+    Path = object
 
 
 @pytest.fixture
@@ -53,7 +59,7 @@ def _get_test_sites() -> dict[str, ScrapeSiteHTML]:
                 check_sibling=True,
             ),
             title_filter=TitleFilter(
-                regex_postprocessing="Server \\d+: ",
+                regex_postprocessing=["Server \\d+: "],
             ),
         ),
         "site3.html": ScrapeSiteHTML(
@@ -75,16 +81,10 @@ def _get_test_sites() -> dict[str, ScrapeSiteHTML]:
                 check_sibling=True,
             ),
             title_filter=TitleFilter(
-                regex_postprocessing="Server \\d+: ",
+                regex_postprocessing=["Server \\d+: "],
             ),
         ),
     }
-
-
-def _common_title_check(title: str) -> None:
-    """Common checks for titles in tests."""
-    assert "000000000000" not in title, f"Placeholder title found: {title}"
-    assert len(title) != 40, "Title should not the the content_id"
 
 
 async def test_site1(scraper: HTMLStreamScraper, caplog: pytest.LogCaptureFixture) -> None:
@@ -101,7 +101,7 @@ async def test_site1(scraper: HTMLStreamScraper, caplog: pytest.LogCaptureFixtur
     titles = [result.title for result in results]
 
     for title in titles:
-        _common_title_check(title)
+        common_title_check(title)
 
     assert "SMPTE SD ECR-1-1978" in titles
     assert "SMPTE RP 219:2002" in titles
@@ -121,7 +121,7 @@ async def test_site2(scraper: HTMLStreamScraper, caplog: pytest.LogCaptureFixtur
     titles = [result.title for result in results]
 
     for title in titles:
-        _common_title_check(title)
+        common_title_check(title)
         assert not title.startswith("Server "), f"Title filter failed to remove 'Server ' prefix: {title}"
 
     assert any(result.title == "Big Buck Bunny" for result in results), (
@@ -143,7 +143,7 @@ async def test_site3(scraper: HTMLStreamScraper, caplog: pytest.LogCaptureFixtur
     titles = [result.title for result in results]
 
     for title in titles:
-        _common_title_check(title)
+        common_title_check(title)
         assert "beelzebub" not in title, f"Title filter failed to exclude 'beelzebub': {title}"
 
     assert any(result.title == "LONG STREAM NAME IS VERY ABSOLUTELY WAY TOO LONG L" for result in results), (
@@ -165,5 +165,20 @@ async def test_site4(scraper: HTMLStreamScraper, caplog: pytest.LogCaptureFixtur
     titles = [result.title for result in results]
 
     for title in titles:
-        _common_title_check(title)
+        common_title_check(title)
         assert not title.startswith("Server "), f"Title filter failed to remove 'Server ' prefix: {title}"
+
+
+async def test_all_for_duplicates(scraper: HTMLStreamScraper) -> None:
+    """Test all HTML test sites for duplicate stream titles."""
+    test_sites = _get_test_sites()
+    all_titles: set[str] = set()
+
+    for site_name, site in test_sites.items():
+        site_html_str = (SCRAPER_TEST_SITES / site_name).read_text(encoding="utf-8")
+        scraper.scraper_cache.save_to_cache(site.url, site_html_str)
+
+        results = await scraper._scrape_site(site)
+        all_titles.update(result.title for result in results)
+
+    assert len(all_titles) == 12

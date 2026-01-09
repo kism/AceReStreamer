@@ -1,11 +1,16 @@
 """Scraper common object."""
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from acere.database.handlers import CategoryXCCategoryIDDatabaseHandler
 
 from .cache import ScraperCache
 from .name_processor import StreamNameProcessor
+
+if TYPE_CHECKING:
+    from pathlib import Path
+else:
+    Path = object
 
 
 class ScraperCommon:

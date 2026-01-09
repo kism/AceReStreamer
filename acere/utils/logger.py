@@ -88,7 +88,7 @@ class LoggingConf(BaseModel):
 class CustomLogger(logging.Logger):
     """Custom logger to appease mypy."""
 
-    def trace(self, message: Any, *args: Any, **kws: Any) -> None:
+    def trace(self, message: Any, *args: Any, **kws: Any) -> None:  # noqa: ANN401 Logging handles this
         """Create logger level for trace."""
         if self.isEnabledFor(TRACE_LEVEL_NUM):
             # Yes, logger takes its '*args' as 'args'.

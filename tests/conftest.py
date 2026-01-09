@@ -30,7 +30,8 @@ shutil.copyfile(
 )
 
 # NOW we can import the application modules
-from collections.abc import Generator
+
+from typing import TYPE_CHECKING
 
 import pytest
 from fastapi.testclient import TestClient
@@ -42,6 +43,11 @@ from acere.main import app
 from acere.models import User
 from tests.test_utils.user import authentication_token_from_username
 from tests.test_utils.user_utils import get_superuser_token_headers
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
+else:
+    Generator = object
 
 # Store the test password before init_db clears it
 TEST_SUPERUSER_PASSWORD = "pytestpassword123"

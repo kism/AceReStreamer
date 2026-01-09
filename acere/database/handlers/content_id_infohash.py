@@ -1,13 +1,19 @@
 """Handler for content_id to infohash mapping."""
 
-import requests
-from pydantic import HttpUrl
+from typing import TYPE_CHECKING
+
+import aiohttp
 from sqlmodel import select
 
 from acere.database.models import ContentIdInfohash
 from acere.utils.logger import get_logger
 
 from .base import BaseDatabaseHandler
+
+if TYPE_CHECKING:
+    from pydantic import HttpUrl
+else:
+    HttpUrl = object
 
 logger = get_logger(__name__)
 
@@ -54,7 +60,7 @@ class ContentIdInfohashDatabaseHandler(BaseDatabaseHandler):
                 return mapping.content_id
         return ""
 
-    def populate_from_api(self, infohash: str) -> str:
+    async def populate_from_api(self, infohash: str) -> str:
         """Populate the mapping from th Ace API from infohash, returning the content ID."""
         if not self.ace_url:
             logger.warning("ACE URL is not set for ContentIdInfohashDatabaseHandler")
@@ -65,13 +71,14 @@ class ContentIdInfohashDatabaseHandler(BaseDatabaseHandler):
         url = f"{self.ace_url}/server/api?api_version=3&method=get_content_id&infohash="
 
         try:
-            resp = requests.get(
-                f"{url}{infohash}",
-                timeout=10,
-            )
-            resp.raise_for_status()
-            data = resp.json()
-        except (requests.RequestException, ValueError) as e:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    f"{url}{infohash}",
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as resp:
+                    resp.raise_for_status()
+                    data = await resp.json()
+        except (aiohttp.ClientError, ValueError) as e:
             error_short = type(e).__name__
             logger.error(
                 "%s Failed to fetch content ID for infohash %s",

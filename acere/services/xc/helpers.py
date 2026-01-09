@@ -2,13 +2,18 @@
 
 from datetime import UTC, datetime, timedelta
 from http import HTTPStatus
+from typing import TYPE_CHECKING
 
 from fastapi import HTTPException
-from pydantic import HttpUrl
 from sqlmodel import Session
 
 from acere.core.db import engine
 from acere.crud import authenticate_stream_token
+
+if TYPE_CHECKING:
+    from pydantic import HttpUrl
+else:
+    HttpUrl = object
 
 
 def get_expiry_date() -> str:

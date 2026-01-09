@@ -1,8 +1,7 @@
 """Object for adhoc playlist creation."""
 
-import asyncio
 from datetime import UTC, datetime
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from pydantic import HttpUrl
 
@@ -19,6 +18,11 @@ from acere.services.scraper.helpers import create_extinf_line
 from acere.utils.logger import get_logger
 
 from .constants import M3U_URI_SCHEMES
+
+if TYPE_CHECKING:
+    from pathlib import Path
+else:
+    Path = object
 
 logger = get_logger(__name__)
 
@@ -60,10 +64,10 @@ class PlaylistCreator:
             adhoc_mode=True,
         )
 
-    def scrape(self) -> None:
+    async def scrape(self) -> None:
         """Scrape the streams."""
-        found_streams: list[FoundAceStream] = asyncio.run(self._scrape_remote())
-        self._create_playlist(streams=found_streams)
+        found_streams: list[FoundAceStream] = await self._scrape_remote()
+        await self._create_playlist(streams=found_streams)
 
     async def _scrape_remote(self) -> list[FoundAceStream]:
         found_html_streams = await self._html_scraper.scrape_sites(sites=self._conf.scraper.html)
@@ -80,7 +84,7 @@ class PlaylistCreator:
         found_streams_infohash_only = [stream for stream in found_streams if stream.infohash and not stream.content_id]
         return found_streams_unique + found_streams_infohash_only
 
-    def _scrape_existing(self) -> list[FoundAceStream]:
+    async def _scrape_existing(self) -> list[FoundAceStream]:
         content_id_results = []
         infohash_results = []
 
@@ -92,7 +96,7 @@ class PlaylistCreator:
         if ace_playlist_content_id.exists():
             with ace_playlist_content_id.open("r", encoding="utf-8") as m3u_file:
                 content = m3u_file.read()
-                content_id_results = self._iptv_scraper.parse_m3u_content(content=content, site=site)
+                content_id_results = await self._iptv_scraper.parse_m3u_content(content=content, site=site)
 
         ace_playlist_infohash = self._output_directory / f"{self.playlist_name}-local-infohash.m3u"
         site = ScrapeSiteIPTV(
@@ -102,12 +106,12 @@ class PlaylistCreator:
         if ace_playlist_infohash.exists():
             with ace_playlist_infohash.open("r", encoding="utf-8") as m3u_file:
                 content = m3u_file.read()
-                infohash_results = self._iptv_scraper.parse_m3u_content(content=content, site=site)
+                infohash_results = await self._iptv_scraper.parse_m3u_content(content=content, site=site)
 
         return content_id_results + infohash_results
 
-    def _create_playlist(self, streams: list[FoundAceStream]) -> None:
-        existing_streams = self._scrape_existing()
+    async def _create_playlist(self, streams: list[FoundAceStream]) -> None:
+        existing_streams = await self._scrape_existing()
         existing_content_id: list[str] = [stream.content_id for stream in existing_streams if stream.content_id != ""]
         existing_infohash: list[str] = [stream.infohash for stream in existing_streams if stream.infohash != ""]
 
