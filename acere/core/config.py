@@ -11,6 +11,7 @@ from pydantic import (
     BeforeValidator,
     ConfigDict,
     HttpUrl,
+    ValidationError,
     computed_field,
     field_validator,
     model_validator,
@@ -284,7 +285,7 @@ class AceScrapeConf(BaseModel):
 
         return True, "Source added"
 
-    def remove_source(self, site_name: str) -> tuple[bool, str]:
+    def remove_source(self, site_name: str) -> tuple[bool, str]:  # noqa: C901 Revisit once I have some tests
         """Remove a source via slug."""
         logger.info("Removing source '%s'", site_name)
 
@@ -319,7 +320,7 @@ class AceScrapeConf(BaseModel):
 
         try:
             validated = self.model_validate({model_to_validate: without_source_to_remove})
-        except Exception as e:
+        except ValidationError as e:
             return False, str(e)
 
         if in_iptv:
@@ -418,7 +419,7 @@ class AceReStreamerConf(BaseSettings):
         init_settings: PydanticBaseSettingsSource,
         env_settings: PydanticBaseSettingsSource,
         dotenv_settings: PydanticBaseSettingsSource,
-        file_secret_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,  # noqa: ARG003 Don't use buy must include.
     ) -> tuple[PydanticBaseSettingsSource, ...]:
         """Specify the priority of settings sources."""
         # Skip dotenv loading when in test mode
@@ -503,9 +504,7 @@ class AceReStreamerConf(BaseSettings):
         with config_path.open("r") as f:
             config = json.load(f)
 
-        wip_self = cls(**config)
-
-        return wip_self
+        return cls(**config)
 
     @classmethod
     def force_load_defaults(cls) -> Self:

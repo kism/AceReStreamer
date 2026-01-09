@@ -217,7 +217,7 @@ class EPGHandler:
 
         return time_to_wait
 
-    def _update_epgs(self) -> None:  # noqa: C901
+    def _update_epgs(self) -> None:  # noqa: C901 I split it up within the function
         """Update all EPGs with the current instance path."""
         if self.instance_path is None:
             logger.error("Instance path is not set, cannot update EPGs")

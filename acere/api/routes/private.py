@@ -25,9 +25,8 @@ class PrivateUserCreate(BaseModel):
 
 @router.post("/users/", response_model=UserPublic)
 def create_user(user_in: PrivateUserCreate, session: SessionDep) -> Any:
-    """Create a new user.
-    """
-    logger.info(f"Creating user {user_in.username}")
+    """Create a new user."""
+    logger.debug("Creating user %s", user_in.username)
 
     user = User(
         username=user_in.username,
@@ -35,7 +34,7 @@ def create_user(user_in: PrivateUserCreate, session: SessionDep) -> Any:
         hashed_password=get_password_hash(user_in.password),
     )
 
-    logger.info(f"User created: {user.username}")
+    logger.info("User created: %s", user.username)
 
     session.add(user)
     logger.info("Committing to database")

@@ -1,7 +1,7 @@
 import os
 import random
 from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -25,7 +25,7 @@ from acere.version import PROGRAM_NAME, __version__
 IN_OPEN_API_MODE: bool = os.getenv("IN_OPEN_API_MODE", "false").lower() == "true"
 
 # Lock file to detect multiple worker processes
-WORKER_LOCK_FILE = Path("/tmp/acerestreamer_worker.lock")
+WORKER_LOCK_FILE = Path("/tmp/acerestreamer_worker.lock")  # noqa: S108 Contents never get read
 
 
 # Check for multiple workers - this application does not support multiple workers
@@ -44,7 +44,7 @@ def check_single_worker() -> None:
     # Create lock file
     try:
         WORKER_LOCK_FILE.write_text(str(os.getpid()))
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 Catch all to prevent crash on startup
         msg_str = f"Could not create worker lock file: {e}"
         logger.critical(msg_str)
 
@@ -85,7 +85,7 @@ def custom_generate_unique_id(route: APIRoute) -> str:
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     """Manage application lifespan - startup and shutdown."""
     # Startup
-    instance_id = str(random.randbytes(4).hex())
+    instance_id = str(random.randbytes(4).hex())  # noqa: S311 Not crypto related
     ace_pool = AcePool(instance_id=instance_id)
     set_ace_pool(ace_pool)
     ace_scraper = AceScraper(instance_id=instance_id)
@@ -94,10 +94,8 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     yield
     # Shutdown - cleanup lock file
     if WORKER_LOCK_FILE.exists():
-        try:
+        with suppress(Exception):
             WORKER_LOCK_FILE.unlink()
-        except Exception:
-            pass
 
 
 with Session(engine) as session:

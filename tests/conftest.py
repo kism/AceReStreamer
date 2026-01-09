@@ -40,8 +40,8 @@ from acere.core.db import engine, init_db
 from acere.instances.config import settings
 from acere.main import app
 from acere.models import User
-from tests.utils.user import authentication_token_from_username
-from tests.utils.utils import get_superuser_token_headers
+from tests.test_utils.user import authentication_token_from_username
+from tests.test_utils.user_utils import get_superuser_token_headers
 
 # Store the test password before init_db clears it
 TEST_SUPERUSER_PASSWORD = "pytestpassword123"

@@ -30,9 +30,9 @@ def update_user(*, session: Session, db_user: User, user_in: UserUpdate) -> Any:
 
 
 def get_user_by_username(*, session: Session, username: str) -> User | None:
+    username = username.lower()
     statement = select(User).where(User.username == username)
-    session_user = session.exec(statement).first()
-    return session_user
+    return session.exec(statement).first()
 
 
 def authenticate(*, session: Session, username: str, password: str) -> User | None:

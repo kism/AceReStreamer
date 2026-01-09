@@ -27,7 +27,7 @@ def sources() -> list[AceScraperSourceApi]:
     return ace_scraper.get_scraper_sources_flat_api()
 
 
-@router.get("/source/{slug}", dependencies=[Depends(get_current_user)])
+@router.get("/source/{source_slug}", dependencies=[Depends(get_current_user)])
 def source(source_slug: str) -> AceScraperSourceApi:
     """API endpoint to get a single stream source by its slug."""
     ace_scraper = get_ace_scraper()
@@ -40,7 +40,7 @@ def source(source_slug: str) -> AceScraperSourceApi:
 
 
 @router.post("/source", dependencies=[Depends(get_current_active_superuser)])
-def add_source(
+def add_source(  # noqa: C901 Revisit once I have some tests
     body_json: AceScraperSourceApi | list[AceScraperSourceApi],
 ) -> MessageResponseModel:
     errors: list[str] = []

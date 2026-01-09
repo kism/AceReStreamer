@@ -80,7 +80,7 @@ def generate_app_config_file(
             logger.info("Loading existing configuration from %s", app_config_path)
             config = AceReStreamerConf.force_load_config_file(app_config_path)
         except Exception:  # noqa: BLE001 Naa, we are generating config
-            logger.error("Failed to load existing configuration")  # noqa: TRY400 Short error for requests
+            logger.error("Failed to load existing configuration")
             logger.info("Generating a new configuration file instead.")
 
     logger.info("Including HTML scraper in the configuration.")

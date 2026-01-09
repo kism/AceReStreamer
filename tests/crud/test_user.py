@@ -4,7 +4,7 @@ from sqlmodel import Session
 from acere import crud
 from acere.core.security import verify_password
 from acere.models import User, UserCreate, UserUpdate
-from tests.utils.utils import random_lower_string
+from tests.test_utils.user_utils import random_lower_string
 
 
 def test_create_user(db: Session) -> None:

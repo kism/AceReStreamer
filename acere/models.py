@@ -1,5 +1,6 @@
 import uuid
 
+from pydantic import field_validator
 from sqlmodel import Field, SQLModel
 
 from acere.utils.auth import generate_stream_token
@@ -13,6 +14,11 @@ class UserBase(SQLModel):
     stream_token: str = Field(default_factory=generate_stream_token, max_length=64)
     full_name: str | None = Field(default=None, max_length=255)
 
+    @field_validator("username", mode="before")
+    @classmethod
+    def username_to_lowercase(cls, v: str) -> str:
+        return v.lower()
+
 
 # Properties to receive via API on creation
 class UserCreate(UserBase):
@@ -24,16 +30,31 @@ class UserRegister(SQLModel):
     password: str = Field(min_length=8, max_length=40)
     full_name: str | None = Field(default=None, max_length=255)
 
+    @field_validator("username", mode="before")
+    @classmethod
+    def username_to_lowercase(cls, v: str) -> str:
+        return v.lower()
+
 
 # Properties to receive via API on update, all are optional
 class UserUpdate(UserBase):
-    username: str | None = Field(default=None, max_length=255)  # type: ignore[assignment]
+    username: str | None = Field(default=None, max_length=255)  # type: ignore[assignment] # You are probably just updating the password
     password: str | None = Field(default=None, min_length=8, max_length=40)
+
+    @field_validator("username", mode="before")
+    @classmethod
+    def username_to_lowercase(cls, v: str | None) -> str | None:  # type: ignore[override]
+        return v.lower() if isinstance(v, str) else v
 
 
 class UserUpdateMe(SQLModel):
     full_name: str | None = Field(default=None, max_length=255)
     username: str | None = Field(default=None, max_length=255)
+
+    @field_validator("username", mode="before")
+    @classmethod
+    def username_to_lowercase(cls, v: str | None) -> str | None:
+        return v.lower() if isinstance(v, str) else v
 
 
 class UpdatePassword(SQLModel):
@@ -69,7 +90,7 @@ class Message(SQLModel):
 # JSON payload containing access token
 class Token(SQLModel):
     access_token: str
-    token_type: str = "bearer"
+    token_type: str = "bearer"  # noqa: S105
 
 
 # Contents of JWT token

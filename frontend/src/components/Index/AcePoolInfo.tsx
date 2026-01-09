@@ -143,7 +143,7 @@ export function AcePoolInfo() {
             <TableColumnHeader>Version</TableColumnHeader>
             <TableColumnHeader>Streams</TableColumnHeader>
             <TableColumnHeader>Transcode Audio</TableColumnHeader>
-            <TableColumnHeader>Health</TableColumnHeader>
+            <TableColumnHeader>Status</TableColumnHeader>
           </TableRow>
         </TableHeader>
         <TableBody>

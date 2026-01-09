@@ -2,6 +2,7 @@
 
 from datetime import UTC, datetime
 from http import HTTPStatus
+from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import HttpUrl
@@ -81,7 +82,7 @@ def xc_iptv_router(
     if action == "get_live_categories":
         return _get_live_categories()
     if action == "get_live_streams":
-        return _get_live_streams(category_id, token=stream_token)
+        return _get_live_streams(category_id, token=password)
     if action in [
         "get_vod_categories",
         "get_vod_streams",
@@ -98,7 +99,7 @@ def xc_iptv_router(
             status_code=HTTPStatus.BAD_REQUEST,
             detail=f"Unknown action '{action}'",
         )
-    return _populate_xc_api_response(username=username, password=password)
+    return _populate_xc_api_response(username=username, password=stream_token)
 
 
 def _get_live_categories() -> list[XCCategory]:
@@ -131,9 +132,9 @@ def _get_unknown_action(action: str) -> MessageResponseModel:
 # region /status.php
 @router.get("/get.php", response_model=None)
 def xc_get(
-    username: str = Query("", alias="username"),
-    password: str = Query("", alias="password"),
-    type_: str = Query("", alias="type"),  # Fastapi fixes this as type is a reserved word
+    username: Annotated[str, Query(alias="username")] = "",
+    password: Annotated[str, Query(alias="password")] = "",
+    type_: Annotated[str, Query(alias="type")] = "",  # Fastapi fixes this as type is a reserved word
 ) -> Response | MessageResponseModel:
     """Emulate an XC /get.php endpoint."""
     stream_token = check_xc_auth(username=username, stream_token=password)

@@ -5,10 +5,7 @@ from pathlib import Path
 
 _env_instance_dir = os.getenv("INSTANCE_DIR")
 
-if _env_instance_dir:
-    INSTANCE_DIR = Path(_env_instance_dir)
-else:
-    INSTANCE_DIR = Path(__file__).parent.parent / "instance"
+INSTANCE_DIR = Path(_env_instance_dir) if _env_instance_dir else Path(__file__).parent.parent / "instance"
 
 DEV_FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
 DEV_BACKEND_DIR = Path(__file__).parent

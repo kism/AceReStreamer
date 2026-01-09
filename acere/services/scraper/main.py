@@ -47,6 +47,8 @@ logger = get_logger(__name__)
 
 SCRAPE_INTERVAL = 60 * 60  # Default scrape interval in seconds (1 hour)
 
+_async_background_tasks: set[asyncio.Task[None]] = set()
+
 
 class AceScraper:
     """Scraper object."""
@@ -302,10 +304,7 @@ class AceScraper:
         """Get the found streams as a list of XCStream objects."""
         streams: list[XCStream] = []
 
-        if token == "":
-            token_str = ""
-        else:
-            token_str = f"?token={token}"
+        token_str = "" if token == "" else f"?token={token}"
 
         current_stream_number = 1
         for stream in self.streams.values():
@@ -339,7 +338,7 @@ class AceScraper:
         This is an async function since threading doesn't get app context no matter how hard I try.
         Bit of a hack.
         """
-        from acere.api.routes_media.stream import hls  # Avoid circular import
+        from acere.api.routes_media.stream import hls  # Avoid circular import  # noqa: PLC0415
 
         if self.currently_checking_quality:
             return False
@@ -388,7 +387,7 @@ class AceScraper:
                             await asyncio.sleep(1)
 
                         await asyncio.sleep(10)
-            except Exception:
+            except Exception:  # noqa: BLE001 This is a background task so it won't crash the app
                 exception_name = Exception.__name__
                 logger.warning("Exception occurred during quality check: %s", exception_name)
 
@@ -396,7 +395,9 @@ class AceScraper:
 
         url = f"{self.external_url}hls"
 
-        asyncio.create_task(check_missing_quality_thread(base_url=HttpUrl(url)))  # type: ignore[unused-awaitable]
+        task = asyncio.create_task(check_missing_quality_thread(base_url=HttpUrl(url)))
+        _async_background_tasks.add(task)
+        task.add_done_callback(_async_background_tasks.discard)
 
         return True
 

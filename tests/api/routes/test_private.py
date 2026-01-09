@@ -1,4 +1,5 @@
 import uuid
+from http import HTTPStatus
 
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
@@ -17,7 +18,7 @@ def test_create_user(client: TestClient, db: Session) -> None:
         },
     )
 
-    assert r.status_code == 200
+    assert r.status_code == HTTPStatus.OK
 
     data = r.json()
 

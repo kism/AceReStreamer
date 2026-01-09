@@ -73,7 +73,7 @@ class ContentIdInfohashDatabaseHandler(BaseDatabaseHandler):
             data = resp.json()
         except (requests.RequestException, ValueError) as e:
             error_short = type(e).__name__
-            logger.error(  # noqa: TRY400 Short error for requests
+            logger.error(
                 "%s Failed to fetch content ID for infohash %s",
                 error_short,
                 infohash,
