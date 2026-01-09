@@ -20,7 +20,7 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app/
 
-COPY --from=build-stage /app/dist/ /app/acere/static
+COPY --from=build-stage /app/dist /app/acere/
 
 # Install uv
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#installing-uv
