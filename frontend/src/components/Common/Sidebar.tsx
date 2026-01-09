@@ -58,8 +58,11 @@ function VersionBlock({ healthData }: VersionBlockProps) {
 
   return (
     <Box>
-      <Text {...textProps}>{frontendVersion}</Text>
-      {backendVersion && <Text {...textProps}>{backendVersion}</Text>}
+      <Text {...textProps}>
+        {frontendVersionFull}
+        <br />
+        {backendVersionFull}
+      </Text>
     </Box>
   )
 }

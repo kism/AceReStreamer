@@ -1,5 +1,4 @@
-import uuid
-from typing import Any
+from uuid import UUID  # noqa: TC003 Will break everything otherwise
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import func, select
@@ -35,7 +34,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
     dependencies=[Depends(get_current_active_superuser)],
     response_model=UsersPublic,
 )
-def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
+def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> UsersPublic:
     """Retrieve users."""
     count_statement = select(func.count()).select_from(User)
     count = session.exec(count_statement).one()
@@ -47,7 +46,7 @@ def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
 
 
 @router.post("/", dependencies=[Depends(get_current_active_superuser)], response_model=UserPublic)
-def create_user(*, session: SessionDep, user_in: UserCreate) -> Any:
+def create_user(*, session: SessionDep, user_in: UserCreate) -> User:
     """Create new user."""
     user = crud.get_user_by_username(session=session, username=user_in.username)
     if user:
@@ -60,7 +59,7 @@ def create_user(*, session: SessionDep, user_in: UserCreate) -> Any:
 
 
 @router.patch("/me", response_model=UserPublic)
-def update_user_me(*, session: SessionDep, user_in: UserUpdateMe, current_user: CurrentUser) -> Any:
+def update_user_me(*, session: SessionDep, user_in: UserUpdateMe, current_user: CurrentUser) -> CurrentUser:
     """Update own user."""
     if user_in.username:
         existing_user = crud.get_user_by_username(session=session, username=user_in.username)
@@ -75,7 +74,7 @@ def update_user_me(*, session: SessionDep, user_in: UserUpdateMe, current_user: 
 
 
 @router.patch("/me/password", response_model=Message)
-def update_password_me(*, session: SessionDep, body: UpdatePassword, current_user: CurrentUser) -> Any:
+def update_password_me(*, session: SessionDep, body: UpdatePassword, current_user: CurrentUser) -> Message:
     """Update own password."""
     if not verify_password(body.current_password, current_user.hashed_password):
         raise HTTPException(status_code=400, detail="Incorrect password")
@@ -89,19 +88,19 @@ def update_password_me(*, session: SessionDep, body: UpdatePassword, current_use
 
 
 @router.get("/me", response_model=UserPublic)
-def read_user_me(current_user: CurrentUser) -> Any:
+def read_user_me(current_user: CurrentUser) -> CurrentUser:
     """Get current user."""
     return current_user
 
 
 @router.get("/me/stream-token", response_model=StreamToken)
-def read_stream_token_me(current_user: CurrentUser) -> Any:
+def read_stream_token_me(current_user: CurrentUser) -> StreamToken:
     """Get current user's stream token."""
     return StreamToken(stream_token=current_user.stream_token)
 
 
 @router.post("/me/stream-token", response_model=StreamToken)
-def regenerate_stream_token_me(*, session: SessionDep, current_user: CurrentUser) -> Any:
+def regenerate_stream_token_me(*, session: SessionDep, current_user: CurrentUser) -> StreamToken:
     """Regenerate own stream token."""
     new_stream_token = generate_stream_token()
     current_user.stream_token = new_stream_token
@@ -111,7 +110,7 @@ def regenerate_stream_token_me(*, session: SessionDep, current_user: CurrentUser
 
 
 @router.delete("/me", response_model=Message)
-def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
+def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Message:
     """Delete own user."""
     if current_user.is_superuser:
         raise HTTPException(status_code=403, detail="Super users are not allowed to delete themselves")
@@ -121,7 +120,7 @@ def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
 
 
 @router.post("/signup", response_model=UserPublic)
-def register_user(session: SessionDep, user_in: UserRegister) -> Any:
+def register_user(session: SessionDep, user_in: UserRegister) -> User:
     """Create new user without the need to be logged in."""
     user = crud.get_user_by_username(session=session, username=user_in.username)
     if user:
@@ -134,7 +133,7 @@ def register_user(session: SessionDep, user_in: UserRegister) -> Any:
 
 
 @router.get("/{user_id}", response_model=UserPublic)
-def read_user_by_id(user_id: uuid.UUID, session: SessionDep, current_user: CurrentUser) -> Any:
+def read_user_by_id(user_id: UUID, session: SessionDep, current_user: CurrentUser) -> User | None:
     """Get a specific user by id."""
     user = session.get(User, user_id)
     if user == current_user:
@@ -155,9 +154,9 @@ def read_user_by_id(user_id: uuid.UUID, session: SessionDep, current_user: Curre
 def update_user(
     *,
     session: SessionDep,
-    user_id: uuid.UUID,
+    user_id: UUID,
     user_in: UserUpdate,
-) -> Any:
+) -> User:
     """Update a user."""
     db_user = session.get(User, user_id)
     if not db_user:
@@ -174,7 +173,7 @@ def update_user(
 
 
 @router.delete("/{user_id}", dependencies=[Depends(get_current_active_superuser)])
-def delete_user(session: SessionDep, current_user: CurrentUser, user_id: uuid.UUID) -> Message:
+def delete_user(session: SessionDep, current_user: CurrentUser, user_id: UUID) -> Message:
     """Delete a user."""
     user = session.get(User, user_id)
     if not user:

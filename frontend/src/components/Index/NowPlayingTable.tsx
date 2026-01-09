@@ -8,7 +8,7 @@ import {
   TableRow,
   TableRowHeader,
 } from "@/components/ui/table"
-import { useStreamStatus } from "@/hooks/useVideoPlayer"
+import { useStreamStatus } from "@/hooks/useStreamStatus"
 
 function calculateMaxWidth(streamURL: string) {
   const minWidth = 300

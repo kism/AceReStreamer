@@ -75,6 +75,7 @@ def xc_iptv_router(
     category_id: str = "",
 ) -> XCApiResponse | list[XCCategory] | list[XCStream]:
     """Route XC API requests to appropriate handlers.
+
     Actions: get_live_categories, get_live_streams, get_vod_categories, get_vod_streams, get_series_categories, get_series.
     """  # noqa: E501
     stream_token = check_xc_auth(username=username, stream_token=password)

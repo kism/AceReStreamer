@@ -1,49 +1,14 @@
 import Hls from "hls.js"
-import { useEffect, useState } from "react"
 
 import { UsersService } from "@/client"
 
 import baseURL from "@/helpers"
+import { updateStreamStatus } from "./useStreamStatus"
 
 const VITE_API_URL = baseURL()
 
 const baseHLSURL = `${VITE_API_URL}/hls`
 let hls: Hls | null = null
-
-interface StreamStatus {
-  playerStatus: string
-  hlsStatus: string
-  streamURL: string
-}
-
-let streamStatus: StreamStatus = {
-  playerStatus: "Idle",
-  hlsStatus: "Idle",
-  streamURL: "<no stream loaded>",
-}
-const statusListeners: Set<(status: StreamStatus) => void> = new Set()
-
-function updateStreamStatus(newStatus: Partial<StreamStatus>) {
-  streamStatus = { ...streamStatus, ...newStatus }
-  statusListeners.forEach((listener) => {
-    listener(streamStatus)
-  })
-}
-
-export function useStreamStatus() {
-  const [status, setStatus] = useState<StreamStatus>(streamStatus)
-
-  useEffect(() => {
-    const listener = (newStatus: StreamStatus) => setStatus(newStatus)
-    statusListeners.add(listener)
-
-    return () => {
-      statusListeners.delete(listener)
-    }
-  }, [])
-
-  return status
-}
 
 async function getAuthToken() {
   const streamTokenService = UsersService.readStreamTokenMe()

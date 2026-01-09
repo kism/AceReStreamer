@@ -1,11 +1,16 @@
 """Nice method to log aiohttp exceptions."""
 
-from logging import Logger as CustomLogger
+from typing import TYPE_CHECKING
 
-from aiohttp import ClientError
-from pydantic import HttpUrl
+if TYPE_CHECKING:
+    from logging import Logger as CustomLogger
 
-# from acere.utils.logger import CustomLogger
+    from aiohttp import ClientError
+    from pydantic import HttpUrl
+else:
+    CustomLogger = object
+    ClientError = object
+    HttpUrl = object
 
 
 def log_aiohttp_exception(logger: CustomLogger, site_url: HttpUrl, exception: ClientError) -> None:

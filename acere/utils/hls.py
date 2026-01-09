@@ -1,8 +1,13 @@
 """Helpers for Stream Parsing."""
 
-from pydantic import HttpUrl
+from typing import TYPE_CHECKING
 
 from acere.utils.logger import get_logger
+
+if TYPE_CHECKING:
+    from pydantic import HttpUrl
+else:
+    HttpUrl = object
 
 logger = get_logger(__name__)
 

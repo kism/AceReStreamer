@@ -3,7 +3,7 @@
 from http import HTTPStatus
 from typing import Annotated
 
-import requests
+import aiohttp
 from fastapi import APIRouter, HTTPException, Query, Request, Response
 from fastapi.responses import FileResponse
 from pydantic import HttpUrl
@@ -36,7 +36,7 @@ REVERSE_PROXY_TIMEOUT = 10  # Very high but alas
 
 # region /hls/
 @router.get("/hls/{path}", response_class=Response)
-def hls(
+async def hls(
     path: str,
     token: str = "",
     *,
@@ -57,7 +57,7 @@ def hls(
             detail=msg,
         )
 
-    instance_ace_hls_m3u8_url = ace_pool.get_instance_hls_url_by_content_id(path)
+    instance_ace_hls_m3u8_url = await ace_pool.get_instance_hls_url_by_content_id(path)
 
     if not instance_ace_hls_m3u8_url:
         msg = f"Can't serve hls_stream, Ace pool is full: {path}"
@@ -70,21 +70,22 @@ def hls(
     logger.trace("HLS stream requested for path: %s", instance_ace_hls_m3u8_url)
 
     try:
-        ace_resp = requests.get(
-            instance_ace_hls_m3u8_url.encoded_string(),
-            timeout=REVERSE_PROXY_TIMEOUT,
-            stream=True,
-        )
-        ace_resp.raise_for_status()
-    except requests.RequestException as e:
+        timeout = aiohttp.ClientTimeout(total=REVERSE_PROXY_TIMEOUT)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.get(instance_ace_hls_m3u8_url.encoded_string()) as ace_resp:
+                ace_resp.raise_for_status()
+                content_bytes = await ace_resp.read()
+                status_code = ace_resp.status
+                headers = ace_resp.headers
+    except (aiohttp.ClientError, TimeoutError) as e:
         error_short = type(e).__name__
 
         # Determine error type and response
-        if isinstance(e, requests.Timeout):
+        if isinstance(e, (aiohttp.ServerTimeoutError, TimeoutError)):
             logger.error("reverse proxy timeout /hls/%s %s", path, error_short)
             error_msg, status = "HLS stream timeout", HTTPStatus.REQUEST_TIMEOUT
             ace_scraper.increment_quality(path, "")
-        elif isinstance(e, requests.ConnectionError):
+        elif isinstance(e, aiohttp.ClientConnectionError):
             logger.error("%s reverse proxy cannot connect to Ace", error_short)
             error_msg, status = (
                 "Cannot connect to Ace",
@@ -100,7 +101,7 @@ def hls(
 
         raise HTTPException(status_code=status, detail=error_msg) from e
 
-    content_str = ace_resp.content.decode("utf-8", errors="replace")
+    content_str = content_bytes.decode("utf-8", errors="replace")
 
     if "#EXTM3U" not in content_str:
         logger.error("Invalid HLS stream received for path: %s", path)
@@ -121,13 +122,9 @@ def hls(
 
     ace_scraper.increment_quality(path, m3u_playlist=content_str)
 
-    resp = Response(content_str, ace_resp.status_code)
+    resp = Response(content_str, status_code)
     resp.headers.update(
-        {
-            name: value
-            for (name, value) in ace_resp.raw.headers.items()
-            if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS
-        }
+        {name: value for (name, value) in headers.items() if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS}
     )
     return resp
 
@@ -135,7 +132,7 @@ def hls(
 # region /hls/m/
 # Taking the easy route and capturing the full following path
 @router.get("/hls/m/{path:path}", response_class=Response)
-def hls_multi(path: str, token: str = "") -> Response:
+async def hls_multi(path: str, token: str = "") -> Response:
     """Reverse proxy the HLS multistream from Ace."""
     verify_stream_token(token)
 
@@ -146,16 +143,20 @@ def hls_multi(path: str, token: str = "") -> Response:
     url = HttpUrl(f"{settings.app.ace_address.encoded_string()}/hls/m/{path}").encoded_string()
 
     try:
-        ace_resp = requests.get(url, timeout=REVERSE_PROXY_TIMEOUT, stream=True)
-        ace_resp.raise_for_status()
-    except requests.RequestException as e:
+        timeout = aiohttp.ClientTimeout(total=REVERSE_PROXY_TIMEOUT)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.get(url) as ace_resp:
+                ace_resp.raise_for_status()
+                content_bytes = await ace_resp.read()
+                status_code = ace_resp.status
+    except (aiohttp.ClientError, TimeoutError) as e:
         error_short = type(e).__name__
         logger.error("reverse proxy failure /hls/m/ %s", error_short)
         error_msg = "Failed to fetch HLS multistream"
 
         raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=error_msg) from e
 
-    content_str = ace_resp.content.decode("utf-8", errors="replace")
+    content_str = content_bytes.decode("utf-8", errors="replace")
 
     if "#EXTM3U" not in content_str:
         logger.error("Invalid HLS stream received for path: %s", path)
@@ -177,7 +178,7 @@ def hls_multi(path: str, token: str = "") -> Response:
 
     ace_scraper.increment_quality(content_id, m3u_playlist=content_str)
 
-    return Response(content_str, ace_resp.status_code)
+    return Response(content_str, status_code)
 
 
 # region XC
@@ -188,7 +189,7 @@ def hls_multi(path: str, token: str = "") -> Response:
 # /u/p/<tvg_id>.m3u8      | SparkleTV
 @router.get("/{_path_username}/{_path_password}/{xc_stream}", response_class=Response)
 @router.get("/live/{_path_username}/{_path_password}/{xc_stream}", response_class=Response)
-def xc_m3u8(
+async def xc_m3u8(
     request: Request,
     _path_username: str = "",
     _path_password: str = "",
@@ -236,14 +237,14 @@ def xc_m3u8(
             detail="Content ID not found for the given XC ID",
         )
 
-    return hls(content_id, stream_token)
+    return await hls(content_id, stream_token)
 
 
 # region /ace/c/ and /hls/c/ Content paths for regular and multistream
 # Do a full path capture here, since ace puts a bunch of stuff following
 @router.get("/ace/c/{path:path}", response_class=Response, name="ace_content_1")
 @router.get("/hls/c/{path:path}", response_class=Response, name="ace_content_2")
-def ace_content(path: str, request: Request, token: str = "") -> Response:
+async def ace_content(path: str, request: Request, token: str = "") -> Response:
     """Reverse proxy the Ace content."""
     verify_stream_token(token)
 
@@ -258,9 +259,27 @@ def ace_content(path: str, request: Request, token: str = "") -> Response:
     logger.trace("Ace content requested for url: %s", url)
 
     try:
-        resp = requests.get(url, timeout=REVERSE_PROXY_TIMEOUT, stream=True)
-        resp.raise_for_status()
-    except requests.RequestException as e:
+        timeout = aiohttp.ClientTimeout(total=REVERSE_PROXY_TIMEOUT)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.get(url) as resp:
+                resp.raise_for_status()
+                content = await resp.read()
+                status_code = resp.status
+                response_headers = resp.headers
+    except (aiohttp.ServerTimeoutError, TimeoutError) as e:
+        error_short = type(e).__name__
+        logger.error(
+            "%s reverse proxy timeout %s",
+            route_prefix,
+            error_short,
+        )
+        response_body = MessageResponseModel(message="Ace content timeout").model_dump_json()
+        return Response(
+            content=response_body,
+            media_type="application/json",
+            status_code=HTTPStatus.REQUEST_TIMEOUT,
+        )
+    except aiohttp.ClientError as e:
         error_short = type(e).__name__
         logger.error("%s reverse proxy failure %s", route_prefix, error_short)
         response_body = MessageResponseModel(message="Failed to fetch HLS stream").model_dump_json()
@@ -269,29 +288,14 @@ def ace_content(path: str, request: Request, token: str = "") -> Response:
             media_type="application/json",
             status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
         )
-    except requests.Timeout as e:
-        error_short = type(e).__name__
-        logger.error(
-            "%s reverse proxy timeout %s %s %s",
-            route_prefix,
-            error_short,
-            e.errno,
-            e.strerror,
-        )
-        response_body = MessageResponseModel(message="Ace content timeout").model_dump_json()
-        return Response(
-            content=response_body,
-            media_type="application/json",
-            status_code=HTTPStatus.REQUEST_TIMEOUT,
-        )
 
     headers = [
         (name, value)
-        for (name, value) in resp.raw.headers.items()
+        for (name, value) in response_headers.items()
         if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS
     ]
 
-    response = Response(content=resp.content, status_code=resp.status_code, headers=dict(headers))
+    response = Response(content=content, status_code=status_code, headers=dict(headers))
 
     response.headers["Content-Type"] = "video/MP2T"
 

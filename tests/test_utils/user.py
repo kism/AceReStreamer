@@ -1,11 +1,14 @@
-from fastapi.testclient import TestClient
-from sqlmodel import Session
+from typing import TYPE_CHECKING
 
 from acere import crud
 from acere.constants import API_V1_STR
 from acere.models import User, UserCreate, UserUpdate
 
 from .user_utils import random_lower_string
+
+if TYPE_CHECKING:
+    from fastapi.testclient import TestClient
+    from sqlmodel import Session
 
 
 def user_authentication_headers(*, client: TestClient, username: str, password: str) -> dict[str, str]:

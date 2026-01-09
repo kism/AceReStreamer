@@ -1,18 +1,17 @@
 [project]
 name = "acere"
-version = "1.0.0b3"
+version = "1.0.0b4"
 description = ""
 requires-python = ">=3.14,<4.0"
 dependencies = [
     # From Template
-    "fastapi[standard]>=0.118.0",
+    "fastapi[standard-no-fastapi-cloud-cli]>=0.118.0",
     "sqlmodel<1.0.0,>=0.0.25",
     "pydantic>=2.11",
     "pydantic-settings>=2.11",
     "pyjwt<3.0.0,>=2.10.1",
     "uvicorn>=0.37.0",
-    # Mine
-    "requests>=2.32.5",
+    # Me
     "beautifulsoup4>=4.14.2",
     "jinja2>=3.1.6",
     "lxml>=6.0.2",
@@ -21,6 +20,8 @@ dependencies = [
     "aiohttp[speedups]>=3.13.0", # Requires python 3.14+ for zstd support
     "rich>=14.1.0",
     "argon2-cffi>=25.1.0",
+    "uvloop>=0.22.1",
+    "starlette-compress>=1.6.1",
 ]
 
 [project.optional-dependencies]
@@ -29,7 +30,6 @@ type = [
     "ty",
     "types-passlib>=1.7.7",
     "lxml-stubs>=0.5.1",
-    "types-requests>=2.32.0.20250602",
     "types-psutil>=7.0.0.20250601",
     "types-pytz>=2025.2.0.20250516",
 ]
@@ -66,25 +66,16 @@ ignore = [
     # From the template
     "B904", # Allow raising exceptions without from e, for HTTPException
 
-    # Modules
-    "DJ", # KG Django not required
-
     # Specific rules
-    "TD002",  # KG Verbose TODO, only I work on this project
-    "TD003",  # KG Verbose TODO, only I work on this project
-    "ISC001", # KG conflict in the formatter
-    "COM812", # KG conflict in the formatter
+    "TD002",  # Verbose TODO, only I work on this project
+    "TD003",  # Verbose TODO, only I work on this project
+    "ISC001", # conflict in the formatter
+    "COM812", # conflict in the formatter
     "D103",   # Missing docstring in public function
     "N805",   # field_validator needs cls
     "TRY400", # Fine to log exceptions as errors
-
-    # TEMP
-    "D",      # One day, docstrings
-    "TC001",  # Type checking blocks seems unsafe rn
-    "TC002",  # Type checking blocks seems unsafe rn
-    "TC003",  # Type checking blocks seems unsafe rn
-    "ERA",    # Commented out code is fine for now
-    "ANN401", # Allow missing return type annotations for now
+    "SIM117", # Double 'with' is more readable with async
+    "D1",     # Not going to document everything, we have good type checking
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -97,8 +88,20 @@ ignore = [
     "S",       # No real crypto in tests
     "SLF001",  # Can access private members in tests
     "PLR2004", # Allow magic comparisons in tests
+    "ANN401",  # *args: Any, **kwargs: Any in tests
 ]
 
+[tool.ruff.lint.flake8-type-checking]
+runtime-evaluated-base-classes = [
+    "pydantic.BaseModel",
+    "pydantic_settings.BaseSettings",
+    "sqlmodel.SQLModel",
+    "uuid.UUID",
+    "acere.api.deps.SessionDep",
+] # These aren't for type checking only
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
 [tool.ruff.lint.pyupgrade]
 keep-runtime-typing = true

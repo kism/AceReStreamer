@@ -38,6 +38,8 @@ ACE_URL_PREFIXES_INFOHASH = [
 COUNTRY_CODE_PATTERN = re.compile(r"\[([A-Z]{2})\]")
 ACE_ID_PATTERN = re.compile(r"\b[0-9a-fA-F]{40}\b")
 
+COMPILED_REGEX_CACHE: dict[str, re.Pattern[str]] = {}
+
 
 class StreamNameProcessor:
     """Cache for M3U text replacements."""
@@ -84,18 +86,29 @@ class StreamNameProcessor:
         title = self._do_replacements(title)
         return title.strip()
 
-    def candidates_regex_cleanup(self, candidate_titles: list[str], regex: str) -> list[str]:
+    def candidates_regex_cleanup(self, candidate_titles: list[str], regex_list: list[str]) -> list[str]:
         """Cleanup the title using a regex."""
-        if regex == "":
+        if not regex_list:
             return candidate_titles
 
-        compiled_regex = re.compile(regex)
         new_candidate_titles = []
 
+        # For each candidate title
         for title in candidate_titles:
-            title_new = compiled_regex.sub("", title).strip()
-            if title_new != "":
-                new_candidate_titles.append(title_new)
+            wip_title = title
+            for regex_str in regex_list:
+                compiled_regex = COMPILED_REGEX_CACHE.get(regex_str)
+                if compiled_regex is None:
+                    compiled_regex = re.compile(regex_str)
+                    COMPILED_REGEX_CACHE[regex_str] = compiled_regex
+
+                wip_title = compiled_regex.sub("", wip_title).strip()
+
+            wip_title = wip_title.strip()
+
+            # If name is not empty or only non-alphanumeric characters, add it
+            if wip_title != "" and not all(not c.isalnum() for c in wip_title):
+                new_candidate_titles.append(wip_title)
 
         return new_candidate_titles
 

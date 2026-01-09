@@ -40,4 +40,45 @@ export default defineConfig({
     }),
     react(),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          // This will be lazy loaded
+          if (id.includes("hls.js")) {
+            return "hlsjs"
+          }
+
+          // TanStack
+          if (id.includes("@tanstack/react-query")) {
+            return "tanstack-query"
+          }
+          if (id.includes("@tanstack/react-router")) {
+            return "tanstack-router"
+          }
+
+          // Icons can be separated
+          if (id.includes("react-icons")) {
+            return "react-icons"
+          }
+
+          // Chakra needs to be with React
+          if (
+            id.includes("react-hook-form") ||
+            id.includes("react-copy-to-clipboard") ||
+            id.includes("react-error-boundary") ||
+            id.includes("@chakra-ui") ||
+            id.includes("@emotion") ||
+            id.includes("@ark-ui") ||
+            id.includes("node_modules/react/") ||
+            id.includes("node_modules/react-dom/") ||
+            id.includes("node_modules/scheduler/")
+          ) {
+            return "react-chakra"
+          }
+        },
+      },
+    },
+    chunkSizeWarningLimit: 500,
+  },
 })

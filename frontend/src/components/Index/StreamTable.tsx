@@ -12,8 +12,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { loadPlayStream } from "@/hooks/useVideoPlayer"
 import { QualityCell } from "./QualityCell"
+
+const loadVideoPlayerModule = () => import("@/hooks/useVideoPlayer")
 
 function getStreamsQueryOptions() {
   return {
@@ -88,7 +89,9 @@ export function StreamTable() {
               opacity={isPlaceholderData ? 0.5 : 1}
               cursor={isPlaceholderData ? "default" : "pointer"}
               onClick={() => {
-                loadPlayStream(item.content_id)
+                loadVideoPlayerModule().then((module) => {
+                  module.loadPlayStream(item.content_id)
+                })
               }}
             >
               <QualityCell quality={item.quality} p={1} />

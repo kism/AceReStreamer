@@ -1,12 +1,13 @@
 """AceStream pool management module."""
 
+import asyncio
 import contextlib
 import threading
 import time
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
-import requests
+import aiohttp
 from pydantic import HttpUrl, TypeAdapter
 
 from acere.instances.config import settings
@@ -43,7 +44,7 @@ class AcePool:
         self.ace_poolboy()
 
     # region Health
-    def check_ace_running(self) -> bool:
+    async def check_ace_running(self) -> bool:
         """Use the AceStream API to check if the instance is running."""
         logger.trace("AcePool check_ace_running (%s)", self._instance_id)
         healthy = False
@@ -54,13 +55,15 @@ class AcePool:
         version_data = {}
 
         try:
-            response = requests.get(url, timeout=ACESTREAM_API_TIMEOUT)
-            response.raise_for_status()
-            version_data = response.json()
+            timeout = aiohttp.ClientTimeout(total=ACESTREAM_API_TIMEOUT)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(url) as response:
+                    response.raise_for_status()
+                    version_data = await response.json()
             if not self.healthy:
                 logger.info("Ace Instance %s is healthy", self.ace_address)
             healthy = True
-        except requests.RequestException as e:
+        except aiohttp.ClientError as e:
             error_short = type(e).__name__
             logger.error("Ace Instance %s is not healthy: %s", self.ace_address, error_short)
             healthy = False
@@ -79,21 +82,21 @@ class AcePool:
         return self.healthy
 
     # region Delete
-    def remove_instance_by_content_id(self, content_id: str, caller: str = "") -> bool:
+    async def remove_instance_by_content_id(self, content_id: str, caller: str = "") -> bool:
         """Remove an AceStream instance from the pool by content_id."""
         if caller != "":
             caller = f"{caller}: "
         if content_id in self.ace_instances:
             logger.info("%sRemoving AceStream instance with content_id %s", caller, content_id)
             with contextlib.suppress(KeyError):
-                self.ace_instances[content_id].stop()
+                await self.ace_instances[content_id].stop()
                 del self.ace_instances[content_id]
             return True
 
         return False
 
     # region Getters
-    def get_available_instance_number(self) -> int | None:
+    async def get_available_instance_number(self) -> int | None:
         """Get the next available AceStream instance URL."""
         instance_numbers = [instance.ace_pid for instance in self.ace_instances.values()]
 
@@ -113,13 +116,13 @@ class AcePool:
                 best_instance.ace_pid,
             )
             ace_pid = best_instance.ace_pid
-            self.remove_instance_by_content_id(best_instance.content_id, caller="get_available_instance_number")
+            await self.remove_instance_by_content_id(best_instance.content_id, caller="get_available_instance_number")
             return ace_pid
 
         logger.error("Ace pool is full, could not get available instance.")
         return None
 
-    def get_instance_hls_url_by_content_id(self, content_id: str) -> HttpUrl | None:
+    async def get_instance_hls_url_by_content_id(self, content_id: str) -> HttpUrl | None:
         """Find the AceStream instance URL for a given content_id, create a new instance if it doesn't exist."""
         if not self.ace_address:
             logger.error("Ace address is not set, cannot get instance URL.")
@@ -134,12 +137,12 @@ class AcePool:
             instance.update_last_used()
             return instance.get_m3u8_url()
 
-        new_instance_number = self.get_available_instance_number()
+        new_instance_number = await self.get_available_instance_number()
         if new_instance_number is None:
             logger.error("No available AceStream instance number found.")
             return None
 
-        new_instance = AcePoolEntry(
+        new_instance = await AcePoolEntry.create(
             ace_pid=new_instance_number,
             content_id=content_id,
             ace_address=self.ace_address,
@@ -214,12 +217,12 @@ class AcePool:
         )
 
     # region GET API Stats
-    def get_all_stats(self) -> AcePoolAllStatsApi:
+    async def get_all_stats(self) -> AcePoolAllStatsApi:
         """Get all AcePool statistics for each instance, for the API only."""
         # I had to use typing.Any, sad day but it's fine since its from pydantic
         result: dict[int, dict[str, Any] | None] = {}
         for n in range(self.max_size):
-            ace_pool_stat = self.get_stats_by_pid(n)
+            ace_pool_stat = await self.get_stats_by_pid(n)
             if ace_pool_stat is None:
                 result[n] = None
             else:
@@ -229,7 +232,7 @@ class AcePool:
 
         return ta.validate_python(result)
 
-    def get_stats_by_pid(self, pid: int) -> AcePoolStat | None:
+    async def get_stats_by_pid(self, pid: int) -> AcePoolStat | None:
         """Get the AcePool statistics for a specific index."""
         if not self.healthy:
             logger.error("Ace pool is not healthy, cannot get stats.")
@@ -237,13 +240,13 @@ class AcePool:
 
         for entry in self.ace_instances.values():
             if entry.ace_pid == pid:
-                ace_stat = entry.get_ace_stat()
+                ace_stat = await entry.get_ace_stat()
                 if ace_stat is not None:
                     return ace_stat
 
         return None
 
-    def get_stats_by_content_id(self, content_id: str) -> AcePoolStat | None:
+    async def get_stats_by_content_id(self, content_id: str) -> AcePoolStat | None:
         """Get the AcePool statistics for a specific content ID."""
         if not self.healthy:
             logger.error("Ace pool is not healthy, cannot get stats.")
@@ -251,7 +254,7 @@ class AcePool:
 
         instance = self.ace_instances.get(content_id)
         if instance:
-            ace_stat = instance.get_ace_stat()
+            ace_stat = await instance.get_ace_stat()
             if ace_stat is not None:
                 return ace_stat
 
@@ -287,8 +290,11 @@ class AcePool:
 
         def ace_poolboy_thread() -> None:
             """Thread to clean up instances."""
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
             while True:
-                self.check_ace_running()
+                loop.run_until_complete(self.check_ace_running())
                 time.sleep(10)
 
                 instances_to_remove: list[str] = []
@@ -298,10 +304,10 @@ class AcePool:
                     if instance.check_if_stale():
                         instances_to_remove.append(instance.content_id)
                     else:  # Otherwise, try keep it alive
-                        instance.keep_alive()
+                        loop.run_until_complete(instance.keep_alive())
 
                 for content_id in instances_to_remove:  # Separate loop to avoid modifying the dict while iterating
-                    self.remove_instance_by_content_id(content_id, caller="ace_poolboy")
+                    loop.run_until_complete(self.remove_instance_by_content_id(content_id, caller="ace_poolboy"))
 
         if not self._ace_poolboy_running:
             self._ace_poolboy_running = True

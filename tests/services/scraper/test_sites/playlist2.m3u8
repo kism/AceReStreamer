@@ -1,0 +1,5 @@
+#EXTM3U x-tvg-url="https://www.example.com/files/unitedkingdom1.xml.gz
+#EXTINF:-1 tvg-logo="https://images.example.com/stream1.png" tvg-id="STREAM1.us" group-title="News", Stream 1
+http://127.0.0.1:6878/ace/manifest.m3u8?content_id=2000000000000000000000000000000000000001
+#EXTINF:-1 tvg-logo="https://images.example.com/stream2.png" tvg-id="STREAM2.us" group-title="News", Stream 2
+http://127.0.0.1:6878/ace/manifest.m3u8?content_id=1000000000000000000000000000000000000002

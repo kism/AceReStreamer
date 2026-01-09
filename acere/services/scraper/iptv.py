@@ -4,7 +4,6 @@ import re
 from typing import TYPE_CHECKING
 
 import aiohttp
-import requests
 from pydantic import HttpUrl, ValidationError
 
 from acere.utils.constants import SUPPORTED_TVG_LOGO_EXTENSIONS
@@ -55,7 +54,7 @@ class IPTVStreamScraper(ScraperCommon):
         if not content:
             return []
 
-        found_streams = self.parse_m3u_content(content, site)
+        found_streams = await self.parse_m3u_content(content, site)
 
         for stream in found_streams:
             stream.last_found_time = 0  # Since we are 100% sure we just scraped from a remote
@@ -74,7 +73,7 @@ class IPTVStreamScraper(ScraperCommon):
 
         logger.debug("Scraping streams from IPTV site: %s", site.name)
         try:
-            async with aiohttp.ClientSession() as session:  # noqa: SIM117
+            async with aiohttp.ClientSession() as session:
                 async with session.get(site.url.encoded_string()) as response:
                     response.raise_for_status()
                     content = await response.text(encoding="utf-8")
@@ -88,7 +87,7 @@ class IPTVStreamScraper(ScraperCommon):
         return content
 
     # region Line Processing
-    def _found_ace_stream_from_extinf_line(
+    async def _found_ace_stream_from_extinf_line(
         self,
         line: str,
         content_id: str,
@@ -118,7 +117,7 @@ class IPTVStreamScraper(ScraperCommon):
         if self.category_xc_category_id_mapping:  # Populate if we aren't running in adhoc mode
             self.category_xc_category_id_mapping.get_xc_category_id(group_title)
 
-        self._download_tvg_logo(parts[0], title)
+        await self._download_tvg_logo(parts[0], title)
         tvg_logo = self.name_processor.find_tvg_logo_image(title)
 
         _get_last_found_time = self._get_last_found_time(line)
@@ -142,7 +141,7 @@ class IPTVStreamScraper(ScraperCommon):
             return None
         return found_ace_stream
 
-    def parse_m3u_content(self, content: str, site: ScrapeSiteIPTV) -> list[FoundAceStream]:
+    async def parse_m3u_content(self, content: str, site: ScrapeSiteIPTV) -> list[FoundAceStream]:
         """Parse M3U content and extract AceStream entries."""
         found_streams: list[FoundAceStream] = []
         lines = content.splitlines()
@@ -167,7 +166,7 @@ class IPTVStreamScraper(ScraperCommon):
                 content_id = self.name_processor.extract_content_id_from_url(valid_ace_uri)
                 infohash = self.name_processor.extract_infohash_from_url(valid_ace_uri)
 
-                ace_stream = self._found_ace_stream_from_extinf_line(
+                ace_stream = await self._found_ace_stream_from_extinf_line(
                     line=line_one,
                     content_id=content_id,
                     infohash=infohash,
@@ -195,7 +194,7 @@ class IPTVStreamScraper(ScraperCommon):
             return HttpUrl(match.group(1))
         return None
 
-    def _download_tvg_logo(self, line: str, title: str) -> None:
+    async def _download_tvg_logo(self, line: str, title: str) -> None:
         """Download the TVG logo and the URL it got it from."""
         if self.instance_path is None:
             return
@@ -224,9 +223,13 @@ class IPTVStreamScraper(ScraperCommon):
 
         logger.info("Downloading TVG logo for %s from %s", title, tvg_logo_url)
         try:
-            response = requests.get(tvg_logo_url.encoded_string(), timeout=5)
-            response.raise_for_status()
-        except requests.RequestException as e:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    tvg_logo_url.encoded_string(), timeout=aiohttp.ClientTimeout(total=5)
+                ) as response:
+                    response.raise_for_status()
+                    content = await response.read()
+        except aiohttp.ClientError as e:
             error_short = type(e).__name__
             logger.error("Error downloading TVG logo for %s, %s", title, error_short)
             return
@@ -234,7 +237,7 @@ class IPTVStreamScraper(ScraperCommon):
         tvg_logo_path = self.instance_path / "tvg_logos" / f"{title_slug}.{url_file_extension}"
         tvg_logo_path.parent.mkdir(parents=True, exist_ok=True)
         with tvg_logo_path.open("wb") as file:
-            file.write(response.content)
+            file.write(content)
 
     def _extract_group_title(self, line: str) -> str:
         """Extract the group title from the line if it exists."""

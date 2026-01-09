@@ -1,5 +1,5 @@
 import uuid
-from collections.abc import Generator
+from collections.abc import Generator  # noqa: TC003 Will break everything otherwise
 from typing import Annotated
 
 import jwt

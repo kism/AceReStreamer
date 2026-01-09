@@ -2,11 +2,15 @@
 
 from datetime import datetime, timedelta
 from pathlib import Path
-
-from pydantic import HttpUrl
+from typing import TYPE_CHECKING
 
 from acere.utils.constants import OUR_TIMEZONE
 from acere.utils.helpers import slugify
+
+if TYPE_CHECKING:
+    from pydantic import HttpUrl
+else:
+    HttpUrl = object
 
 
 class ScraperCache:

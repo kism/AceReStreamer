@@ -1,9 +1,7 @@
-from typing import Any
-
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from acere.api.deps import SessionDep
+from acere.api.deps import SessionDep  # noqa: TC001 Will break everything otherwise
 from acere.core.security import get_password_hash
 from acere.models import (
     User,
@@ -24,7 +22,7 @@ class PrivateUserCreate(BaseModel):
 
 
 @router.post("/users/", response_model=UserPublic)
-def create_user(user_in: PrivateUserCreate, session: SessionDep) -> Any:
+def create_user(user_in: PrivateUserCreate, session: SessionDep) -> User:
     """Create a new user."""
     logger.debug("Creating user %s", user_in.username)
 

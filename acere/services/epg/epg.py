@@ -3,7 +3,6 @@
 import gzip
 import io
 from datetime import datetime, timedelta
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import aiohttp
@@ -13,8 +12,11 @@ from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.logger import get_logger
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from acere.core.config import EPGInstanceConf
 else:
+    Path = object
     EPGInstanceConf = object
 
 logger = get_logger(__name__)
@@ -130,7 +132,7 @@ class EPG:
         logger.info("Downloading EPG data from %s", self.url)
         data: bytes = b""
         try:
-            async with aiohttp.ClientSession() as session:  # noqa: SIM117
+            async with aiohttp.ClientSession() as session:
                 async with session.get(self.url.encoded_string()) as response:
                     response.raise_for_status()
                     data = await response.read()
