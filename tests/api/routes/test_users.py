@@ -1,4 +1,5 @@
 import uuid
+from http import HTTPStatus
 
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
@@ -8,7 +9,7 @@ from acere.constants import API_V1_STR
 from acere.core.security import verify_password
 from acere.instances.config import settings
 from acere.models import User, UserCreate
-from tests.utils.utils import random_lower_string
+from tests.test_utils.user_utils import random_lower_string
 
 
 def test_get_users_superuser_me(client: TestClient, superuser_token_headers: dict[str, str]) -> None:
@@ -69,7 +70,7 @@ def test_get_existing_user_permissions_error(client: TestClient, normal_user_tok
         f"{API_V1_STR}/users/{uuid.uuid4()}",
         headers=normal_user_token_headers,
     )
-    assert r.status_code == 403
+    assert r.status_code == HTTPStatus.FORBIDDEN
     assert r.json() == {"detail": "The user doesn't have enough privileges"}
 
 
@@ -87,7 +88,7 @@ def test_create_user_existing_username(
         json=data,
     )
     created_user = r.json()
-    assert r.status_code == 400
+    assert r.status_code == HTTPStatus.BAD_REQUEST
     assert "_id" not in created_user
 
 
@@ -100,7 +101,7 @@ def test_create_user_by_normal_user(client: TestClient, normal_user_token_header
         headers=normal_user_token_headers,
         json=data,
     )
-    assert r.status_code == 403
+    assert r.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_retrieve_users(client: TestClient, superuser_token_headers: dict[str, str], db: Session) -> None:
@@ -132,7 +133,7 @@ def test_update_user_me(client: TestClient, normal_user_token_headers: dict[str,
         headers=normal_user_token_headers,
         json=data,
     )
-    assert r.status_code == 200
+    assert r.status_code == HTTPStatus.OK
     updated_user = r.json()
     assert updated_user["username"] == username
     assert updated_user["full_name"] == full_name
@@ -155,7 +156,7 @@ def test_update_password_me(client: TestClient, superuser_token_headers: dict[st
         headers=superuser_token_headers,
         json=data,
     )
-    assert r.status_code == 200
+    assert r.status_code == HTTPStatus.OK
     updated_user = r.json()
     assert updated_user["message"] == "Password updated successfully"
 
@@ -177,7 +178,7 @@ def test_update_password_me(client: TestClient, superuser_token_headers: dict[st
     )
     db.refresh(user_db)
 
-    assert r.status_code == 200
+    assert r.status_code == HTTPStatus.OK
     assert verify_password(settings.FIRST_SUPERUSER_PASSWORD, user_db.hashed_password)
 
 
@@ -189,7 +190,7 @@ def test_update_password_me_incorrect_password(client: TestClient, superuser_tok
         headers=superuser_token_headers,
         json=data,
     )
-    assert r.status_code == 400
+    assert r.status_code == HTTPStatus.BAD_REQUEST
     updated_user = r.json()
     assert updated_user["detail"] == "Incorrect password"
 
@@ -208,7 +209,7 @@ def test_update_user_me_username_exists(
         headers=normal_user_token_headers,
         json=data,
     )
-    assert r.status_code == 409
+    assert r.status_code == HTTPStatus.CONFLICT
     assert r.json()["detail"] == "User with this username already exists"
 
 
@@ -222,7 +223,7 @@ def test_update_password_me_same_password_error(client: TestClient, superuser_to
         headers=superuser_token_headers,
         json=data,
     )
-    assert r.status_code == 400
+    assert r.status_code == HTTPStatus.BAD_REQUEST
     updated_user = r.json()
     assert updated_user["detail"] == "New password cannot be the same as the current one"
 
@@ -236,7 +237,7 @@ def test_register_user(client: TestClient, db: Session) -> None:
         f"{API_V1_STR}/users/signup",
         json=data,
     )
-    assert r.status_code == 200
+    assert r.status_code == HTTPStatus.OK
     created_user = r.json()
     assert created_user["username"] == username
     assert created_user["full_name"] == full_name
@@ -261,7 +262,7 @@ def test_register_user_already_exists_error(client: TestClient) -> None:
         f"{API_V1_STR}/users/signup",
         json=data,
     )
-    assert r.status_code == 400
+    assert r.status_code == HTTPStatus.BAD_REQUEST
     assert r.json()["detail"] == "The user with this username already exists in the system"
 
 
@@ -277,7 +278,7 @@ def test_update_user(client: TestClient, superuser_token_headers: dict[str, str]
         headers=superuser_token_headers,
         json=data,
     )
-    assert r.status_code == 200
+    assert r.status_code == HTTPStatus.OK
     updated_user = r.json()
 
     assert updated_user["full_name"] == "Updated_full_name"
@@ -296,7 +297,7 @@ def test_update_user_not_exists(client: TestClient, superuser_token_headers: dic
         headers=superuser_token_headers,
         json=data,
     )
-    assert r.status_code == 404
+    assert r.status_code == HTTPStatus.NOT_FOUND
     assert r.json()["detail"] == "The user with this id does not exist in the system"
 
 
@@ -317,7 +318,7 @@ def test_update_user_username_exists(client: TestClient, superuser_token_headers
         headers=superuser_token_headers,
         json=data,
     )
-    assert r.status_code == 409
+    assert r.status_code == HTTPStatus.CONFLICT
     assert r.json()["detail"] == "User with this username already exists"
 
 
@@ -341,7 +342,7 @@ def test_delete_user_me(client: TestClient, db: Session) -> None:
         f"{API_V1_STR}/users/me",
         headers=headers,
     )
-    assert r.status_code == 200
+    assert r.status_code == HTTPStatus.OK
     deleted_user = r.json()
     assert deleted_user["message"] == "User deleted successfully"
     result = db.exec(select(User).where(User.id == user_id)).first()
@@ -357,7 +358,7 @@ def test_delete_user_me_as_superuser(client: TestClient, superuser_token_headers
         f"{API_V1_STR}/users/me",
         headers=superuser_token_headers,
     )
-    assert r.status_code == 403
+    assert r.status_code == HTTPStatus.FORBIDDEN
     response = r.json()
     assert response["detail"] == "Super users are not allowed to delete themselves"
 
@@ -372,7 +373,7 @@ def test_delete_user_super_user(client: TestClient, superuser_token_headers: dic
         f"{API_V1_STR}/users/{user_id}",
         headers=superuser_token_headers,
     )
-    assert r.status_code == 200
+    assert r.status_code == HTTPStatus.OK
     deleted_user = r.json()
     assert deleted_user["message"] == "User deleted successfully"
     result = db.exec(select(User).where(User.id == user_id)).first()
@@ -384,7 +385,7 @@ def test_delete_user_not_found(client: TestClient, superuser_token_headers: dict
         f"{API_V1_STR}/users/{uuid.uuid4()}",
         headers=superuser_token_headers,
     )
-    assert r.status_code == 404
+    assert r.status_code == HTTPStatus.NOT_FOUND
     assert r.json()["detail"] == "User not found"
 
 
@@ -399,7 +400,7 @@ def test_delete_user_current_super_user_error(
         f"{API_V1_STR}/users/{user_id}",
         headers=superuser_token_headers,
     )
-    assert r.status_code == 403
+    assert r.status_code == HTTPStatus.FORBIDDEN
     assert r.json()["detail"] == "Super users are not allowed to delete themselves"
 
 
@@ -415,5 +416,5 @@ def test_delete_user_without_privileges(
         f"{API_V1_STR}/users/{user.id}",
         headers=normal_user_token_headers,
     )
-    assert r.status_code == 403
+    assert r.status_code == HTTPStatus.FORBIDDEN
     assert r.json()["detail"] == "The user doesn't have enough privileges"

@@ -48,8 +48,7 @@ def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
 
 @router.post("/", dependencies=[Depends(get_current_active_superuser)], response_model=UserPublic)
 def create_user(*, session: SessionDep, user_in: UserCreate) -> Any:
-    """Create new user.
-    """
+    """Create new user."""
     user = crud.get_user_by_username(session=session, username=user_in.username)
     if user:
         raise HTTPException(
@@ -57,9 +56,7 @@ def create_user(*, session: SessionDep, user_in: UserCreate) -> Any:
             detail="The user with this username already exists in the system.",
         )
 
-    user = crud.create_user(session=session, user_create=user_in)
-
-    return user
+    return crud.create_user(session=session, user_create=user_in)
 
 
 @router.patch("/me", response_model=UserPublic)
@@ -133,8 +130,7 @@ def register_user(session: SessionDep, user_in: UserRegister) -> Any:
             detail="The user with this username already exists in the system",
         )
     user_create = UserCreate.model_validate(user_in)
-    user = crud.create_user(session=session, user_create=user_create)
-    return user
+    return crud.create_user(session=session, user_create=user_create)
 
 
 @router.get("/{user_id}", response_model=UserPublic)
@@ -174,8 +170,7 @@ def update_user(
         if existing_user and existing_user.id != user_id:
             raise HTTPException(status_code=409, detail="User with this username already exists")
 
-    db_user = crud.update_user(session=session, db_user=db_user, user_in=user_in)
-    return db_user
+    return crud.update_user(session=session, db_user=db_user, user_in=user_in)
 
 
 @router.delete("/{user_id}", dependencies=[Depends(get_current_active_superuser)])

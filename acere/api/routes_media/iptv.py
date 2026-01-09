@@ -1,5 +1,7 @@
 # """Blueprint for IPTV functionality in Ace Streamer."""
 
+from typing import Annotated
+
 from fastapi import APIRouter, Query, Response
 
 from acere.core.stream_token import verify_stream_token
@@ -15,7 +17,7 @@ router = APIRouter(tags=["Media/IPTV"])
 @router.get("/iptv", name="iptv_m3u8_1")
 @router.get("/iptv.m3u", name="iptv_m3u_2")
 @router.get("/iptv.m3u8", name="iptv_m3u8_3")
-def iptv(token: str = Query("")) -> Response:
+def iptv(token: Annotated[str, Query()] = "") -> Response:
     """Render the IPTV M3U8 Playlist."""
     verify_stream_token(token)
 

@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from fastapi.testclient import TestClient
 
 from acere.constants import API_V1_STR
@@ -13,7 +15,7 @@ def test_get_access_token(client: TestClient) -> None:
     }
     r = client.post(f"{API_V1_STR}/login/access-token", data=login_data)
     tokens = r.json()
-    assert r.status_code == 200
+    assert r.status_code == HTTPStatus.OK
     assert "access_token" in tokens
     assert tokens["access_token"]
 
@@ -24,7 +26,7 @@ def test_get_access_token_incorrect_password(client: TestClient) -> None:
         "password": "incorrect",
     }
     r = client.post(f"{API_V1_STR}/login/access-token", data=login_data)
-    assert r.status_code == 400
+    assert r.status_code == HTTPStatus.BAD_REQUEST
 
 
 def test_use_access_token(client: TestClient, superuser_token_headers: dict[str, str]) -> None:
@@ -33,7 +35,7 @@ def test_use_access_token(client: TestClient, superuser_token_headers: dict[str,
         headers=superuser_token_headers,
     )
     result = r.json()
-    assert r.status_code == 200
+    assert r.status_code == HTTPStatus.OK
     assert "is_superuser" in result
 
 
@@ -47,5 +49,5 @@ def test_reset_password_invalid_token(client: TestClient, superuser_token_header
     response = r.json()
 
     assert "detail" in response
-    assert r.status_code == 400
+    assert r.status_code == HTTPStatus.BAD_REQUEST
     assert response["detail"] == "Invalid token"

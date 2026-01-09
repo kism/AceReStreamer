@@ -45,10 +45,7 @@ def create_unique_stream_list(
 
 def create_extinf_line(stream: FoundAceStream, tvg_url_base: HttpUrl | None, token: str = "") -> str:
     """Create an M3U EXTINF line for a given FoundAceStream object."""
-    if token == "":
-        token_str = ""
-    else:
-        token_str = f"?token={token}"
+    token_str = "" if token == "" else f"?token={token}"
 
     final_url_base = None
     if tvg_url_base is not None:

@@ -96,7 +96,6 @@ see iptv.html.j2
 - readme
 - big cleanup
 - async everything?
-- name the loggers
-- case insensitive username
-- better names of unknown streams
 - embed commit and branch in container builds?
+- switch to uvloop all around?
+- switch to aiohttp all around

@@ -9,7 +9,7 @@ _ace_scraper: AceScraper | None = None
 
 def set_ace_scraper(scraper: AceScraper) -> None:
     """Set the global AceScraper instance."""
-    global _ace_scraper
+    global _ace_scraper  # noqa: PLW0603 Lazy Loading
     _ace_scraper = scraper
     _ace_scraper.load_config(
         ace_scrape_conf=settings.scraper,
@@ -24,5 +24,6 @@ def set_ace_scraper(scraper: AceScraper) -> None:
 def get_ace_scraper() -> AceScraper:
     """Get the global AceScraper instance."""
     if _ace_scraper is None:
-        raise ValueError("AceScraper instance is not set.")
+        msg = "AceScraper instance is not set."
+        raise ValueError(msg)
     return _ace_scraper

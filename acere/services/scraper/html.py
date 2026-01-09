@@ -1,5 +1,6 @@
 """Helper functions and functions for searching in beautiful soup tags."""
 
+from collections import Counter
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
@@ -115,42 +116,74 @@ class HTMLStreamScraper(ScraperCommon):
                         title_candidates=candidate_titles,
                     )
                 )
+
             else:
                 logger.trace("Skipping non-AceStream link: %s", link_href)
 
         return self._process_candidates(streams_candidates, site)
 
-    def _process_candidates(self, candidates: list[CandidateAceStream], site: ScrapeSiteHTML) -> list[FoundAceStream]:
+    def _process_candidates(self, candidates: list[CandidateAceStream], site: ScrapeSiteHTML) -> list[FoundAceStream]:  # noqa: C901 Separated out the best title logic
         """Process candidate streams to find valid AceStreams."""
         found_streams: list[FoundAceStream] = []
 
-        all_titles = []
-
-        # Collect a list of all candidate titles to find duplicates including duplicates
+        # All titles and their counts
+        all_titles: Counter[str] = Counter()
         for candidate in candidates:
-            all_titles.extend(candidate.title_candidates)
+            all_titles.update(candidate.title_candidates)
 
-        for candidate in candidates:
-            new_title_candidates = []
+        max_count = max(all_titles.values()) if all_titles else 0
+        max_count_common_on_all = max_count == len(candidates)
+        total_candidates = len(candidates)
+
+        def _select_best_title(
+            candidate: CandidateAceStream,
+            content_id: str,
+        ) -> str:
+            """Select the best title candidates based on match strength."""
+            title = content_id  # Default to content_id if no title found
+            new_title_candidates: list[str] = []
+            lowest_duplicate_count = (
+                min(all_titles[title] for title in candidate.title_candidates) if candidate.title_candidates else 0
+            )
+            best_strength = 0
+
             for title in candidate.title_candidates:
-                new_title = title
-                # Anything that gets found for every candidate gets ignored
-                if all_titles.count(title) >= len(candidates):
-                    continue
+                match_strength = -1
+                if all_titles[title] == 1:  # Unique title, most trustworthy
+                    match_strength = 3
+                elif (
+                    site.html_filter.target_class != "" and all_titles[title] == lowest_duplicate_count
+                ):  # We have a target class, more trustworthy
+                    match_strength = 2
+                elif (
+                    (all_titles[title] != max_count and not max_count_common_on_all) or total_candidates == 1
+                ):  # If the title is not common to all candidates, or we only have one candidate
+                    match_strength = 1
 
-                new_title = self.name_processor.trim_title(title)
+                if match_strength > best_strength:
+                    new_title_candidates = []  # We have done better, reset candidates
+                    best_strength = match_strength
 
-                new_title_candidates.append(new_title)
-
-            title = candidate.ace_uri.encoded_string()
+                if match_strength >= best_strength:  # We are okay with more candidates of the same strength
+                    new_title = self.name_processor.trim_title(title)
+                    new_title_candidates.append(new_title)
 
             if len(new_title_candidates) == 1:
                 title = new_title_candidates[0]
             elif len(new_title_candidates) > 1:
-                # If there are multiple candidates, we can choose the first one
+                # If there are multiple candidates, join them with a separator
                 title = " / ".join(new_title_candidates)
 
+            return title
+
+        for candidate in candidates:
             content_id = self.name_processor.extract_content_id_from_url(candidate.ace_uri)
+
+            if not check_valid_content_id_or_infohash(content_id):
+                logger.warning("Invalid Ace ID found in candidate: %s, skipping", content_id)
+                continue
+
+            title = _select_best_title(candidate, content_id)
 
             if not self.name_processor.check_title_allowed(
                 title=title,
@@ -158,18 +191,14 @@ class HTMLStreamScraper(ScraperCommon):
             ):
                 continue
 
-            if not check_valid_content_id_or_infohash(content_id):
-                logger.warning("Invalid Ace ID found in candidate: %s, skipping", content_id)
-                continue
-
+            # Okay we are good to add
             tvg_id = self.name_processor.get_tvg_id_from_title(title)
-
             tvg_logo = self.name_processor.find_tvg_logo_image(title)
-
             group_title = self.name_processor.populate_group_title(
                 group_title="",
                 title=title,
             )
+
             if self.category_xc_category_id_mapping:  # Populate if we aren't running in adhoc mode
                 self.category_xc_category_id_mapping.get_xc_category_id(group_title)
 
@@ -198,6 +227,7 @@ class HTMLStreamScraper(ScraperCommon):
         html_classes_good = [""] if not html_classes or not isinstance(html_classes, list) else html_classes
 
         candidate_titles: list[str] = []
+
         for html_class in html_classes_good:
             if html_class == target_html_class:
                 candidate_title = self.name_processor.cleanup_candidate_title(html_tag.get_text())
@@ -225,6 +255,7 @@ class HTMLStreamScraper(ScraperCommon):
 
         if target_html_class != "":
             html_classes = html_tag.get("class", None)
+            logger.debug("Checking HTML classes: %s for target: %s", html_classes, target_html_class)
             if not html_classes:
                 return candidate_titles
 

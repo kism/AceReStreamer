@@ -1,5 +1,6 @@
 """Blueprint for the Frontend Endpoints."""
 
+import json
 import mimetypes
 from pathlib import Path
 
@@ -22,35 +23,35 @@ if settings.FRONTEND_HOST == "":
 
     INDEX_HTML = STATIC_DIR / "index.html"
     if not INDEX_HTML.exists():
+        msg = "The frontend has not been built. Please refer to the documentation."
         raise RuntimeError(
-            "The frontend has not been built. Please refer to the documentation.",
+            msg,
         )
 
     INDEX_HTML_CACHE = INDEX_HTML.read_text()
     VITE_ASSETS_PATH = STATIC_DIR / "assets"
 
-    ALL_STATIC: dict[Path, tuple[bytes, str]] = {}
+    ALL_VITE_STATIC: dict[Path, tuple[bytes, str]] = {}
     for path in VITE_ASSETS_PATH.rglob("*.*"):
         if path.is_file():
             mime_type, _ = mimetypes.guess_type(path.name)
             if mime_type is None:
                 mime_type = "application/octet-stream"
-            ALL_STATIC[path.relative_to(VITE_ASSETS_PATH)] = (
+            ALL_VITE_STATIC[path.relative_to(VITE_ASSETS_PATH)] = (
                 path.read_bytes(),
                 mime_type,
             )
 
     all_paths: list[str] = []
-    with open(GENERATED_FRONTEND_PATHS, encoding="utf-8") as f:
-        import json
-
+    with GENERATED_FRONTEND_PATHS.open(encoding="utf-8") as f:
         all_paths_json = json.load(f)
 
     if isinstance(all_paths_json, list):
         all_paths = [str(p) for p in all_paths_json if isinstance(p, str)]
     else:
+        msg = "The generated_frontend_paths.json file is not in the expected format."
         raise RuntimeError(
-            "The generated_frontend_paths.json file is not in the expected format.",
+            msg,
         )
 
     @router.get("/", response_class=HTMLResponse, name="frontend_index")
@@ -77,11 +78,13 @@ if settings.FRONTEND_HOST == "":
         """Catch all route to serve frontend files."""
         requested_path = STATIC_DIR / full_path
         relative_path = requested_path.relative_to(STATIC_DIR)
-        if relative_path in ALL_STATIC:
-            content, mime_type = ALL_STATIC[relative_path]
+        if relative_path in ALL_VITE_STATIC:
+            content, mime_type = ALL_VITE_STATIC[relative_path]
             return Response(content=content, media_type=mime_type)
 
         raise HTTPException(status_code=404, detail="File not found")
+
+
 else:
     logger.debug(
         "Frontend: Assuming separate frontend server",

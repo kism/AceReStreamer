@@ -138,7 +138,7 @@ class IPTVStreamScraper(ScraperCommon):
             msg = "Validation error creating FoundAceStream object:\n"
             msg += f"Tried title: {title}, content_id: {content_id}, tvg_id: {tvg_id}, tvg_logo: {tvg_logo}"
             msg += f" for line: \n{line}"
-            logger.error(msg)  # noqa: TRY400
+            logger.error(msg)
             return None
         return found_ace_stream
 
@@ -228,7 +228,7 @@ class IPTVStreamScraper(ScraperCommon):
             response.raise_for_status()
         except requests.RequestException as e:
             error_short = type(e).__name__
-            logger.error("Error downloading TVG logo for %s, %s", title, error_short)  # noqa: TRY400 Short error for requests
+            logger.error("Error downloading TVG logo for %s, %s", title, error_short)
             return
 
         tvg_logo_path = self.instance_path / "tvg_logos" / f"{title_slug}.{url_file_extension}"

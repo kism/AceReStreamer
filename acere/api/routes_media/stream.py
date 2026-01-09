@@ -1,6 +1,7 @@
 """Stream Handling Blueprint."""
 
 from http import HTTPStatus
+from typing import Annotated
 
 import requests
 from fastapi import APIRouter, HTTPException, Query, Request, Response
@@ -80,17 +81,17 @@ def hls(
 
         # Determine error type and response
         if isinstance(e, requests.Timeout):
-            logger.error("reverse proxy timeout /hls/%s %s", path, error_short)  # noqa: TRY400 Short error for requests
+            logger.error("reverse proxy timeout /hls/%s %s", path, error_short)
             error_msg, status = "HLS stream timeout", HTTPStatus.REQUEST_TIMEOUT
             ace_scraper.increment_quality(path, "")
         elif isinstance(e, requests.ConnectionError):
-            logger.error("%s reverse proxy cannot connect to Ace", error_short)  # noqa: TRY400 Short error for requests
+            logger.error("%s reverse proxy cannot connect to Ace", error_short)
             error_msg, status = (
                 "Cannot connect to Ace",
                 HTTPStatus.INTERNAL_SERVER_ERROR,
             )
         else:
-            logger.error("reverse proxy failure /hls/ %s", error_short)  # noqa: TRY400 Short error for requests
+            logger.error("reverse proxy failure /hls/ %s", error_short)
             error_msg, status = (
                 "Failed to fetch HLS stream",
                 HTTPStatus.INTERNAL_SERVER_ERROR,
@@ -149,7 +150,7 @@ def hls_multi(path: str, token: str = "") -> Response:
         ace_resp.raise_for_status()
     except requests.RequestException as e:
         error_short = type(e).__name__
-        logger.error("reverse proxy failure /hls/m/ %s", error_short)  # noqa: TRY400 Short error for requests
+        logger.error("reverse proxy failure /hls/m/ %s", error_short)
         error_msg = "Failed to fetch HLS multistream"
 
         raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=error_msg) from e
@@ -179,24 +180,28 @@ def hls_multi(path: str, token: str = "") -> Response:
     return Response(content_str, ace_resp.status_code)
 
 
-# region XC REDO, WHAT THE HECK
+# region XC
 # Depending on the Client, it will either be:
+# /live/u/p/<xc_id>.m3u8  | UHF, M3UAndroid, IPTV Smarters Pro
 # /u/p/<xc_id>            | Smarters Player Lite (iOS), iMPlayer Android
-# /live/u/p/<xc_id>.m3u8  | UHF, M3UAndroid
-# /live/u/p/<xc_id>.ts    | iMPlayer iOS, TiViMate, Purple Simple (okay that m3u8 is the response)
-# /live/u/p/<tvg_id>.m3u8 | SparkleTV
-@router.get("/live/{_path_username}/{_path_password}/{path}", response_class=Response)
+# /u/p/<xc_id>.ts         | iMPlayer iOS, TiViMate, Purple Simple (okay that m3u8 is the response)
+# /u/p/<tvg_id>.m3u8      | SparkleTV
+@router.get("/{_path_username}/{_path_password}/{xc_stream}", response_class=Response)
+@router.get("/live/{_path_username}/{_path_password}/{xc_stream}", response_class=Response)
 def xc_m3u8(
     request: Request,
     _path_username: str = "",
     _path_password: str = "",
-    path: str = "",
-    password: str = Query("", alias="password"),
-    username: str = Query("", alias="username"),
+    xc_stream: str = "",
+    password: Annotated[str, Query(alias="password")] = "",
+    username: Annotated[str, Query(alias="username")] = "",
 ) -> Response:
     """Serve the XC m3u8 file for Ace content."""
-    username = username or _path_username
-    password = password or _path_password
+    # Who knows if it makes it more efficent
+    # the non-path query params do show up sometimes
+    # maybe i'll need them in the future
+    username = _path_username or username
+    password = _path_password or password
 
     stream_token = check_xc_auth(username=username, stream_token=password)
 
@@ -205,26 +210,22 @@ def xc_m3u8(
 
     logger.trace(
         "XC HLS: path='%s' args='%s' ua='%s'",
-        str(request.url) if request else path,
+        str(request.url) if request else xc_stream,
         f"username={username},password={password}",
         request.headers.get("User-Agent", "") if request else "",
     )
 
-    try:
-        xc_id_clean = path.split(".")[0]
-    except IndexError:
-        xc_id_clean = path
+    xc_id_clean = xc_stream.split(".", 1)[0]  # Remove file extension if present
 
     try:
         xc_id_int = int(xc_id_clean)
-        content_id = ace_scraper.get_content_id_by_xc_id(xc_id_int)
     except ValueError:
-        if path.endswith(".m3u8"):
-            path = path.replace(".m3u8", "")
-        elif path.endswith(".m3u"):
-            path = path.replace(".m3u", "")
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail=f"Client requested invalid XC ID: {xc_stream} -> {xc_id_clean}",
+        ) from None
 
-        content_id = ace_scraper.get_content_id_by_tvg_id(path)
+    content_id = ace_scraper.get_content_id_by_xc_id(xc_id_int)
 
     if content_id is None:
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="Invalid XC ID format")
@@ -261,7 +262,7 @@ def ace_content(path: str, request: Request, token: str = "") -> Response:
         resp.raise_for_status()
     except requests.RequestException as e:
         error_short = type(e).__name__
-        logger.error("%s reverse proxy failure %s", route_prefix, error_short)  # noqa: TRY400 Short error for requests
+        logger.error("%s reverse proxy failure %s", route_prefix, error_short)
         response_body = MessageResponseModel(message="Failed to fetch HLS stream").model_dump_json()
         return Response(
             content=response_body,

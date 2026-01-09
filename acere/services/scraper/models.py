@@ -94,9 +94,8 @@ class AceScraperSourceApi(BaseModel):
             if not self.html_filter:
                 self.html_filter = HTMLScraperFilter()
 
-        elif self.type in {"iptv", "api"}:
-            if self.html_filter is not None:
-                self.html_filter = None
+        elif self.type in {"iptv", "api"} and self.html_filter is not None:
+            self.html_filter = None
 
         return self
 

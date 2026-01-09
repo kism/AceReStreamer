@@ -121,9 +121,10 @@ def stats_by_pid(pid: str) -> AcePoolStat:
                 detail=MessageResponseModel(message=pid_not_found_tmp_str.format(pid=pid)),
             )
 
-        return ace_pool_stat
     except ValueError:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
             detail=MessageResponseModel(message=pid_not_found_tmp_str.format(pid=pid)),
         )
+
+    return ace_pool_stat

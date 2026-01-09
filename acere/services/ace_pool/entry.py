@@ -260,7 +260,7 @@ class AcePoolEntry:
             logger.info("Stopped AceStream instance with content_id %s", self.content_id)
         except requests.RequestException as e:
             error_short = type(e).__name__
-            logger.error(  # noqa: TRY400 Short error for requests
+            logger.error(
                 "%s Failed to stop AceStream instance with content_id %s: ",
                 error_short,
                 self.content_id,

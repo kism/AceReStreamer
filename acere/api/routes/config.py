@@ -1,7 +1,7 @@
 """Blueprints for admin API, requires app context."""
 
 from http import HTTPStatus
-from typing import Any
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Body, Depends, HTTPException
 
@@ -22,13 +22,13 @@ router = APIRouter(
 def get_config() -> AceReStreamerConf:
     """API endpoint to get the current config."""
     settings_temp = settings.model_copy()
-    settings_temp.SECRET_KEY = "********"
+    settings_temp.SECRET_KEY = ""
     settings_temp.FIRST_SUPERUSER_PASSWORD = ""
     return settings_temp
 
 
 @router.post("/")
-def load_config(body_json: dict[Any, Any] = Body(...)) -> MessageResponseModel:
+def load_config(body_json: Annotated[dict[Any, Any], Body()]) -> MessageResponseModel:
     """API endpoint to load a new config."""
     if not body_json:
         raise HTTPException(

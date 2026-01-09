@@ -62,7 +62,7 @@ class AcePool:
             healthy = True
         except requests.RequestException as e:
             error_short = type(e).__name__
-            logger.error("Ace Instance %s is not healthy: %s", self.ace_address, error_short)  # noqa: TRY400 Short error for requests
+            logger.error("Ace Instance %s is not healthy: %s", self.ace_address, error_short)
             healthy = False
         except Exception as e:  # noqa: BLE001 Last resort
             error_short = type(e).__name__
@@ -224,8 +224,6 @@ class AcePool:
                 result[n] = None
             else:
                 result[n] = ace_pool_stat.model_dump()
-
-            n += 1
 
         ta = TypeAdapter(AcePoolAllStatsApi)
 

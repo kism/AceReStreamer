@@ -28,6 +28,7 @@ def slugify(slug_input: str | bytes) -> str:
     # Remove prefix and suffix whitespace, replace anything left as a hyphen
     return slug_input.strip().replace(" ", "-").lower()
 
+
 def check_valid_content_id_or_infohash(content_id: str) -> bool:
     """Check if the AceStream content_id or infohash is valid."""
     if len(content_id) != ACE_ID_LENGTH:
