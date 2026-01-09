@@ -5,10 +5,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from fastapi import FastAPI
-from fastapi.middleware.gzip import GZipMiddleware
 from rich import traceback
 from sqlmodel import Session, select
 from starlette.middleware.cors import CORSMiddleware
+from starlette_compress import CompressMiddleware
 
 from acere.api.main import api_router, api_router_xc, frontend_router, hls_router, iptv_router
 from acere.constants import API_V1_STR, SETTINGS_FILE
@@ -117,7 +117,7 @@ app = FastAPI(
     generate_unique_id_function=custom_generate_unique_id,
     lifespan=lifespan,
 )
-app.add_middleware(GZipMiddleware, minimum_size=300)
+app.add_middleware(CompressMiddleware)
 app.include_router(api_router, prefix=API_V1_STR)
 app.include_router(api_router_xc)
 app.include_router(frontend_router)
