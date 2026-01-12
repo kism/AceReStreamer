@@ -1,6 +1,5 @@
 """Main Stream Site Blueprint."""
 
-
 from fastapi import APIRouter, Depends, HTTPException
 
 from acere.api.deps import (

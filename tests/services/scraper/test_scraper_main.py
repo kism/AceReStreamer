@@ -1,12 +1,12 @@
-from acere.services.scraper import AceScraper
 from typing import TYPE_CHECKING
-from acere.core.config import AceScrapeConf
-import pytest
-from tests.test_utils.ace import get_random_content_id
 
+import pytest
 from pydantic import HttpUrl
 
+from acere.core.config import AceScrapeConf
+from acere.services.scraper import AceScraper
 from acere.services.scraper.models import FoundAceStream
+from tests.test_utils.ace import get_random_content_id
 
 if TYPE_CHECKING:
     from pathlib import Path

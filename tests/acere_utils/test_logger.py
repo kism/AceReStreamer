@@ -55,7 +55,8 @@ def test_verbosity_cli() -> None:
     conf.setup_verbosity_cli(2)
     assert conf.level == TRACE_LEVEL_NUM
 
+
 def test_path_wraps_to_none() -> None:
-    conf = LoggingConf(path="") # type: ignore[arg-type]
+    conf = LoggingConf(path="")  # type: ignore[arg-type]
 
     assert conf.path is None

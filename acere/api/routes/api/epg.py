@@ -1,6 +1,5 @@
 """Blueprint for EPG API Endpoints."""
 
-
 from fastapi import APIRouter, Depends
 
 from acere.api.deps import get_current_user

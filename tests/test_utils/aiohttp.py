@@ -3,6 +3,8 @@ from http import HTTPStatus
 from typing import TYPE_CHECKING, Any, Self, TypedDict
 
 import aiohttp
+from multidict import CIMultiDict, CIMultiDictProxy
+from yarl import URL
 
 if TYPE_CHECKING:
     from aiohttp.pytest_plugin import AiohttpServer
@@ -40,7 +42,7 @@ class FakeResponse:
             self._data = data
         self.status = status
         self.content = FakeContent(self._data)
-        self.url = url
+        self.url = URL(url)
 
     def raise_for_status(self) -> None:
         if self.status >= HTTPStatus.BAD_REQUEST:
@@ -48,7 +50,7 @@ class FakeResponse:
             request_info = aiohttp.RequestInfo(
                 url=self.url,
                 method="GET",
-                headers={},
+                headers=CIMultiDictProxy(CIMultiDict()),
                 real_url=self.url,
             )
             raise aiohttp.ClientResponseError(
