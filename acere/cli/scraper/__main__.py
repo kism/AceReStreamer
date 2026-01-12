@@ -20,7 +20,7 @@ logger = get_logger(__name__)
 uvloop.install()
 
 
-async def main() -> None:
+async def async_main() -> None:
     """Cli for adhoc scrape mode."""
     msg = f"Acestream Scrape CLI {__version__}"
     parser = argparse.ArgumentParser(description=msg)
@@ -74,5 +74,10 @@ async def main() -> None:
     generate_misc(instance_path=instance_path)
 
 
+def main() -> None:
+    """Main entry point for scrape CLI."""
+    asyncio.run(async_main())
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
