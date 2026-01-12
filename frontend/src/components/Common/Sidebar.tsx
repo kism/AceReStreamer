@@ -43,7 +43,13 @@ function VersionBlock({ healthData }: VersionBlockProps) {
   const backendVersion = healthData?.version ?? "unknown"
   const backendVersionFull = healthData?.version_full ?? "unknown"
 
-  const frontendVersionFull = `${packageJson.version}-${__GIT_BRANCH__}/${__GIT_COMMIT__}`
+  let frontendVersionFull: string
+  if (__GIT_BRANCH__ === "HEAD") {
+    frontendVersionFull = `${packageJson.version}-${__GIT_COMMIT__}`
+  } else {
+    frontendVersionFull = `${packageJson.version}-${__GIT_BRANCH__}/${__GIT_COMMIT__}`
+  }
+
   const frontendVersion = packageJson.version
 
   if (

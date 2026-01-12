@@ -1,6 +1,6 @@
 [project]
 name = "acere"
-version = "1.0.0rc1"
+version = "1.0.0rc2"
 description = ""
 requires-python = ">=3.14,<4.0"
 dependencies = [
@@ -155,6 +155,16 @@ enable_error_code = [
     "possibly-undefined",
     "redundant-self",
 ]
+disable_error_code = [
+    "prop-decorator", # Conflicts with pydantic computed_field
+]
+[[tool.mypy.overrides]]
+module = "acere.models"
+disable_error_code = [
+    "override",   # SqlModel handles the None
+    "assignment", # Classmethod is fine
+]
+
 
 [[tool.ty.overrides]]
 # Not sure what ty is upset about here
