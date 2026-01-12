@@ -38,12 +38,12 @@ class UserRegister(SQLModel):
 
 # Properties to receive via API on update, all are optional
 class UserUpdate(UserBase):
-    username: str | None = Field(default=None, max_length=255)  # type: ignore[assignment] # You are probably just updating the password
+    username: str | None = Field(default=None, max_length=255)
     password: str | None = Field(default=None, min_length=8, max_length=40)
 
     @field_validator("username", mode="before")
     @classmethod
-    def username_to_lowercase(cls, v: str | None) -> str | None:  # type: ignore[override]
+    def username_to_lowercase(cls, v: str | None) -> str | None:
         return v.lower() if isinstance(v, str) else v
 
 
