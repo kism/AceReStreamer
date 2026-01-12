@@ -529,7 +529,7 @@ export const AceScraperSourceApiSchema = {
                 always_include_words: [],
                 exclude_words: [],
                 include_words: [],
-                regex_postprocessing: ''
+                regex_postprocessing: []
             }
         },
         html_filter: {
@@ -1063,7 +1063,7 @@ export const ScrapeSiteAPISchema = {
                 always_include_words: [],
                 exclude_words: [],
                 include_words: [],
-                regex_postprocessing: ''
+                regex_postprocessing: []
             }
         }
     },
@@ -1099,7 +1099,7 @@ export const ScrapeSiteHTMLSchema = {
                 always_include_words: [],
                 exclude_words: [],
                 include_words: [],
-                regex_postprocessing: ''
+                regex_postprocessing: []
             }
         },
         html_filter: {
@@ -1142,7 +1142,7 @@ export const ScrapeSiteIPTVSchema = {
                 always_include_words: [],
                 exclude_words: [],
                 include_words: [],
-                regex_postprocessing: ''
+                regex_postprocessing: []
             }
         }
     },
@@ -1215,9 +1215,12 @@ export const TitleFilterSchema = {
             default: []
         },
         regex_postprocessing: {
-            type: 'string',
+            items: {
+                type: 'string'
+            },
+            type: 'array',
             title: 'Regex Postprocessing',
-            default: ''
+            default: []
         }
     },
     type: 'object',

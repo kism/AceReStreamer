@@ -330,7 +330,7 @@ export type TitleFilter = {
     always_include_words?: Array<(string)>;
     exclude_words?: Array<(string)>;
     include_words?: Array<(string)>;
-    regex_postprocessing?: string;
+    regex_postprocessing?: Array<(string)>;
 };
 
 export type Token = {
@@ -412,7 +412,7 @@ export type AcePoolGetByPidData = {
 
 export type AcePoolGetByPidResponse = (AcePoolEntryForAPI);
 
-export type AcePoolStatsResponse = (AcePoolAllStatsApi);
+export type AcePoolStatsResponse = (Array<AcePoolAllStatsApi>);
 
 export type AcePoolStatsByContentIdData = {
     contentId: string;
@@ -440,7 +440,39 @@ export type EpgEpgsResponse = (EPGApiHandlerResponse);
 
 export type FrontendFrontendIndexHtmlResponse = (string);
 
-export type FrontendFrontendIndexResponse = (string);
+export type FrontendFrontendResponse = (string);
+
+export type FrontendFrontendAdminResponse = (string);
+
+export type FrontendFrontendAndroidChrome192X192PngResponse = (string);
+
+export type FrontendFrontendAndroidChrome512X512PngResponse = (string);
+
+export type FrontendFrontendAppleTouchIconPngResponse = (string);
+
+export type FrontendFrontendFavicon16X16PngResponse = (string);
+
+export type FrontendFrontendFavicon32X32PngResponse = (string);
+
+export type FrontendFrontendFaviconIcoResponse = (string);
+
+export type FrontendFrontendInfoResponse = (string);
+
+export type FrontendFrontendInfoIptvResponse = (string);
+
+export type FrontendFrontendInfoPlaybackResponse = (string);
+
+export type FrontendFrontendLoginResponse = (string);
+
+export type FrontendFrontendSettingsResponse = (string);
+
+export type FrontendFrontendSiteWebmanifestResponse = (string);
+
+export type FrontendFrontendCatchAllData = {
+    fullPath: string;
+};
+
+export type FrontendFrontendCatchAllResponse = (string);
 
 export type HealthHealthResponse = (HealthResponseModel);
 
@@ -475,52 +507,6 @@ export type MediaIptvIptvM3U81Data = {
 };
 
 export type MediaIptvIptvM3U81Response = (unknown);
-
-export type MediaStreamHlsData = {
-    authenticationOverride?: boolean;
-    path: string;
-    token?: string;
-};
-
-export type MediaStreamHlsResponse = (unknown);
-
-export type MediaStreamHlsMultiData = {
-    path: string;
-    token?: string;
-};
-
-export type MediaStreamHlsMultiResponse = (unknown);
-
-export type MediaStreamXcM3U8Data = {
-    password?: string;
-    path: string;
-    pathPassword: string;
-    pathUsername: string;
-    username?: string;
-};
-
-export type MediaStreamXcM3U8Response = (unknown);
-
-export type MediaStreamAceContent2Data = {
-    path: string;
-    token?: string;
-};
-
-export type MediaStreamAceContent2Response = (unknown);
-
-export type MediaStreamAceContent1Data = {
-    path: string;
-    token?: string;
-};
-
-export type MediaStreamAceContent1Response = (unknown);
-
-export type MediaStreamTvgLogoData = {
-    path: string;
-    token?: string;
-};
-
-export type MediaStreamTvgLogoResponse = (unknown);
 
 export type MediaXmlEpgXml2Data = {
     token?: string;

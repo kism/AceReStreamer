@@ -109,6 +109,8 @@ class StreamNameProcessor:
             # If name is not empty or only non-alphanumeric characters, add it
             if wip_title != "" and not all(not c.isalnum() for c in wip_title):
                 new_candidate_titles.append(wip_title)
+                if wip_title != title:
+                    logger.trace("Regex cleaned up title from '%s' to '%s'", title, wip_title)
 
         return new_candidate_titles
 

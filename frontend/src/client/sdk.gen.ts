@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { AcePoolPoolResponse, AcePoolGetByContentIdData, AcePoolGetByContentIdResponse, AcePoolDeleteByContentIdData, AcePoolDeleteByContentIdResponse, AcePoolGetByPidData, AcePoolGetByPidResponse, AcePoolStatsResponse, AcePoolStatsByContentIdData, AcePoolStatsByContentIdResponse, AcePoolStatsByPidData, AcePoolStatsByPidResponse, ConfigurationGetConfigResponse, ConfigurationLoadConfigData, ConfigurationLoadConfigResponse, EpgEpgsResponse, FrontendFrontendIndexHtmlResponse, FrontendFrontendIndexResponse, HealthHealthResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginResetPasswordData, LoginResetPasswordResponse, MediaIptvIptvM3U83Data, MediaIptvIptvM3U83Response, MediaIptvIptvM3U2Data, MediaIptvIptvM3U2Response, MediaIptvIptvM3U81Data, MediaIptvIptvM3U81Response, MediaStreamHlsData, MediaStreamHlsResponse, MediaStreamHlsMultiData, MediaStreamHlsMultiResponse, MediaStreamXcM3U8Data, MediaStreamXcM3U8Response, MediaStreamAceContent2Data, MediaStreamAceContent2Response, MediaStreamAceContent1Data, MediaStreamAceContent1Response, MediaStreamTvgLogoData, MediaStreamTvgLogoResponse, MediaXmlEpgXml2Data, MediaXmlEpgXml2Response, MediaXmlEpgXml1Data, MediaXmlEpgXml1Response, MediaXmlEpgXml3Data, MediaXmlEpgXml3Response, PrivateCreateUserData, PrivateCreateUserResponse, ScraperSourcesResponse, ScraperAddSourceData, ScraperAddSourceResponse, ScraperSourceData, ScraperSourceResponse, ScraperRemoveSourceData, ScraperRemoveSourceResponse, ScraperCheckResponse, StreamsByContentIdData, StreamsByContentIdResponse, StreamsStreamsResponse, StreamsHealthResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersReadStreamTokenMeResponse, UsersRegenerateStreamTokenMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, XtreamCodesXcIptvRouterData, XtreamCodesXcIptvRouterResponse, XtreamCodesXcGetData, XtreamCodesXcGetResponse } from './types.gen';
+import type { AcePoolPoolResponse, AcePoolGetByContentIdData, AcePoolGetByContentIdResponse, AcePoolDeleteByContentIdData, AcePoolDeleteByContentIdResponse, AcePoolGetByPidData, AcePoolGetByPidResponse, AcePoolStatsResponse, AcePoolStatsByContentIdData, AcePoolStatsByContentIdResponse, AcePoolStatsByPidData, AcePoolStatsByPidResponse, ConfigurationGetConfigResponse, ConfigurationLoadConfigData, ConfigurationLoadConfigResponse, EpgEpgsResponse, FrontendFrontendIndexHtmlResponse, FrontendFrontendResponse, FrontendFrontendAdminResponse, FrontendFrontendAndroidChrome192X192PngResponse, FrontendFrontendAndroidChrome512X512PngResponse, FrontendFrontendAppleTouchIconPngResponse, FrontendFrontendFavicon16X16PngResponse, FrontendFrontendFavicon32X32PngResponse, FrontendFrontendFaviconIcoResponse, FrontendFrontendInfoResponse, FrontendFrontendInfoIptvResponse, FrontendFrontendInfoPlaybackResponse, FrontendFrontendLoginResponse, FrontendFrontendSettingsResponse, FrontendFrontendSiteWebmanifestResponse, FrontendFrontendCatchAllData, FrontendFrontendCatchAllResponse, HealthHealthResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginResetPasswordData, LoginResetPasswordResponse, MediaIptvIptvM3U83Data, MediaIptvIptvM3U83Response, MediaIptvIptvM3U2Data, MediaIptvIptvM3U2Response, MediaIptvIptvM3U81Data, MediaIptvIptvM3U81Response, MediaXmlEpgXml2Data, MediaXmlEpgXml2Response, MediaXmlEpgXml1Data, MediaXmlEpgXml1Response, MediaXmlEpgXml3Data, MediaXmlEpgXml3Response, PrivateCreateUserData, PrivateCreateUserResponse, ScraperSourcesResponse, ScraperAddSourceData, ScraperAddSourceResponse, ScraperSourceData, ScraperSourceResponse, ScraperRemoveSourceData, ScraperRemoveSourceResponse, ScraperCheckResponse, StreamsByContentIdData, StreamsByContentIdResponse, StreamsStreamsResponse, StreamsHealthResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersReadStreamTokenMeResponse, UsersRegenerateStreamTokenMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, XtreamCodesXcIptvRouterData, XtreamCodesXcIptvRouterResponse, XtreamCodesXcGetData, XtreamCodesXcGetResponse } from './types.gen';
 
 export class AcePoolService {
     /**
@@ -202,14 +202,191 @@ export class FrontendService {
     }
     
     /**
-     * Frontend Index
+     * Frontend
      * @returns string Successful Response
      * @throws ApiError
      */
-    public static frontendIndex(): CancelablePromise<FrontendFrontendIndexResponse> {
+    public static frontend(): CancelablePromise<FrontendFrontendResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/'
+        });
+    }
+    
+    /**
+     * Frontend Admin
+     * @returns string Successful Response
+     * @throws ApiError
+     */
+    public static frontendAdmin(): CancelablePromise<FrontendFrontendAdminResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/admin'
+        });
+    }
+    
+    /**
+     * Frontend Android-Chrome-192X192.Png
+     * @returns string Successful Response
+     * @throws ApiError
+     */
+    public static frontendAndroidChrome192X192Png(): CancelablePromise<FrontendFrontendAndroidChrome192X192PngResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/android-chrome-192x192.png'
+        });
+    }
+    
+    /**
+     * Frontend Android-Chrome-512X512.Png
+     * @returns string Successful Response
+     * @throws ApiError
+     */
+    public static frontendAndroidChrome512X512Png(): CancelablePromise<FrontendFrontendAndroidChrome512X512PngResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/android-chrome-512x512.png'
+        });
+    }
+    
+    /**
+     * Frontend Apple-Touch-Icon.Png
+     * @returns string Successful Response
+     * @throws ApiError
+     */
+    public static frontendAppleTouchIconPng(): CancelablePromise<FrontendFrontendAppleTouchIconPngResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/apple-touch-icon.png'
+        });
+    }
+    
+    /**
+     * Frontend Favicon-16X16.Png
+     * @returns string Successful Response
+     * @throws ApiError
+     */
+    public static frontendFavicon16X16Png(): CancelablePromise<FrontendFrontendFavicon16X16PngResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/favicon-16x16.png'
+        });
+    }
+    
+    /**
+     * Frontend Favicon-32X32.Png
+     * @returns string Successful Response
+     * @throws ApiError
+     */
+    public static frontendFavicon32X32Png(): CancelablePromise<FrontendFrontendFavicon32X32PngResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/favicon-32x32.png'
+        });
+    }
+    
+    /**
+     * Frontend Favicon.Ico
+     * @returns string Successful Response
+     * @throws ApiError
+     */
+    public static frontendFaviconIco(): CancelablePromise<FrontendFrontendFaviconIcoResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/favicon.ico'
+        });
+    }
+    
+    /**
+     * Frontend Info
+     * @returns string Successful Response
+     * @throws ApiError
+     */
+    public static frontendInfo(): CancelablePromise<FrontendFrontendInfoResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/info/'
+        });
+    }
+    
+    /**
+     * Frontend Info Iptv
+     * @returns string Successful Response
+     * @throws ApiError
+     */
+    public static frontendInfoIptv(): CancelablePromise<FrontendFrontendInfoIptvResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/info/iptv'
+        });
+    }
+    
+    /**
+     * Frontend Info Playback
+     * @returns string Successful Response
+     * @throws ApiError
+     */
+    public static frontendInfoPlayback(): CancelablePromise<FrontendFrontendInfoPlaybackResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/info/playback'
+        });
+    }
+    
+    /**
+     * Frontend Login
+     * @returns string Successful Response
+     * @throws ApiError
+     */
+    public static frontendLogin(): CancelablePromise<FrontendFrontendLoginResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/login'
+        });
+    }
+    
+    /**
+     * Frontend Settings
+     * @returns string Successful Response
+     * @throws ApiError
+     */
+    public static frontendSettings(): CancelablePromise<FrontendFrontendSettingsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/settings'
+        });
+    }
+    
+    /**
+     * Frontend Site.Webmanifest
+     * @returns string Successful Response
+     * @throws ApiError
+     */
+    public static frontendSiteWebmanifest(): CancelablePromise<FrontendFrontendSiteWebmanifestResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/site.webmanifest'
+        });
+    }
+    
+    /**
+     * Frontend Catch All
+     * Catch all route to serve frontend files.
+     * @param data The data for the request.
+     * @param data.fullPath
+     * @returns string Successful Response
+     * @throws ApiError
+     */
+    public static frontendCatchAll(data: FrontendFrontendCatchAllData): CancelablePromise<FrontendFrontendCatchAllResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/assets/{full_path}',
+            path: {
+                full_path: data.fullPath
+            },
+            errors: {
+                422: 'Validation Error'
+            }
         });
     }
 }
@@ -232,7 +409,7 @@ export class HealthService {
 export class LoginService {
     /**
      * Login Access Token
-     * OAuth2 compatible token login, get an access token for future requests
+     * OAuth2 compatible token login, get an access token for future requests.
      * @param data The data for the request.
      * @param data.formData
      * @returns Token Successful Response
@@ -252,7 +429,7 @@ export class LoginService {
     
     /**
      * Test Token
-     * Test access token
+     * Test access token.
      * @returns UserPublic Successful Response
      * @throws ApiError
      */
@@ -265,7 +442,7 @@ export class LoginService {
     
     /**
      * Reset Password
-     * Reset password
+     * Reset password.
      * @param data The data for the request.
      * @param data.requestBody
      * @returns Message Successful Response
@@ -339,166 +516,6 @@ export class MediaIptvService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/iptv',
-            query: {
-                token: data.token
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-}
-
-export class MediaStreamService {
-    /**
-     * Hls
-     * Reverse proxy the HLS from Ace.
-     * @param data The data for the request.
-     * @param data.path
-     * @param data.token
-     * @param data.authenticationOverride
-     * @returns unknown Successful Response
-     * @throws ApiError
-     */
-    public static hls(data: MediaStreamHlsData): CancelablePromise<MediaStreamHlsResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/hls/{path}',
-            path: {
-                path: data.path
-            },
-            query: {
-                token: data.token,
-                authentication_override: data.authenticationOverride
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Hls Multi
-     * Reverse proxy the HLS multistream from Ace.
-     * @param data The data for the request.
-     * @param data.path
-     * @param data.token
-     * @returns unknown Successful Response
-     * @throws ApiError
-     */
-    public static hlsMulti(data: MediaStreamHlsMultiData): CancelablePromise<MediaStreamHlsMultiResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/hls/m/{path}',
-            path: {
-                path: data.path
-            },
-            query: {
-                token: data.token
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Xc M3U8
-     * Serve the XC m3u8 file for Ace content.
-     * @param data The data for the request.
-     * @param data.pathUsername
-     * @param data.pathPassword
-     * @param data.path
-     * @param data.password
-     * @param data.username
-     * @returns unknown Successful Response
-     * @throws ApiError
-     */
-    public static xcM3U8(data: MediaStreamXcM3U8Data): CancelablePromise<MediaStreamXcM3U8Response> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/live/{_path_username}/{_path_password}/{path}',
-            path: {
-                _path_username: data.pathUsername,
-                _path_password: data.pathPassword,
-                path: data.path
-            },
-            query: {
-                password: data.password,
-                username: data.username
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Ace Content 2
-     * Reverse proxy the Ace content.
-     * @param data The data for the request.
-     * @param data.path
-     * @param data.token
-     * @returns unknown Successful Response
-     * @throws ApiError
-     */
-    public static aceContent2(data: MediaStreamAceContent2Data): CancelablePromise<MediaStreamAceContent2Response> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/hls/c/{path}',
-            path: {
-                path: data.path
-            },
-            query: {
-                token: data.token
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Ace Content 1
-     * Reverse proxy the Ace content.
-     * @param data The data for the request.
-     * @param data.path
-     * @param data.token
-     * @returns unknown Successful Response
-     * @throws ApiError
-     */
-    public static aceContent1(data: MediaStreamAceContent1Data): CancelablePromise<MediaStreamAceContent1Response> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/ace/c/{path}',
-            path: {
-                path: data.path
-            },
-            query: {
-                token: data.token
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Tvg Logo
-     * Serve the TVG logo from the local filesystem.
-     * @param data The data for the request.
-     * @param data.path
-     * @param data.token
-     * @returns unknown Successful Response
-     * @throws ApiError
-     */
-    public static tvgLogo(data: MediaStreamTvgLogoData): CancelablePromise<MediaStreamTvgLogoResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/tvg-logo/{path}',
-            path: {
-                path: data.path
-            },
             query: {
                 token: data.token
             },
@@ -642,8 +659,8 @@ export class ScraperService {
     public static source(data: ScraperSourceData): CancelablePromise<ScraperSourceResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/scraper/source/{slug}',
-            query: {
+            url: '/api/v1/scraper/source/{source_slug}',
+            path: {
                 source_slug: data.sourceSlug
             },
             errors: {
@@ -963,6 +980,7 @@ export class XtreamCodesService {
     /**
      * Xc Iptv Router
      * Route XC API requests to appropriate handlers.
+     *
      * Actions: get_live_categories, get_live_streams, get_vod_categories, get_vod_streams, get_series_categories, get_series.
      * @param data The data for the request.
      * @param data.action

@@ -28,8 +28,7 @@ def create_random_user(db: Session) -> User:
 
 
 def authentication_token_from_username(*, client: TestClient, username: str, db: Session) -> dict[str, str]:
-    """
-    Return a valid token for the user with given username.
+    """Return a valid token for the user with given username.
 
     If the user doesn't exist it is created first.
     """

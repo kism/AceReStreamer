@@ -12,7 +12,7 @@ docker-compose_prod.yml
 .tanstack
 
 # Generated static
-acere/static/
+acere/dist/
 
 # fun temp files
 

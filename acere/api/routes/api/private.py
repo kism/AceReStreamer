@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from acere.api.deps import SessionDep  # noqa: TC001 Will break everything otherwise
+from acere.api.deps import SessionDep
 from acere.core.security import get_password_hash
 from acere.models import (
     User,

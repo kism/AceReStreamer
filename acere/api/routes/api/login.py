@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm  # noqa: TC002 Will break everything otherwise
 
 from acere import crud
-from acere.api.deps import CurrentUser, SessionDep  # noqa: TC001 Will break everything otherwise
+from acere.api.deps import CurrentUser, SessionDep
 from acere.core import security
 from acere.core.security import get_password_hash
 from acere.instances.config import settings
