@@ -1,6 +1,5 @@
 """Main Stream Site Blueprint."""
 
-from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -8,14 +7,9 @@ from acere.api.deps import (
     get_current_user,
 )
 from acere.instances.scraper import get_ace_scraper
+from acere.services.ace_quality import Quality
+from acere.services.scraper.models import FoundAceStreamAPI
 from acere.utils.logger import get_logger
-
-if TYPE_CHECKING:
-    from acere.services.ace_quality import Quality
-    from acere.services.scraper.models import FoundAceStreamAPI
-else:
-    Quality = object
-    FoundAceStreamAPI = object
 
 logger = get_logger(__name__)
 

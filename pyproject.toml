@@ -1,6 +1,6 @@
 [project]
 name = "acere"
-version = "1.0.0b4"
+version = "1.0.0b5"
 description = ""
 requires-python = ">=3.14,<4.0"
 dependencies = [
@@ -76,15 +76,16 @@ ignore = [
     "TRY400", # Fine to log exceptions as errors
     "SIM117", # Double 'with' is more readable with async
     "D1",     # Not going to document everything, we have good type checking
+    "TC001",  # Breaks Pydantic completely
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*.py" = [
+    "ARG",     # KG Unused function args -> fixtures nevertheless are functionally relevant
     "S101",    # Allow use of assert in tests
-    "ARG001",  # Allow unused arguments in tests (fixtures)
     "E402",    # I do some dumb imports in tests
     "TRY",     # Exceptions in tests are allowed to be messy
-    "D",       # Docstrings in tests are optional
+    "D1",      # Not going to document everything, we have good type checking
     "S",       # No real crypto in tests
     "SLF001",  # Can access private members in tests
     "PLR2004", # Allow magic comparisons in tests
@@ -98,6 +99,10 @@ runtime-evaluated-base-classes = [
     "sqlmodel.SQLModel",
     "uuid.UUID",
     "acere.api.deps.SessionDep",
+    "acere.services.ace_quality.Quality",
+    "acere.services.scraper.models.FoundAceStreamAPI",
+    "acere.services.scraper.models.AceScraperSourceApi",
+    "acere.services.epg.models.EPGApiHandlerResponse",
 ] # These aren't for type checking only
 
 [tool.ruff.lint.pydocstyle]
@@ -120,7 +125,7 @@ context = "test"
 
 [tool.coverage.report]
 show_missing = false
-sort = "-Cover"
+# sort = "-Cover"
 
 [tool.coverage.html]
 show_contexts = true

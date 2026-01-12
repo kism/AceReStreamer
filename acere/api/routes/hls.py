@@ -140,7 +140,10 @@ async def hls_multi(path: str, token: str = "") -> Response:
     ace_scraper = get_ace_scraper()
 
     content_id = ace_pool.get_instance_by_multistream_path(path)
-    url = HttpUrl(f"{settings.app.ace_address.encoded_string()}/hls/m/{path}").encoded_string()
+
+    url = HttpUrl(
+        f"{settings.app.ace_address.encoded_string()}hls/m/{path}"
+    ).encoded_string()  # This will deduplicate slashes
 
     try:
         timeout = aiohttp.ClientTimeout(total=REVERSE_PROXY_TIMEOUT)
@@ -250,10 +253,10 @@ async def ace_content(path: str, request: Request, token: str = "") -> Response:
 
     # Determine the correct URL based on the request path
     if "/hls/c/" in request.url.path:
-        url = f"{settings.app.ace_address}hls/c/{path}"
+        url = HttpUrl(f"{settings.app.ace_address}hls/c/{path}").encoded_string()
         route_prefix = "/hls/c/"
     else:
-        url = f"{settings.app.ace_address}ace/c/{path}"
+        url = HttpUrl(f"{settings.app.ace_address}ace/c/{path}").encoded_string()
         route_prefix = "/ace/c/"
 
     logger.trace("Ace content requested for url: %s", url)
@@ -310,6 +313,7 @@ def tvg_logo(path: str, token: str = "") -> FileResponse:
     # This might be from settings or app configuration
     verify_stream_token(token)
 
+    # Not sure if this check is needed
     if STATIC_DIR is None:
         raise HTTPException(
             status_code=HTTPStatus.INTERNAL_SERVER_ERROR,

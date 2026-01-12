@@ -7,7 +7,7 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException, Response
 from fastapi.responses import HTMLResponse
 
-from acere.constants import STATIC_DIR
+from acere.constants import DIST_DIR
 from acere.instances.config import settings
 from acere.utils.logger import get_logger
 
@@ -21,15 +21,17 @@ if settings.FRONTEND_HOST == "":
     # If a frontend host is set, we assume it's a separate frontend server (e.g., Vite dev server or deployed frontend)
     logger.debug("Frontend: Serving from FastAPI.")
 
-    INDEX_HTML = STATIC_DIR / "index.html"
+    INDEX_HTML = DIST_DIR / "index.html"
     if not INDEX_HTML.exists():
         msg = "The frontend has not been built. Please refer to the documentation."
+        msg += " Expected index.html at: " + str(INDEX_HTML.resolve())
+        msg += " Files in directory: " + ", ".join([str(p.name) for p in DIST_DIR.iterdir()])
         raise RuntimeError(
             msg,
         )
 
     INDEX_HTML_CACHE = INDEX_HTML.read_text()
-    VITE_ASSETS_PATH = STATIC_DIR / "assets"
+    VITE_ASSETS_PATH = DIST_DIR / "assets"
 
     ALL_VITE_STATIC: dict[Path, tuple[bytes, str]] = {}
     for path in VITE_ASSETS_PATH.rglob("*.*"):
@@ -76,8 +78,8 @@ if settings.FRONTEND_HOST == "":
     )
     def get_frontend_catch_all(full_path: str) -> Response:
         """Catch all route to serve frontend files."""
-        requested_path = STATIC_DIR / full_path
-        relative_path = requested_path.relative_to(STATIC_DIR)
+        requested_path = DIST_DIR / full_path
+        relative_path = requested_path.relative_to(DIST_DIR)
         if relative_path in ALL_VITE_STATIC:
             content, mime_type = ALL_VITE_STATIC[relative_path]
             return Response(content=content, media_type=mime_type)

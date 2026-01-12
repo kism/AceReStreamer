@@ -51,7 +51,7 @@ class AcePool:
         if not self.ace_address:
             return healthy
 
-        url = f"{self.ace_address}/webui/api/service?method=get_version"
+        url = HttpUrl(f"{self.ace_address}webui/api/service?method=get_version").encoded_string()
         version_data = {}
 
         try:
@@ -109,7 +109,7 @@ class AcePool:
         ]
 
         if shortlist_instances_to_reclaim:
-            best_instance = min(shortlist_instances_to_reclaim, key=lambda x: x.last_used)
+            best_instance = min(shortlist_instances_to_reclaim, key=lambda x: x.date_last_used)
 
             logger.info(
                 "Found available AceStream instance: %s, reclaiming it.",
@@ -217,18 +217,14 @@ class AcePool:
         )
 
     # region GET API Stats
-    async def get_all_stats(self) -> AcePoolAllStatsApi:
+    async def get_all_stats(self) -> list[AcePoolAllStatsApi]:
         """Get all AcePool statistics for each instance, for the API only."""
-        # I had to use typing.Any, sad day but it's fine since its from pydantic
-        result: dict[int, dict[str, Any] | None] = {}
+        result: list[dict[str, Any]] = []
         for n in range(self.max_size):
             ace_pool_stat = await self.get_stats_by_pid(n)
-            if ace_pool_stat is None:
-                result[n] = None
-            else:
-                result[n] = ace_pool_stat.model_dump()
+            result.append({"pid": n, "status": ace_pool_stat})
 
-        ta = TypeAdapter(AcePoolAllStatsApi)
+        ta = TypeAdapter(list[AcePoolAllStatsApi])
 
         return ta.validate_python(result)
 
@@ -277,7 +273,7 @@ class AcePool:
             ace_pid=instance.ace_pid,
             content_id=instance.content_id,
             date_started=instance.date_started,
-            last_used=instance.last_used,
+            last_used=instance.date_last_used,
             locked_in=locked_in,
             time_until_unlock=time_until_unlock,
             time_running=total_time_running,

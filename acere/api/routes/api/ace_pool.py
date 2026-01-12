@@ -1,27 +1,19 @@
 """AcePool API Blueprint."""
 
 from http import HTTPStatus
-from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, HTTPException
 
 from acere.api.deps import get_current_user
 from acere.instances.ace_pool import get_ace_pool
+from acere.services.ace_pool.models import (
+    AcePoolAllStatsApi,
+    AcePoolEntryForAPI,
+    AcePoolForApi,
+    AcePoolStat,
+)
 from acere.utils.api_models import MessageResponseModel
 from acere.utils.logger import get_logger
-
-if TYPE_CHECKING:
-    from acere.services.ace_pool.models import (
-        AcePoolAllStatsApi,
-        AcePoolEntryForAPI,
-        AcePoolForApi,
-        AcePoolStat,
-    )
-else:
-    AcePoolAllStatsApi = object
-    AcePoolEntryForAPI = object
-    AcePoolForApi = object
-    AcePoolStat = object
 
 logger = get_logger(__name__)
 
@@ -94,7 +86,7 @@ def get_by_pid(pid: str) -> AcePoolEntryForAPI:
 
 
 @router.get("/stats")
-async def stats() -> AcePoolAllStatsApi:
+async def stats() -> list[AcePoolAllStatsApi]:
     """API endpoint to get Ace pool stats."""
     ace_pool = get_ace_pool()
     return await ace_pool.get_all_stats()

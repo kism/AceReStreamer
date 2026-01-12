@@ -1,8 +1,13 @@
 # Dockerfile for all-in-one deployment
 # Stage 0, "build-stage", based on Node.js, to build and compile the frontend
-FROM node:24 AS build-stage
+FROM node:24-trixie-slim AS build-stage
 
 WORKDIR /app
+
+# This is so versioning comes through
+RUN apt-get update
+RUN apt-get install -y git
+COPY .git /app/
 
 COPY frontend/package*.json /app/
 
@@ -20,7 +25,7 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app/
 
-COPY --from=build-stage /app/dist/ /app/acere/static
+COPY --from=build-stage /app/dist /app/acere/dist
 
 # Install uv
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#installing-uv

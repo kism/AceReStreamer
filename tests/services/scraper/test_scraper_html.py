@@ -157,7 +157,7 @@ async def test_site4(scraper: HTMLStreamScraper, caplog: pytest.LogCaptureFixtur
     site_html_str = (SCRAPER_TEST_SITES / "site4.html").read_text(encoding="utf-8")
     scraper.scraper_cache.save_to_cache(site.url, site_html_str)
 
-    with caplog.at_level("DEBUG"):
+    with caplog.at_level("TRACE"):
         results = await scraper._scrape_site(site)
 
     assert len(results) > 0, "No streams found in site4"

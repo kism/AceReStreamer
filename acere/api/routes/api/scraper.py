@@ -1,7 +1,6 @@
 """Scraper API Blueprint."""
 
 from http import HTTPStatus
-from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -12,13 +11,9 @@ from acere.api.deps import (
 from acere.core.config import ScrapeSiteAPI, ScrapeSiteHTML, ScrapeSiteIPTV
 from acere.instances.config import settings
 from acere.instances.scraper import get_ace_scraper
+from acere.services.scraper.models import AceScraperSourceApi
 from acere.utils.api_models import MessageResponseModel
 from acere.utils.logger import get_logger
-
-if TYPE_CHECKING:
-    from acere.services.scraper.models import AceScraperSourceApi
-else:
-    AceScraperSourceApi = object
 
 logger = get_logger(__name__)
 

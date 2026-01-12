@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import aiohttp
 from pydantic import HttpUrl, ValidationError
 
+from acere.utils.ace import get_middleware_url
 from acere.utils.constants import OUR_TIMEZONE
 from acere.utils.helpers import check_valid_content_id_or_infohash
 from acere.utils.logger import get_logger
@@ -44,19 +45,18 @@ class AcePoolEntry:
         self.infohash = infohash
         self.ace_address = ace_address
 
-        self.ace_middleware_url = (  # https://docs.acestream.net/developers/start-playback/
-            f"{self.ace_address}ace/manifest.m3u8"
-            "?format=json"
-            f"&content_id={self.content_id}"
-            f"&transcode_ac3={str(transcode_audio).lower()}"
-            f"&pid={self.ace_pid}"
+        self.ace_middleware_url = get_middleware_url(
+            ace_url=self.ace_address,
+            content_id=self.content_id,
+            ace_pid=self.ace_pid,
+            transcode_audio=transcode_audio,
         )
 
         self._middleware_info: AceMiddlewareResponse | None = None
 
         # Required to ensure that this actually gets the current time
         self.date_started = datetime.now(tz=OUR_TIMEZONE)
-        self.last_used = datetime.now(tz=OUR_TIMEZONE)
+        self.date_last_used = datetime.now(tz=OUR_TIMEZONE)
 
     @classmethod
     async def create(
@@ -102,7 +102,7 @@ class AcePoolEntry:
 
     def update_last_used(self) -> None:
         """Update the last used timestamp."""
-        self.last_used = datetime.now(tz=OUR_TIMEZONE)
+        self.date_last_used = datetime.now(tz=OUR_TIMEZONE)
 
     # region Get
     def get_m3u8_url(self) -> HttpUrl | None:
@@ -146,13 +146,13 @@ class AcePoolEntry:
     def get_required_time_until_unlock(self) -> timedelta:
         """Get the time until the instance is unlocked."""
         time_now = datetime.now(tz=OUR_TIMEZONE)
-        time_since_last_watched: timedelta = time_now - self.last_used
+        time_since_last_watched: timedelta = time_now - self.date_last_used
         time_since_date_started: timedelta = time_now - self.date_started
         return min(LOCK_IN_RESET_MAX, (time_since_date_started - time_since_last_watched))
 
     def get_time_until_unlock(self) -> timedelta:
         """Get the time until the instance is unlocked."""
-        return self.last_used + self.get_required_time_until_unlock() - datetime.now(tz=OUR_TIMEZONE)
+        return self.date_last_used + self.get_required_time_until_unlock() - datetime.now(tz=OUR_TIMEZONE)
 
     def check_running_long_enough_to_lock_in(self) -> bool:
         """Check if the instance has been running long enough to be locked in."""
@@ -162,14 +162,14 @@ class AcePoolEntry:
     def _check_unused_longer_than_lock_in_reset(self) -> bool:
         """Check if the instance has been unused longer than the lock-in reset time."""
         time_now = datetime.now(tz=OUR_TIMEZONE)
-        time_since_last_watched: timedelta = time_now - self.last_used
+        time_since_last_watched: timedelta = time_now - self.date_last_used
         return time_since_last_watched > LOCK_IN_RESET_MAX
 
     def check_locked_in(self) -> bool:
         """Check if the instance is locked in for a certain period."""
         # If the instance has not been used for a while, it is not locked in, maximum reset time is LOCK_IN_RESET_MAX
         time_now = datetime.now(tz=OUR_TIMEZONE)
-        time_since_last_watched: timedelta = time_now - self.last_used
+        time_since_last_watched: timedelta = time_now - self.date_last_used
         required_time_to_unlock = self.get_required_time_until_unlock()
 
         if not self.check_running_long_enough_to_lock_in():
