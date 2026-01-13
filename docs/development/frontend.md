@@ -1,4 +1,4 @@
-# Development (Frontend)
+# Frontend (Vite + React)
 
 Open a new vscode window in the `frontend/` folder:
 
