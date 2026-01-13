@@ -71,7 +71,7 @@ export function StreamTable() {
 
   return (
     <Box borderWidth="1px" overflow="auto" maxH="100%">
-      <AppTableRoot  m={0}>
+      <AppTableRoot m={0}>
         <TableHeader position="sticky" top={0} zIndex={1}>
           {/* Due to sticky header we set bg.subtle */}
           <TableRow bg="bg.subtle">
