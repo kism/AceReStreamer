@@ -1,12 +1,12 @@
 {
   "name": "frontend",
   "private": true,
-  "version": "1.0.0rc3",
+  "version": "1.0.0rc4",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
     "build": "tsc -p tsconfig.build.json && vite build",
-    "build-dev": "tsc -p tsconfig.build.json && vite build --emptyOutDir --outDir ../acere/dist",
+    "build-aio": "tsc -p tsconfig.build.json && vite build --emptyOutDir --outDir ../acere/dist",
     "typecheck": "tsc --noEmit",
     "lint": "biome check --write --unsafe --no-errors-on-unmatched --files-ignore-unknown=true ./",
     "preview": "vite preview",

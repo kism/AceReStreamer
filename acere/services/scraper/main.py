@@ -172,6 +172,8 @@ class AceScraper:
                         break
                     time.sleep(60)
 
+                self.mark_alternate_streams()
+
                 self.print_warnings()
                 time.sleep(SCRAPE_INTERVAL)
 
@@ -475,3 +477,23 @@ class AceScraper:
             len(unique_infohashes),
             len(unique_names),
         )
+
+    def mark_alternate_streams(self) -> None:
+        """Iterates through streams and for any identical title, for duplicates mark the titles with a stream number."""
+        results: dict[str, list[FoundAceStream]] = {}  # Title, list of streams with that title
+
+        for stream in self.streams.values():
+            results[stream.title] = [*results.get(stream.title, []), stream]
+
+        for streams in results.values():
+            if len(streams) <= 1:
+                continue
+
+            # Sort by xc_id, will approximatly be by date discovered
+            streams.sort(
+                key=lambda s: self._content_id_xc_id_mapping.get_xc_id(s.content_id) or 0,
+            )
+
+            # Mark all but the first as alternate
+            for n, stream in enumerate(streams):
+                stream.title += f" #{n + 1}"
