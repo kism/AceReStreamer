@@ -127,7 +127,7 @@ function WebPlayer() {
         pb={{ base: 10, lg: 4 }} // Overscroll is nice on mobile
       >
         <StreamTable />
-        <Text>Hello</Text>
+        <Box flexShrink={0} h={4} /> {/* Bit of a hack */}
       </Flex>
     </Flex>
   )
