@@ -65,6 +65,7 @@ export async function loadStream(content_id?: string) {
         errorMessage = `HLS error: ${data.details}`
       }
       updateStreamStatus({ hlsStatus: errorMessage })
+      console.log("HLS error", errorMessage, data)
     })
 
     hls.on(Hls.Events.BUFFER_APPENDED, () => {
