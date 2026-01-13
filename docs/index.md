@@ -1,10 +1,13 @@
 # AceReStreamer Documentation
 
-FastAPI based Ace Stream re-streamer.
+FastAPI based Ace Stream re-streamer. [GitHub](https://github.com/kism/AceReStreamer)
 
-<https://github.com/kism/AceReStreamer>
+```{toctree}
+:maxdepth: 2
+:caption: Deployment
 
-Repository readme: `/readme`
+index
+```
 
 ## Running and Configuration
 
@@ -24,11 +27,9 @@ Environment vaiables will override the config values, and be saved to config.jso
 
 `acerestreamer-scrape` is a tool that will scrape streams and provide them in m3u8 format for use with Horus and other Ace Stream clients.
 
-## Development
-
 ```{toctree}
-:maxdepth: 2
-:caption: Develop
+:maxdepth: 3
+:caption: Development
 
 development/backend
 development/frontend
