@@ -1,6 +1,6 @@
 [project]
 name = "acere"
-version = "1.0.0rc3"
+version = "1.0.0rc4"
 description = ""
 requires-python = ">=3.14,<4.0"
 dependencies = [
@@ -43,6 +43,7 @@ test = [
     "pytest-asyncio",
     "pytest-socket>=0.7.0",
 ]
+docs = ["sphinx", "myst-parser", "sphinx-rtd-theme"]
 
 
 [build-system]
@@ -55,6 +56,7 @@ module-root = ""
 
 [project.scripts]
 acerestreamer-scrape = "acere.cli.scraper:__main__.main"
+acerestreamer-password-reset = "acere.cli.password_reset:__main__.main"
 
 [tool.ruff]
 target-version = "py314"
@@ -90,6 +92,12 @@ ignore = [
     "SLF001",  # Can access private members in tests
     "PLR2004", # Allow magic comparisons in tests
     "ANN401",  # *args: Any, **kwargs: Any in tests
+]
+"docs/*.py" = [
+    # Modules
+    "INP",
+    "D",
+    "A",
 ]
 
 [tool.ruff.lint.flake8-type-checking]

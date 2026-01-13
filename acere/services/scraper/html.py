@@ -46,7 +46,7 @@ class HTMLStreamScraper(ScraperCommon):
         scraped_site_str = self.scraper_cache.load_from_cache(site.url)
 
         if not self.scraper_cache.is_cache_valid(site.url, cache_max_age):
-            logger.debug("Scraping streams from HTML site: %s", site.name)
+            logger.info("Scraping streams from HTML site: %s", site.name)
             try:
                 async with aiohttp.ClientSession() as session:
                     async with session.get(site.url.encoded_string()) as response:

@@ -71,7 +71,7 @@ class IPTVStreamScraper(ScraperCommon):
             logger.debug("Loaded IPTV site content from cache for: %s", site.name)
             return cached_content
 
-        logger.debug("Scraping streams from IPTV site: %s", site.name)
+        logger.info("Scraping streams from IPTV site: %s", site.name)
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(site.url.encoded_string()) as response:
