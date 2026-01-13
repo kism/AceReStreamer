@@ -17,13 +17,10 @@ const PageHeader = ({
   return (
     <Box
       display="flex"
-      // borderBottomWidth="1px"
       bg={"bg.panel"}
       px={4}
       py={2}
-      // alignItems="center"
       justifyContent="space-between"
-      // gap={2}
     >
       <Flex alignItems="center" gap={2}>
         <IconButton

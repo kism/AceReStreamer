@@ -5,15 +5,7 @@
 [![Test](https://github.com/kism/AceReStreamer/actions/workflows/test.yml/badge.svg)](https://github.com/kism/AceReStreamer/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/kism/AceReStreamer/graph/badge.svg?token=FPGDA0ODT7)](https://codecov.io/gh/kism/AceReStreamer)
 
-## Run
-
-Use docker compose
-
-```bash
-docker compose up -d
-```
-
-### Features
+## Features
 
 - Scrape HTML, IPTV and API sources for streams.
 - Re-streams via HLS for IPTV clients (Xtream Codes, M3U8).
@@ -21,3 +13,17 @@ docker compose up -d
 - Web interface for browsing streams.
 - Configure scrapers through web interface.
 - FastAPI backend, React frontend, type checking enforced.
+
+## Run
+
+For full details, see the [docs](https://acerestreamer.readthedocs.io/en/latest/).
+
+Easiest way is via docker compose:
+
+- Copy `docker-compose.yml` to your server
+- Edit the environment variables defined in `docker-compose.yml` to your needs.
+- Run with:
+
+  ```bash
+  docker compose up -d
+  ```
