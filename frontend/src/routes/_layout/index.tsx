@@ -123,9 +123,10 @@ function WebPlayer() {
         flex={{ base: "0 0 auto", lg: "1" }}
         maxW={{ base: "100%", lg: isExpanded ? "100%" : "300px" }}
         minW="200px"
-        overflow={{ base: "visible", lg: isExpanded ? "visible" : "hidden" }}
+        overflow="visible"
+        pb={{ base: 10, lg: isExpanded ? 4 : 0 }} // Overscroll is nice on mobile
       >
-        <StreamTable scrollable={{ base: false, lg: !isExpanded }} />
+        <StreamTable />
       </Flex>
     </Flex>
   )
