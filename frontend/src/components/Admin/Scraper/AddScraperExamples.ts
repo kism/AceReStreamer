@@ -1,6 +1,7 @@
 import { createListCollection } from "@chakra-ui/react"
+import type { AceScraperSourceApi } from "@/client"
 
-const exampleIPTV = {
+const exampleIPTV: AceScraperSourceApi = {
   type: "iptv",
   name: "example-scraper",
   url: "https://example.com/playlist.m3u",
@@ -9,11 +10,11 @@ const exampleIPTV = {
     always_include_words: [],
     exclude_words: [],
     include_words: [],
-    regex_postprocessing: "",
+    regex_postprocessing: [],
   },
 }
 
-const exampleAPI = {
+const exampleAPI: AceScraperSourceApi = {
   type: "api",
   name: "example-scraper",
   url: "https://api.example.com/list?api_key=test_api_key",
@@ -22,11 +23,11 @@ const exampleAPI = {
     always_include_words: [],
     exclude_words: [],
     include_words: [],
-    regex_postprocessing: "",
+    regex_postprocessing: [],
   },
 }
 
-const exampleHTML = {
+const exampleHTML: AceScraperSourceApi = {
   type: "html",
   name: "example-scraper",
   url: "https://example.com",
@@ -35,7 +36,7 @@ const exampleHTML = {
     always_include_words: [],
     exclude_words: [],
     include_words: [],
-    regex_postprocessing: "",
+    regex_postprocessing: [],
   },
   html_filter: {
     target_class: "",

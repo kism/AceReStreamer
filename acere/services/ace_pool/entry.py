@@ -1,5 +1,6 @@
 """AceStream pool management module."""
 
+import asyncio
 import contextlib
 from datetime import datetime, timedelta
 
@@ -235,7 +236,7 @@ class AcePoolEntry:
             and self._middleware_info.playback_url
         ):
             # Keep Alive
-            with contextlib.suppress(aiohttp.ClientError):
+            with contextlib.suppress(aiohttp.ClientError, asyncio.TimeoutError):
                 if not self._keep_alive_run_once and self._middleware_info.playback_url != "":
                     logger.info(
                         "Keeping alive ace_pid %d with content_id %s",
