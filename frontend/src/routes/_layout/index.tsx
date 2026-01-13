@@ -1,4 +1,4 @@
-import { Box, Flex, Heading, HStack, IconButton, Text } from "@chakra-ui/react"
+import { Box, Flex, Heading, HStack, IconButton } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { lazy, Suspense, useEffect, useState } from "react"
