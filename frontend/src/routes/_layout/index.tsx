@@ -1,4 +1,4 @@
-import { Box, Flex, Heading, HStack, IconButton } from "@chakra-ui/react"
+import { Box, Flex, Heading, HStack, IconButton, Text } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { lazy, Suspense, useEffect, useState } from "react"
@@ -117,16 +117,17 @@ function WebPlayer() {
         <AcePoolInfo />
       </Flex>
 
-      {/* Right pane - Items Table */}
+      {/* Right pane - Streams Table */}
       <Flex
         direction="column"
         flex={{ base: "0 0 auto", lg: "1" }}
         maxW={{ base: "100%", lg: isExpanded ? "100%" : "300px" }}
         minW="200px"
         overflow="visible"
-        pb={{ base: 10, lg: isExpanded ? 4 : 0 }} // Overscroll is nice on mobile
+        pb={{ base: 10, lg: 4 }} // Overscroll is nice on mobile
       >
         <StreamTable />
+        <Text>Hello</Text>
       </Flex>
     </Flex>
   )
