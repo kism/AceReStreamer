@@ -64,7 +64,7 @@ class Quality(BaseModel):
                 time_since_last_segment > self._next_segment_expected
             )  # If more time has passed than expected
             logger.debug(
-                f"Segment is late: {segment_is_late}\n  last: {time_since_last_segment}s\n  expected: {self._next_segment_expected}s\ncurrent segment: {ts_number_int}\nlast segment: {self._last_segment_number}",  # noqa: E501, F541, G004
+                f"Segment is late: {segment_is_late}\n  last: {time_since_last_segment}s\n  expected: {self._next_segment_expected}s\ncurrent segment: {ts_number_int}\nlast segment: {self._last_segment_number}",  # noqa: E501, G004
             )
 
             # If the stream has progressed, give it a positive rating, we can't check if it was late.
@@ -81,7 +81,6 @@ class Quality(BaseModel):
                 # If it's a new stream, we are less harsh
                 rating = -1 if ts_number_int < NEW_STREAM_THRESHOLD else LATE_SEGMENT_PUNISHMENT
                 time_diff = time_since_last_segment - self._next_segment_expected
-                # self._next_segment_expected = timedelta(seconds=0)
                 self.last_message = f"Score {rating} (Expected segment {time_diff.seconds}s ago)"
             else:
                 # No segment was due at time of checking

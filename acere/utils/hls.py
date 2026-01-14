@@ -40,3 +40,18 @@ def replace_hls_m3u_sources(
         return line_stripped
 
     return "\n".join(process_line(line) for line in m3u_content.splitlines())
+
+
+def get_last_m3u8_segment_url(m3u_content: str) -> str | None:
+    """Get the last segment URL from an M3U8 playlist."""
+    if not m3u_content:
+        return None
+
+    lines = m3u_content.strip().splitlines()
+    for line in reversed(lines):
+        line_stripped = line.strip()
+        if line_stripped and line_stripped.startswith("http"):
+            return line_stripped
+
+    logger.warning("No segment URL found in M3U content.")
+    return None
