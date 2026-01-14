@@ -19,6 +19,9 @@ def slugify(slug_input: str | bytes) -> str:
     if isinstance(slug_input, bytes):
         slug_input = slug_input.decode()
 
+    # Replace + with 'plus'
+    slug_input = slug_input.replace("+", "plus")
+
     # Generate Slug, everything that isn't alphanumeric is now a space, which will become a hyphen later
     slug_input = _NON_ALPHANUMERIC_PATTERN.sub(" ", slug_input)
 
