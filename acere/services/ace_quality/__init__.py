@@ -56,7 +56,16 @@ class Quality(BaseModel):
             ts_number_int: int = int(ts_number)
 
             current_time = datetime.now(tz=OUR_TIMEZONE)
-            time_since_last_segment = current_time - self._last_segment_fetched
+
+            # There is a diff between when the segment became available...
+            time_since_last_segment = current_time - self._last_segment_fetched - timedelta(milliseconds=100)
+
+            segment_is_late = (
+                time_since_last_segment > self._next_segment_expected
+            )  # If more time has passed than expected
+            logger.debug(
+                f"Segment is late: {segment_is_late}\n  last: {time_since_last_segment}s\n  expected: {self._next_segment_expected}s\ncurrent segment: {ts_number_int}\nlast segment: {self._last_segment_number}",  # noqa: E501, F541, G004
+            )
 
             # If the stream has progressed, give it a positive rating, we can't check if it was late.
             if ts_number_int != self._last_segment_number:
@@ -67,12 +76,13 @@ class Quality(BaseModel):
                 self.last_message = (
                     f"Score +{rating} ({n_new_segments} new {'segments' if n_new_segments > 1 else 'segment'})"
                 )
-            elif time_since_last_segment > self._next_segment_expected:  # If more time has passed than expected
+            elif segment_is_late:
                 # This is a fair comparison since we don't actually know when the pending segment became available
                 # If it's a new stream, we are less harsh
                 rating = -1 if ts_number_int < NEW_STREAM_THRESHOLD else LATE_SEGMENT_PUNISHMENT
                 time_diff = time_since_last_segment - self._next_segment_expected
-                self.last_message = f"Score {rating} (Expected segment {time_diff.seconds:.1f}s ago)"
+                # self._next_segment_expected = timedelta(seconds=0)
+                self.last_message = f"Score {rating} (Expected segment {time_diff.seconds}s ago)"
             else:
                 # No segment was due at time of checking
                 self.last_message = "Score +0 (no new segment due)"
