@@ -17,7 +17,8 @@ export function PlaybackInfo() {
           <RouterLink to="/info/iptv">IPTV Info Page</RouterLink>.
         </Text>
         <Text>
-          If you are experiencing constant buffering, pause the stream for two minutes.
+          If you are experiencing constant buffering, pause the stream for two
+          minutes.
         </Text>
       </Box>
 
