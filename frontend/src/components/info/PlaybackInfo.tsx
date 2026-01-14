@@ -16,6 +16,9 @@ export function PlaybackInfo() {
           i'd recommend using and iptv app and following the guide at on the{" "}
           <RouterLink to="/info/iptv">IPTV Info Page</RouterLink>.
         </Text>
+        <Text>
+          If you are experiencing constant buffering, pause the stream for two minutes.
+        </Text>
       </Box>
 
       <Box>

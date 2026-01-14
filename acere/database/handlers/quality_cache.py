@@ -11,6 +11,8 @@ from .base import BaseDatabaseHandler
 
 logger = get_logger(__name__)
 
+_LOCAL_CACHE: dict[str, Quality] = {}
+
 
 class AceQualityCacheHandler(BaseDatabaseHandler):
     """Database handler for the Ace Quality Cache."""
@@ -32,6 +34,9 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
 
     def get_quality(self, content_id: str) -> Quality:
         """Get the quality for a given content_id."""
+        if content_id in _LOCAL_CACHE:
+            return _LOCAL_CACHE[content_id]
+
         with self._get_session() as session:
             result = session.exec(select(AceQualityCache).where(AceQualityCache.content_id == content_id)).first()
             if result:
@@ -47,6 +52,11 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
 
     def set_quality(self, content_id: str, quality: Quality) -> None:
         """Set the quality for a given content_id."""
+        _LOCAL_CACHE[content_id] = quality
+
+        if not quality.time_to_write_to_db():
+            return
+
         with self._get_session() as session:
             result = session.exec(select(AceQualityCache).where(AceQualityCache.content_id == content_id)).first()
             if not result:
@@ -86,6 +96,6 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
         entry = self.get_quality(content_id)
         entry.update_quality(m3u_playlist)
 
-        logger.debug("Updated quality for Ace ID %s: %s", content_id, entry.quality)
+        logger.debug("Updated quality for Ace ID %s: %s [%s]", content_id, entry.quality, entry.last_message)
 
         self.set_quality(content_id, entry)
