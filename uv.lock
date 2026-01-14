@@ -4,7 +4,7 @@ requires-python = ">=3.14, <4.0"
 
 [[package]]
 name = "acere"
-version = "1.0.1"
+version = "1.0.2"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp", extra = ["speedups"] },
