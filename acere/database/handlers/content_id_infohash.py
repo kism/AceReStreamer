@@ -42,6 +42,11 @@ class ContentIdInfohashDatabaseHandler(BaseDatabaseHandler):
 
         with self._get_session() as session:
             session.add(mapping)
+            logger.trace(
+                "Added new ContentIdInfohash mapping: %s -> %s",
+                content_id,
+                infohash,
+            )
             session.commit()
 
     def get_infohash(self, content_id: str) -> str:

@@ -4,6 +4,9 @@ from sqlmodel import Session, select
 
 from acere.core.security import get_password_hash, verify_password
 from acere.models import User, UserCreate, UserUpdate
+from acere.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 def create_user(*, session: Session, user_create: UserCreate) -> User:
@@ -11,6 +14,7 @@ def create_user(*, session: Session, user_create: UserCreate) -> User:
     session.add(db_obj)
     session.commit()
     session.refresh(db_obj)
+    logger.info("Created new user: %s", db_obj.username)
     return db_obj
 
 
@@ -25,6 +29,7 @@ def update_user(*, session: Session, db_user: User, user_in: UserUpdate) -> User
     session.add(db_user)
     session.commit()
     session.refresh(db_user)
+    logger.info("Updated user: %s", db_user.username)
     return db_user
 
 

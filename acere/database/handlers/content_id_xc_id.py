@@ -3,8 +3,11 @@
 from sqlmodel import select
 
 from acere.database.models import ContentIdXCID
+from acere.utils.logger import get_logger
 
 from .base import BaseDatabaseHandler
+
+logger = get_logger(__name__)
 
 
 class ContentIdXCIDDatabaseHandler(BaseDatabaseHandler):
@@ -21,6 +24,7 @@ class ContentIdXCIDDatabaseHandler(BaseDatabaseHandler):
             new_mapping = ContentIdXCID(content_id=content_id)
             session.add(new_mapping)
             session.commit()
+            logger.trace("Created new ContentIdXCID mapping: %s -> %d", content_id, new_mapping.xc_id)
             return new_mapping.xc_id
 
     def get_content_id(self, xc_id: int) -> str:

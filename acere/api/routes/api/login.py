@@ -13,8 +13,10 @@ from acere.models import Message, NewPassword, Token, UserPublic
 from acere.utils.auth import (
     verify_password_reset_token,
 )
+from acere.utils.logger import get_logger
 
 router = APIRouter(tags=["Login"])
+logger = get_logger(__name__)
 
 
 @router.post("/login/access-token")
@@ -25,6 +27,7 @@ def login_access_token(session: SessionDep, form_data: Annotated[OAuth2PasswordR
         raise HTTPException(status_code=400, detail="Incorrect username or password")
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
+    logger.info("User logged in: %s", user.username)
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return Token(access_token=security.create_access_token(user.id, expires_delta=access_token_expires))
 
@@ -53,4 +56,5 @@ def reset_password(session: SessionDep, body: NewPassword) -> Message:
     user.hashed_password = hashed_password
     session.add(user)
     session.commit()
+    logger.info("Password reset for user: %s", user.username)
     return Message(message="Password updated successfully")

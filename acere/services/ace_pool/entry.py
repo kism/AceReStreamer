@@ -10,6 +10,7 @@ from pydantic import HttpUrl, ValidationError
 from acere.utils.ace import get_middleware_url
 from acere.utils.constants import OUR_TIMEZONE
 from acere.utils.helpers import check_valid_content_id_or_infohash
+from acere.utils.hls import get_last_m3u8_segment_url
 from acere.utils.logger import get_logger
 
 from .constants import ACESTREAM_API_TIMEOUT
@@ -236,6 +237,7 @@ class AcePoolEntry:
             and self._middleware_info.playback_url
         ):
             # Keep Alive
+            last_segment_url = None
             with contextlib.suppress(aiohttp.ClientError, asyncio.TimeoutError):
                 if not self._keep_alive_run_once and self._middleware_info.playback_url != "":
                     logger.info(
@@ -248,6 +250,12 @@ class AcePoolEntry:
                 async with aiohttp.ClientSession(timeout=timeout) as session:
                     async with session.get(self._middleware_info.playback_url.encoded_string()) as resp:
                         logger.trace("Keep alive, response: %s", resp.status)
+                        # We need to fetch this to keep the stream kicking, maybe this can be configure in ace stream?
+                        last_segment_url = get_last_m3u8_segment_url(await resp.text())
+
+                    if last_segment_url:
+                        async with session.get(last_segment_url) as resp_segment:
+                            logger.trace("Keep alive ts segment, response: %s", resp_segment.status)
 
         else:
             logger.trace("Not keeping alive %s, not locked in", self.ace_address)
