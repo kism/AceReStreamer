@@ -117,16 +117,17 @@ function WebPlayer() {
         <AcePoolInfo />
       </Flex>
 
-      {/* Right pane - Items Table */}
+      {/* Right pane - Streams Table */}
       <Flex
         direction="column"
         flex={{ base: "0 0 auto", lg: "1" }}
         maxW={{ base: "100%", lg: isExpanded ? "100%" : "300px" }}
         minW="200px"
         overflow="visible"
-        pb={{ base: 10, lg: isExpanded ? 4 : 0 }} // Overscroll is nice on mobile
+        pb={{ base: 10, lg: 4 }} // Overscroll is nice on mobile
       >
         <StreamTable />
+        <Box flexShrink={0} h={4} /> {/* Bit of a hack */}
       </Flex>
     </Flex>
   )
