@@ -4,8 +4,11 @@ from sqlmodel import select
 
 from acere.database.models import CategoryXCCategoryID
 from acere.services.xc.models import XCCategory
+from acere.utils.logger import get_logger
 
 from .base import BaseDatabaseHandler
+
+logger = get_logger(__name__)
 
 
 class CategoryXCCategoryIDDatabaseHandler(BaseDatabaseHandler):
@@ -23,6 +26,7 @@ class CategoryXCCategoryIDDatabaseHandler(BaseDatabaseHandler):
             new_mapping = CategoryXCCategoryID(category=category_name)
             session.add(new_mapping)
             session.commit()
+            logger.trace("Created new XC category ID mapping: %s -> %d", category_name, new_mapping.xc_category_id)
             return new_mapping.xc_category_id
 
     def get_category_name(self, xc_category_id: int) -> str | None:

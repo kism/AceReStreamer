@@ -57,8 +57,8 @@ class Quality(BaseModel):
 
             current_time = datetime.now(tz=OUR_TIMEZONE)
 
-            # There is a diff between when the segment became available...
-            time_since_last_segment = current_time - self._last_segment_fetched - timedelta(milliseconds=100)
+            # Get the time between now and when we last successfully fetched a segment
+            time_since_last_segment = current_time - self._last_segment_fetched
 
             segment_is_late = (
                 time_since_last_segment > self._next_segment_expected

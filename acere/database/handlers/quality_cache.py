@@ -58,6 +58,7 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
         if not quality.time_to_write_to_db():
             return
 
+        logger.trace("Writing quality cache to DB for content_id %s: %s", content_id, ace_id_short(content_id))
         with self._get_session() as session:
             result = session.exec(select(AceQualityCache).where(AceQualityCache.content_id == content_id)).first()
             if not result:
@@ -67,6 +68,7 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
             result.quality = quality.quality
             result.has_ever_worked = quality.has_ever_worked
             result.m3u_failures = quality.m3u_failures
+
             session.commit()
 
     def clean_table(self) -> None:
@@ -97,8 +99,6 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
         entry = self.get_quality(content_id)
         entry.update_quality(m3u_playlist)
 
-        logger.debug(
-            "Updated quality for Ace ID %s: %s [%s]", ace_id_short(content_id), entry.quality, entry.last_message
-        )
+        logger.debug("Stream quality %s: %s [%s]", ace_id_short(content_id), entry.quality, entry.last_message)
 
         self.set_quality(content_id, entry)

@@ -20,4 +20,4 @@ def get_middleware_url(ace_url: HttpUrl, content_id: str, ace_pid: int, *, trans
 
 def ace_id_short(content_id: str) -> str:
     """Get a short version of the AceStream content ID for logging."""
-    return f"{content_id[:8]}..."
+    return f"{content_id[:8]}…"

@@ -39,5 +39,4 @@ def create_user(user_in: PrivateUserCreate, session: SessionDep) -> User:
     session.commit()
 
     logger.info("User committed to database")
-
     return user
