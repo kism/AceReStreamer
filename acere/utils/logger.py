@@ -37,27 +37,33 @@ class LoggingConf(BaseModel):
     """Logging configuration definition."""
 
     level: str | int = "INFO"
+    level_http: str | int = "WARNING"
     path: Path | None = None
     simple: bool = False
 
     @model_validator(mode="after")
     def validate_vars(self) -> Self:
         """Validate the logging level."""
-        if isinstance(self.level, int):
-            if self.level < MIN_LOG_LEVEL_INT or self.level > MAX_LOG_LEVEL_INT:
-                msg = (
-                    f"Invalid logging level {self.level}, must be between {MIN_LOG_LEVEL_INT} and {MAX_LOG_LEVEL_INT}."
-                )
-                logger.warning(msg)
-                logger.warning("Defaulting logging level to 'INFO'.")
-                self.level = "INFO"
-        else:
-            self.level = self.level.strip().upper()
-            if self.level not in LOG_LEVELS:
-                msg = f"Invalid logging level '{self.level}', must be one of {', '.join(LOG_LEVELS)}"
-                logger.warning(msg)
-                logger.warning("Defaulting logging level to 'INFO'.")
-                self.level = "INFO"
+
+        def process_level(level: str | int) -> str | int:
+            if isinstance(level, int):
+                if level < MIN_LOG_LEVEL_INT or level > MAX_LOG_LEVEL_INT:
+                    msg = f"Invalid logging level {level}, must be between {MIN_LOG_LEVEL_INT} and {MAX_LOG_LEVEL_INT}."
+                    logger.warning(msg)
+                    logger.warning("Defaulting logging level to 'INFO'.")
+                    level = "INFO"
+            else:
+                level = level.strip().upper()
+                if level not in LOG_LEVELS:
+                    msg = f"Invalid logging level '{level}', must be one of {', '.join(LOG_LEVELS)}"
+                    logger.warning(msg)
+                    logger.warning("Defaulting logging level to 'INFO'.")
+                    level = "INFO"
+
+            return level
+
+        self.level = process_level(self.level)
+        self.level_http = process_level(self.level_http)
 
         return self
 
@@ -141,11 +147,7 @@ def setup_logger(
 
     access_logger = logging.getLogger("uvicorn.access")
     access_logger.propagate = False
-    if _get_log_level_int(settings.level) <= logging.DEBUG:
-        # Enable access logs if we are at debug level or lower
-        access_logger.setLevel(logging.DEBUG)
-    else:
-        access_logger.setLevel(logging.WARNING)
+    access_logger.setLevel(settings.level_http)
 
     logger.debug("Logger configuration set!")
 

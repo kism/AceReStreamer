@@ -30,8 +30,8 @@ export function StreamTable() {
   })
 
   const items = data ?? []
-  // Sort items by quality descending
-  items.sort((a, b) => b.quality - a.quality)
+  // Sort items by title
+  items.sort((a, b) => a.title.localeCompare(b.title))
 
   if (isLoading) {
     return <PendingStreams />
