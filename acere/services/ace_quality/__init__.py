@@ -63,9 +63,6 @@ class Quality(BaseModel):
             segment_is_late = (
                 time_since_last_segment > self._next_segment_expected
             )  # If more time has passed than expected
-            logger.debug(
-                f"Segment is late: {segment_is_late}\n  last: {time_since_last_segment}s\n  expected: {self._next_segment_expected}s\ncurrent segment: {ts_number_int}\nlast segment: {self._last_segment_number}",  # noqa: E501, G004
-            )
 
             # If the stream has progressed, give it a positive rating, we can't check if it was late.
             if ts_number_int != self._last_segment_number:

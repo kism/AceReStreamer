@@ -4,6 +4,7 @@ from sqlmodel import select
 
 from acere.database.models import AceQualityCache
 from acere.services.ace_quality import Quality
+from acere.utils.ace import ace_id_short
 from acere.utils.helpers import check_valid_content_id_or_infohash
 from acere.utils.logger import get_logger
 
@@ -96,6 +97,8 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
         entry = self.get_quality(content_id)
         entry.update_quality(m3u_playlist)
 
-        logger.debug("Updated quality for Ace ID %s: %s [%s]", content_id, entry.quality, entry.last_message)
+        logger.debug(
+            "Updated quality for Ace ID %s: %s [%s]", ace_id_short(content_id), entry.quality, entry.last_message
+        )
 
         self.set_quality(content_id, entry)
