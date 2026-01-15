@@ -258,7 +258,7 @@ class HTMLStreamScraper(ScraperCommon):
 
         if target_html_class != "":
             html_classes = html_tag.get("class", None)
-            logger.debug("Checking HTML classes: %s for target: %s", html_classes, target_html_class)
+            logger.trace("Checking HTML classes: %s for target: %s", html_classes, target_html_class)
             if not html_classes:
                 return candidate_titles
 

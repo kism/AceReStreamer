@@ -65,11 +65,9 @@ class IPTVStreamScraper(ScraperCommon):
 
     async def _get_site_content(self, site: ScrapeSiteIPTV) -> str | None:
         """Get site content from cache or by scraping."""
-        cached_content = self.scraper_cache.load_from_cache(site.url)
-
         if self.scraper_cache.is_cache_valid(site.url):
             logger.debug("Loaded IPTV site content from cache for: %s", site.name)
-            return cached_content
+            return self.scraper_cache.load_from_cache(site.url)
 
         logger.info("Scraping streams from IPTV site: %s", site.name)
         try:
