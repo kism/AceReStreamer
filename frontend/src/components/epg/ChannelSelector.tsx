@@ -25,11 +25,13 @@ export function ChannelSelector({
           value={selectedChannel}
           onChange={(e) => onChannelChange(e.target.value)}
         >
-          {channels.map((channel) => (
-            <option key={channel.id} value={channel.id}>
-              {channel.displayName}
-            </option>
-          ))}
+          {[...channels]
+            .sort((a, b) => a.displayName.localeCompare(b.displayName))
+            .map((channel) => (
+              <option key={channel.id} value={channel.id}>
+                {channel.displayName}
+              </option>
+            ))}
         </NativeSelectField>
       </NativeSelectRoot>
     </HStack>

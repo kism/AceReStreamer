@@ -20,6 +20,9 @@ class EPGCandidateHandler:
     def __init__(self) -> None:
         self._candidates: dict[str, EPGCandidate] = {}
 
+    def get_number_of_candidates(self) -> int:
+        return len(self._candidates)
+
     def _get_candidate(self, tvg_id: str, epg_url: HttpUrl) -> EPGCandidate:
         primary_key = f"{tvg_id}|{epg_url}"
         if primary_key not in self._candidates:
@@ -57,7 +60,7 @@ class EPGCandidateHandler:
             if current_candidate_score > best_candidate_score:
                 best_candidate = candidate
 
-        logger.info(msg.strip())
+        logger.debug(msg.strip())
         return best_candidate
 
 
@@ -74,10 +77,12 @@ class EPGCandidate:
     def add_program(self, program: etree._Element) -> None:
         """Add a program to the candidate."""
         self._programs.append(program)
+        self._score = None
 
     def add_channel(self, channel: etree._Element) -> None:
         """Add a channel to the candidate."""
         self._channels.append(channel)
+        self._score = None
 
     def get_channels_programs(self) -> list[etree._Element]:
         """Get all channels and programs for the candidate."""
