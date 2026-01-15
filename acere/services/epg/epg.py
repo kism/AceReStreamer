@@ -9,6 +9,7 @@ import aiohttp
 
 from acere.utils.constants import OUR_TIMEZONE
 from acere.utils.exception_handling import log_aiohttp_exception
+from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger
 
 if TYPE_CHECKING:
@@ -48,14 +49,15 @@ class EPG:
             logger.info("Creating EPG directory at %s", directory_path)
             directory_path.mkdir(parents=True, exist_ok=True)
 
-        self.saved_file_path = directory_path / f"{self.region_code}.{self._extracted_format}"
+        file_name = f"{self.region_code}-{slugify(self.url.host) + slugify(self.url.path)}.{self._extracted_format}"
+        self.saved_file_path = directory_path / file_name
 
         if self._time_to_update():
             data_bytes = await self._download_epg()
 
             if data_bytes:
                 self._write_to_file(data_bytes)
-                logger.info("EPG data for %s updated successfully", self.region_code)
+                logger.info("EPG data for %s/%s updated successfully", self.region_code, self.url)
                 return True
 
             logger.error("Failed to download EPG data for %s", self.region_code)

@@ -14,8 +14,11 @@ _DOUBLE_SPACE_PATTERN = re.compile(r"\s{2,}")
 _HEX_PATTERN = re.compile(r"^[0-9a-fA-F]+$")
 
 
-def slugify(slug_input: str | bytes) -> str:
+def slugify(slug_input: str | bytes | None) -> str:
     """Convert a string to a slug."""
+    if slug_input is None:
+        return ""
+
     if isinstance(slug_input, bytes):
         slug_input = slug_input.decode()
 

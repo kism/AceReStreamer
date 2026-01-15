@@ -131,16 +131,16 @@ export function AppsInfo() {
 
   return (
     <VStack gap={2} align="stretch">
-      <Box>
+      <VStack gap={2} align="stretch">
         <Heading>Recommended Apps</Heading>
         <Text>
           Many apps are made to be players for their subscription IPTV services,
           and on the side offer loading external playlists. These
           recommendations are tested, free and don't nag you to pay.
         </Text>
-      </Box>
+      </VStack>
 
-      <Box>
+      <VStack gap={2} align="stretch">
         <Heading size={"sm"}>Tested to work</Heading>
         <AppTableRoot preset="outlineSm">
           <TableHeader>
@@ -197,7 +197,7 @@ export function AppsInfo() {
             ))}
           </TableBody>
         </AppTableRoot>
-      </Box>
+      </VStack>
 
       <Box>
         <Heading size={"sm"}>Tested to work, but not recommended</Heading>

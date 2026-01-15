@@ -2,6 +2,7 @@
 
 import asyncio
 import contextlib
+import re
 import threading
 import time
 from pathlib import Path
@@ -48,6 +49,8 @@ logger = get_logger(__name__)
 SCRAPE_INTERVAL = 60 * 60  # Default scrape interval in seconds (1 hour)
 
 _async_background_tasks: set[asyncio.Task[None]] = set()
+
+_REGEX_STREAM_NUMBER = re.compile(r"#(\d+)$")
 
 
 class AceScraper:
@@ -460,8 +463,11 @@ class AceScraper:
         unique_infohashes = set()
         unique_names = set()
         for stream in self.streams.values():
-            if stream.tvg_id and stream.tvg_id in unique_tvg_ids:
+            if (
+                stream.tvg_id and stream.tvg_id in unique_tvg_ids and (not _REGEX_STREAM_NUMBER.search(stream.title))
+            ):  # If it's not marked as an alternate stream
                 logger.warning("Duplicate TVG ID found: %s", stream.tvg_id)
+
             unique_tvg_ids.add(stream.tvg_id)
 
             if stream.infohash and stream.infohash in unique_infohashes:

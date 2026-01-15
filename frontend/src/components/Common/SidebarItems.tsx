@@ -2,6 +2,7 @@ import { Box, Flex, Icon, Text } from "@chakra-ui/react"
 import { useQueryClient } from "@tanstack/react-query"
 import { Link as RouterLink } from "@tanstack/react-router"
 import {
+  FiCalendar,
   FiExternalLink,
   FiLogOut,
   FiMonitor,
@@ -23,6 +24,7 @@ const items = [
   { icon: FiPlay, title: "Webplayer", path: "/" },
   { icon: FiMonitor, title: "Playback", path: "/info/playback" },
   { icon: FiTv, title: "IPTV", path: "/info/iptv" },
+  { icon: FiCalendar, title: "EPG", path: "/epg" },
   { icon: FiSettings, title: "User Settings", path: "/settings" },
 ]
 

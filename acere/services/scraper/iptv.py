@@ -250,6 +250,7 @@ class IPTVStreamScraper(ScraperCommon):
 
         Try put the country code in the title if we can.
         """
+        original_title = title
         match = TVG_ID_REGEX.search(line)
         if not match:
             logger.debug("No TVG ID found in line, using name processor for title: %s", title)
@@ -268,6 +269,11 @@ class IPTVStreamScraper(ScraperCommon):
                     title = f"{title} [{country_code}]"
                 break
 
-        logger.debug("Extracted TVG ID: %s from line, updated title to: %s", wip_tvg_id, title)
+        if original_title != title:
+            logger.debug(
+                "Extracted TVG ID: %s from line, updated title from: %s to: %s", wip_tvg_id, original_title, title
+            )
+        else:
+            logger.trace("Extracted TVG ID: %s from line for title: %s", wip_tvg_id, title)
 
         return wip_tvg_id, title
