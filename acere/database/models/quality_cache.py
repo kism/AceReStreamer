@@ -6,6 +6,7 @@ from sqlmodel import Field, SQLModel
 class AceQualityCache(SQLModel, table=True):
     """Database model for ace content_id quality cache/information."""
 
+    __tablename__ = "ace_quality_cache"
     content_id: str = Field(max_length=40, primary_key=True, unique=True, nullable=False)
     quality: int = Field(nullable=False)
     has_ever_worked: bool = Field(nullable=False, default=False)

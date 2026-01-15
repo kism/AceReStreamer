@@ -1,12 +1,12 @@
-import { Box, EmptyState, VStack } from "@chakra-ui/react"
+import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
-import { FiCalendar } from "react-icons/fi"
 import type { UserPublic } from "@/client"
 import { MediaXmlService } from "@/client"
+import { Checkbox } from "../ui/checkbox"
 import { ChannelSelector } from "./ChannelSelector"
 import { EPGTable } from "./EPGTable"
-import { parseEPGXML } from "./utils"
+import { parseEPGXML, parseXmltvDate } from "./utils"
 
 interface EPGViewerProps {
   user: UserPublic | null
@@ -14,17 +14,15 @@ interface EPGViewerProps {
 
 export function EPGViewer({ user }: EPGViewerProps) {
   const [selectedChannel, setSelectedChannel] = useState<string>("")
+  const [hidePastPrograms, setHidePastPrograms] = useState<boolean>(true)
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["epgXml", user?.stream_token],
     queryFn: async () => {
       try {
-        console.log("Fetching EPG XML...")
         const response = await MediaXmlService.epgXml1({
           token: user?.stream_token,
         })
-        console.log("EPG XML response type:", typeof response)
-        console.log("EPG XML response length:", response?.toString().length)
         return parseEPGXML(response as string)
       } catch (err) {
         console.error("Error fetching EPG:", err)
@@ -38,37 +36,29 @@ export function EPGViewer({ user }: EPGViewerProps) {
   const channels = data?.channels || []
   const allProgrammes = data?.programmes || []
 
-  // Set default channel when data loads
   useEffect(() => {
+    // Set default channel
     if (channels.length > 0 && !selectedChannel) {
       setSelectedChannel(channels[0].id)
     }
   }, [channels, selectedChannel])
 
-  // Filter programmes by selected channel
+  // Filter programmes by selected channel and optionally hide past programs
+  const now = new Date()
   const programmes = selectedChannel
-    ? allProgrammes.filter((prog) => prog.channel === selectedChannel)
+    ? allProgrammes.filter((prog) => {
+        if (prog.channel !== selectedChannel) return false
+        if (hidePastPrograms && parseXmltvDate(prog.stop) < now) return false
+        return true
+      })
     : []
 
   if (error) {
     return (
-      <Box borderWidth="1px" overflow="hidden" p={4}>
-        <EmptyState.Root>
-          <EmptyState.Content>
-            <EmptyState.Indicator>
-              <FiCalendar />
-            </EmptyState.Indicator>
-            <VStack textAlign="center">
-              <EmptyState.Title>Error loading EPG</EmptyState.Title>
-              <EmptyState.Description>
-                {error instanceof Error
-                  ? error.message
-                  : "Failed to load EPG data"}
-              </EmptyState.Description>
-            </VStack>
-          </EmptyState.Content>
-        </EmptyState.Root>
-      </Box>
+      <VStack align="stretch" gap={4}>
+        <Text>Error loading EPG</Text>
+        <Text>{(error as Error).message}</Text>
+      </VStack>
     )
   }
 
@@ -82,31 +72,27 @@ export function EPGViewer({ user }: EPGViewerProps) {
 
   if (channels.length === 0) {
     return (
-      <Box borderWidth="1px" overflow="hidden">
-        <EmptyState.Root>
-          <EmptyState.Content>
-            <EmptyState.Indicator>
-              <FiCalendar />
-            </EmptyState.Indicator>
-            <VStack textAlign="center">
-              <EmptyState.Title>No EPG data found</EmptyState.Title>
-              <EmptyState.Description>
-                Configure EPG sources in your settings.
-              </EmptyState.Description>
-            </VStack>
-          </EmptyState.Content>
-        </EmptyState.Root>
-      </Box>
+      <VStack align="stretch" gap={4}>
+        <Text>No EPG data found. Configure EPG sources in your settings.</Text>
+      </VStack>
     )
   }
 
   return (
     <VStack align="stretch" gap={4}>
-      <ChannelSelector
-        channels={channels}
-        selectedChannel={selectedChannel}
-        onChannelChange={setSelectedChannel}
-      />
+      <HStack>
+        <ChannelSelector
+          channels={channels}
+          selectedChannel={selectedChannel}
+          onChannelChange={setSelectedChannel}
+        />
+        <Checkbox
+          checked={hidePastPrograms}
+          onCheckedChange={({ checked }) => setHidePastPrograms(!!checked)}
+        >
+          Hide past programs
+        </Checkbox>
+      </HStack>
       <EPGTable programmes={programmes} />
     </VStack>
   )

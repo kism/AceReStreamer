@@ -98,6 +98,10 @@ class EPGHandler:
             return
 
         candidate_handler = self._populate_candidate_handler()
+        if candidate_handler.get_number_of_candidates() == 0:
+            logger.warning("No EPG candidates found, skipping EPG condensation")
+            return
+
         new_condensed_data = self._create_tv_element()
 
         for tvg_id in self.set_of_tvg_ids:
