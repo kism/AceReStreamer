@@ -103,7 +103,7 @@ class EPGHandler:
         for tvg_id in self.set_of_tvg_ids:
             candidate = candidate_handler.get_best_candidate(tvg_id)
             if candidate is None:
-                logger.warning("No candidate found for TVG ID %s", tvg_id)
+                logger.debug("No candidate found for TVG ID %s", tvg_id)
                 continue
 
             new_condensed_data.extend(candidate.get_channels_programs())

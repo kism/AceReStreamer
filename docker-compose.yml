@@ -23,7 +23,7 @@ services:
   acerestreamer:
     # image: acerestreamer:latest # docker buildx build --network=host --file docker/Dockerfile.combined . -t acerestreamer
     image: ghcr.io/kism/acerestreamer:latest # From GitHub Container Registry
-    name: acerestreamer
+    container_name: acerestreamer
 
     environment:
       ACERE_EXTERNAL_URL: "https://example.com" # Change to your domain
