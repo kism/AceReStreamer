@@ -5,3 +5,6 @@
 - more test coverage
 - maybe don't lazy load hls.js
 - weird issue with scraping not updating for existing entries?
+- force content_id_override
+
+  - consider this a scraper source

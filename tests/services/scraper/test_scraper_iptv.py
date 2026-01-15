@@ -23,6 +23,7 @@ def name_processor(tmp_path: Path) -> StreamNameProcessor:
     processor.load_config(
         instance_path=tmp_path,
         name_replacements={},
+        content_id_infohash_overrides={},
         category_mapping={},
     )
     return processor

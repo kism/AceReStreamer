@@ -70,7 +70,8 @@ class APIStreamScraper(ScraperCommon):
                 logger.exception("Failed to validate API response item: %s", item)
 
         for stream in stream_list:
-            title = self.name_processor.cleanup_candidate_title(stream.name)
+            override_title = self.name_processor.get_title_override_from_content_id(stream.infohash)
+            title = override_title or self.name_processor.cleanup_candidate_title(stream.name)
 
             if not self.name_processor.check_title_allowed(title=title, title_filter=site.title_filter):
                 continue
