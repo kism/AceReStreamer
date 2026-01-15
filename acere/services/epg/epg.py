@@ -21,7 +21,7 @@ else:
 
 logger = get_logger(__name__)
 
-EPG_LIFESPAN = timedelta(days=1)
+EPG_LIFESPAN = timedelta(hours=6)
 ONE_WEEK = timedelta(days=7)
 
 

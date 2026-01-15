@@ -186,7 +186,8 @@ class HTMLStreamScraper(ScraperCommon):
                 logger.warning("Invalid Ace ID found in candidate: %s, skipping", content_id)
                 continue
 
-            title = _select_best_title(candidate, content_id)
+            override_title = self.name_processor.get_title_override_from_content_id(content_id)
+            title = override_title or _select_best_title(candidate, content_id)
 
             if not self.name_processor.check_title_allowed(
                 title=title,
@@ -258,7 +259,7 @@ class HTMLStreamScraper(ScraperCommon):
 
         if target_html_class != "":
             html_classes = html_tag.get("class", None)
-            logger.debug("Checking HTML classes: %s for target: %s", html_classes, target_html_class)
+            logger.trace("Checking HTML classes: %s for target: %s", html_classes, target_html_class)
             if not html_classes:
                 return candidate_titles
 

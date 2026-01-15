@@ -157,6 +157,7 @@ class AceScrapeConf(BaseModel):
     iptv_m3u8: list[ScrapeSiteIPTV] = []
     api: list[ScrapeSiteAPI] = []
     name_replacements: dict[str, str] = {}
+    content_id_infohash_name_overrides: dict[str, str] = {}
     category_mapping: dict[str, list[str]] = {
         "sports": [
             "football",

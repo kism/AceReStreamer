@@ -6,11 +6,16 @@ from typing import TYPE_CHECKING
 
 from acere.utils.constants import OUR_TIMEZONE
 from acere.utils.helpers import slugify
+from acere.utils.logger import get_logger
 
 if TYPE_CHECKING:
     from pydantic import HttpUrl
 else:
     HttpUrl = object
+
+logger = get_logger(__name__)
+
+DEFAULT_CACHE_MAX_AGE = timedelta(hours=2)
 
 
 class ScraperCache:
@@ -35,15 +40,22 @@ class ScraperCache:
                 return file.read()
         return ""
 
-    def is_cache_valid(self, url: HttpUrl, cache_max_age: timedelta = timedelta(days=1)) -> bool:
+    def is_cache_valid(self, url: HttpUrl, cache_max_age: timedelta = DEFAULT_CACHE_MAX_AGE) -> bool:
         """Check if the cache for the given URL is valid."""
         cache_path = self._get_cache_file_path(url)
         if cache_path.exists():
             time_now = datetime.now(tz=OUR_TIMEZONE)
             file_mod_time = datetime.fromtimestamp(cache_path.stat().st_mtime, tz=OUR_TIMEZONE)
 
-            if time_now - file_mod_time < cache_max_age:
+            time_since_mod = time_now - file_mod_time
+
+            if time_since_mod < cache_max_age:
+                logger.debug("Cache file is valid: %s [mod time %s < max age %s]", url, time_since_mod, cache_max_age)
                 return True
+
+            logger.debug("Cache file is outdated: %s [mod time %s >= max age %s]", url, time_since_mod, cache_max_age)
+        else:
+            logger.debug("Cache file does not exist: %s", url)
 
         return False
 

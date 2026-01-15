@@ -65,11 +65,9 @@ class IPTVStreamScraper(ScraperCommon):
 
     async def _get_site_content(self, site: ScrapeSiteIPTV) -> str | None:
         """Get site content from cache or by scraping."""
-        cached_content = self.scraper_cache.load_from_cache(site.url)
-
         if self.scraper_cache.is_cache_valid(site.url):
             logger.debug("Loaded IPTV site content from cache for: %s", site.name)
-            return cached_content
+            return self.scraper_cache.load_from_cache(site.url)
 
         logger.info("Scraping streams from IPTV site: %s", site.name)
         try:
@@ -105,7 +103,8 @@ class IPTVStreamScraper(ScraperCommon):
         title = parts[1].strip()
 
         tvg_id, title = self._extract_tvg_id(line, title)
-        title = self.name_processor.cleanup_candidate_title(title)
+        override_title = self.name_processor.get_title_override_from_content_id(content_id or infohash)
+        title = override_title or self.name_processor.cleanup_candidate_title(title)
 
         tvg_id = self.name_processor.get_tvg_id_from_title(title)  # Redo since we have our own logic for tvg ids
 

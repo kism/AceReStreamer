@@ -173,7 +173,7 @@ def _add_console_handler(
         in_logger.addHandler(rich_handler)
     else:
         console_handler = StreamHandler()
-        if _get_log_level_int(settings.level) <= logging.DEBUG:
+        if _get_log_level_int(settings.level) <= TRACE_LEVEL_NUM:
             formatter = logging.Formatter(SIMPLE_LOG_FORMAT_DEBUG)
         else:
             formatter = logging.Formatter(SIMPLE_LOG_FORMAT)
