@@ -55,7 +55,7 @@ class StreamNameProcessor:
         self,
         instance_path: str | Path,
         name_replacements: dict[str, str],
-        content_id_infohash_overrides: dict[str, str],
+        content_id_infohash_name_overrides: dict[str, str],
         category_mapping: dict[str, list[str]],
     ) -> None:
         """Initialize the cache."""
@@ -64,7 +64,7 @@ class StreamNameProcessor:
 
         self._instance_path = instance_path
         self._name_replacements = name_replacements
-        self._content_id_infohash_overrides = content_id_infohash_overrides
+        self._content_id_infohash_name_overrides = content_id_infohash_name_overrides
         self._category_mapping = category_mapping
 
     def _do_replacements(self, name: str) -> str:
@@ -238,4 +238,4 @@ class StreamNameProcessor:
 
     def get_title_override_from_content_id(self, content_id: str) -> str | None:
         """Get a title override from the content ID if it exists."""
-        return self._content_id_infohash_overrides.get(content_id)
+        return self._content_id_infohash_name_overrides.get(content_id)

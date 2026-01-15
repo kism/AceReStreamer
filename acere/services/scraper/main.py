@@ -98,7 +98,7 @@ class AceScraper:
         self.stream_name_processor.load_config(
             instance_path=instance_path,
             name_replacements=ace_scrape_conf.name_replacements,
-            content_id_infohash_overrides=ace_scrape_conf.content_id_infohash_overrides,
+            content_id_infohash_name_overrides=ace_scrape_conf.content_id_infohash_name_overrides,
             category_mapping=ace_scrape_conf.category_mapping,
         )
         self.html_scraper.load_config(
