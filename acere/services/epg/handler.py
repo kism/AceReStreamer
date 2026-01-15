@@ -13,6 +13,7 @@ from acere.utils.constants import OUR_TIMEZONE
 from acere.utils.logger import get_logger
 from acere.version import PROGRAM_NAME, URL
 
+from .candidate import EPGCandidateHandler
 from .epg import EPG, EPG_LIFESPAN
 from .models import EPGApiHandlerResponse, EPGApiResponse
 
@@ -66,41 +67,46 @@ class EPGHandler:
         return tv_tag
 
     # region Condense & Merge
-    def _merge_epgs(self) -> etree._Element:
-        """Merge all EPG data into a single XML structure."""
-        logger.debug("Merging EPG data from %d sources", len(self.epgs))
-        merged_data = self._create_tv_element()  # Create a base XML element for the merged EPG
+    def _populate_candidate_handler(self) -> EPGCandidateHandler:
+        """Populate the EPGCandidateHandler with data from all EPGs."""
+        candidate_handler = EPGCandidateHandler()
 
         for epg in self.epgs:
             epg_data = epg.get_data()
-            if epg_data is not None:
-                merged_data.extend(
-                    etree.fromstring(epg_data)  # Parse the EPG data and extend the merged_data
-                )
-            else:
+            if epg_data is None:
                 logger.warning("EPG data for %s is None, skipping", epg.region_code)
+                continue
 
-        return merged_data
+            epg_etree = etree.fromstring(epg_data)
+
+            for channel in epg_etree.findall("channel"):
+                tvg_id = channel.get("id")
+                if tvg_id in self.set_of_tvg_ids:
+                    candidate_handler.add_channel(tvg_id, epg.url, channel)
+
+            for programme in epg_etree.findall("programme"):
+                tvg_id = programme.get("channel")
+                if tvg_id in self.set_of_tvg_ids:
+                    candidate_handler.add_program(tvg_id, epg.url, programme)
+
+        return candidate_handler
 
     def _condense_epgs(self) -> None:
         """Get a condensed version of the merged EPG data."""
-        merged_epgs = self._merge_epgs()
-
         if not self.set_of_tvg_ids:
             logger.warning("No TVG IDs found in the current streams, skipping EPG condensation")
             return
 
-        new_condensed_data = self._create_tv_element()  # Create a base XML element for the merged EPG
+        candidate_handler = self._populate_candidate_handler()
+        new_condensed_data = self._create_tv_element()
 
-        for channel in merged_epgs.findall("channel"):
-            tvg_id = channel.get("id")
-            if tvg_id in self.set_of_tvg_ids:
-                new_condensed_data.append(channel)
+        for tvg_id in self.set_of_tvg_ids:
+            candidate = candidate_handler.get_best_candidate(tvg_id)
+            if candidate is None:
+                logger.debug("No candidate found for TVG ID %s", tvg_id)
+                continue
 
-        for programme in merged_epgs.findall("programme"):
-            tvg_id = programme.get("channel")
-            if tvg_id in self.set_of_tvg_ids:
-                new_condensed_data.append(programme)
+            new_condensed_data.extend(candidate.get_channels_programs())
 
         logger.info(
             "Condensed EPG data created with %d channels and %d programmes",
@@ -254,6 +260,7 @@ class EPGHandler:
                 if epg_actually_updated:
                     time.sleep(10)  # Bit silly but prevents double condense on startup
                     try:
+                        logger.info("There are epg updates, condensing EPGs now.")
                         self._condense_epgs()
                     except Exception:
                         logger.exception("Failed to condense EPGs")

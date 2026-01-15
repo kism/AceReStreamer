@@ -12,7 +12,7 @@ import { AppTableScrollArea } from "../ui/table"
 
 const PendingStreams = () => (
   <AppTableScrollArea preset="fullscreen">
-    <AppTableRoot preset="interactiveSticky">
+    <AppTableRoot>
       <TableHeader>
         {/* Due to sticky header we set bg.subtle */}
         <TableRow bg="bg.subtle">

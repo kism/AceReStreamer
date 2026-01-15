@@ -32,7 +32,7 @@ export function IptvInfo({ user }: IptvInfoProps) {
 
   return (
     <VStack gap={6} align="stretch">
-      <Box>
+      <VStack gap={2} align="stretch">
         <Heading>Xtream IPTV</Heading>
         <Text>
           Add a playlist/source with your IPTV app, use the XC/Xtream setting
@@ -63,9 +63,9 @@ export function IptvInfo({ user }: IptvInfoProps) {
           </AppTableRoot>
         </Box>
         <Text>If authentication is disabled, any value will work.</Text>
-      </Box>
+      </VStack>
 
-      <Box>
+      <VStack gap={2} align="stretch">
         <Heading>IPTV</Heading>
         <Text>
           Depending on the app, you might need to use an alternate Playlist or
@@ -97,7 +97,7 @@ export function IptvInfo({ user }: IptvInfoProps) {
             </TableBody>
           </AppTableRoot>
         </Box>
-      </Box>
+      </VStack>
     </VStack>
   )
 }

@@ -44,4 +44,4 @@ class EPGApiHandlerResponse(BaseModel):
     @field_serializer("tvg_ids")
     def serialize_tvg_ids(self, value: set[str]) -> list[str]:
         """Serialize TVG IDs to a list."""
-        return list(value)
+        return sorted(value)

@@ -2,9 +2,10 @@
 services:
   acestream-http-proxy:
     image: ghcr.io/martinbjeldbak/acestream-http-proxy:3.1
+    container_name: acestream-http-proxy
     ports:
       - "127.0.0.1:6878:6878" # WebUI / API
-      - "8621:8621" # P2P
+      - "8621:8621" # P2P, let this through your firewall if you don't have UPNP
     restart: unless-stopped
     healthcheck:
       test:
@@ -19,10 +20,10 @@ services:
       retries: 3
       start_period: 60s
 
-  # In your config, ensure "ace_address": "http://acestream-http-proxy:6878",
   acerestreamer:
     # image: acerestreamer:latest # docker buildx build --network=host --file docker/Dockerfile.combined . -t acerestreamer
     image: ghcr.io/kism/acerestreamer:latest # From GitHub Container Registry
+    container_name: acerestreamer
 
     environment:
       ACERE_EXTERNAL_URL: "https://example.com" # Change to your domain
@@ -31,7 +32,7 @@ services:
       ACERE_APP__ACE_ADDRESS: "http://acestream-http-proxy:6878" # Leave this as is
     ports:
       - "5100:5100"
-    volumes:
+    volumes: # This is where the database and config is stored
       - ./instance:/app/instance
     restart: unless-stopped
     healthcheck:
@@ -39,4 +40,4 @@ services:
       interval: 60s
       timeout: 10s
       retries: 3
-      start_period: 60s
+      start_period: 30s

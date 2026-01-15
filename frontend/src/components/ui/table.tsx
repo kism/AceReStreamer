@@ -5,7 +5,6 @@ import * as React from "react"
 
 export type TablePreset =
   | "outlineSm"
-  | "interactiveSticky"
 
 const presetRootProps: Record<TablePreset, Partial<
   React.ComponentProps<typeof Table.Root>
@@ -13,12 +12,6 @@ const presetRootProps: Record<TablePreset, Partial<
   outlineSm: {
     size: "sm",
     variant: "outline",
-  },
-  interactiveSticky: {
-    size: { base: "sm", md: "md" },
-    interactive: true,
-    stickyHeader: true,
-    margin: "0"
   },
 }
 
@@ -34,7 +27,7 @@ export const AppTableRoot = React.forwardRef<
   const { preset, ...rest } = props
   const baseProps = preset ? presetRootProps[preset] : undefined
 
-  return <Table.Root  my={2} ref={ref} {...baseProps} {...rest} />
+  return <Table.Root ref={ref} {...baseProps} {...rest} />
 })
 
 export type TableScrollAreaPreset = "fullscreen"
