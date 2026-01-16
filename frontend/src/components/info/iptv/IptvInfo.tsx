@@ -87,8 +87,7 @@ export function IptvInfo({ user, isLoading, error }: IptvInfoProps) {
                 { name: "Playlist URL", url: playlistUrl },
                 { name: "Playlist URL (.m3u)", url: playlistM3uUrl },
                 { name: "Playlist URL (.m3u8)", url: playlistM3u8Url },
-                { name: "EPG URL", url: epgUrl },
-                { name: "EPG URL (.xml)", url: epgXmlUrl },
+                { name: "EPG URL", url: epgXmlUrl },
               ].map(({ name, url }) => (
                 <TableRow key={name}>
                   <TableCell bg="bg.subtle" whiteSpace="nowrap" width="1%">

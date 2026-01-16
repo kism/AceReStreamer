@@ -2,8 +2,8 @@ import { VStack } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { UsersService } from "@/client"
-import { AppsInfo, OtherIptvSources } from "@/components/info/AppsInfo"
-import { IptvInfo } from "@/components/info/IptvInfo"
+import { AppsInfo, OtherIptvSources } from "@/components/info/iptv/AppsInfo"
+import { IptvInfo } from "@/components/info/iptv/IptvInfo"
 import { usePageTitle } from "@/hooks/usePageTitle"
 
 export const Route = createFileRoute("/_layout/info/iptv")({
