@@ -44,14 +44,17 @@ export function EPGTable({ programmes }: EPGTableProps) {
                   {formatDateTime(prog.start)}
                 </TableCell>
 
-                <TableCell whiteSpace="nowrap" width="1%">
+                <TableCell
+                  width="200px"
+                  maxW="300px"
+                  whiteSpace="wrap"
+                  title={prog.title}
+                >
                   {prog.title}
                 </TableCell>
                 <TableCell
-                  overflow="hidden"
                   maxW="0"
-                  whiteSpace="nowrap"
-                  textOverflow="ellipsis"
+                  whiteSpace="wrap"
                   title={prog.description}
                 >
                   {prog.description}
