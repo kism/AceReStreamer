@@ -52,11 +52,7 @@ export function EPGTable({ programmes }: EPGTableProps) {
                 >
                   {prog.title}
                 </TableCell>
-                <TableCell
-                  maxW="0"
-                  whiteSpace="wrap"
-                  title={prog.description}
-                >
+                <TableCell maxW="0" whiteSpace="wrap" title={prog.description}>
                   {prog.description}
                 </TableCell>
               </TableRow>
