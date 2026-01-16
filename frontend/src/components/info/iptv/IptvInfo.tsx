@@ -1,4 +1,3 @@
-import { Box, Heading, HStack, Text, VStack } from "@chakra-ui/react"
 import { Code } from "@/components/ui/code"
 import { CopyButton } from "@/components/ui/copy-button"
 import {
@@ -8,6 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import baseURL from "@/helpers"
+import { Box, HStack, Heading, Text, VStack } from "@chakra-ui/react"
 
 const VITE_API_URL = baseURL()
 
@@ -35,7 +35,6 @@ export function IptvInfo({ user, isLoading, error }: IptvInfoProps) {
   const playlistUrl = `${VITE_API_URL}/iptv${tokenString}`
   const playlistM3uUrl = `${VITE_API_URL}/iptv.m3u${tokenString}`
   const playlistM3u8Url = `${VITE_API_URL}/iptv.m3u8${tokenString}`
-  const _epgUrl = `${VITE_API_URL}/epg${tokenString}`
   const epgXmlUrl = `${VITE_API_URL}/epg.xml${tokenString}`
 
   return (
