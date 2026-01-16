@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 import aiohttp
 
-from acere.utils.constants import OUR_TIMEZONE
+from acere.constants import EPG_XML_DIR, OUR_TIMEZONE
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger
@@ -38,19 +38,14 @@ class EPG:
         self.last_updated: datetime | None = None
         self.saved_file_path: Path | None = None
 
-    async def update(self, instance_path: Path | None) -> bool:
+    async def update(self) -> bool:
         """Update the EPG data from the configured URL, returns true if updated with new data."""
-        if instance_path is None:
-            logger.error("Instance path is not set, cannot update EPG %s", self.region_code)
-            return False
-
-        directory_path = instance_path / "epg"
-        if not directory_path.is_dir():
-            logger.info("Creating EPG directory at %s", directory_path)
-            directory_path.mkdir(parents=True, exist_ok=True)
+        if not EPG_XML_DIR.is_dir():
+            logger.info("Creating EPG directory at %s", EPG_XML_DIR)
+            EPG_XML_DIR.mkdir(parents=True, exist_ok=True)
 
         file_name = f"{self.region_code}-{slugify(self.url.host) + slugify(self.url.path)}.{self._extracted_format}"
-        self.saved_file_path = directory_path / file_name
+        self.saved_file_path = EPG_XML_DIR / file_name
 
         if self._time_to_update():
             data_bytes = await self._download_epg()

@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from acere.utils.constants import OUR_TIMEZONE
+from acere.constants import OUR_TIMEZONE
 from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger
 

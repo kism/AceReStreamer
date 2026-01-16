@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 from pydantic import BaseModel
 
-from acere.utils.constants import OUR_TIMEZONE
+from acere.constants import OUR_TIMEZONE
 from acere.utils.logger import get_logger
 
 logger = get_logger(__name__)

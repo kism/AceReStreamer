@@ -5,7 +5,7 @@ import threading
 from fastapi import APIRouter
 from psutil import Process
 
-from acere.utils.constants import OUR_TIMEZONE
+from acere.constants import OUR_TIMEZONE
 from acere.utils.health import HealthResponseModel, ThreadHealthModel
 from acere.utils.logger import get_logger
 from acere.version import VERSION_FULL, __version__

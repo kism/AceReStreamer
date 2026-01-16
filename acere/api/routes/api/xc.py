@@ -23,7 +23,7 @@ from acere.services.xc.models import (
     XCUserInfo,
 )
 from acere.utils.api_models import MessageResponseModel
-from acere.utils.constants import OUR_TIMEZONE
+from acere.constants import OUR_TIMEZONE
 from acere.utils.logger import get_logger
 
 logger = get_logger(__name__)

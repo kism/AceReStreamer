@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 
 from lxml import etree
 
-from acere.utils.constants import OUR_TIMEZONE
+from acere.constants import OUR_TIMEZONE
 from acere.utils.logger import get_logger
 from acere.version import PROGRAM_NAME, URL
 
@@ -233,10 +233,10 @@ class EPGHandler:
             logger.error("Instance path is not set, cannot update EPGs")
             return
 
-        async def _safe_update_epg(self: EPGHandler, epg: EPG) -> bool:
+        async def _safe_update_epg(epg: EPG) -> bool:
             """Safely update a single EPG with exception handling."""
             try:
-                return await epg.update(instance_path=self.instance_path)
+                return await epg.update()
             except Exception:
                 logger.exception("Failed to update EPG %s", epg.region_code)
                 return False
@@ -244,7 +244,7 @@ class EPGHandler:
         async def _update_epgs_async() -> bool:
             """Asynchronous function to update EPGs."""
             any_epg_updated = False
-            tasks = [_safe_update_epg(self, epg) for epg in self.epgs]
+            tasks = [_safe_update_epg(epg) for epg in self.epgs]
             results = await asyncio.gather(*tasks, return_exceptions=True)
 
             for i, result in enumerate(results):

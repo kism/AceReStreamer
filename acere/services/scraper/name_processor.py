@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from pydantic import AnyUrl, ValidationError
 
-from acere.utils.constants import SUPPORTED_TVG_LOGO_EXTENSIONS
+from acere.constants import SUPPORTED_TVG_LOGO_EXTENSIONS
 from acere.utils.helpers import check_valid_content_id_or_infohash, slugify
 from acere.utils.logger import get_logger
 

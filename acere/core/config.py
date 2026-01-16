@@ -23,7 +23,7 @@ from pydantic_settings import (
 )
 
 from acere.constants import ENV_PREFIX, SETTINGS_FILE
-from acere.utils.constants import OUR_TIMEZONE
+from acere.constants import OUR_TIMEZONE
 from acere.utils.helpers import slugify
 from acere.utils.logger import LoggingConf, get_logger
 

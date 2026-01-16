@@ -8,7 +8,7 @@ import aiohttp
 from pydantic import HttpUrl, ValidationError
 
 from acere.utils.ace import get_middleware_url
-from acere.utils.constants import OUR_TIMEZONE
+from acere.constants import OUR_TIMEZONE
 from acere.utils.helpers import check_valid_content_id_or_infohash
 from acere.utils.hls import get_last_m3u8_segment_url
 from acere.utils.logger import get_logger

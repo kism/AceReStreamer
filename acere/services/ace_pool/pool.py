@@ -11,7 +11,7 @@ import aiohttp
 from pydantic import HttpUrl, TypeAdapter
 
 from acere.instances.config import settings
-from acere.utils.constants import OUR_TIMEZONE
+from acere.constants import OUR_TIMEZONE
 from acere.utils.helpers import check_valid_content_id_or_infohash
 from acere.utils.logger import get_logger
 
