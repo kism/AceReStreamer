@@ -8,7 +8,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import baseURL from "@/helpers"
-import { SkeletonText } from "../ui/skeleton"
 
 const VITE_API_URL = baseURL()
 
@@ -23,7 +22,10 @@ interface IptvInfoProps {
 
 export function IptvInfo({ user, isLoading, error }: IptvInfoProps) {
   if (isLoading) return <Text>Loading...</Text>
-  if (error) return <Text color="red">Cannot Load IPTV information: {error.message}</Text>
+  if (error)
+    return (
+      <Text color="red">Cannot Load IPTV information: {error.message}</Text>
+    )
 
   const tokenString = user?.stream_token ? `?token=${user.stream_token}` : ""
 

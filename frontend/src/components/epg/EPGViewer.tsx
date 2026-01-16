@@ -7,7 +7,6 @@ import { Checkbox } from "../ui/checkbox"
 import { ChannelSelector } from "./ChannelSelector"
 import { EPGTable } from "./EPGTable"
 import { parseEPGXML, parseXmltvDate } from "./utils"
-import { Logger } from "hls.js"
 
 interface EPGViewerProps {
   user: UserPublic | null
@@ -64,14 +63,12 @@ export function EPGViewer({ user }: EPGViewerProps) {
   }
 
   if (isLoading) {
-    return <Box/>
+    return <Box />
   }
 
   if (!data) {
     console.error("Could not load EPG data")
-    return (
-      <Box/>
-    )
+    return <Box />
   }
 
   if (channels.length === 0) {
