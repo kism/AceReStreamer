@@ -6,11 +6,15 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
 import aiohttp
+from lxml import etree
 
 from acere.constants import EPG_XML_DIR, OUR_TIMEZONE
+from acere.core.config import EPGInstanceConf
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger
+
+from .helpers import normalise_epg_tvg_id
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -34,6 +38,7 @@ class EPG:
         self.url = epg_conf.url
         self.format = epg_conf.format
         self._extracted_format = self.format.replace(".gz", "")  # Remove .gz for internal use
+        self._overrides = epg_conf.tv_id_overrides
         self.region_code = epg_conf.region_code
         self.last_updated: datetime | None = None
         self.saved_file_path: Path | None = None
@@ -60,10 +65,16 @@ class EPG:
         return False
 
     # region Getters
-    def get_data(self) -> bytes | None:
+    def _get_data(self) -> bytes | None:
         """Get the EPG data as bytes."""
         # I used to have this in RAM, but it got very large with multiple EPGs
+
         if self.saved_file_path and self.saved_file_path.is_file():
+            if self.saved_file_path.stat().st_size == 0:
+                logger.warning("EPG file %s is empty, removing.", self.saved_file_path)
+                self.saved_file_path.unlink()
+                return None
+
             try:
                 return self.saved_file_path.read_bytes()
             except OSError as e:
@@ -77,10 +88,33 @@ class EPG:
                 return None
         else:
             logger.warning(
-                "No saved file path defined or file does not exist for EPG %s",
-                self.region_code,
+                "No saved file path defined or file does not exist for EPG %s, %s ", self.region_code, self.url
             )
             return None
+
+    def get_epg_etree_normalised(self) -> etree._Element | None:
+        epg_data = self._get_data()
+        if epg_data is None:
+            logger.warning("EPG data for %s is None, skipping", self.region_code)
+            return None
+
+        try:
+            wip_etree = etree.fromstring(epg_data)
+        except etree.XMLSyntaxError:
+            logger.error("Failed to parse EPG XML data for %s", self.region_code)
+            return None
+
+        for channel in wip_etree.findall("channel"):
+            tvg_id = normalise_epg_tvg_id(channel.get("id"), self._overrides)
+            if tvg_id:
+                channel.set("id", tvg_id)
+
+        for programme in wip_etree.findall("programme"):
+            tvg_id = normalise_epg_tvg_id(programme.get("channel"), self._overrides)
+            if tvg_id:
+                programme.set("channel", tvg_id)
+
+        return wip_etree
 
     def get_time_since_last_update(self) -> timedelta:
         """Get the time since the EPG was last updated."""

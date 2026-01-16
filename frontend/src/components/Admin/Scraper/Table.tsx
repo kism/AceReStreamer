@@ -57,7 +57,7 @@ function ScraperTable() {
   }, [])
 
   if (isLoading) {
-    return <div>Loading...</div>
+    return <Box>Loading...</Box>
   }
 
   return (
@@ -72,7 +72,6 @@ function ScraperTable() {
             direction="column"
             p={2}
             borderWidth="1px"
-            //   borderRadius="md"
             w="full"
           >
             <Collapsible.Root open={openItems[scraper.name] || false}>

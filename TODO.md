@@ -3,6 +3,6 @@
 - No auth mode
 - big cleanup
 - more test coverage
-- maybe don't lazy load hls.js
-- weird issue with scraping not updating for existing entries?
-- database of streams?
+- remove light theme
+- overall h padding in the main section
+- better mobile layout for most pages...

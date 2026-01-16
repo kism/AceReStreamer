@@ -24,10 +24,10 @@ const PendingStreams = () => (
       </TableHeader>
       <TableBody>
         <TableRow>
-          <TableCell>
+          <TableCell >
             <SkeletonText noOfLines={1} />
           </TableCell>
-          <TableCell>
+          <TableCell >
             <SkeletonText noOfLines={1} />
           </TableCell>
         </TableRow>
