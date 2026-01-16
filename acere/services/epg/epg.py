@@ -38,7 +38,7 @@ class EPG:
         self.url = epg_conf.url
         self.format = epg_conf.format
         self._extracted_format = self.format.replace(".gz", "")  # Remove .gz for internal use
-        self._overrides = epg_conf.tv_id_overrides
+        self._overrides = epg_conf.tvg_id_overrides
         self.region_code = epg_conf.region_code
         self.last_updated: datetime | None = None
         self.saved_file_path: Path | None = None

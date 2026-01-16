@@ -400,7 +400,7 @@ class EPGInstanceConf(BaseModel):
     region_code: str = "UK"
     format: Literal["xml.gz", "xml"] = "xml.gz"
     url: HttpUrl = HttpUrl("https://www.open-epg.com/files/unitedkingdom1.xml.gz")
-    tv_id_overrides: dict[
+    tvg_id_overrides: dict[
         str, str
     ] = {}  # The program normanises the tvg_ids pretty well, but sometimes you need to override specific ones.
 

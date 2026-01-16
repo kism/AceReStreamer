@@ -728,12 +728,12 @@ export const EPGInstanceConfSchema = {
             title: 'Url',
             default: 'https://www.open-epg.com/files/unitedkingdom1.xml.gz'
         },
-        tv_id_overrides: {
+        tvg_id_overrides: {
             additionalProperties: {
                 type: 'string'
             },
             type: 'object',
-            title: 'Tv Id Overrides',
+            title: 'Tvg Id Overrides',
             default: {}
         }
     },

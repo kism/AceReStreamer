@@ -194,7 +194,7 @@ export type EPGInstanceConf = {
     region_code?: string;
     format?: 'xml.gz' | 'xml';
     url?: string;
-    tv_id_overrides?: {
+    tvg_id_overrides?: {
         [key: string]: (string);
     };
 };
