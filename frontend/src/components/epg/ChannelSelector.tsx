@@ -20,7 +20,7 @@ export function ChannelSelector({
   return (
     <HStack>
       <Text fontWeight="bold">Channel:</Text>
-      <NativeSelectRoot size="sm" width="300px">
+      <NativeSelectRoot size="sm" width="auto">
         <NativeSelectField
           value={selectedChannel}
           onChange={(e) => onChannelChange(e.target.value)}

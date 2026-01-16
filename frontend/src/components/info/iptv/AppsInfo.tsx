@@ -1,4 +1,3 @@
-import { Box, Heading, Text, VStack } from "@chakra-ui/react"
 import { Link } from "@/components/ui/link"
 import {
   AppTableRoot,
@@ -8,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Box, Heading, Text, VStack } from "@chakra-ui/react"
 
 export function AppsInfo() {
   const apps = [

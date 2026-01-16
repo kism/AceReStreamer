@@ -144,6 +144,7 @@ def setup_logger(
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("passlib").setLevel(logging.ERROR)
     logging.getLogger("watchfiles").setLevel(logging.WARNING)
+    logging.getLogger("python_multipart.multipart").setLevel(TRACE_LEVEL_NUM)
 
     access_logger = logging.getLogger("uvicorn.access")
     access_logger.propagate = False
