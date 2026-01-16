@@ -140,9 +140,9 @@ show_contexts = true
 
 [tool.pytest.ini_options]
 addopts = [
-    "--cov=acere",
-    "--cov-report=term",
-    "--cov-report=html",
+  #  "--cov=acere",
+  #  "--cov-report=term",
+  #  "--cov-report=html",
     "--disable-socket",
     "--allow-hosts=127.0.0.1,127.0.1.1",
     "--asyncio-mode=auto",
