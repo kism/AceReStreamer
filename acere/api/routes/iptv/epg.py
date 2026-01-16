@@ -11,15 +11,11 @@ from acere.services.xc.helpers import check_xc_auth
 router = APIRouter(tags=["Media/XML"])
 
 
-@router.get(
-    "/epg",
-    response_class=Response,
-    name="epg_xml_1",
-)
+
 @router.get(
     "/epg.xml",
     response_class=Response,
-    name="epg_xml_2",
+    name="epg_xml",
 )
 def get_epg(token: Annotated[str, Query()] = "") -> Response:
     """Get the merged EPG data."""

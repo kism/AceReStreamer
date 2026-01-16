@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { AcePoolPoolResponse, AcePoolGetByContentIdData, AcePoolGetByContentIdResponse, AcePoolDeleteByContentIdData, AcePoolDeleteByContentIdResponse, AcePoolGetByPidData, AcePoolGetByPidResponse, AcePoolStatsResponse, AcePoolStatsByContentIdData, AcePoolStatsByContentIdResponse, AcePoolStatsByPidData, AcePoolStatsByPidResponse, ConfigurationGetConfigResponse, ConfigurationLoadConfigData, ConfigurationLoadConfigResponse, EpgEpgsResponse, FrontendFrontendIndexHtmlResponse, FrontendFrontendIndexResponse, HealthHealthResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginResetPasswordData, LoginResetPasswordResponse, MediaIptvIptvM3U83Data, MediaIptvIptvM3U83Response, MediaIptvIptvM3U2Data, MediaIptvIptvM3U2Response, MediaIptvIptvM3U81Data, MediaIptvIptvM3U81Response, MediaXmlEpgXml2Data, MediaXmlEpgXml2Response, MediaXmlEpgXml1Data, MediaXmlEpgXml1Response, MediaXmlEpgXml3Data, MediaXmlEpgXml3Response, PrivateCreateUserData, PrivateCreateUserResponse, ScraperSourcesResponse, ScraperAddSourceData, ScraperAddSourceResponse, ScraperSourceData, ScraperSourceResponse, ScraperRemoveSourceData, ScraperRemoveSourceResponse, ScraperCheckResponse, StreamsByContentIdData, StreamsByContentIdResponse, StreamsStreamsResponse, StreamsHealthResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersReadStreamTokenMeResponse, UsersRegenerateStreamTokenMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, XtreamCodesXcIptvRouterData, XtreamCodesXcIptvRouterResponse, XtreamCodesXcGetData, XtreamCodesXcGetResponse } from './types.gen';
+import type { AcePoolPoolResponse, AcePoolGetByContentIdData, AcePoolGetByContentIdResponse, AcePoolDeleteByContentIdData, AcePoolDeleteByContentIdResponse, AcePoolGetByPidData, AcePoolGetByPidResponse, AcePoolStatsResponse, AcePoolStatsByContentIdData, AcePoolStatsByContentIdResponse, AcePoolStatsByPidData, AcePoolStatsByPidResponse, ConfigurationGetConfigResponse, ConfigurationLoadConfigData, ConfigurationLoadConfigResponse, EpgEpgsResponse, FrontendFrontendIndexHtmlResponse, FrontendFrontendIndexResponse, HealthHealthResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginResetPasswordData, LoginResetPasswordResponse, MediaIptvIptvM3U83Data, MediaIptvIptvM3U83Response, MediaIptvIptvM3U2Data, MediaIptvIptvM3U2Response, MediaIptvIptvM3U81Data, MediaIptvIptvM3U81Response, MediaXmlEpgXmlData, MediaXmlEpgXmlResponse, MediaXmlEpgXml3Data, MediaXmlEpgXml3Response, PrivateCreateUserData, PrivateCreateUserResponse, ScraperSourcesResponse, ScraperAddSourceData, ScraperAddSourceResponse, ScraperSourceData, ScraperSourceResponse, ScraperRemoveSourceData, ScraperRemoveSourceResponse, ScraperCheckResponse, StreamsByContentIdData, StreamsByContentIdResponse, StreamsStreamsResponse, StreamsHealthResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersReadStreamTokenMeResponse, UsersRegenerateStreamTokenMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, XtreamCodesXcIptvRouterData, XtreamCodesXcIptvRouterResponse, XtreamCodesXcGetData, XtreamCodesXcGetResponse } from './types.gen';
 
 export class AcePoolService {
     /**
@@ -351,38 +351,17 @@ export class MediaIptvService {
 
 export class MediaXmlService {
     /**
-     * Epg Xml 2
+     * Epg Xml
      * Get the merged EPG data.
      * @param data The data for the request.
      * @param data.token
      * @returns unknown Successful Response
      * @throws ApiError
      */
-    public static epgXml2(data: MediaXmlEpgXml2Data = {}): CancelablePromise<MediaXmlEpgXml2Response> {
+    public static epgXml(data: MediaXmlEpgXmlData = {}): CancelablePromise<MediaXmlEpgXmlResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/epg.xml',
-            query: {
-                token: data.token
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Epg Xml 1
-     * Get the merged EPG data.
-     * @param data The data for the request.
-     * @param data.token
-     * @returns unknown Successful Response
-     * @throws ApiError
-     */
-    public static epgXml1(data: MediaXmlEpgXml1Data = {}): CancelablePromise<MediaXmlEpgXml1Response> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/epg',
             query: {
                 token: data.token
             },

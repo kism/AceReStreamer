@@ -486,17 +486,11 @@ export type MediaIptvIptvM3U81Data = {
 
 export type MediaIptvIptvM3U81Response = (unknown);
 
-export type MediaXmlEpgXml2Data = {
+export type MediaXmlEpgXmlData = {
     token?: string;
 };
 
-export type MediaXmlEpgXml2Response = (unknown);
-
-export type MediaXmlEpgXml1Data = {
-    token?: string;
-};
-
-export type MediaXmlEpgXml1Response = (unknown);
+export type MediaXmlEpgXmlResponse = (unknown);
 
 export type MediaXmlEpgXml3Data = {
     password?: string;

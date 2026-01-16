@@ -20,7 +20,7 @@ export function EPGViewer({ user }: EPGViewerProps) {
     queryKey: ["epgXml", user?.stream_token],
     queryFn: async () => {
       try {
-        const response = await MediaXmlService.epgXml1({
+        const response = await MediaXmlService.epgXml({
           token: user?.stream_token,
         })
         return parseEPGXML(response as string)
