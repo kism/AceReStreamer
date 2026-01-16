@@ -1,3 +1,4 @@
+import { Box, Heading, HStack, Text, VStack } from "@chakra-ui/react"
 import { Code } from "@/components/ui/code"
 import { CopyButton } from "@/components/ui/copy-button"
 import {
@@ -7,7 +8,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import baseURL from "@/helpers"
-import { Box, HStack, Heading, Text, VStack } from "@chakra-ui/react"
 
 const VITE_API_URL = baseURL()
 
