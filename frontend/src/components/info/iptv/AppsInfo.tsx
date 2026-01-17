@@ -1,3 +1,4 @@
+import { Box, Heading, ScrollArea, Text, VStack } from "@chakra-ui/react"
 import { Link } from "@/components/ui/link"
 import {
   AppTableRoot,
@@ -7,7 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Box, Heading, Text, VStack } from "@chakra-ui/react"
 
 export function AppsInfo() {
   const apps = [
@@ -131,7 +131,7 @@ export function AppsInfo() {
 
   return (
     <VStack gap={2} align="stretch">
-      <VStack gap={2} align="stretch">
+      <VStack gap={1} align="stretch">
         <Heading>Recommended Apps</Heading>
         <Text>
           Many apps are made to be players for their subscription IPTV services,
@@ -140,63 +140,74 @@ export function AppsInfo() {
         </Text>
       </VStack>
 
-      <VStack gap={2} align="stretch">
+      <VStack gap={1} align="stretch">
         <Heading size={"sm"}>Tested to work</Heading>
-        <AppTableRoot preset="outlineSm">
-          <TableHeader>
-            <TableRow>
-              <TableColumnHeader>Platform</TableColumnHeader>
-              <TableColumnHeader>App</TableColumnHeader>
-              <TableColumnHeader>m3u8</TableColumnHeader>
-              <TableColumnHeader>XC</TableColumnHeader>
-              <TableColumnHeader>EPG</TableColumnHeader>
-              <TableColumnHeader>Link</TableColumnHeader>
-              <TableColumnHeader>Notes</TableColumnHeader>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {apps.map((app) => (
-              <TableRow key={app.name}>
-                <TableCell>
-                  {app.platform.map((p, i) => (
-                    <span key={p}>
-                      {p}
-                      {i < app.platform.length - 1 && <br />}
-                    </span>
+
+        <ScrollArea.Root variant="hover">
+          <ScrollArea.Viewport>
+            <ScrollArea.Content borderWidth="1px">
+              <AppTableRoot preset="outlineSm">
+                <TableHeader>
+                  <TableRow>
+                    <TableColumnHeader>Platform</TableColumnHeader>
+                    <TableColumnHeader>App</TableColumnHeader>
+                    <TableColumnHeader>m3u8</TableColumnHeader>
+                    <TableColumnHeader>XC</TableColumnHeader>
+                    <TableColumnHeader>EPG</TableColumnHeader>
+                    <TableColumnHeader>Link</TableColumnHeader>
+                    <TableColumnHeader>Notes</TableColumnHeader>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {apps.map((app) => (
+                    <TableRow key={app.name}>
+                      <TableCell>
+                        {app.platform.map((p, i) => (
+                          <span key={p}>
+                            {p}
+                            {i < app.platform.length - 1 && <br />}
+                          </span>
+                        ))}
+                      </TableCell>
+                      <TableCell>{app.name}</TableCell>
+                      <TableCell>{app.m3u8}</TableCell>
+                      <TableCell>{app.xc}</TableCell>
+                      <TableCell>{app.epg}</TableCell>
+                      <TableCell>
+                        {app.links.map((link, i) => (
+                          <span key={link.url}>
+                            <Link
+                              href={link.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {link.label}
+                            </Link>
+                            {i < app.links.length - 1 && ", "}
+                          </span>
+                        ))}
+                      </TableCell>
+                      <TableCell>
+                        {Array.isArray(app.notes)
+                          ? app.notes.map((note, i) => (
+                              <span key={i}>
+                                {note}
+                                {i < app.notes.length - 1 && <br />}
+                              </span>
+                            ))
+                          : app.notes}
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </TableCell>
-                <TableCell>{app.name}</TableCell>
-                <TableCell>{app.m3u8}</TableCell>
-                <TableCell>{app.xc}</TableCell>
-                <TableCell>{app.epg}</TableCell>
-                <TableCell>
-                  {app.links.map((link, i) => (
-                    <span key={link.url}>
-                      <Link
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {link.label}
-                      </Link>
-                      {i < app.links.length - 1 && ", "}
-                    </span>
-                  ))}
-                </TableCell>
-                <TableCell>
-                  {Array.isArray(app.notes)
-                    ? app.notes.map((note, i) => (
-                        <span key={i}>
-                          {note}
-                          {i < app.notes.length - 1 && <br />}
-                        </span>
-                      ))
-                    : app.notes}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </AppTableRoot>
+                </TableBody>
+              </AppTableRoot>
+            </ScrollArea.Content>
+          </ScrollArea.Viewport>
+          <ScrollArea.Scrollbar orientation="horizontal">
+            <ScrollArea.Thumb />
+          </ScrollArea.Scrollbar>
+          <ScrollArea.Corner />
+        </ScrollArea.Root>
       </VStack>
 
       <Box>

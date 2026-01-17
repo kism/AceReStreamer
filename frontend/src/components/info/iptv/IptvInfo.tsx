@@ -55,7 +55,11 @@ export function IptvInfo({ user, isLoading, error }: IptvInfoProps) {
                 { name: "Password", value: password },
               ].map(({ name, value }) => (
                 <TableRow key={name}>
-                  <TableCell bg="bg.subtle" whiteSpace="nowrap" width="1%">
+                  <TableCell
+                    bg="bg.subtle"
+                    whiteSpace={{ base: "normal", sm: "nowrap" }}
+                    width="1%"
+                  >
                     {name}
                   </TableCell>
                   <TableCell>
@@ -89,7 +93,11 @@ export function IptvInfo({ user, isLoading, error }: IptvInfoProps) {
                 { name: "EPG URL", url: epgXmlUrl },
               ].map(({ name, url }) => (
                 <TableRow key={name}>
-                  <TableCell bg="bg.subtle" whiteSpace="nowrap" width="1%">
+                  <TableCell
+                    bg="bg.subtle"
+                    whiteSpace={{ base: "normal", sm: "nowrap" }}
+                    width="1%"
+                  >
                     {name}
                   </TableCell>
                   <TableCell>
