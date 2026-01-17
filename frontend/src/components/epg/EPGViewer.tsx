@@ -1,4 +1,4 @@
-import { Box, HStack, Text, VStack } from "@chakra-ui/react"
+import { Box, Flex, HStack, Text, VStack } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
 import type { UserPublic } from "@/client"
@@ -82,17 +82,24 @@ export function EPGViewer({ user }: EPGViewerProps) {
   return (
     <VStack align="stretch" gap={4}>
       <HStack>
-        <ChannelSelector
-          channels={channels}
-          selectedChannel={selectedChannel}
-          onChannelChange={setSelectedChannel}
-        />
-        <Checkbox
-          checked={hidePastPrograms}
-          onCheckedChange={({ checked }) => setHidePastPrograms(!!checked)}
+        <Flex
+          flex={1}
+          direction={{ base: "column", sm: "row" }}
+          gap={4}
+          align={{ base: "center", sm: "normal" }}
         >
-          Hide past programs
-        </Checkbox>
+          <ChannelSelector
+            channels={channels}
+            selectedChannel={selectedChannel}
+            onChannelChange={setSelectedChannel}
+          />
+          <Checkbox
+            checked={hidePastPrograms}
+            onCheckedChange={({ checked }) => setHidePastPrograms(!!checked)}
+          >
+            Hide past programs
+          </Checkbox>
+        </Flex>
       </HStack>
       <EPGTable programmes={programmes} />
     </VStack>

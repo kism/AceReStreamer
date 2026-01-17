@@ -93,10 +93,12 @@ export function StreamTable() {
         <TableHeader top={0} zIndex={1}>
           {/* Due to sticky header we set bg.subtle */}
           <TableRow bg="bg.subtle">
-            <TableColumnHeader width="30px">
-              <FiBarChart style={{ margin: "0 auto" }} />
+            <TableColumnHeader maxW="30px">
+              <Box display="flex" justifyContent="center">
+                <FiBarChart />
+              </Box>
             </TableColumnHeader>
-            <TableColumnHeader width="90%">Stream</TableColumnHeader>
+            <TableColumnHeader>Stream</TableColumnHeader>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -121,8 +123,15 @@ export function StreamTable() {
                 })
               }}
             >
-              <QualityCell quality={item.quality} p={1} />
-              <TableCell overflow="hidden" maxW="0">
+              <QualityCell
+                quality={item.quality}
+                p={1}
+                px={2}
+                maxW="30px"
+                w="30px"
+              />
+              {/* This maxW is load bearing */}
+              <TableCell overflow="hidden" p={1} maxW="0">
                 <Box
                   whiteSpace="nowrap"
                   overflow="hidden"

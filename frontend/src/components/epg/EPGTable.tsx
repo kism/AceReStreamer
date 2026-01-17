@@ -18,7 +18,7 @@ export function EPGTable({ programmes }: EPGTableProps) {
     <AppTableRoot preset="outlineSm">
       <TableHeader zIndex={1}>
         <TableRow bg="bg.subtle">
-          <TableColumnHeader whiteSpace="nowrap">Start</TableColumnHeader>
+          <TableColumnHeader>Start</TableColumnHeader>
           <TableColumnHeader>Title</TableColumnHeader>
           <TableColumnHeader>Description</TableColumnHeader>
         </TableRow>
@@ -40,12 +40,16 @@ export function EPGTable({ programmes }: EPGTableProps) {
                 _dark={{ bg: isCurrent ? "teal.900" : undefined }}
                 fontWeight={isCurrent ? "bold" : undefined}
               >
-                <TableCell textAlign={"center"} whiteSpace="nowrap" width="1%">
+                <TableCell
+                  textAlign={"center"}
+                  whiteSpace={{ base: "normal", md: "nowrap" }}
+                  width="1%"
+                >
                   {formatDateTime(prog.start)}
                 </TableCell>
 
                 <TableCell
-                  width="200px"
+                  width={{ base: "100px", md: "200px", lg: "250px" }}
                   maxW="300px"
                   whiteSpace="wrap"
                   title={prog.title}
