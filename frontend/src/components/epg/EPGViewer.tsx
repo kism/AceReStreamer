@@ -86,7 +86,7 @@ export function EPGViewer({ user }: EPGViewerProps) {
           flex={1}
           direction={{ base: "column", sm: "row" }}
           gap={4}
-          align="normal"
+          align={{ base: "center", sm: "normal" }}
         >
           <ChannelSelector
             channels={channels}
