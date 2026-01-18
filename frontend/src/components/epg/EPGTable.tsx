@@ -1,3 +1,4 @@
+import { Box, HStack, Text, useBreakpointValue, VStack } from "@chakra-ui/react"
 import {
   AppTableRoot,
   TableBody,
@@ -14,6 +15,40 @@ interface EPGTableProps {
 }
 
 export function EPGTable({ programmes }: EPGTableProps) {
+  const isMobile = useBreakpointValue({ base: true, md: false })
+  const currentProgramBGColour = "teal.100"
+  const currentProgramDarkBGColour = "teal.900"
+
+  // if (isMobile) {
+  if (true) {
+    return (
+      <VStack gap={4}>
+        {programmes.map((prog, index) => {
+          const isCurrent = isCurrentProgram(prog.start, prog.stop)
+          return (
+            <Box
+              key={index}
+              p={4}
+              width={"100%"}
+              bg={isCurrent ? currentProgramBGColour : "bg.subtle"}
+              _dark={{ bg: isCurrent ? currentProgramDarkBGColour : undefined }}
+            >
+              <HStack justify="normal" gap={4}>
+                <Text fontSize="sm" color="muted">
+                  {formatDateTime(prog.start)}
+                </Text>
+                <Text fontWeight={"bold"}>{prog.title}</Text>
+              </HStack>
+              <Box mt={2} fontSize="sm" color="muted" display={ prog.description ? "block" : "none" }>
+                {prog.description}
+              </Box>
+            </Box>
+          )
+        })}
+      </VStack>
+    )
+  }
+
   return (
     <AppTableRoot preset="outlineSm">
       <TableHeader zIndex={1}>
@@ -36,8 +71,10 @@ export function EPGTable({ programmes }: EPGTableProps) {
             return (
               <TableRow
                 key={index}
-                bg={isCurrent ? "teal.100" : undefined}
-                _dark={{ bg: isCurrent ? "teal.900" : undefined }}
+                bg={isCurrent ? currentProgramBGColour : undefined}
+                _dark={{
+                  bg: isCurrent ? currentProgramDarkBGColour : undefined,
+                }}
                 fontWeight={isCurrent ? "bold" : undefined}
               >
                 <TableCell
