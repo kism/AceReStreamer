@@ -50,7 +50,7 @@ export function IptvInfo({ user, isLoading, error }: IptvInfoProps) {
           <AppTableRoot preset="outlineSm">
             <TableBody>
               {[
-                { name: "Server/Portal URL", value: serverAddress },
+                { name: "Server / Portal URL", value: serverAddress },
                 { name: "Username", value: username },
                 { name: "Password", value: password },
               ].map(({ name, value }) => (
@@ -73,7 +73,6 @@ export function IptvInfo({ user, isLoading, error }: IptvInfoProps) {
             </TableBody>
           </AppTableRoot>
         </Box>
-        <Text>If authentication is disabled, any value will work.</Text>
       </VStack>
 
       <VStack gap={2} align="stretch">
