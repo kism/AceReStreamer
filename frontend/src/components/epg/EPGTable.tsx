@@ -19,16 +19,15 @@ export function EPGTable({ programmes }: EPGTableProps) {
   const currentProgramBGColour = "teal.100"
   const currentProgramDarkBGColour = "teal.900"
 
-  // if (isMobile) {
-  if (true) {
+  if (isMobile) {
     return (
-      <VStack gap={4}>
+      <VStack gap={2}>
         {programmes.map((prog, index) => {
           const isCurrent = isCurrentProgram(prog.start, prog.stop)
           return (
             <Box
               key={index}
-              p={4}
+              p={2}
               width={"100%"}
               bg={isCurrent ? currentProgramBGColour : "bg.subtle"}
               _dark={{ bg: isCurrent ? currentProgramDarkBGColour : undefined }}
@@ -39,7 +38,12 @@ export function EPGTable({ programmes }: EPGTableProps) {
                 </Text>
                 <Text fontWeight={"bold"}>{prog.title}</Text>
               </HStack>
-              <Box mt={2} fontSize="sm" color="muted" display={ prog.description ? "block" : "none" }>
+              <Box
+                mt={2}
+                fontSize="sm"
+                color="muted"
+                display={prog.description ? "block" : "none"}
+              >
                 {prog.description}
               </Box>
             </Box>
