@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import aiohttp
 from pydantic import HttpUrl, ValidationError
 
-from acere.utils.constants import SUPPORTED_TVG_LOGO_EXTENSIONS
+from acere.constants import SUPPORTED_TVG_LOGO_EXTENSIONS
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger

@@ -1,18 +1,11 @@
-from rich.console import Console
 from sqlmodel import Session, select
 
 from acere.constants import DATABASE_FILE
 from acere.core.db import engine
 from acere.crud import get_user_by_username, update_user
 from acere.models import User, UserUpdate
+from acere.utils.cli import console, prompt
 from acere.version import PROGRAM_NAME, __version__
-
-console = Console(highlight=False)
-
-
-def prompt(message: str) -> str:
-    console.print(message)
-    return input("> ").strip()
 
 
 def main() -> None:
@@ -35,7 +28,7 @@ def main() -> None:
 
         console.print("Existing users: \n" + "\n".join([f" {user.username}" for user in users]) + "\n")
 
-        username = input("Enter the username to reset the password for:\n>").strip()
+        username = prompt("Enter the username to reset the password for:")
         user = get_user_by_username(session=session, username=username)
         if not user:
             console.print(f"User '{username}' not found.")

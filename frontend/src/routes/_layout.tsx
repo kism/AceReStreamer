@@ -39,7 +39,13 @@ function Layout() {
               setDesktopSidebarOpen(!desktopSidebarOpen)
             }
           />
-          <Flex flex="1" direction="column" px={4} py={2} overflowY="auto">
+          <Flex
+            flex="1"
+            direction="column"
+            px={{ base: 1, sm: 4 }}
+            py={2}
+            overflowY="auto"
+          >
             <Outlet />
           </Flex>
         </Flex>

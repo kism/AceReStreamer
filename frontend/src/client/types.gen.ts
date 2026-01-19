@@ -128,6 +128,9 @@ export type AceScrapeConf = {
     name_replacements?: {
         [key: string]: (string);
     };
+    content_id_infohash_name_overrides?: {
+        [key: string]: (string);
+    };
     category_mapping?: {
         [key: string]: Array<(string)>;
     };
@@ -189,9 +192,14 @@ export type EPGApiResponse = {
  */
 export type EPGInstanceConf = {
     region_code?: string;
-    format?: string;
+    format?: 'xml.gz' | 'xml';
     url?: string;
+    tvg_id_overrides?: {
+        [key: string]: (string);
+    };
 };
+
+export type format = 'xml.gz' | 'xml';
 
 export type ErrorDetails = {
     type: string;
@@ -245,6 +253,7 @@ export type HTTPValidationError = {
  */
 export type LoggingConf = {
     level?: (string | number);
+    level_http?: (string | number);
     path?: (string | null);
     simple?: boolean;
 };
@@ -280,6 +289,7 @@ export type Quality = {
     quality?: number;
     has_ever_worked?: boolean;
     m3u_failures?: number;
+    last_message?: string;
 };
 
 /**
@@ -440,39 +450,7 @@ export type EpgEpgsResponse = (EPGApiHandlerResponse);
 
 export type FrontendFrontendIndexHtmlResponse = (string);
 
-export type FrontendFrontendResponse = (string);
-
-export type FrontendFrontendAdminResponse = (string);
-
-export type FrontendFrontendAndroidChrome192X192PngResponse = (string);
-
-export type FrontendFrontendAndroidChrome512X512PngResponse = (string);
-
-export type FrontendFrontendAppleTouchIconPngResponse = (string);
-
-export type FrontendFrontendFavicon16X16PngResponse = (string);
-
-export type FrontendFrontendFavicon32X32PngResponse = (string);
-
-export type FrontendFrontendFaviconIcoResponse = (string);
-
-export type FrontendFrontendInfoResponse = (string);
-
-export type FrontendFrontendInfoIptvResponse = (string);
-
-export type FrontendFrontendInfoPlaybackResponse = (string);
-
-export type FrontendFrontendLoginResponse = (string);
-
-export type FrontendFrontendSettingsResponse = (string);
-
-export type FrontendFrontendSiteWebmanifestResponse = (string);
-
-export type FrontendFrontendCatchAllData = {
-    fullPath: string;
-};
-
-export type FrontendFrontendCatchAllResponse = (string);
+export type FrontendFrontendIndexResponse = (string);
 
 export type HealthHealthResponse = (HealthResponseModel);
 
@@ -508,17 +486,11 @@ export type MediaIptvIptvM3U81Data = {
 
 export type MediaIptvIptvM3U81Response = (unknown);
 
-export type MediaXmlEpgXml2Data = {
+export type MediaXmlEpgXmlData = {
     token?: string;
 };
 
-export type MediaXmlEpgXml2Response = (unknown);
-
-export type MediaXmlEpgXml1Data = {
-    token?: string;
-};
-
-export type MediaXmlEpgXml1Response = (unknown);
+export type MediaXmlEpgXmlResponse = (unknown);
 
 export type MediaXmlEpgXml3Data = {
     password?: string;

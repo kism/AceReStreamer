@@ -7,6 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import HttpUrl
 
+from acere.constants import OUR_TIMEZONE
 from acere.database.handlers import CategoryXCCategoryIDDatabaseHandler
 from acere.instances.config import settings
 from acere.instances.scraper import get_ace_scraper
@@ -23,7 +24,6 @@ from acere.services.xc.models import (
     XCUserInfo,
 )
 from acere.utils.api_models import MessageResponseModel
-from acere.utils.constants import OUR_TIMEZONE
 from acere.utils.logger import get_logger
 
 logger = get_logger(__name__)

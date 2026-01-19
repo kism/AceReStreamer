@@ -1,10 +1,18 @@
-import { Box, Flex, Heading, HStack, IconButton } from "@chakra-ui/react"
+import {
+  Box,
+  Flex,
+  Heading,
+  HStack,
+  IconButton,
+  Text,
+  VStack,
+} from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { lazy, Suspense, useEffect, useState } from "react"
 import { FiMaximize2, FiMinimize2, FiRefreshCw } from "react-icons/fi"
 import { StreamsService } from "@/client"
-import { AcePoolInfo } from "@/components/Index/AcePoolInfo"
+import { AcePoolSection } from "@/components/Index/AcePoolSection"
 import { NowPlayingTable } from "@/components/Index/NowPlayingTable"
 import { StreamTable } from "@/components/Index/StreamTable"
 import { usePageTitle } from "@/hooks/usePageTitle"
@@ -21,6 +29,70 @@ const loadVideoPlayerModule = () => import("@/hooks/useVideoPlayer")
 export const Route = createFileRoute("/_layout/")({
   component: WebPlayer,
 })
+
+function ProgramDescription({
+  description,
+  title,
+}: {
+  description?: string
+  title?: string
+}) {
+  if (!title) return null
+
+  return (
+    <Box>
+      <Heading size="sm">
+        <HStack px={1}>
+          <Text>Now Playing: </Text> {title ? title : "No Program Information"}
+        </HStack>
+      </Heading>
+      <Text borderWidth="1px" px={2} py={1} maxW="600px">
+        {description ? description : "No Program Description Available"}
+      </Text>
+    </Box>
+  )
+}
+
+function PlayerControls({
+  isExpanded,
+  onToggleExpand,
+}: {
+  isExpanded: boolean
+  onToggleExpand: () => void
+}) {
+  return (
+    <HStack>
+      <IconButton
+        aria-label="Reload stream"
+        size="2xs"
+        p={2}
+        fontWeight={"normal"}
+        onClick={() => {
+          const currentStreamId = window.location.hash.substring(1)
+          if (currentStreamId) {
+            loadVideoPlayerModule().then((module) => {
+              module.loadPlayStream(currentStreamId)
+            })
+          }
+        }}
+      >
+        <FiRefreshCw />
+        Reload
+      </IconButton>
+      <IconButton
+        aria-label={isExpanded ? "Restore layout" : "Expand video player"}
+        size="2xs"
+        p={2}
+        fontWeight={"normal"}
+        display={{ base: "none", lg: "flex" }}
+        onClick={onToggleExpand}
+      >
+        {isExpanded ? <FiMinimize2 /> : <FiMaximize2 />}
+        {isExpanded ? "Restore Layout" : "Expand Player"}
+      </IconButton>
+    </HStack>
+  )
+}
 
 function WebPlayer() {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -59,13 +131,6 @@ function WebPlayer() {
     >
       {/* Left pane - Video Player */}
       <Flex direction="column" flex="1" minW="0" gap={2}>
-        <Box>
-          <Heading size="sm">
-            {streamData?.program_title
-              ? streamData.program_title
-              : "No Program Information"}
-          </Heading>
-        </Box>
         <Suspense
           fallback={
             <Box
@@ -82,39 +147,18 @@ function WebPlayer() {
         >
           <VideoPlayer />
         </Suspense>
-        <HStack>
-          <IconButton
-            aria-label="Reload stream"
-            size="2xs"
-            p={2}
-            fontWeight={"normal"}
-            onClick={() => {
-              const currentStreamId = window.location.hash.substring(1)
-              if (currentStreamId) {
-                loadVideoPlayerModule().then((module) => {
-                  module.loadPlayStream(currentStreamId)
-                })
-              }
-            }}
-          >
-            <FiRefreshCw />
-            Reload
-          </IconButton>
-          <IconButton
-            aria-label={isExpanded ? "Restore layout" : "Expand video player"}
-            size="2xs"
-            p={2}
-            fontWeight={"normal"}
-            display={{ base: "none", lg: "flex" }}
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
-            {isExpanded ? <FiMinimize2 /> : <FiMaximize2 />}
-            {isExpanded ? "Restore Layout" : "Expand Player"}
-          </IconButton>
-        </HStack>
-
-        <NowPlayingTable />
-        <AcePoolInfo />
+        <PlayerControls
+          isExpanded={isExpanded}
+          onToggleExpand={() => setIsExpanded(!isExpanded)}
+        />
+        <VStack align="stretch" gap={4}>
+          <NowPlayingTable />
+          <ProgramDescription
+            description={streamData?.program_description}
+            title={streamData?.program_title}
+          />
+          <AcePoolSection />
+        </VStack>
       </Flex>
 
       {/* Right pane - Streams Table */}

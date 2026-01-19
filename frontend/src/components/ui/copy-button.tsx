@@ -46,7 +46,7 @@ export function CopyButton({ text, children = <FiCopy /> }: CopyButtonProps) {
         <Box
           position="absolute"
           top="50%"
-          left="calc(100% + 8px)"
+          right="calc(100% + 8px)"
           transform="translateY(-50%)"
           bg="teal.600"
           color="white"

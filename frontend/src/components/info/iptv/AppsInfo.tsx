@@ -1,13 +1,5 @@
-import { Box, Heading, Text, VStack } from "@chakra-ui/react"
+import { Box, Flex, Heading, HStack, Text, VStack } from "@chakra-ui/react"
 import { Link } from "@/components/ui/link"
-import {
-  AppTableRoot,
-  TableBody,
-  TableCell,
-  TableColumnHeader,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 
 export function AppsInfo() {
   const apps = [
@@ -131,45 +123,38 @@ export function AppsInfo() {
 
   return (
     <VStack gap={2} align="stretch">
-      <VStack gap={2} align="stretch">
+      <VStack gap={1} align="stretch">
         <Heading>Recommended Apps</Heading>
         <Text>
           Many apps are made to be players for their subscription IPTV services,
-          and on the side offer loading external playlists. These
-          recommendations are tested, free and don't nag you to pay.
+          and on the side offer loading external playlists.
         </Text>
       </VStack>
 
-      <VStack gap={2} align="stretch">
+      <VStack gap={1} align="stretch">
         <Heading size={"sm"}>Tested to work</Heading>
-        <AppTableRoot preset="outlineSm">
-          <TableHeader>
-            <TableRow>
-              <TableColumnHeader>Platform</TableColumnHeader>
-              <TableColumnHeader>App</TableColumnHeader>
-              <TableColumnHeader>m3u8</TableColumnHeader>
-              <TableColumnHeader>XC</TableColumnHeader>
-              <TableColumnHeader>EPG</TableColumnHeader>
-              <TableColumnHeader>Link</TableColumnHeader>
-              <TableColumnHeader>Notes</TableColumnHeader>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {apps.map((app) => (
-              <TableRow key={app.name}>
-                <TableCell>
-                  {app.platform.map((p, i) => (
-                    <span key={p}>
-                      {p}
-                      {i < app.platform.length - 1 && <br />}
-                    </span>
-                  ))}
-                </TableCell>
-                <TableCell>{app.name}</TableCell>
-                <TableCell>{app.m3u8}</TableCell>
-                <TableCell>{app.xc}</TableCell>
-                <TableCell>{app.epg}</TableCell>
-                <TableCell>
+
+        <Flex gap={2} align="stretch" wrap="wrap">
+          {apps.map((app) => (
+            <Box
+              key={app.name}
+              borderWidth="1px"
+              borderRadius="md"
+              p={4}
+              width={{ base: "100%", sm: "400px" }}
+            >
+              <VStack align="stretch" gap={2}>
+                <Text>
+                  <strong>{app.name}</strong> on {app.platform.join(", ")}
+                </Text>
+
+                <HStack gap={4}>
+                  <Text>{app.m3u8} m3u8</Text>
+                  <Text>{app.xc} XC</Text>
+                  <Text>{app.epg} EPG</Text>
+                </HStack>
+
+                <Text>
                   {app.links.map((link, i) => (
                     <span key={link.url}>
                       <Link
@@ -182,8 +167,8 @@ export function AppsInfo() {
                       {i < app.links.length - 1 && ", "}
                     </span>
                   ))}
-                </TableCell>
-                <TableCell>
+                </Text>
+                <Text>
                   {Array.isArray(app.notes)
                     ? app.notes.map((note, i) => (
                         <span key={i}>
@@ -192,11 +177,11 @@ export function AppsInfo() {
                         </span>
                       ))
                     : app.notes}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </AppTableRoot>
+                </Text>
+              </VStack>
+            </Box>
+          ))}
+        </Flex>
       </VStack>
 
       <Box>

@@ -50,30 +50,6 @@ export function parseEPGXML(xmlText: string): EPGData {
   }
 }
 
-export function formatDateTime(dateTimeStr: string): string {
-  if (!dateTimeStr) return ""
-  // XMLEPG format: YYYYMMDDHHmmss +0000
-  const dayNum = Number.parseInt(dateTimeStr.substring(6, 8), 10)
-  const hour = dateTimeStr.substring(8, 10)
-  const minute = dateTimeStr.substring(10, 12)
-
-  const getOrdinalSuffix = (day: number): string => {
-    if (day > 3 && day < 21) return "th"
-    switch (day % 10) {
-      case 1:
-        return "st"
-      case 2:
-        return "nd"
-      case 3:
-        return "rd"
-      default:
-        return "th"
-    }
-  }
-
-  return `${dayNum}${getOrdinalSuffix(dayNum)} ${hour}:${minute}`
-}
-
 export function parseXmltvDate(xmltvDate: string): Date {
   // Trim and split timezone
   const [datePart, tzPart] = xmltvDate.trim().split(" ")

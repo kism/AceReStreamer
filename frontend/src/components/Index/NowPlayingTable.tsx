@@ -10,28 +10,11 @@ import {
 } from "@/components/ui/table"
 import { useStreamStatus } from "@/hooks/useStreamStatus"
 
-function calculateMaxWidth(streamURL: string) {
-  const minWidth = 300
-  const maxWidth = 1200
-  const textWidth = streamURL.length * 11 // Approximate width per character
-
-  if (textWidth < minWidth) {
-    return `${minWidth}px`
-  }
-  if (textWidth > maxWidth) {
-    return `${maxWidth}px`
-  }
-  return `${textWidth}px`
-}
-
 export function NowPlayingTable() {
   const streamStatus = useStreamStatus()
 
   return (
-    <AppTableRoot
-      preset="outlineSm"
-      maxW={calculateMaxWidth(streamStatus.streamURL)}
-    >
+    <AppTableRoot preset="outlineSm" maxW="600px">
       <TableBody>
         <TableRow>
           <TableRowHeader>Player</TableRowHeader>
@@ -43,15 +26,9 @@ export function NowPlayingTable() {
         </TableRow>
         <TableRow>
           <TableRowHeader>Direct URL</TableRowHeader>
-          <TableCell maxWidth={0} minWidth={0}>
-            <HStack gap={2} minWidth={0}>
-              <Code
-                overflowX="auto"
-                whiteSpace="nowrap"
-                display="block"
-                flex={1}
-                minWidth={0}
-              >
+          <TableCell maxWidth={0}>
+            <HStack gap={2}>
+              <Code overflow="hidden" whiteSpace="nowrap" maxWidth="100%">
                 {streamStatus.streamURL}
               </Code>
               {streamStatus.streamURL.startsWith("http") && (

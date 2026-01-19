@@ -6,11 +6,15 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
 import aiohttp
+from lxml import etree
 
-from acere.utils.constants import OUR_TIMEZONE
+from acere.constants import EPG_XML_DIR, OUR_TIMEZONE
+from acere.core.config import EPGInstanceConf
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger
+
+from .helpers import normalise_epg_tvg_id
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -34,23 +38,19 @@ class EPG:
         self.url = epg_conf.url
         self.format = epg_conf.format
         self._extracted_format = self.format.replace(".gz", "")  # Remove .gz for internal use
+        self._overrides = epg_conf.tvg_id_overrides
         self.region_code = epg_conf.region_code
         self.last_updated: datetime | None = None
         self.saved_file_path: Path | None = None
 
-    async def update(self, instance_path: Path | None) -> bool:
+    async def update(self) -> bool:
         """Update the EPG data from the configured URL, returns true if updated with new data."""
-        if instance_path is None:
-            logger.error("Instance path is not set, cannot update EPG %s", self.region_code)
-            return False
-
-        directory_path = instance_path / "epg"
-        if not directory_path.is_dir():
-            logger.info("Creating EPG directory at %s", directory_path)
-            directory_path.mkdir(parents=True, exist_ok=True)
+        if not EPG_XML_DIR.is_dir():
+            logger.info("Creating EPG directory at %s", EPG_XML_DIR)
+            EPG_XML_DIR.mkdir(parents=True, exist_ok=True)
 
         file_name = f"{self.region_code}-{slugify(self.url.host) + slugify(self.url.path)}.{self._extracted_format}"
-        self.saved_file_path = directory_path / file_name
+        self.saved_file_path = EPG_XML_DIR / file_name
 
         if self._time_to_update():
             data_bytes = await self._download_epg()
@@ -65,10 +65,16 @@ class EPG:
         return False
 
     # region Getters
-    def get_data(self) -> bytes | None:
+    def _get_data(self) -> bytes | None:
         """Get the EPG data as bytes."""
         # I used to have this in RAM, but it got very large with multiple EPGs
+
         if self.saved_file_path and self.saved_file_path.is_file():
+            if self.saved_file_path.stat().st_size == 0:
+                logger.warning("EPG file %s is empty, removing.", self.saved_file_path)
+                self.saved_file_path.unlink()
+                return None
+
             try:
                 return self.saved_file_path.read_bytes()
             except OSError as e:
@@ -82,10 +88,33 @@ class EPG:
                 return None
         else:
             logger.warning(
-                "No saved file path defined or file does not exist for EPG %s",
-                self.region_code,
+                "No saved file path defined or file does not exist for EPG %s, %s ", self.region_code, self.url
             )
             return None
+
+    def get_epg_etree_normalised(self) -> etree._Element | None:
+        epg_data = self._get_data()
+        if epg_data is None:
+            logger.warning("EPG data for %s is None, skipping", self.region_code)
+            return None
+
+        try:
+            wip_etree = etree.fromstring(epg_data)
+        except etree.XMLSyntaxError:
+            logger.error("Failed to parse EPG XML data for %s", self.region_code)
+            return None
+
+        for channel in wip_etree.findall("channel"):
+            tvg_id = normalise_epg_tvg_id(channel.get("id"), self._overrides)
+            if tvg_id:
+                channel.set("id", tvg_id)
+
+        for programme in wip_etree.findall("programme"):
+            tvg_id = normalise_epg_tvg_id(programme.get("channel"), self._overrides)
+            if tvg_id:
+                programme.set("channel", tvg_id)
+
+        return wip_etree
 
     def get_time_since_last_update(self) -> timedelta:
         """Get the time since the EPG was last updated."""

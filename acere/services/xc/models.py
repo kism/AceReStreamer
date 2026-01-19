@@ -10,7 +10,7 @@ from pydantic import (
     model_validator,
 )
 
-from acere.utils.constants import OUR_TIMEZONE_NAME
+from acere.constants import OUR_TIMEZONE_NAME
 from acere.utils.logger import get_logger
 
 logger = get_logger(__name__)

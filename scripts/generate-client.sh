@@ -25,4 +25,4 @@ npm run generate-client
 
 # Generate frontend paths to help fastapi serve them when in all-in-one mode
 cd "$ORIGINAL_PWD/frontend"
-npx vite-node scripts/generate_frontend_route_list.ts "$ORIGINAL_PWD/acere/api/routes_frontend/generated_frontend_paths.json"
+npx vite-node scripts/generate_frontend_route_list.ts "$ORIGINAL_PWD/acere/api/routes/frontend/generated_frontend_paths.json"

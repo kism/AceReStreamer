@@ -1,6 +1,6 @@
 [project]
 name = "acere"
-version = "1.0.3rc1"
+version = "1.0.3"
 description = ""
 requires-python = ">=3.14,<4.0"
 dependencies = [
@@ -127,12 +127,14 @@ docstring-code-line-length = 40
 
 
 [tool.coverage.run]
+command_line = ".venv/bin/pytest"
 source = ["acere"]
 context = "test"
 
 
 [tool.coverage.report]
 show_missing = false
+format = "text"
 # sort = "-Cover"
 
 [tool.coverage.html]
@@ -140,9 +142,6 @@ show_contexts = true
 
 [tool.pytest.ini_options]
 addopts = [
-    "--cov=acere",
-    "--cov-report=term",
-    "--cov-report=html",
     "--disable-socket",
     "--allow-hosts=127.0.0.1,127.0.1.1",
     "--asyncio-mode=auto",

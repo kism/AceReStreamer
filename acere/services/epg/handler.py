@@ -9,12 +9,13 @@ from typing import TYPE_CHECKING
 
 from lxml import etree
 
-from acere.utils.constants import OUR_TIMEZONE
+from acere.constants import OUR_TIMEZONE
 from acere.utils.logger import get_logger
 from acere.version import PROGRAM_NAME, URL
 
 from .candidate import EPGCandidateHandler
 from .epg import EPG, EPG_LIFESPAN
+from .helpers import find_current_program_xml
 from .models import EPGApiHandlerResponse, EPGApiResponse
 
 if TYPE_CHECKING:
@@ -36,7 +37,7 @@ class EPGHandler:
         self.condensed_epg: etree._Element | None = None
         self.condensed_epg_bytes: bytes = b""
         self.instance_path: Path | None = None
-        self.set_of_tvg_ids: set[str] = set()
+        self.set_of_tvg_ids: set[str] = set()  # Desired TVG IDs to include in condensed EPG
         self.next_update_time: datetime = datetime.now(tz=OUR_TIMEZONE)
         self._update_threads: list[threading.Thread] = []
 
@@ -72,12 +73,9 @@ class EPGHandler:
         candidate_handler = EPGCandidateHandler()
 
         for epg in self.epgs:
-            epg_data = epg.get_data()
-            if epg_data is None:
-                logger.warning("EPG data for %s is None, skipping", epg.region_code)
-                continue
-
-            epg_etree = etree.fromstring(epg_data)
+            epg_etree = epg.get_epg_etree_normalised()
+            if epg_etree is None:
+                continue  # Error message is elsewhere
 
             for channel in epg_etree.findall("channel"):
                 tvg_id = channel.get("id")
@@ -150,37 +148,7 @@ class EPGHandler:
             logger.error("No condensed EPG data available to get current program")
             return "", ""
 
-        # Find the channel with the given TVG ID
-        channel = self.condensed_epg.find(f"channel[@id='{tvg_id}']")
-        if channel is None:
-            return "", ""
-
-        # Find the current programme for this channel
-        now = datetime.now(tz=OUR_TIMEZONE)
-        programmes = self.condensed_epg.findall(f"programme[@channel='{tvg_id}']")
-        for programme in programmes:
-            start_time = programme.get("start")
-            end_time = programme.get("stop")
-            if start_time is None or end_time is None:
-                continue
-
-            start_date_time = datetime.strptime(start_time, "%Y%m%d%H%M%S %z")
-            end_date_time = datetime.strptime(end_time, "%Y%m%d%H%M%S %z")
-
-            if start_date_time <= now <= end_date_time:
-                title_match = programme.find("title")
-                program_title = ""
-                if title_match is not None:
-                    program_title = title_match.text or program_title
-
-                description_match = programme.find("desc")
-                program_description = ""
-                if description_match is not None:
-                    program_description = description_match.text or program_description
-
-                return program_title, program_description
-
-        return "", ""
+        return find_current_program_xml(tvg_id, self.condensed_epg)
 
     # region API
     def get_epgs_api(self) -> EPGApiHandlerResponse:
@@ -233,10 +201,10 @@ class EPGHandler:
             logger.error("Instance path is not set, cannot update EPGs")
             return
 
-        async def _safe_update_epg(self: EPGHandler, epg: EPG) -> bool:
+        async def _safe_update_epg(epg: EPG) -> bool:
             """Safely update a single EPG with exception handling."""
             try:
-                return await epg.update(instance_path=self.instance_path)
+                return await epg.update()
             except Exception:
                 logger.exception("Failed to update EPG %s", epg.region_code)
                 return False
@@ -244,7 +212,7 @@ class EPGHandler:
         async def _update_epgs_async() -> bool:
             """Asynchronous function to update EPGs."""
             any_epg_updated = False
-            tasks = [_safe_update_epg(self, epg) for epg in self.epgs]
+            tasks = [_safe_update_epg(epg) for epg in self.epgs]
             results = await asyncio.gather(*tasks, return_exceptions=True)
 
             for i, result in enumerate(results):

@@ -1,11 +1,6 @@
 import type { ApiError } from "./client"
 import useCustomToast from "./hooks/useCustomToast"
 
-// export const usernamePattern = {
-//   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-//   message: "Invalid email address",
-// }
-
 export const usernamePattern = {
   value: /^[a-zA-Z0-9._-]{3,20}$/,
   message: "Invalid username",

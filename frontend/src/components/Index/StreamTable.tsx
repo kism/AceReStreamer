@@ -1,4 +1,4 @@
-import { Box, EmptyState, VStack } from "@chakra-ui/react"
+import { Box, EmptyState, Text, VStack } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { FiBarChart, FiSearch } from "react-icons/fi"
 import { StreamsService } from "@/client"
@@ -20,6 +20,27 @@ function getStreamsQueryOptions() {
     queryFn: () => StreamsService.streams(),
     queryKey: ["items"],
   }
+}
+
+function NoStreamsFoundVStack() {
+  return (
+    <VStack textAlign="center">
+      <EmptyState.Title>No streams found</EmptyState.Title>
+      <EmptyState.Description>
+        Setup a scraper to find streams.
+      </EmptyState.Description>
+    </VStack>
+  )
+}
+
+function NoDataVStack() {
+  return (
+    <VStack textAlign="center">
+      <EmptyState.Title>
+        <Text color="red.500">Unable to fetch stream list</Text>
+      </EmptyState.Title>
+    </VStack>
+  )
 }
 
 export function StreamTable() {
@@ -58,10 +79,7 @@ export function StreamTable() {
               <FiSearch />
             </EmptyState.Indicator>
             <VStack textAlign="center">
-              <EmptyState.Title>No streams found</EmptyState.Title>
-              <EmptyState.Description>
-                Setup a scraper to find streams.
-              </EmptyState.Description>
+              {data ? <NoStreamsFoundVStack /> : <NoDataVStack />}
             </VStack>
           </EmptyState.Content>
         </EmptyState.Root>
@@ -75,10 +93,12 @@ export function StreamTable() {
         <TableHeader top={0} zIndex={1}>
           {/* Due to sticky header we set bg.subtle */}
           <TableRow bg="bg.subtle">
-            <TableColumnHeader width="30px">
-              <FiBarChart style={{ margin: "0 auto" }} />
+            <TableColumnHeader maxW="30px">
+              <Box display="flex" justifyContent="center">
+                <FiBarChart />
+              </Box>
             </TableColumnHeader>
-            <TableColumnHeader width="90%">Stream</TableColumnHeader>
+            <TableColumnHeader>Stream</TableColumnHeader>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -87,14 +107,31 @@ export function StreamTable() {
               key={item.title}
               opacity={isPlaceholderData ? 0.5 : 1}
               cursor={isPlaceholderData ? "default" : "pointer"}
+              color={
+                window.location.hash.substring(1) === item.content_id
+                  ? "white"
+                  : undefined
+              }
+              background={
+                window.location.hash.substring(1) === item.content_id
+                  ? "teal"
+                  : undefined
+              }
               onClick={() => {
                 loadVideoPlayerModule().then((module) => {
                   module.loadPlayStream(item.content_id)
                 })
               }}
             >
-              <QualityCell quality={item.quality} p={1} />
-              <TableCell overflow="hidden" maxW="0">
+              <QualityCell
+                quality={item.quality}
+                p={1}
+                px={2}
+                maxW="30px"
+                w="30px"
+              />
+              {/* This maxW is load bearing */}
+              <TableCell overflow="hidden" p={1} maxW="0">
                 <Box
                   whiteSpace="nowrap"
                   overflow="hidden"
@@ -103,7 +140,11 @@ export function StreamTable() {
                   {item.title}
                 </Box>
                 <Box
-                  color="gray.500"
+                  color={
+                    window.location.hash.substring(1) === item.content_id
+                      ? "gray.200"
+                      : "gray.500"
+                  }
                   whiteSpace="nowrap"
                   overflow="hidden"
                   textOverflow="ellipsis"

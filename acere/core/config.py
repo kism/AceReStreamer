@@ -22,8 +22,7 @@ from pydantic_settings import (
     SettingsConfigDict,
 )
 
-from acere.constants import ENV_PREFIX, SETTINGS_FILE
-from acere.utils.constants import OUR_TIMEZONE
+from acere.constants import ENV_PREFIX, OUR_TIMEZONE, SETTINGS_FILE
 from acere.utils.helpers import slugify
 from acere.utils.logger import LoggingConf, get_logger
 
@@ -399,8 +398,11 @@ class EPGInstanceConf(BaseModel):
     model_config = ConfigDict(extra="ignore")  # Ignore extras for config related things
 
     region_code: str = "UK"
-    format: str = "xml.gz"
+    format: Literal["xml.gz", "xml"] = "xml.gz"
     url: HttpUrl = HttpUrl("https://www.open-epg.com/files/unitedkingdom1.xml.gz")
+    tvg_id_overrides: dict[
+        str, str
+    ] = {}  # The program normanises the tvg_ids pretty well, but sometimes you need to override specific ones.
 
 
 class AceReStreamerConf(BaseSettings):

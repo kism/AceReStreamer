@@ -323,6 +323,7 @@ export const AceReStreamerConfSchema = {
             '$ref': '#/components/schemas/LoggingConf',
             default: {
                 level: 'INFO',
+                level_http: 'WARNING',
                 simple: false
             }
         },
@@ -334,6 +335,7 @@ export const AceReStreamerConfSchema = {
                 iptv_m3u8: [],
                 api: [],
                 name_replacements: {},
+                content_id_infohash_name_overrides: {},
                 category_mapping: {
                     kids: ['kids', 'children'],
                     movies: ['movie', 'cinema', 'film'],
@@ -484,6 +486,14 @@ export const AceScrapeConfSchema = {
             },
             type: 'object',
             title: 'Name Replacements',
+            default: {}
+        },
+        content_id_infohash_name_overrides: {
+            additionalProperties: {
+                type: 'string'
+            },
+            type: 'object',
+            title: 'Content Id Infohash Name Overrides',
             default: {}
         },
         category_mapping: {
@@ -706,6 +716,7 @@ export const EPGInstanceConfSchema = {
         },
         format: {
             type: 'string',
+            enum: ['xml.gz', 'xml'],
             title: 'Format',
             default: 'xml.gz'
         },
@@ -716,6 +727,14 @@ export const EPGInstanceConfSchema = {
             format: 'uri',
             title: 'Url',
             default: 'https://www.open-epg.com/files/unitedkingdom1.xml.gz'
+        },
+        tvg_id_overrides: {
+            additionalProperties: {
+                type: 'string'
+            },
+            type: 'object',
+            title: 'Tvg Id Overrides',
+            default: {}
         }
     },
     type: 'object',
@@ -903,6 +922,18 @@ export const LoggingConfSchema = {
             title: 'Level',
             default: 'INFO'
         },
+        level_http: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'integer'
+                }
+            ],
+            title: 'Level Http',
+            default: 'WARNING'
+        },
         path: {
             anyOf: [
                 {
@@ -1030,6 +1061,11 @@ export const QualitySchema = {
             type: 'integer',
             title: 'M3U Failures',
             default: 0
+        },
+        last_message: {
+            type: 'string',
+            title: 'Last Message',
+            default: ''
         }
     },
     type: 'object',
