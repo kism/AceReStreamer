@@ -20,7 +20,7 @@ Build frontend to be served by fastapi
 
 ```bash
 cd frontend
-npm run build-aio
+bun run build-aio
 ```
 
 Run production server, you can use a `.env` file if you desire

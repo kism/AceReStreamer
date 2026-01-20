@@ -44,7 +44,7 @@ const FlexMenuItem: React.FC<FlexProps> = ({ children, ...rest }) => {
       gap={4}
       py={2}
       px={4}
-      _hover={{ background: "gray.subtle" }}
+      _hover={{ background: "bg.subtle" }}
       alignItems="center"
       fontSize="sm"
       {...rest} // allow consumer overrides

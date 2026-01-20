@@ -11,7 +11,6 @@ from acere.services.xc.helpers import check_xc_auth
 router = APIRouter(tags=["Media/XML"])
 
 
-
 @router.get(
     "/epg.xml",
     response_class=Response,

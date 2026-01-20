@@ -3,12 +3,12 @@
 import { Table } from "@chakra-ui/react"
 import * as React from "react"
 
-export type TablePreset =
-  | "outlineSm"
+export type TablePreset = "outlineSm"
 
-const presetRootProps: Record<TablePreset, Partial<
-  React.ComponentProps<typeof Table.Root>
->> = {
+const presetRootProps: Record<
+  TablePreset,
+  Partial<React.ComponentProps<typeof Table.Root>>
+> = {
   outlineSm: {
     size: "sm",
     variant: "outline",
@@ -59,7 +59,7 @@ export const TableHeader = React.forwardRef<
   React.ComponentRef<typeof Table.Header>,
   React.ComponentProps<typeof Table.Header>
 >(function TableHeader(props, ref) {
-  return <Table.Header ref={ref}  {...props} />
+  return <Table.Header ref={ref} {...props} />
 })
 
 export const TableBody = React.forwardRef<
@@ -87,12 +87,32 @@ export const TableColumnHeader = React.forwardRef<
   React.ComponentRef<typeof Table.ColumnHeader>,
   React.ComponentProps<typeof Table.ColumnHeader>
 >(function TableColumnHeader(props, ref) {
-  return <Table.ColumnHeader  textAlign={"center"} ref={ref} px={2} py={1} fontWeight={"bold"} {...props} />
+  return (
+    <Table.ColumnHeader
+      textAlign={"center"}
+      ref={ref}
+      px={2}
+      py={1}
+      fontWeight={"bold"}
+      {...props}
+    />
+  )
 })
 
 export const TableRowHeader = React.forwardRef<
   React.ComponentRef<typeof Table.Cell>,
   React.ComponentProps<typeof Table.Cell>
 >(function TableRowHeader(props, ref) {
-  return <Table.Cell fontWeight={"bold"} bg="bg.subtle" whiteSpace="nowrap" width="1%" px={2} py={1} ref={ref} {...props} />
+  return (
+    <Table.Cell
+      fontWeight={"bold"}
+      bg="bg.subtle"
+      whiteSpace="nowrap"
+      width="1%"
+      px={2}
+      py={1}
+      ref={ref}
+      {...props}
+    />
+  )
 })

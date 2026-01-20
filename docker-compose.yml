@@ -21,12 +21,12 @@ services:
       start_period: 60s
 
   acerestreamer:
-    # image: acerestreamer:latest # docker buildx build --network=host --file docker/Dockerfile.combined . -t acerestreamer
-    image: ghcr.io/kism/acerestreamer:latest # From GitHub Container Registry
+    image: acerestreamer:latest # docker buildx build --network=host --file docker/Dockerfile.combined . -t acerestreamer
+    # image: ghcr.io/kism/acerestreamer:latest # From GitHub Container Registry
     container_name: acerestreamer
 
     environment:
-      ACERE_EXTERNAL_URL: "https://example.com" # Change to your domain
+      ACERE_EXTERNAL_URL: "https://kierangee.au" # Change to your domain
       ACERE_FIRST_SUPERUSER_USERNAME: "admin"
       ACERE_FIRST_SUPERUSER_PASSWORD: "" # This will only set the password on first run, if empty a random password will be generated and printed in the logs
       ACERE_APP__ACE_ADDRESS: "http://acestream-http-proxy:6878" # Leave this as is

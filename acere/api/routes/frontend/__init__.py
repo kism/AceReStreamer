@@ -63,6 +63,9 @@ if settings.FRONTEND_HOST == "":
 
     # Register routes dynamically from all_paths
     for found_path in all_paths:
+        # Skip /assets/* paths - they should be served by the catch-all route
+        if found_path.startswith("/assets/"):
+            continue
         router.add_api_route(
             found_path,
             get_frontend_index,

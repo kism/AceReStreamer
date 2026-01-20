@@ -63,17 +63,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Read Node.js version from .nvmrc
-        id: node_version
-        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
-
-      - name: Set up node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
+      - name: Set up bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: npm install
+        run: bun install
 
       - name: Run TypeScript checks
-        run: npm run typecheck
+        run: bun run typecheck

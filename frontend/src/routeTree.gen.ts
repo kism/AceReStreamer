@@ -65,14 +65,14 @@ const LayoutInfoIptvRoute = LayoutInfoIptvRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof LayoutIndexRoute
   '/login': typeof LoginRoute
   '/admin': typeof LayoutAdminRoute
   '/epg': typeof LayoutEpgRoute
   '/settings': typeof LayoutSettingsRoute
-  '/': typeof LayoutIndexRoute
   '/info/iptv': typeof LayoutInfoIptvRoute
   '/info/playback': typeof LayoutInfoPlaybackRoute
-  '/info': typeof LayoutInfoIndexRoute
+  '/info/': typeof LayoutInfoIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -99,14 +99,14 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/login'
     | '/admin'
     | '/epg'
     | '/settings'
-    | '/'
     | '/info/iptv'
     | '/info/playback'
-    | '/info'
+    | '/info/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -147,7 +147,7 @@ declare module '@tanstack/react-router' {
     '/_layout': {
       id: '/_layout'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof LayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -182,7 +182,7 @@ declare module '@tanstack/react-router' {
     '/_layout/info/': {
       id: '/_layout/info/'
       path: '/info'
-      fullPath: '/info'
+      fullPath: '/info/'
       preLoaderRoute: typeof LayoutInfoIndexRouteImport
       parentRoute: typeof LayoutRoute
     }

@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "chakra-ui": {
+      "command": "~/.bun/bin/bunx",
+      "args": ["-y", "@chakra-ui/react-mcp"]
+    }
+  }
+}

@@ -5,6 +5,7 @@ import {
   HStack,
   IconButton,
   Text,
+  useBreakpointValue,
   VStack,
 } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
@@ -97,6 +98,16 @@ function PlayerControls({
 function WebPlayer() {
   const [isExpanded, setIsExpanded] = useState(false)
   const [contentId, setContentId] = useState(window.location.hash.substring(1))
+  const isLarge = useBreakpointValue({ base: false, lg: true })
+  const isSmall = useBreakpointValue({
+    base: true,
+    sm: true,
+    md: false,
+    lg: false,
+  })
+
+  // Show program info when layout is vertical (sidebar not on side)
+  const showProgramInformation = (!isLarge || isExpanded) && !isSmall
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -136,7 +147,7 @@ function WebPlayer() {
             <Box
               w="100%"
               aspectRatio={16 / 9}
-              bg="gray.800"
+              bg="bg.muted"
               display="flex"
               alignItems="center"
               justifyContent="center"
@@ -170,7 +181,7 @@ function WebPlayer() {
         overflow="visible"
         pb={{ base: 10, lg: 4 }} // Overscroll is nice on mobile
       >
-        <StreamTable />
+        <StreamTable showProgramInformation={showProgramInformation} />
         <Box flexShrink={0} h={4} /> {/* Bit of a hack */}
       </Flex>
     </Flex>

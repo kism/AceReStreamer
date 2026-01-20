@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tv generator-info-name="Processed by Open-EPG Visual Processor v1.0"
+    generator-info-url="https://www.open-epg.com"
+    >
+    <channel id="channel1.au">
+        <display-name lang="en">Channel One [AU]</display-name>
+        <icon src="http://example.com/logo1.png" />
+    </channel>
+    <channel id="channel2.au">
+        <display-name lang="en">Channel Two [AU]</display-name>
+        <icon src="http://example.com/logo2.png" />
+    </channel>
+    <programme start="20240615060000 +0000"
+               stop="20240615070000 +0000"
+               channel="channel1.au"
+               >
+        <title lang="en">Morning News</title>
+        <desc lang="en">Latest updates from around the world.</desc>
+        <category lang="en">News</category>
+        <icon src="http://example.com/program1.png" />
+    </programme>
+    <programme start="20240615070000 +0000"
+               stop="20240615080000 +0000"
+               channel="channel1.au"
+               >
+        <title lang="en">Cartoon Hour</title>
+        <desc lang="en">Fun cartoons for kids.</desc>
+        <category lang="en">Kids</category>
+        <icon src="http://example.com/program2.png" />
+    </programme>
+    <programme start="20240615060000 +0000"
+               stop="20240615063000 +0000"
+               channel="channel2.au"
+               >
+        <title lang="en">Cooking Show</title>
+        <desc lang="en">Delicious recipes and cooking tips.</desc>
+        <category lang="en">Lifestyle</category>
+        <icon src="http://example.com/program3.png" />
+    </programme>
+    <programme start="20240615063000 +0000"
+               stop="20240615070000 +0000"
+               channel="channel2.au"
+               >
+        <title lang="en">Travel Diaries</title>
+        <desc lang="en">Exploring exotic destinations around the globe.</desc>
+        <category lang="en">Travel</category>
+        <icon src="http://example.com/program4.png" />
+    </programme>
+</tv>

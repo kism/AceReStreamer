@@ -43,7 +43,11 @@ function NoDataVStack() {
   )
 }
 
-export function StreamTable() {
+export function StreamTable({
+  showProgramInformation,
+}: {
+  showProgramInformation: boolean
+}) {
   const { data, isLoading, isPlaceholderData } = useQuery({
     ...getStreamsQueryOptions(),
     placeholderData: (prevData) => prevData,
@@ -99,6 +103,9 @@ export function StreamTable() {
               </Box>
             </TableColumnHeader>
             <TableColumnHeader>Stream</TableColumnHeader>
+            {showProgramInformation && (
+              <TableColumnHeader maxW="150px">Description</TableColumnHeader>
+            )}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -131,27 +138,48 @@ export function StreamTable() {
                 w="30px"
               />
               {/* This maxW is load bearing */}
-              <TableCell overflow="hidden" p={1} maxW="0">
+              <TableCell overflow="hidden" p={1} maxW={0}>
                 <Box
                   whiteSpace="nowrap"
                   overflow="hidden"
                   textOverflow="ellipsis"
+                  color="fg"
                 >
                   {item.title}
                 </Box>
                 <Box
                   color={
                     window.location.hash.substring(1) === item.content_id
-                      ? "gray.200"
-                      : "gray.500"
+                      ? "gray.300"
+                      : item.program_description
+                        ? "fg.muted"
+                        : "fg.subtle"
                   }
                   whiteSpace="nowrap"
                   overflow="hidden"
                   textOverflow="ellipsis"
                 >
-                  {item.program_title || "?"}
+                  {item.program_title || "<No Title>"}
                 </Box>
               </TableCell>
+              {showProgramInformation && (
+                <TableCell textAlign="left" maxW="150px" p={1} px={2}>
+                  <Box
+                    whiteSpace="normal"
+                    overflow="hidden"
+                    textOverflow="ellipsis"
+                    color={
+                      window.location.hash.substring(1) === item.content_id
+                        ? "gray.300"
+                        : item.program_description
+                          ? undefined
+                          : "fg.subtle"
+                    }
+                  >
+                    {item.program_description || "<No Description>"}
+                  </Box>
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>

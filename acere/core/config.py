@@ -2,6 +2,8 @@ import datetime
 import json
 import os
 import secrets
+import urllib
+import urllib.parse
 from typing import TYPE_CHECKING, Annotated, Any, Literal, Self
 
 from pydantic import (
@@ -92,12 +94,7 @@ class ScrapeSiteGeneric(BaseModel):
     def generate_slug(self) -> Self:
         """Generate a slug from the name."""
         if self.name == "":
-            name_temp: str = slugify(self.url.encoded_string())
-            if not self.url.path and self.url.host:
-                name_temp = self.url.host
-            if self.url.path:
-                path_segments = self.url.path.strip("/").split("/")
-                name_temp = path_segments[0] + "-" + path_segments[-1] if len(path_segments) >= 2 else path_segments[-1]  # noqa: PLR2004
+            name_temp: str = slugify(urllib.parse.unquote(self.url.encoded_string()))
 
             self.name = name_temp
 

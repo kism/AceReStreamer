@@ -61,8 +61,7 @@ function DateTimeVStack({
 export function EPGTable({ programmes }: EPGTableProps) {
   const isMobile = useBreakpointValue({ base: true, md: false })
   const isLargeScreen = useBreakpointValue({ base: false, lg: true })
-  const currentProgramBGColour = "teal.100"
-  const currentProgramDarkBGColour = "teal.900"
+  const currentProgramBGColour = "teal.900"
 
   if (isMobile) {
     return (
@@ -75,7 +74,6 @@ export function EPGTable({ programmes }: EPGTableProps) {
               p={2}
               width={"100%"}
               bg={isCurrent ? currentProgramBGColour : "bg.subtle"}
-              _dark={{ bg: isCurrent ? currentProgramDarkBGColour : undefined }}
             >
               <HStack justify="normal" gap={4}>
                 <DateTimeVStack
@@ -124,9 +122,6 @@ export function EPGTable({ programmes }: EPGTableProps) {
               <TableRow
                 key={index}
                 bg={isCurrent ? currentProgramBGColour : undefined}
-                _dark={{
-                  bg: isCurrent ? currentProgramDarkBGColour : undefined,
-                }}
                 fontWeight={isCurrent ? "bold" : undefined}
               >
                 <TableCell width="1%">

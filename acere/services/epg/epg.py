@@ -95,13 +95,13 @@ class EPG:
     def get_epg_etree_normalised(self) -> etree._Element | None:
         epg_data = self._get_data()
         if epg_data is None:
-            logger.warning("EPG data for %s is None, skipping", self.region_code)
+            logger.warning("EPG data for %s/%s is None, skipping", self.region_code, self.url)
             return None
 
         try:
             wip_etree = etree.fromstring(epg_data)
         except etree.XMLSyntaxError:
-            logger.error("Failed to parse EPG XML data for %s", self.region_code)
+            logger.error("Failed to parse EPG XML data for %s/%s", self.region_code, self.url)
             return None
 
         for channel in wip_etree.findall("channel"):

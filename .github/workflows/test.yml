@@ -34,7 +34,7 @@ jobs:
         run: uv sync --extra test
 
       - name: Test with pytest
-        run: uv run pytest --cov-report=xml # xml report needed for codecov, other settings from pyproject.toml
+        run: uv run pytest --cov=acere --cov-report=xml # xml report needed for codecov, other settings from pyproject.toml
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1

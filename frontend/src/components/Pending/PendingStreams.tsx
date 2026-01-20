@@ -1,3 +1,4 @@
+import { VStack } from "@chakra-ui/react"
 import { FiBarChart } from "react-icons/fi"
 import {
   AppTableRoot,
@@ -23,14 +24,19 @@ const PendingStreams = () => (
         </TableRow>
       </TableHeader>
       <TableBody>
-        <TableRow>
-          <TableCell>
-            <SkeletonText noOfLines={1} />
-          </TableCell>
-          <TableCell>
-            <SkeletonText noOfLines={1} />
-          </TableCell>
-        </TableRow>
+        {Array.from({ length: 3 }).map((_, index) => (
+          <TableRow key={index}>
+            <TableCell>
+              <SkeletonText noOfLines={1} />
+            </TableCell>
+            <TableCell>
+              <VStack>
+                <SkeletonText noOfLines={1} />
+                <SkeletonText noOfLines={1} />
+              </VStack>
+            </TableCell>
+          </TableRow>
+        ))}
       </TableBody>
     </AppTableRoot>
   </AppTableScrollArea>

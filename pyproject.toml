@@ -1,6 +1,6 @@
 [project]
 name = "acere"
-version = "1.0.3"
+version = "1.1.0"
 description = ""
 requires-python = ">=3.14,<4.0"
 dependencies = [
@@ -135,7 +135,7 @@ context = "test"
 [tool.coverage.report]
 show_missing = false
 format = "text"
-# sort = "-Cover"
+sort = "-Miss"
 
 [tool.coverage.html]
 show_contexts = true
@@ -171,10 +171,14 @@ disable_error_code = [
     "override",   # SqlModel handles the None
     "assignment", # Classmethod is fine
 ]
-
+[[tool.mypy.overrides]]
+module = "tests.core.config.test_ace_scrape_conf"
+disable_error_code = [
+    "arg-type",   # Pydantic needs to process and correct incorrect urls
+]
 
 [[tool.ty.overrides]]
 # Not sure what ty is upset about here
-include = ["acere/main.py"]
+include = ["acere/main.py", "tests/core/config/test_ace_scrape_conf.py"]
 [tool.ty.overrides.rules]
 "invalid-argument-type" = "ignore"

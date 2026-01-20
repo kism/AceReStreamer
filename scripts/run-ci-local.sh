@@ -25,17 +25,11 @@ ruff check
 
 cd frontend
 
-if [ -d ~/.nvm ]; then
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-fi
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
 
+print_heading "bun lint"
+bun run lint
 
-nvm use
-
-print_heading "npm lint"
-npm run lint
-
-print_heading "npm typecheck"
-npm run typecheck
+print_heading "bun typecheck"
+bun run typecheck
