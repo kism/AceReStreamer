@@ -12,7 +12,7 @@ from starlette_compress import CompressMiddleware
 
 from acere.api.main import api_router, api_router_xc, frontend_router, hls_router, iptv_router
 from acere.constants import API_V1_STR, SETTINGS_FILE
-from acere.core.db import engine, init_db
+from acere.database.init import engine, init_db
 from acere.instances.ace_pool import set_ace_pool
 from acere.instances.config import settings
 from acere.instances.scraper import set_ace_scraper

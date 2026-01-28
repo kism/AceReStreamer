@@ -95,48 +95,6 @@ export type AcePoolStatResponseLivePos = {
 };
 
 /**
- * Settings Definition.
- */
-export type AceReStreamerConf = {
-    app?: AppConf;
-    logging?: LoggingConf;
-    scraper?: AceScrapeConf;
-    epgs?: Array<EPGInstanceConf>;
-    FRONTEND_HOST?: string;
-    ENVIRONMENT?: 'local' | 'staging' | 'production';
-    EXTERNAL_URL?: string;
-    ACCESS_TOKEN_EXPIRE_MINUTES?: number;
-    SECRET_KEY?: string;
-    FIRST_SUPERUSER?: string;
-    FIRST_SUPERUSER_PASSWORD?: string;
-    BACKEND_CORS_ORIGINS?: (Array<(string)> | string);
-    readonly all_cors_origins: Array<(string)>;
-};
-
-export type ENVIRONMENT = 'local' | 'staging' | 'production';
-
-/**
- * Settings for scraping AceStreams.
- */
-export type AceScrapeConf = {
-    playlist_name?: string;
-    adhoc_playlist_external_url?: (string | null);
-    tvg_logo_external_url?: (string | null);
-    html?: Array<ScrapeSiteHTML>;
-    iptv_m3u8?: Array<ScrapeSiteIPTV>;
-    api?: Array<ScrapeSiteAPI>;
-    name_replacements?: {
-        [key: string]: (string);
-    };
-    content_id_infohash_name_overrides?: {
-        [key: string]: (string);
-    };
-    category_mapping?: {
-        [key: string]: Array<(string)>;
-    };
-};
-
-/**
  * Represent a scraper instance, generic for HTML and IPTV sources.
  */
 export type AceScraperSourceApi = {
@@ -148,16 +106,6 @@ export type AceScraperSourceApi = {
 };
 
 export type type = 'html' | 'iptv' | 'api';
-
-/**
- * Application configuration definition.
- */
-export type AppConf = {
-    authentication_enabled?: boolean;
-    ace_address?: string;
-    transcode_audio?: boolean;
-    ace_max_streams?: number;
-};
 
 export type Body_Login_login_access_token = {
     grant_type?: (string | null);
@@ -171,35 +119,55 @@ export type Body_Login_login_access_token = {
 /**
  * Model for EPG API handler response.
  */
-export type EPGApiHandlerResponse = {
+export type EPGApiHandlerHealthResponse = {
     time_until_next_update: number;
     tvg_ids: Array<(string)>;
-    epgs: Array<EPGApiResponse>;
+    epgs: Array<EPGApiHealthResponse>;
 };
 
 /**
  * Model for EPG API response.
  */
-export type EPGApiResponse = {
+export type EPGApiHealthResponse = {
     url: string;
-    region_code: string;
+    overrides: {
+        [key: string]: (string);
+    };
     time_since_last_updated: number;
     time_until_next_update: number;
 };
 
 /**
  * EPG (Electronic Program Guide) configuration definition.
+ *
+ * tvg_id_overrides is a str:str dict where you can override stream tvg_ids to match those in the EPG.
  */
-export type EPGInstanceConf = {
-    region_code?: string;
+export type EPGInstanceConf_Input = {
     format?: 'xml.gz' | 'xml';
-    url?: string;
+    url: string;
     tvg_id_overrides?: {
         [key: string]: (string);
     };
 };
 
 export type format = 'xml.gz' | 'xml';
+
+/**
+ * EPG (Electronic Program Guide) configuration definition.
+ *
+ * tvg_id_overrides is a str:str dict where you can override stream tvg_ids to match those in the EPG.
+ */
+export type EPGInstanceConf_Output = {
+    format?: 'xml.gz' | 'xml';
+    url: string;
+    tvg_id_overrides?: {
+        [key: string]: (string);
+    };
+    /**
+     * Generate a slug from the url.
+     */
+    readonly slug: string;
+};
 
 export type ErrorDetails = {
     type: string;
@@ -213,19 +181,20 @@ export type ErrorDetails = {
 };
 
 /**
- * Flat model for a found AceStream.
+ * Model for a found AceStream.
  */
 export type FoundAceStreamAPI = {
-    site_names: Array<(string)>;
-    quality: number;
     title: string;
     content_id: string;
-    infohash: string;
+    infohash?: (string | null);
     tvg_id: string;
     tvg_logo?: (string | null);
-    program_title?: string;
-    program_description?: string;
+    last_scraped_time: string;
+    program_title: string;
+    program_description: string;
+    quality: number;
     has_ever_worked: boolean;
+    m3u_failures: number;
 };
 
 export type HealthResponseModel = {
@@ -246,16 +215,6 @@ export type HTMLScraperFilter = {
 
 export type HTTPValidationError = {
     detail?: Array<ValidationError>;
-};
-
-/**
- * Logging configuration definition.
- */
-export type LoggingConf = {
-    level?: (string | number);
-    level_http?: (string | number);
-    path?: (string | null);
-    simple?: boolean;
 };
 
 export type Message = {
@@ -292,37 +251,6 @@ export type Quality = {
     last_message?: string;
 };
 
-/**
- * Scraper for API Sites.
- */
-export type ScrapeSiteAPI = {
-    type?: "api";
-    name: string;
-    url: string;
-    title_filter?: TitleFilter;
-};
-
-/**
- * Model for a site to scrape.
- */
-export type ScrapeSiteHTML = {
-    type?: "html";
-    name: string;
-    url: string;
-    title_filter?: TitleFilter;
-    html_filter?: HTMLScraperFilter;
-};
-
-/**
- * Scraper for IPTV Sites.
- */
-export type ScrapeSiteIPTV = {
-    type?: "iptv";
-    name: string;
-    url: string;
-    title_filter?: TitleFilter;
-};
-
 export type StreamToken = {
     stream_token: string;
 };
@@ -334,6 +262,14 @@ export type ThreadHealthModel = {
 
 /**
  * Model for title filtering.
+ *
+ * Items in regex_postprocessing will be applied to remove parts of the title via re.sub.
+ *
+ * The other lists will be evaluated in order:
+ * - always_exclude_words
+ * - always_include_words
+ * - exclude_words
+ * - include_words (if populated, otherwise allow any)
  */
 export type TitleFilter = {
     always_exclude_words?: Array<(string)>;
@@ -346,6 +282,13 @@ export type TitleFilter = {
 export type Token = {
     access_token: string;
     token_type?: string;
+};
+
+/**
+ * Model for TVG EPG mappings response.
+ */
+export type TVGEPGMappingsResponse = {
+    [key: string]: (string | null);
 };
 
 export type UpdatePassword = {
@@ -436,17 +379,29 @@ export type AcePoolStatsByPidData = {
 
 export type AcePoolStatsByPidResponse = (AcePoolStat);
 
-export type ConfigurationGetConfigResponse = (AceReStreamerConf);
+export type EpgEpgHealthResponse = (EPGApiHandlerHealthResponse);
 
-export type ConfigurationLoadConfigData = {
-    requestBody: {
-        [key: string]: unknown;
-    };
+export type EpgGetEpgsResponse = (Array<EPGInstanceConf_Output>);
+
+export type EpgAddEpgData = {
+    requestBody: (EPGInstanceConf_Input | Array<EPGInstanceConf_Input>);
 };
 
-export type ConfigurationLoadConfigResponse = (MessageResponseModel);
+export type EpgAddEpgResponse = (unknown);
 
-export type EpgEpgsResponse = (EPGApiHandlerResponse);
+export type EpgGetEpgData = {
+    slug: string;
+};
+
+export type EpgGetEpgResponse = (EPGInstanceConf_Output);
+
+export type EpgDeleteEpgData = {
+    slug: string;
+};
+
+export type EpgDeleteEpgResponse = (unknown);
+
+export type EpgTvgEpgMappingsResponse = (TVGEPGMappingsResponse);
 
 export type FrontendFrontendIndexHtmlResponse = (string);
 
@@ -525,19 +480,25 @@ export type ScraperRemoveSourceData = {
 
 export type ScraperRemoveSourceResponse = (MessageResponseModel);
 
-export type ScraperCheckResponse = (MessageResponseModel);
-
 export type StreamsByContentIdData = {
     contentId: string;
 };
 
 export type StreamsByContentIdResponse = (FoundAceStreamAPI);
 
+export type StreamsDeleteByContentIdData = {
+    contentId: string;
+};
+
+export type StreamsDeleteByContentIdResponse = (MessageResponseModel);
+
 export type StreamsStreamsResponse = (Array<FoundAceStreamAPI>);
 
 export type StreamsHealthResponse = ({
     [key: string]: Quality;
 });
+
+export type StreamsCheckResponse = (MessageResponseModel);
 
 export type UsersReadUsersData = {
     limit?: number;

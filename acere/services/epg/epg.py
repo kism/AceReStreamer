@@ -3,7 +3,7 @@
 import gzip
 import io
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import aiohttp
 from lxml import etree
@@ -36,31 +36,25 @@ class EPG:
     def __init__(self, epg_conf: EPGInstanceConf) -> None:
         """Initialize the EPG entry with a URL."""
         self.url = epg_conf.url
-        self.format = epg_conf.format
+        self.format: Literal["xml.gz", "xml"] = epg_conf.format
         self._extracted_format = self.format.replace(".gz", "")  # Remove .gz for internal use
-        self._overrides = epg_conf.tvg_id_overrides
-        self.region_code = epg_conf.region_code
+        self.overrides = epg_conf.tvg_id_overrides
         self.last_updated: datetime | None = None
-        self.saved_file_path: Path | None = None
+
+        file_name = f"{slugify(self.url.host) + '-' + slugify(self.url.path)}.{self._extracted_format}"
+        self.saved_file_path: Path = EPG_XML_DIR / file_name
 
     async def update(self) -> bool:
         """Update the EPG data from the configured URL, returns true if updated with new data."""
-        if not EPG_XML_DIR.is_dir():
-            logger.info("Creating EPG directory at %s", EPG_XML_DIR)
-            EPG_XML_DIR.mkdir(parents=True, exist_ok=True)
-
-        file_name = f"{self.region_code}-{slugify(self.url.host) + slugify(self.url.path)}.{self._extracted_format}"
-        self.saved_file_path = EPG_XML_DIR / file_name
-
         if self._time_to_update():
             data_bytes = await self._download_epg()
 
             if data_bytes:
                 self._write_to_file(data_bytes)
-                logger.info("EPG data for %s/%s updated successfully", self.region_code, self.url)
+                logger.info("EPG data for %s updated successfully", self.url)
                 return True
 
-            logger.error("Failed to download EPG data for %s", self.region_code)
+            logger.error("Failed to download EPG data for %s", self.url)
 
         return False
 
@@ -68,8 +62,7 @@ class EPG:
     def _get_data(self) -> bytes | None:
         """Get the EPG data as bytes."""
         # I used to have this in RAM, but it got very large with multiple EPGs
-
-        if self.saved_file_path and self.saved_file_path.is_file():
+        if self.saved_file_path.is_file():
             if self.saved_file_path.stat().st_size == 0:
                 logger.warning("EPG file %s is empty, removing.", self.saved_file_path)
                 self.saved_file_path.unlink()
@@ -87,30 +80,28 @@ class EPG:
                 )
                 return None
         else:
-            logger.warning(
-                "No saved file path defined or file does not exist for EPG %s, %s ", self.region_code, self.url
-            )
+            logger.warning("No saved file path defined or file does not exist for EPG %s ", self.url)
             return None
 
     def get_epg_etree_normalised(self) -> etree._Element | None:
         epg_data = self._get_data()
         if epg_data is None:
-            logger.warning("EPG data for %s/%s is None, skipping", self.region_code, self.url)
+            logger.warning("EPG data for %s is None, skipping", self.url)
             return None
 
         try:
             wip_etree = etree.fromstring(epg_data)
         except etree.XMLSyntaxError:
-            logger.error("Failed to parse EPG XML data for %s/%s", self.region_code, self.url)
+            logger.error("Failed to parse EPG XML data for %s", self.url)
             return None
 
         for channel in wip_etree.findall("channel"):
-            tvg_id = normalise_epg_tvg_id(channel.get("id"), self._overrides)
+            tvg_id = normalise_epg_tvg_id(channel.get("id"), self.overrides)
             if tvg_id:
                 channel.set("id", tvg_id)
 
         for programme in wip_etree.findall("programme"):
-            tvg_id = normalise_epg_tvg_id(programme.get("channel"), self._overrides)
+            tvg_id = normalise_epg_tvg_id(programme.get("channel"), self.overrides)
             if tvg_id:
                 programme.set("channel", tvg_id)
 
@@ -138,7 +129,7 @@ class EPG:
     def _time_to_update(self) -> bool:
         """Check if the EPG data needs to be updated based on the last update time."""
         if self.last_updated is None:  # If we havent updated this EPG
-            if self.saved_file_path is not None and self.saved_file_path.is_file():
+            if self.saved_file_path.is_file():
                 # Stat the existing file to get its last modified time, this is the last updated time
                 mtime = self.saved_file_path.stat().st_mtime
                 self.last_updated = datetime.fromtimestamp(mtime, tz=OUR_TIMEZONE)
@@ -149,8 +140,7 @@ class EPG:
         need_to_update = time_since_last_update > EPG_LIFESPAN
 
         logger.debug(
-            "Time since last update for %s: %s, lifespan: %s, need_to_update=%s",
-            self.region_code,
+            "Time since last update for %s, lifespan: %s, need_to_update=%s",
             time_since_last_update,
             EPG_LIFESPAN,
             need_to_update,
@@ -188,9 +178,6 @@ class EPG:
 
     def _write_to_file(self, data: bytes) -> None:
         """Write the EPG data to a file."""
-        if self.saved_file_path:
-            logger.info("Writing EPG data to %s", self.saved_file_path)
-            with self.saved_file_path.open("wb") as file:
-                file.write(data)
-        else:
-            logger.error("No saved file path defined for EPG data")
+        logger.info("Writing EPG data to %s", self.saved_file_path)
+        with self.saved_file_path.open("wb") as file:
+            file.write(data)

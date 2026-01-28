@@ -51,7 +51,16 @@ logger = get_logger(__name__)
 
 
 class TitleFilter(BaseModel):
-    """Model for title filtering."""
+    """Model for title filtering.
+
+    Items in regex_postprocessing will be applied to remove parts of the title via re.sub.
+
+    The other lists will be evaluated in order:
+    - always_exclude_words
+    - always_include_words
+    - exclude_words
+    - include_words (if populated, otherwise allow any)
+    """
 
     model_config = ConfigDict(extra="ignore")  # Ignore extras for config related things
 
@@ -375,7 +384,7 @@ class AppConf(BaseModel):
             logger.warning(msg)
             value = n_default_streams
 
-        if value > n_high_streams:
+        if value > n_high_streams and value <= n_very_high_streams:
             logger.warning(
                 "You have set ace_max_streams to a high value (%d), this may cause performance issues.",
                 value,
@@ -390,16 +399,24 @@ class AppConf(BaseModel):
 
 
 class EPGInstanceConf(BaseModel):
-    """EPG (Electronic Program Guide) configuration definition."""
+    """EPG (Electronic Program Guide) configuration definition.
+
+    tvg_id_overrides is a str:str dict where you can override stream tvg_ids to match those in the EPG.
+    """
 
     model_config = ConfigDict(extra="ignore")  # Ignore extras for config related things
 
-    region_code: str = "UK"
     format: Literal["xml.gz", "xml"] = "xml.gz"
-    url: HttpUrl = HttpUrl("https://www.open-epg.com/files/unitedkingdom1.xml.gz")
+    url: HttpUrl
     tvg_id_overrides: dict[
         str, str
     ] = {}  # The program normanises the tvg_ids pretty well, but sometimes you need to override specific ones.
+
+    @computed_field
+    @property
+    def slug(self) -> str:
+        """Generate a slug from the url."""
+        return slugify(urllib.parse.unquote(self.url.encoded_string()))
 
 
 class AceReStreamerConf(BaseSettings):
@@ -446,7 +463,7 @@ class AceReStreamerConf(BaseSettings):
                 env_settings,
                 JsonConfigSettingsSource(settings_cls),
             )
-        return (
+        return (  # pragma: no cover
             init_settings,
             dotenv_settings,
             env_settings,
@@ -465,6 +482,28 @@ class AceReStreamerConf(BaseSettings):
     @property
     def all_cors_origins(self) -> list[str]:
         return [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS] + [self.FRONTEND_HOST]
+
+    def add_epg(self, epg: EPGInstanceConf) -> None:
+        """Add an EPG instance to the config."""
+        matching_epg = next((existing_epg for existing_epg in self.epgs if existing_epg.url == epg.url), None)
+
+        if not matching_epg:
+            self.epgs.append(epg)
+            logger.info("Added new EPG source, total sources: %d", len(self.epgs))
+        else:
+            matching_epg = epg
+            logger.info("Updating existing EPG source: %s", epg.url)
+
+    def remove_epg(self, epg_url_slug: str) -> bool:
+        """Remove an EPG instance from the config via URL."""
+        matching_epg = next((existing_epg for existing_epg in self.epgs if existing_epg.slug == epg_url_slug), None)
+
+        if matching_epg:
+            self.epgs.remove(matching_epg)
+            logger.info("Removed EPG source, total sources: %d", len(self.epgs))
+            return True
+
+        return False
 
     def write_config(self, config_path: Path | None = None) -> None:
         """Write the current settings to a JSON file."""
@@ -510,7 +549,7 @@ class AceReStreamerConf(BaseSettings):
     @classmethod
     def force_load_config_file(cls, config_path: Path) -> Self:
         """Load the configuration file. File contents takes precedence over env vars."""
-        if not config_path.exists():
+        if not config_path.exists() or not config_path.is_file():
             logger.warning(
                 "Config file %s does not exist, loading defaults",
                 config_path.absolute(),

@@ -203,9 +203,6 @@ class HTMLStreamScraper(ScraperCommon):
                 title=title,
             )
 
-            if self.category_xc_category_id_mapping:  # Populate if we aren't running in adhoc mode
-                self.category_xc_category_id_mapping.get_xc_category_id(group_title)
-
             found_streams.append(
                 FoundAceStream(
                     title=title,
@@ -213,8 +210,7 @@ class HTMLStreamScraper(ScraperCommon):
                     tvg_id=tvg_id,
                     tvg_logo=tvg_logo,
                     group_title=group_title,
-                    site_names=[site.name],
-                    last_found_time=0,
+                    sites_found_on=[site.name],
                 )
             )
 

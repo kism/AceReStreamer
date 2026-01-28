@@ -4,7 +4,6 @@ import asyncio
 import threading
 import time
 from datetime import datetime, timedelta
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from lxml import etree
@@ -16,12 +15,15 @@ from acere.version import PROGRAM_NAME, URL
 from .candidate import EPGCandidateHandler
 from .epg import EPG, EPG_LIFESPAN
 from .helpers import find_current_program_xml
-from .models import EPGApiHandlerResponse, EPGApiResponse
+from .models import EPGApiHandlerHealthResponse, EPGApiHealthResponse, TVGEPGMappingsResponse
 
 if TYPE_CHECKING:
+    from pydantic import HttpUrl
+
     from acere.core.config import EPGInstanceConf
 else:
     EPGInstanceConf = object
+    HttpUrl = object
 
 logger = get_logger(__name__)
 
@@ -33,27 +35,21 @@ class EPGHandler:
 
     def __init__(self) -> None:
         """Initialize the EPGHandler with a list of URLs."""
-        self.epgs: list[EPG] = []
-        self.condensed_epg: etree._Element | None = None
-        self.condensed_epg_bytes: bytes = b""
-        self.instance_path: Path | None = None
-        self.set_of_tvg_ids: set[str] = set()  # Desired TVG IDs to include in condensed EPG
-        self.next_update_time: datetime = datetime.now(tz=OUR_TIMEZONE)
+        self._epgs: list[EPG] = []
+        self._condensed_epg: etree._Element | None = None
+        self._condensed_epg_bytes: bytes = b""
+        self._set_of_tvg_ids: set[str] = set()  # Desired TVG IDs to include in condensed EPG
+        self._tvg_epg_mappings: dict[str, HttpUrl | None] = {}
+        self._next_update_time: datetime = datetime.now(tz=OUR_TIMEZONE)
         self._update_threads: list[threading.Thread] = []
 
     def load_config(
         self,
         epg_conf_list: list[EPGInstanceConf],
-        instance_path: Path | str | None = None,
     ) -> None:
         """Load EPG configurations."""
-        if isinstance(instance_path, str):
-            instance_path = Path(instance_path)
-
-        self.instance_path = instance_path
-
         for epg_conf in epg_conf_list:
-            self.epgs.append(EPG(epg_conf=epg_conf))
+            self._epgs.append(EPG(epg_conf=epg_conf))
 
         self._update_epgs()
 
@@ -72,26 +68,26 @@ class EPGHandler:
         """Populate the EPGCandidateHandler with data from all EPGs."""
         candidate_handler = EPGCandidateHandler()
 
-        for epg in self.epgs:
+        for epg in self._epgs:
             epg_etree = epg.get_epg_etree_normalised()
             if epg_etree is None:
                 continue  # Error message is elsewhere
 
             for channel in epg_etree.findall("channel"):
                 tvg_id = channel.get("id")
-                if tvg_id in self.set_of_tvg_ids:
+                if tvg_id in self._set_of_tvg_ids:
                     candidate_handler.add_channel(tvg_id, epg.url, channel)
 
             for programme in epg_etree.findall("programme"):
                 tvg_id = programme.get("channel")
-                if tvg_id in self.set_of_tvg_ids:
+                if tvg_id in self._set_of_tvg_ids:
                     candidate_handler.add_program(tvg_id, epg.url, programme)
 
         return candidate_handler
 
     def _condense_epgs(self) -> None:
         """Get a condensed version of the merged EPG data."""
-        if not self.set_of_tvg_ids:
+        if not self._set_of_tvg_ids:
             logger.warning("No TVG IDs found in the current streams, skipping EPG condensation")
             return
 
@@ -102,12 +98,14 @@ class EPGHandler:
 
         new_condensed_data = self._create_tv_element()
 
-        for tvg_id in self.set_of_tvg_ids:
+        for tvg_id in self._set_of_tvg_ids:
             candidate = candidate_handler.get_best_candidate(tvg_id)
             if candidate is None:
                 logger.debug("No candidate found for TVG ID %s", tvg_id)
+                self._tvg_epg_mappings[tvg_id] = None
                 continue
 
+            self._tvg_epg_mappings[tvg_id] = candidate.epg_url
             new_condensed_data.extend(candidate.get_channels_programs())
 
         logger.info(
@@ -117,22 +115,22 @@ class EPGHandler:
         )
 
         # Update EPG ET, generate bytes local
-        self.condensed_epg = new_condensed_data
-        new_condensed_epg_bytes = etree.tostring(self.condensed_epg, encoding="utf-8", xml_declaration=True)
+        self._condensed_epg = new_condensed_data
+        new_condensed_epg_bytes = etree.tostring(self._condensed_epg, encoding="utf-8", xml_declaration=True)
 
         # Check bytes, local vs self.
-        if new_condensed_epg_bytes == self.condensed_epg_bytes:
+        if new_condensed_epg_bytes == self._condensed_epg_bytes:
             logger.warning("Condensed EPG data is the same as before")
 
         # Update the condensed EPG bytes
-        self.condensed_epg_bytes = new_condensed_epg_bytes
+        self._condensed_epg_bytes = new_condensed_epg_bytes
 
     # region Setters
     def add_tvg_ids(self, tvg_ids: list[str]) -> None:
         """Set the TVG IDs for which EPG data should be condensed."""
         for tvg_id in tvg_ids:
             if tvg_id != "":
-                self.set_of_tvg_ids.add(tvg_id)
+                self._set_of_tvg_ids.add(tvg_id)
 
         # This needs to be forced, otherwise the list might be empty on startup
         self._condense_epgs()
@@ -140,46 +138,46 @@ class EPGHandler:
     # region Getters
     def get_condensed_epg(self) -> bytes:
         """Get the condensed EPG data."""
-        return self.condensed_epg_bytes
+        return self._condensed_epg_bytes
 
     def get_current_program(self, tvg_id: str) -> tuple[str, str]:
         """Get the current program for a given TVG ID."""
-        if self.condensed_epg is None:
+        if self._condensed_epg is None:
             logger.error("No condensed EPG data available to get current program")
             return "", ""
 
-        return find_current_program_xml(tvg_id, self.condensed_epg)
+        return find_current_program_xml(tvg_id, self._condensed_epg)
 
     # region API
-    def get_epgs_api(self) -> EPGApiHandlerResponse:
+    def get_epgs_api(self) -> EPGApiHandlerHealthResponse:
         """Get the names of all EPGs."""
         epgs = [
-            EPGApiResponse(
+            EPGApiHealthResponse(
                 url=epg.url,
-                region_code=epg.region_code,
+                overrides=epg.overrides,
                 time_since_last_updated=epg.get_time_since_last_update(),
                 time_until_next_update=epg.get_time_until_next_update(),
             )
-            for epg in self.epgs
+            for epg in self._epgs
         ]
 
-        time_until_next_update = self.next_update_time - datetime.now(tz=OUR_TIMEZONE)
-        return EPGApiHandlerResponse(
+        time_until_next_update = self._next_update_time - datetime.now(tz=OUR_TIMEZONE)
+        return EPGApiHandlerHealthResponse(
             time_until_next_update=time_until_next_update,
-            tvg_ids=self.set_of_tvg_ids,
+            tvg_ids=self._set_of_tvg_ids,
             epgs=epgs,
         )
+
+    def get_tvg_epg_mappings(self) -> TVGEPGMappingsResponse:
+        """Get the mapping of TVG IDs to their source EPG URLs."""
+        return TVGEPGMappingsResponse(root=self._tvg_epg_mappings)
 
     # region Update Thread
     def _get_time_to_next_update(self) -> timedelta:
         """Get the time until the next EPG update."""
         wait_time = EPG_LIFESPAN
 
-        if self.instance_path is None:
-            logger.error("Instance path is not set, cannot get time to next update")
-            return EPG_CHECK_INTERVAL_MINIMUM
-
-        for epg in self.epgs:
+        for epg in self._epgs:
             if epg.last_updated is None:
                 return EPG_CHECK_INTERVAL_MINIMUM
 
@@ -197,27 +195,24 @@ class EPGHandler:
 
     def _update_epgs(self) -> None:  # noqa: C901 I split it up within the function
         """Update all EPGs with the current instance path."""
-        if self.instance_path is None:
-            logger.error("Instance path is not set, cannot update EPGs")
-            return
 
         async def _safe_update_epg(epg: EPG) -> bool:
             """Safely update a single EPG with exception handling."""
             try:
                 return await epg.update()
             except Exception:
-                logger.exception("Failed to update EPG %s", epg.region_code)
+                logger.exception("Failed to update EPG %s", epg.url)
                 return False
 
         async def _update_epgs_async() -> bool:
             """Asynchronous function to update EPGs."""
             any_epg_updated = False
-            tasks = [_safe_update_epg(epg) for epg in self.epgs]
+            tasks = [_safe_update_epg(epg) for epg in self._epgs]
             results = await asyncio.gather(*tasks, return_exceptions=True)
 
             for i, result in enumerate(results):
                 if isinstance(result, Exception):
-                    logger.exception("Failed to update EPG %s: %s", self.epgs[i].region_code, result)
+                    logger.exception("Failed to update EPG %s: %s", self._epgs[i].url, result)
                 elif result:
                     any_epg_updated = True
 
@@ -238,7 +233,7 @@ class EPGHandler:
                         logger.exception("Failed to condense EPGs")
 
                 time_until_next_update = self._get_time_to_next_update()
-                self.next_update_time = datetime.now(tz=OUR_TIMEZONE) + time_until_next_update
+                self._next_update_time = datetime.now(tz=OUR_TIMEZONE) + time_until_next_update
 
                 time.sleep(time_until_next_update.total_seconds())
 

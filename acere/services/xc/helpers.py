@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING
 from fastapi import HTTPException
 from sqlmodel import Session
 
-from acere.core.db import engine
 from acere.crud import authenticate_stream_token
+from acere.database.init import engine
 
 if TYPE_CHECKING:
     from pydantic import HttpUrl

@@ -1,10 +1,12 @@
 """API Scraper."""
 
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 import aiohttp
 from pydantic import BaseModel, ConfigDict, ValidationError
 
+from acere.constants import OUR_TIMEZONE
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.logger import get_logger
 
@@ -29,7 +31,7 @@ class APISiteResponseItem(BaseModel):
     infohash: str
     name: str
     availability: float
-    availability_updated_at: int
+    availability_updated_at: int  # Epoch timestamp
     categories: list[str] | None = None
 
 
@@ -82,7 +84,8 @@ class APIStreamScraper(ScraperCommon):
             tvg_logo = self.name_processor.find_tvg_logo_image(title)
 
             # We call it fresh if availability is 100%
-            last_found_time = stream.availability_updated_at if stream.availability < 1 else 0
+            last_scraped_epoch = stream.availability_updated_at if stream.availability < 1 else 0
+            last_scraped_time = datetime.fromtimestamp(last_scraped_epoch, tz=OUR_TIMEZONE)
 
             streams.append(
                 FoundAceStream(
@@ -91,8 +94,8 @@ class APIStreamScraper(ScraperCommon):
                     tvg_id=tvg_id,
                     group_title=group_title,
                     tvg_logo=tvg_logo,
-                    site_names=[site.name],
-                    last_found_time=last_found_time,
+                    sites_found_on=[site.name],
+                    last_scraped_time=last_scraped_time,
                 )
             )
 

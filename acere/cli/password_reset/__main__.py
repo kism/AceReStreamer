@@ -1,8 +1,8 @@
 from sqlmodel import Session, select
 
 from acere.constants import DATABASE_FILE
-from acere.core.db import engine
 from acere.crud import get_user_by_username, update_user
+from acere.database.init import engine
 from acere.models import User, UserUpdate
 from acere.utils.cli import console, prompt
 from acere.version import PROGRAM_NAME, __version__

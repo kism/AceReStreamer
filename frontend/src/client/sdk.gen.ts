@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { AcePoolPoolResponse, AcePoolGetByContentIdData, AcePoolGetByContentIdResponse, AcePoolDeleteByContentIdData, AcePoolDeleteByContentIdResponse, AcePoolGetByPidData, AcePoolGetByPidResponse, AcePoolStatsResponse, AcePoolStatsByContentIdData, AcePoolStatsByContentIdResponse, AcePoolStatsByPidData, AcePoolStatsByPidResponse, ConfigurationGetConfigResponse, ConfigurationLoadConfigData, ConfigurationLoadConfigResponse, EpgEpgsResponse, FrontendFrontendIndexHtmlResponse, FrontendFrontendIndexResponse, HealthHealthResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginResetPasswordData, LoginResetPasswordResponse, MediaIptvIptvM3U83Data, MediaIptvIptvM3U83Response, MediaIptvIptvM3U2Data, MediaIptvIptvM3U2Response, MediaIptvIptvM3U81Data, MediaIptvIptvM3U81Response, MediaXmlEpgXmlData, MediaXmlEpgXmlResponse, MediaXmlEpgXml3Data, MediaXmlEpgXml3Response, PrivateCreateUserData, PrivateCreateUserResponse, ScraperSourcesResponse, ScraperAddSourceData, ScraperAddSourceResponse, ScraperSourceData, ScraperSourceResponse, ScraperRemoveSourceData, ScraperRemoveSourceResponse, ScraperCheckResponse, StreamsByContentIdData, StreamsByContentIdResponse, StreamsStreamsResponse, StreamsHealthResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersReadStreamTokenMeResponse, UsersRegenerateStreamTokenMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, XtreamCodesXcIptvRouterData, XtreamCodesXcIptvRouterResponse, XtreamCodesXcGetData, XtreamCodesXcGetResponse } from './types.gen';
+import type { AcePoolPoolResponse, AcePoolGetByContentIdData, AcePoolGetByContentIdResponse, AcePoolDeleteByContentIdData, AcePoolDeleteByContentIdResponse, AcePoolGetByPidData, AcePoolGetByPidResponse, AcePoolStatsResponse, AcePoolStatsByContentIdData, AcePoolStatsByContentIdResponse, AcePoolStatsByPidData, AcePoolStatsByPidResponse, EpgEpgHealthResponse, EpgGetEpgsResponse, EpgAddEpgData, EpgAddEpgResponse, EpgGetEpgData, EpgGetEpgResponse, EpgDeleteEpgData, EpgDeleteEpgResponse, EpgTvgEpgMappingsResponse, FrontendFrontendIndexHtmlResponse, FrontendFrontendIndexResponse, HealthHealthResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginResetPasswordData, LoginResetPasswordResponse, MediaIptvIptvM3U83Data, MediaIptvIptvM3U83Response, MediaIptvIptvM3U2Data, MediaIptvIptvM3U2Response, MediaIptvIptvM3U81Data, MediaIptvIptvM3U81Response, MediaXmlEpgXmlData, MediaXmlEpgXmlResponse, MediaXmlEpgXml3Data, MediaXmlEpgXml3Response, PrivateCreateUserData, PrivateCreateUserResponse, ScraperSourcesResponse, ScraperAddSourceData, ScraperAddSourceResponse, ScraperSourceData, ScraperSourceResponse, ScraperRemoveSourceData, ScraperRemoveSourceResponse, StreamsByContentIdData, StreamsByContentIdResponse, StreamsDeleteByContentIdData, StreamsDeleteByContentIdResponse, StreamsStreamsResponse, StreamsHealthResponse, StreamsCheckResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersReadStreamTokenMeResponse, UsersRegenerateStreamTokenMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, XtreamCodesXcIptvRouterData, XtreamCodesXcIptvRouterResponse, XtreamCodesXcGetData, XtreamCodesXcGetResponse } from './types.gen';
 
 export class AcePoolService {
     /**
@@ -138,32 +138,45 @@ export class AcePoolService {
     }
 }
 
-export class ConfigurationService {
+export class EpgService {
     /**
-     * Get Config
-     * API endpoint to get the current config.
-     * @returns AceReStreamerConf Successful Response
+     * Epg Health
+     * Get the list of EPGs w/health.
+     * @returns EPGApiHandlerHealthResponse Successful Response
      * @throws ApiError
      */
-    public static getConfig(): CancelablePromise<ConfigurationGetConfigResponse> {
+    public static epgHealth(): CancelablePromise<EpgEpgHealthResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/config/'
+            url: '/api/v1/epg/health'
         });
     }
     
     /**
-     * Load Config
-     * API endpoint to load a new config.
-     * @param data The data for the request.
-     * @param data.requestBody
-     * @returns MessageResponseModel Successful Response
+     * Get Epgs
+     * Get the list of EPG configurations.
+     * @returns EPGInstanceConf_Output Successful Response
      * @throws ApiError
      */
-    public static loadConfig(data: ConfigurationLoadConfigData): CancelablePromise<ConfigurationLoadConfigResponse> {
+    public static getEpgs(): CancelablePromise<EpgGetEpgsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/epg/'
+        });
+    }
+    
+    /**
+     * Add Epg
+     * Add a new EPG source.
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns unknown Successful Response
+     * @throws ApiError
+     */
+    public static addEpg(data: EpgAddEpgData): CancelablePromise<EpgAddEpgResponse> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/v1/config/',
+            url: '/api/v1/epg/',
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
@@ -171,19 +184,59 @@ export class ConfigurationService {
             }
         });
     }
-}
-
-export class EpgService {
+    
     /**
-     * Epgs
-     * Get the list of EPGs.
-     * @returns EPGApiHandlerResponse Successful Response
+     * Get Epg
+     * Get a specific EPG configuration by slug.
+     * @param data The data for the request.
+     * @param data.slug
+     * @returns EPGInstanceConf_Output Successful Response
      * @throws ApiError
      */
-    public static epgs(): CancelablePromise<EpgEpgsResponse> {
+    public static getEpg(data: EpgGetEpgData): CancelablePromise<EpgGetEpgResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/epg/'
+            url: '/api/v1/epg/{slug}',
+            path: {
+                slug: data.slug
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Delete Epg
+     * Delete an EPG source by slug.
+     * @param data The data for the request.
+     * @param data.slug
+     * @returns unknown Successful Response
+     * @throws ApiError
+     */
+    public static deleteEpg(data: EpgDeleteEpgData): CancelablePromise<EpgDeleteEpgResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/epg/{slug}',
+            path: {
+                slug: data.slug
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Tvg Epg Mappings
+     * Get the mapping of TVG IDs to their source EPG URLs.
+     * @returns TVGEPGMappingsResponse Successful Response
+     * @throws ApiError
+     */
+    public static tvgEpgMappings(): CancelablePromise<EpgTvgEpgMappingsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/epg/tvg-ids'
         });
     }
 }
@@ -491,19 +544,6 @@ export class ScraperService {
             }
         });
     }
-    
-    /**
-     * Check
-     * API endpoint to attempt to check all streams health.
-     * @returns MessageResponseModel Successful Response
-     * @throws ApiError
-     */
-    public static check(): CancelablePromise<ScraperCheckResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/scraper/check'
-        });
-    }
 }
 
 export class StreamsService {
@@ -518,6 +558,27 @@ export class StreamsService {
     public static byContentId(data: StreamsByContentIdData): CancelablePromise<StreamsByContentIdResponse> {
         return __request(OpenAPI, {
             method: 'GET',
+            url: '/api/v1/streams/content_id/{content_id}',
+            path: {
+                content_id: data.contentId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Delete By Content Id
+     * API endpoint to delete a specific stream by Ace ID.
+     * @param data The data for the request.
+     * @param data.contentId
+     * @returns MessageResponseModel Successful Response
+     * @throws ApiError
+     */
+    public static deleteByContentId(data: StreamsDeleteByContentIdData): CancelablePromise<StreamsDeleteByContentIdResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
             url: '/api/v1/streams/content_id/{content_id}',
             path: {
                 content_id: data.contentId
@@ -551,6 +612,19 @@ export class StreamsService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/streams/health'
+        });
+    }
+    
+    /**
+     * Check
+     * API endpoint to attempt to check all streams health.
+     * @returns MessageResponseModel Successful Response
+     * @throws ApiError
+     */
+    public static check(): CancelablePromise<StreamsCheckResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/streams/check'
         });
     }
 }

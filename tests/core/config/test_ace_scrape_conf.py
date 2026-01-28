@@ -1,4 +1,9 @@
-from acere.core.config import AceScrapeConf, ScrapeSiteAPI, ScrapeSiteHTML, ScrapeSiteIPTV
+from acere.core.config import (
+    AceScrapeConf,
+    ScrapeSiteAPI,
+    ScrapeSiteHTML,
+    ScrapeSiteIPTV,
+)
 
 
 def test_add_iptv_source() -> None:

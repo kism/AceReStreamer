@@ -5,7 +5,6 @@ from acere.instances.config import settings
 from .routes import frontend, hls
 from .routes.api import (
     ace_pool,
-    config,
     epg,
     health,
     login,
@@ -24,7 +23,6 @@ from .routes.iptv import (
 
 api_router = APIRouter()
 api_router.include_router(ace_pool.router)
-api_router.include_router(config.router)
 api_router.include_router(epg.router)
 api_router.include_router(health.router)
 api_router.include_router(login.router)

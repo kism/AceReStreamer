@@ -1,17 +1,25 @@
 """Custom Pydantic models (objects) for scraping."""
 
-from typing import TYPE_CHECKING, Literal, Self
+from datetime import datetime
+from typing import TYPE_CHECKING, Literal, Self, TypedDict
 
 from pydantic import AnyUrl, BaseModel, HttpUrl, field_serializer, model_validator
 
+from acere.constants import OUR_TIMEZONE
 from acere.core.config import HTMLScraperFilter, TitleFilter
 from acere.utils.helpers import check_valid_content_id_or_infohash
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from acere.core.config import ScrapeSiteHTML, ScrapeSiteIPTV
+
+    from .name_processor import StreamNameProcessor
 else:
     ScrapeSiteHTML = object
     ScrapeSiteIPTV = object
+    Path = object
+    StreamNameProcessor = object
 
 
 class FoundAceStream(BaseModel):
@@ -19,13 +27,12 @@ class FoundAceStream(BaseModel):
 
     title: str
     content_id: str = ""
-    infohash: str = ""
+    infohash: str | None = None
     tvg_id: str
     tvg_logo: str | None = None
     group_title: str = ""
-    site_names: list[str]
-    quality: int = -1
-    last_found_time: int = 0  # = 0 # Epoch of last found time, 0 if fresh
+    sites_found_on: list[str]
+    last_scraped_time: datetime = datetime.now(tz=OUR_TIMEZONE)
 
     @model_validator(mode="after")
     def manual_validate(self) -> Self:
@@ -40,6 +47,10 @@ class FoundAceStream(BaseModel):
 
         if self.infohash and not check_valid_content_id_or_infohash(self.infohash):
             msg = f"FoundAceStream: Invalid AceStream infohash: {self.infohash}"
+            raise ValueError(msg)
+
+        if self.infohash == "":
+            msg = "FoundAceStream: infohash cannot be an empty string"
             raise ValueError(msg)
 
         if not self.title:
@@ -57,18 +68,23 @@ class CandidateAceStream(BaseModel):
 
 
 class FoundAceStreamAPI(BaseModel):
-    """Flat model for a found AceStream."""
+    """Model for a found AceStream."""
 
-    site_names: list[str]
-    quality: int
+    # KIERAN DO NOT MAKE THIS A DICT, ITS NOT WORTH IT
+
     title: str
     content_id: str
-    infohash: str
+    infohash: str | None = None
     tvg_id: str
     tvg_logo: str | None = None
-    program_title: str = ""
-    program_description: str = ""
+    last_scraped_time: datetime
+    # EPG
+    program_title: str  # Forces me to try populate it
+    program_description: str  # Forces me to try populate it
+    # Quality
+    quality: int
     has_ever_worked: bool
+    m3u_failures: int
 
 
 class AceScraperSourcesApi(BaseModel):
@@ -103,3 +119,10 @@ class AceScraperSourceApi(BaseModel):
     def serialize_url(self, value: HttpUrl) -> str:
         """Serialize URL to string."""
         return value.encoded_string()
+
+
+class ScraperSettings(TypedDict):
+    """Type definition for scraper configuration settings."""
+
+    instance_path: Path
+    stream_name_processor: StreamNameProcessor

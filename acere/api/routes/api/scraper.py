@@ -106,19 +106,3 @@ def remove_source(slug: str) -> MessageResponseModel:
     settings.write_config()
 
     return MessageResponseModel(message=msg)
-
-
-@router.post("/check", dependencies=[Depends(get_current_active_superuser)])
-async def check() -> MessageResponseModel:
-    """API endpoint to attempt to check all streams health."""
-    ace_scraper = get_ace_scraper()
-    started = await ace_scraper.check_missing_quality()
-
-    logger.info("/api/sources/check Health check started: %s", started)
-
-    if started:
-        response = MessageResponseModel(message="Health check started")
-    else:
-        response = MessageResponseModel(message="Health check already running")
-
-    return response

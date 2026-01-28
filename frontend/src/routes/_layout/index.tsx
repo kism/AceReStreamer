@@ -169,6 +169,7 @@ function WebPlayer() {
             title={streamData?.program_title}
           />
           <AcePoolSection />
+          <Box flexShrink={0} h={4} /> {/* Bit of a hack */}
         </VStack>
       </Flex>
 

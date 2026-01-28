@@ -11,8 +11,9 @@ from pydantic import HttpUrl
 from acere.constants import STATIC_DIR, TVG_LOGOS_DIR
 from acere.core.stream_token import verify_stream_token
 from acere.instances.ace_pool import get_ace_pool
+from acere.instances.ace_quality import get_quality_handler
+from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.config import settings
-from acere.instances.scraper import get_ace_scraper
 from acere.services.xc.helpers import check_xc_auth
 from acere.utils.api_models import MessageResponseModel
 from acere.utils.helpers import check_valid_content_id_or_infohash
@@ -47,7 +48,6 @@ async def hls(
         verify_stream_token(token)
 
     ace_pool = get_ace_pool()
-    ace_scraper = get_ace_scraper()
 
     if not check_valid_content_id_or_infohash(path):
         msg = f"Invalid content ID or infohash: {path}"
@@ -84,7 +84,7 @@ async def hls(
         if isinstance(e, (aiohttp.ServerTimeoutError, TimeoutError)):
             logger.error("reverse proxy timeout /hls/%s %s", path, error_short)
             error_msg, status = "HLS stream timeout", HTTPStatus.REQUEST_TIMEOUT
-            ace_scraper.increment_quality(path, "")
+            get_quality_handler().increment_quality(path, "")
         elif isinstance(e, aiohttp.ClientConnectionError):
             logger.error("%s reverse proxy cannot connect to Ace", error_short)
             error_msg, status = (
@@ -97,7 +97,7 @@ async def hls(
                 "Failed to fetch HLS stream",
                 HTTPStatus.INTERNAL_SERVER_ERROR,
             )
-            ace_scraper.increment_quality(path, "")
+            get_quality_handler().increment_quality(path, "")
 
         raise HTTPException(status_code=status, detail=error_msg) from e
 
@@ -106,8 +106,7 @@ async def hls(
     if "#EXTM3U" not in content_str:
         logger.error("Invalid HLS stream received for path: %s", path)
         logger.debug("Content received: %s", content_str[:1000])
-        ace_scraper.increment_quality(path, "")
-
+        get_quality_handler().increment_quality(path, "")
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail=f"Invalid HLS stream for {content_str}",
@@ -120,7 +119,7 @@ async def hls(
         token=token,
     )
 
-    ace_scraper.increment_quality(path, m3u_playlist=content_str)
+    get_quality_handler().increment_quality(path, m3u_playlist=content_str)
 
     resp = Response(content_str, status_code)
     resp.headers.update(
@@ -137,7 +136,6 @@ async def hls_multi(path: str, token: str = "") -> Response:
     verify_stream_token(token)
 
     ace_pool = get_ace_pool()
-    ace_scraper = get_ace_scraper()
 
     content_id = ace_pool.get_instance_by_multistream_path(path)
 
@@ -164,7 +162,7 @@ async def hls_multi(path: str, token: str = "") -> Response:
     if "#EXTM3U" not in content_str:
         logger.error("Invalid HLS stream received for path: %s", path)
         logger.debug("Content received: %s", content_str[:1000])
-        ace_scraper.increment_quality(content_id, "")
+        get_quality_handler().increment_quality(content_id, "")
         response_body = MessageResponseModel(message="Invalid HLS stream", errors=[content_str]).model_dump_json()
         return Response(
             content=response_body,
@@ -179,7 +177,7 @@ async def hls_multi(path: str, token: str = "") -> Response:
         token=token,
     )
 
-    ace_scraper.increment_quality(content_id, m3u_playlist=content_str)
+    get_quality_handler().increment_quality(content_id, m3u_playlist=content_str)
 
     return Response(content_str, status_code)
 
@@ -209,7 +207,6 @@ async def xc_m3u8(
 
     stream_token = check_xc_auth(username=username, stream_token=password)
 
-    ace_scraper = get_ace_scraper()
     content_id: str | None = None
 
     logger.trace(
@@ -229,7 +226,7 @@ async def xc_m3u8(
             detail=f"Client requested invalid XC ID: {xc_stream} -> {xc_id_clean}",
         ) from None
 
-    content_id = ace_scraper.get_content_id_by_xc_id(xc_id_int)
+    content_id = get_ace_streams_db_handler().get_content_id_by_xc_id(xc_id_int)
 
     if content_id is None:
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="Invalid XC ID format")

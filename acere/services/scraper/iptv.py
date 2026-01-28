@@ -1,12 +1,13 @@
 """Scraper for IPTV sites to find AceStream streams."""
 
 import re
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 import aiohttp
-from pydantic import HttpUrl, ValidationError
+from pydantic import HttpUrl
 
-from acere.constants import SUPPORTED_TVG_LOGO_EXTENSIONS
+from acere.constants import OUR_TIMEZONE, SUPPORTED_TVG_LOGO_EXTENSIONS
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger
@@ -56,8 +57,8 @@ class IPTVStreamScraper(ScraperCommon):
 
         found_streams = await self.parse_m3u_content(content, site)
 
-        for stream in found_streams:
-            stream.last_found_time = 0  # Since we are 100% sure we just scraped from a remote
+        for stream in found_streams:  # These streams are freshly scraped
+            stream.last_scraped_time = datetime.now(tz=OUR_TIMEZONE)
 
         logger.debug("Found %d streams on IPTV site %s", len(found_streams), site.name)
 
@@ -89,7 +90,7 @@ class IPTVStreamScraper(ScraperCommon):
         self,
         line: str,
         content_id: str,
-        infohash: str,
+        infohash: str | None,
         title_filter: TitleFilter,
         site_name: str,
     ) -> FoundAceStream | None:
@@ -113,32 +114,23 @@ class IPTVStreamScraper(ScraperCommon):
 
         group_title = self._extract_group_title(line)
         group_title = self.name_processor.populate_group_title(group_title, title)
-        if self.category_xc_category_id_mapping:  # Populate if we aren't running in adhoc mode
-            self.category_xc_category_id_mapping.get_xc_category_id(group_title)
 
         await self._download_tvg_logo(parts[0], title)
         tvg_logo = self.name_processor.find_tvg_logo_image(title)
 
-        _get_last_found_time = self._get_last_found_time(line)
+        _get_last_found_time_epoch = self._get_last_found_time(line)
+        _get_last_found_time = datetime.fromtimestamp(_get_last_found_time_epoch, tz=OUR_TIMEZONE)
 
-        try:
-            found_ace_stream = FoundAceStream(
-                title=title,
-                content_id=content_id,
-                infohash=infohash,
-                tvg_id=tvg_id,
-                tvg_logo=tvg_logo,
-                group_title=group_title,
-                site_names=[site_name],
-                last_found_time=_get_last_found_time,
-            )
-        except ValidationError:
-            msg = "Validation error creating FoundAceStream object:\n"
-            msg += f"Tried title: {title}, content_id: {content_id}, tvg_id: {tvg_id}, tvg_logo: {tvg_logo}"
-            msg += f" for line: \n{line}"
-            logger.error(msg)
-            return None
-        return found_ace_stream
+        return FoundAceStream(
+            title=title,
+            content_id=content_id,
+            infohash=infohash,
+            tvg_id=tvg_id,
+            tvg_logo=tvg_logo,
+            group_title=group_title,
+            sites_found_on=[site_name],
+            last_scraped_time=_get_last_found_time,
+        )
 
     async def parse_m3u_content(self, content: str, site: ScrapeSiteIPTV) -> list[FoundAceStream]:
         """Parse M3U content and extract AceStream entries."""
