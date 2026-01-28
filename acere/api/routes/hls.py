@@ -81,8 +81,11 @@ async def hls(
         error_short = type(e).__name__
 
         # Get the HTTP status code from ace if available
-        ace_status = getattr(e, "status", None)
-        status_info = f" (ace status: {ace_status})" if ace_status else ""
+        if isinstance(e, aiohttp.ClientResponseError):
+            ace_status_str = f"{e.status} {e.message}"
+            status_info = f" (ace status: {ace_status_str})" if ace_status_str else ""
+        else:
+            status_info = ""
 
         # Determine error type and response
         if isinstance(e, (aiohttp.ServerTimeoutError, TimeoutError)):
