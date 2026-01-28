@@ -67,7 +67,7 @@ function AddStream() {
         </Heading>
         <Text>Scraped streams will override manual entries.</Text>
 
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 3}} gap={3}>
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={3}>
           <Field label="Title" required>
             <Input
               value={formData.title}
