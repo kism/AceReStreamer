@@ -66,39 +66,38 @@ function AddStream() {
           Manually Add Stream
         </Heading>
         <Text>Scraped streams will override manual entries.</Text>
-      </VStack>
 
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={3}>
-        <Field label="Title" required>
-          <Input
-            value={formData.title}
-            onChange={handleInputChange("title")}
-            placeholder="Channel 1 [AU]"
-            size="xs"
-          />
-        </Field>
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 3}} gap={3}>
+          <Field label="Title" required>
+            <Input
+              value={formData.title}
+              onChange={handleInputChange("title")}
+              placeholder="Channel 1 [AU]"
+              size="xs"
+            />
+          </Field>
 
-        <Field label="Ace Content ID" required>
-          <Input
-            value={formData.content_id}
-            onChange={handleInputChange("content_id")}
-            placeholder="40 character content ID"
-            size="xs"
-          />
-        </Field>
+          <Field label="Ace Content ID" required>
+            <Input
+              value={formData.content_id}
+              onChange={handleInputChange("content_id")}
+              placeholder="40 character content ID"
+              size="xs"
+            />
+          </Field>
 
-        <Field label="Group Title" required>
-          <Input
-            value={formData.group_title}
-            onChange={handleInputChange("group_title")}
-            placeholder="General"
-            size="xs"
-          />
-        </Field>
-
+          <Field label="Group Title" required>
+            <Input
+              value={formData.group_title}
+              onChange={handleInputChange("group_title")}
+              placeholder="General"
+              size="xs"
+            />
+          </Field>
+        </SimpleGrid>
         <Button
           size="xs"
-          maxW="150px"
+          maxW="100px"
           onClick={handleSubmit}
           loading={isSubmitting}
           loadingText="Adding..."
@@ -106,7 +105,7 @@ function AddStream() {
         >
           Add Stream
         </Button>
-      </SimpleGrid>
+      </VStack>
     </Box>
   )
 }
