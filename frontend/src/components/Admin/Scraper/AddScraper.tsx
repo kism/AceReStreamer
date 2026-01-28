@@ -14,9 +14,13 @@ import type { ApiError } from "@/client/core/ApiError"
 import { Button } from "@/components/ui/button"
 import { CodeBlock } from "@/components/ui/code"
 import { Field } from "@/components/ui/field"
+import { Link } from "@/components/ui/link"
+import baseURL from "@/helpers"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
 import { jsonExamples } from "./AddScraperExamples"
+
+const VITE_API_URL = baseURL()
 
 function AddScraperJson() {
   const [jsonInput, setJsonInput] = useState("")
@@ -63,7 +67,9 @@ function AddScraperJson() {
 
       <Text fontSize="sm">
         Enter the JSON configuration for your scraper source. Can also be done
-        as a list.
+        as a list. Refer to TitleFilter in the
+        <Link href={`${VITE_API_URL}/docs`}>API docs</Link> Schemas for
+        filtering information.
       </Text>
 
       <Field label="JSON Configuration" required>
@@ -81,7 +87,7 @@ function AddScraperJson() {
 
       <HStack gap={4} width="full">
         <Select.Root
-          collection={jsonExamples}
+          collection={jsonExamples} // The examples are hardcoded in a separate file, if api differs the type check will fail
           onValueChange={(details) => {
             if (details.items && details.items.length > 0) {
               const selectedItem = details.items[0]

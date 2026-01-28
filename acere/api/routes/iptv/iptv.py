@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Query, Response
 
 from acere.core.stream_token import verify_stream_token
-from acere.instances.scraper import get_ace_scraper
+from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -21,8 +21,8 @@ def iptv(token: Annotated[str, Query()] = "") -> Response:
     """Render the IPTV M3U8 Playlist."""
     verify_stream_token(token)
 
-    ace_scraper = get_ace_scraper()
-    m3u8 = ace_scraper.get_streams_as_iptv(token=token)
+    handler = get_ace_streams_db_handler()
+    m3u8 = handler.get_streams_as_iptv(token=token)
 
     return Response(
         content=m3u8,

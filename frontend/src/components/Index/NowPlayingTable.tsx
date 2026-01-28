@@ -27,8 +27,14 @@ export function NowPlayingTable() {
         <TableRow>
           <TableRowHeader>Direct URL</TableRowHeader>
           <TableCell maxWidth={0}>
-            <HStack gap={2}>
-              <Code overflow="hidden" whiteSpace="nowrap" maxWidth="100%">
+            <HStack gap={2} minWidth={0}>
+              <Code
+                overflowX="auto"
+                whiteSpace="nowrap"
+                display="block"
+                flex={1}
+                minWidth={0}
+              >
                 {streamStatus.streamURL}
               </Code>
               {streamStatus.streamURL.startsWith("http") && (

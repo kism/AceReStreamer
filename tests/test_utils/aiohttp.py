@@ -43,6 +43,7 @@ class FakeResponse:
         self.status = status
         self.content = FakeContent(self._data)
         self.url = URL(url)
+        self.headers = CIMultiDictProxy(CIMultiDict([("content-type", "application/octet-stream")]))
 
     def raise_for_status(self) -> None:
         if self.status >= HTTPStatus.BAD_REQUEST:
@@ -62,8 +63,8 @@ class FakeResponse:
     async def json(self) -> Any:
         return json.loads(self._data.decode())
 
-    async def text(self) -> str:
-        return self._data.decode()
+    async def text(self, encoding: str = "utf-8") -> str:
+        return self._data.decode(encoding)
 
     async def read(self) -> bytes:
         return self._data

@@ -19,10 +19,7 @@ def set_ace_scraper(scraper: AceScraper) -> None:
     _ace_scraper = scraper
     _ace_scraper.load_config(
         ace_scrape_conf=settings.scraper,
-        epg_conf_list=settings.epgs,
         instance_path=INSTANCE_DIR,
-        external_url=settings.EXTERNAL_URL,
-        ace_url=settings.app.ace_address,
     )
     _ace_scraper.start_scrape_thread()
 

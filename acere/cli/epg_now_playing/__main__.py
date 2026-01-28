@@ -2,6 +2,7 @@ import argparse
 from pathlib import Path
 
 from lxml import etree
+from pydantic import HttpUrl
 
 from acere.constants import EPG_XML_DIR as DEFAULT_EPG_XML_DIR
 from acere.core.config import EPGInstanceConf
@@ -58,7 +59,7 @@ def main() -> None:
     epgs: dict[str, EPG] = {}
     for epg_file in epg_dir.glob("*.xml"):
         try:
-            epg = EPG(EPGInstanceConf())
+            epg = EPG(EPGInstanceConf(url=HttpUrl(f"file://{epg_file.resolve()}")))
             epg.saved_file_path = epg_file
             epgs[epg_file.name] = epg
         except etree.XMLSyntaxError as e:

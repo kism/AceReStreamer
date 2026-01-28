@@ -4,7 +4,6 @@ import { FiSearch } from "react-icons/fi"
 import { AcePoolService } from "@/client"
 import { AcePoolBackendInfo } from "@/components/Index/AcePoolBackendInfo"
 import { AcePoolInstancesTable } from "@/components/Index/AcePoolInstancesTable"
-import { STATUS_COLORS } from "@/components/Index/constants"
 
 export function AcePoolSection() {
   const { isLoading, error, data, isPlaceholderData } = useQuery({
@@ -26,7 +25,7 @@ export function AcePoolSection() {
   if (error) {
     return (
       <Box>
-        <Text color={STATUS_COLORS.error}>
+        <Text color={"fg.error"}>
           Backend is unavailable:{" "}
           {error instanceof Error ? error.message : String(error)}
         </Text>
@@ -35,9 +34,7 @@ export function AcePoolSection() {
   }
 
   if (!data) {
-    return (
-      <Text color={STATUS_COLORS.error}>Unable to fetch Ace Pool info</Text>
-    )
+    return <Text color={"fg.error"}>Unable to fetch Ace Pool info</Text>
   }
 
   return (

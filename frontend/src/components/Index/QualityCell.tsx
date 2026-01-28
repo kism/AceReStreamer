@@ -1,17 +1,20 @@
 import { TableCell } from "@/components/ui/table"
-import { QUALITY_COLORS } from "./constants"
+
+export function getQualityColor(quality: number) {
+  if (quality === -1) {
+    return "fg.muted"
+  }
+  if (quality > 80) {
+    return "fg.success"
+  }
+  if (quality >= 20) {
+    return "fg.warning"
+  }
+  return "fg.error"
+}
 
 export function QualityCell({ quality, ...props }: { quality: number } & any) {
-  let color = "black"
-  if (quality === -1) {
-    color = QUALITY_COLORS.unknown
-  } else if (quality > 80) {
-    color = QUALITY_COLORS.good
-  } else if (quality >= 20) {
-    color = QUALITY_COLORS.medium
-  } else {
-    color = QUALITY_COLORS.poor
-  }
+  const color = getQualityColor(quality)
 
   return (
     <TableCell textAlign={"center"} fontWeight={600} color={color} {...props}>

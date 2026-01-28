@@ -8,6 +8,8 @@ import shutil
 import tempfile
 from pathlib import Path
 
+from sqlmodel import create_engine
+
 # CRITICAL: Set environment variables BEFORE any acere imports
 # This must happen at module level, before pytest fixtures
 # Prevent .env file from being loaded during tests
@@ -37,7 +39,8 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, delete
 
-from acere.core.db import engine, init_db
+from acere.database.handlers.quality_cache import AceQualityCacheHandler
+from acere.database.init import engine, init_db
 from acere.instances.config import settings
 from acere.main import app
 from acere.models import User
@@ -89,3 +92,15 @@ def superuser_token_headers(client: TestClient) -> dict[str, str]:
 @pytest.fixture(scope="module")
 def normal_user_token_headers(client: TestClient, db: Session) -> dict[str, str]:
     return authentication_token_from_username(client=client, username="pytestuser", db=db)
+
+
+@pytest.fixture
+def quality_cache_handler(tmp_path: Path) -> Generator[AceQualityCacheHandler, None, None]:
+    """Fixture for AceQualityCacheHandler."""
+    db_path = tmp_path / "test_quality_cache.db"
+    test_engine = create_engine(f"sqlite:///{db_path}", echo=False)
+
+    yield AceQualityCacheHandler(test_engine=test_engine)
+
+    test_engine.dispose()
+    db_path.unlink(missing_ok=True)

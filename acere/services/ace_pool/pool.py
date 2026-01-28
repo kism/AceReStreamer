@@ -48,8 +48,6 @@ class AcePool:
         """Use the AceStream API to check if the instance is running."""
         logger.trace("AcePool check_ace_running (%s)", self._instance_id)
         healthy = False
-        if not self.ace_address:
-            return healthy
 
         url = HttpUrl(f"{self.ace_address}webui/api/service?method=get_version").encoded_string()
         version_data = {}
@@ -61,7 +59,7 @@ class AcePool:
                     response.raise_for_status()
                     version_data = await response.json()
             if not self.healthy:
-                logger.info("Ace Instance %s is healthy", self.ace_address)
+                logger.info("Ace Instance %s is now healthy", self.ace_address)
             healthy = True
         except aiohttp.ClientError as e:
             error_short = type(e).__name__
@@ -124,10 +122,6 @@ class AcePool:
 
     async def get_instance_hls_url_by_content_id(self, content_id: str) -> HttpUrl | None:
         """Find the AceStream instance URL for a given content_id, create a new instance if it doesn't exist."""
-        if not self.ace_address:
-            logger.error("Ace address is not set, cannot get instance URL.")
-            return None
-
         if not check_valid_content_id_or_infohash(content_id):
             logger.error("Invalid AceStream content ID: %s", content_id)
             return None

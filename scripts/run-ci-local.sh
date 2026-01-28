@@ -11,17 +11,17 @@ function print_heading() {
 
 source .venv/bin/activate
 
-print_heading "PyTest"
-pytest -q --tb=short
-
 print_heading "mypy"
 mypy
 
-print_heading "tc"
+print_heading "ty"
 ty check
 
 print_heading "ruff"
-ruff check
+ruff check --fix
+
+print_heading "PyTest"
+pytest -q --tb=short
 
 cd frontend
 

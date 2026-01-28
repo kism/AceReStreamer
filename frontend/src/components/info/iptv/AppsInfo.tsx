@@ -33,7 +33,7 @@ export function AppsInfo() {
       name: "Flex IPTV",
       m3u8: "✅",
       xc: "❌",
-      epg: "✅",
+      epg: "❌",
       links: [
         {
           url: "https://apps.apple.com/us/app/flex-iptv/id1182930255",

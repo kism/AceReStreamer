@@ -1,6 +1,6 @@
 [project]
 name = "acere"
-version = "1.1.0"
+version = "1.1.1b1"
 description = ""
 requires-python = ">=3.14,<4.0"
 dependencies = [
@@ -79,6 +79,8 @@ ignore = [
     "SIM117", # Double 'with' is more readable with async
     "D1",     # Not going to document everything, we have good type checking
     "TC001",  # Breaks Pydantic completely
+    # "ERA001", # WIP Commented Out Code
+    # "FIX",    # WIP FIXME
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -92,6 +94,7 @@ ignore = [
     "SLF001",  # Can access private members in tests
     "PLR2004", # Allow magic comparisons in tests
     "ANN401",  # *args: Any, **kwargs: Any in tests
+    "EM101",   # Raise whatever in tests
 ]
 "docs/*.py" = [
     # Modules
@@ -110,7 +113,7 @@ runtime-evaluated-base-classes = [
     "acere.services.ace_quality.Quality",
     "acere.services.scraper.models.FoundAceStreamAPI",
     "acere.services.scraper.models.AceScraperSourceApi",
-    "acere.services.epg.models.EPGApiHandlerResponse",
+    "acere.services.epg.models.EPGApiHandlerHealthResponse",
 ] # These aren't for type checking only
 
 [tool.ruff.lint.pydocstyle]
@@ -174,7 +177,7 @@ disable_error_code = [
 [[tool.mypy.overrides]]
 module = "tests.core.config.test_ace_scrape_conf"
 disable_error_code = [
-    "arg-type",   # Pydantic needs to process and correct incorrect urls
+    "arg-type", # Pydantic needs to process and correct incorrect urls
 ]
 
 [[tool.ty.overrides]]

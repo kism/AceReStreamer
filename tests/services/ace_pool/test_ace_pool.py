@@ -242,3 +242,13 @@ async def test_get_set_valid(monkeypatch: pytest.MonkeyPatch) -> None:
 
     # Remove
     assert await pool.remove_instance_by_content_id(content_id, caller="Test")
+    assert await pool.get_stats_by_content_id(content_id) is None
+
+
+async def test_when_not_healthy() -> None:
+    pool = AcePool(instance_id="test")
+    fill_pool(pool)
+    pool.healthy = False
+
+    assert await pool.get_stats_by_pid(1) is None
+    assert await pool.get_stats_by_content_id(get_random_content_id()) is None

@@ -8,9 +8,9 @@ from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import HttpUrl
 
 from acere.constants import OUR_TIMEZONE
-from acere.database.handlers import CategoryXCCategoryIDDatabaseHandler
+from acere.database.handlers.category_xc import CategoryXCCategoryIDDatabaseHandler
+from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.config import settings
-from acere.instances.scraper import get_ace_scraper
 from acere.services.xc.helpers import (
     check_xc_auth,
     get_expiry_date,
@@ -106,8 +106,8 @@ def xc_iptv_router(
 def _get_live_categories() -> list[XCCategory]:
     """Get live TV categories."""
     # Get all the categories that are actually in use
-    ace_scraper = get_ace_scraper()
-    categories_in_use = {stream.category_id for stream in ace_scraper.get_streams_as_iptv_xc(None)}
+    handler = get_ace_streams_db_handler()
+    categories_in_use = {stream.category_id for stream in handler.get_streams_as_iptv_xc(None)}
     # Convert them to integers because the XC 'spec' says they should be strings, despite being numeric
     categories_in_use_int = {int(cat_id) for cat_id in categories_in_use if cat_id.isdigit()}
     # Get a list of XCCategory objects
@@ -116,9 +116,9 @@ def _get_live_categories() -> list[XCCategory]:
 
 def _get_live_streams(category_id: str, token: str) -> list[XCStream]:
     """Get live TV streams."""
-    ace_scraper = get_ace_scraper()
+    handler = get_ace_streams_db_handler()
     xc_category = int(category_id) if category_id.isdigit() else None
-    return ace_scraper.get_streams_as_iptv_xc(xc_category, token=token)
+    return handler.get_streams_as_iptv_xc(xc_category, token=token)
 
 
 def _get_unknown_action(action: str) -> MessageResponseModel:
@@ -148,8 +148,8 @@ def xc_get(
 
 def _get_m3u_plus(token: str) -> Response:
     """Get M3U playlist."""
-    ace_scraper = get_ace_scraper()
-    m3u8 = ace_scraper.get_streams_as_iptv(token=token)
+    handler = get_ace_streams_db_handler()
+    m3u8 = handler.get_streams_as_iptv(token=token)
     return Response(
         content=m3u8,
         status_code=HTTPStatus.OK,

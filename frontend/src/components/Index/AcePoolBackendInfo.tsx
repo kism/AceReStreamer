@@ -10,7 +10,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import baseURL from "@/helpers"
-import { STATUS_COLORS } from "./constants"
 
 const VITE_API_URL = baseURL()
 
@@ -29,15 +28,15 @@ export function AcePoolBackendInfo({
       {acePoolData && acePoolData.external_url !== VITE_API_URL && (
         <Box p={2} border={"1px solid orange"} my={2}>
           <HStack>
-            <Text color={STATUS_COLORS.warning} fontSize="xl">
+            <Text color="fg.warning" fontSize="xl">
               <FiAlertTriangle />
             </Text>
             <Box>
-              <Text color={STATUS_COLORS.warning} fontWeight="bold">
+              <Text color="fg.warning" fontWeight="bold">
                 Backend URL ({acePoolData.external_url}) != Frontend API URL (
                 {VITE_API_URL}).
               </Text>
-              <Text color={STATUS_COLORS.warning} fontWeight="bold">
+              <Text color="fg.warning" fontWeight="bold">
                 VIDEO STREAMING WILL NOT WORK
               </Text>
               <Text>
@@ -72,7 +71,7 @@ export function AcePoolBackendInfo({
               color={
                 !acePoolData.ace_version ||
                 acePoolData.ace_version === "unknown"
-                  ? STATUS_COLORS.error
+                  ? "fg.error"
                   : undefined
               }
             >
@@ -86,7 +85,7 @@ export function AcePoolBackendInfo({
             </TableCell>
             <TableCell
               textAlign={"center"}
-              color={!acePoolData.healthy ? STATUS_COLORS.error : undefined}
+              color={!acePoolData.healthy ? "fg.error" : undefined}
             >
               {acePoolData.healthy ? "Healthy" : "Unhealthy"}
             </TableCell>

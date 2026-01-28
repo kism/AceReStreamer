@@ -141,9 +141,9 @@ class StreamNameProcessor:
         """Extract the AceStream ID from a URI."""
         return self._extract_from_url(url, ACE_URL_PREFIXES_CONTENT_ID)
 
-    def extract_infohash_from_url(self, url: AnyUrl) -> str:
+    def extract_infohash_from_url(self, url: AnyUrl) -> str | None:
         """Extract the AceStream infohash from a URL."""
-        return self._extract_from_url(url, ACE_URL_PREFIXES_INFOHASH)
+        return self._extract_from_url(url, ACE_URL_PREFIXES_INFOHASH) or None  # Infohash shouldn't be ""
 
     def check_valid_ace_uri(self, url: AnyUrl | str) -> AnyUrl | None:
         """Check if the AceStream URL is valid."""
@@ -236,6 +236,8 @@ class StreamNameProcessor:
 
         return group_title if group_title else "General"
 
-    def get_title_override_from_content_id(self, content_id: str) -> str | None:
+    def get_title_override_from_content_id(self, content_id: str | None) -> str | None:
         """Get a title override from the content ID if it exists."""
+        if content_id is None:
+            return None
         return self._content_id_infohash_name_overrides.get(content_id)

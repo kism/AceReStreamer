@@ -308,217 +308,6 @@ export const AcePoolStatResponseLivePosSchema = {
     description: 'Matches the live position response from the AcePool API.'
 } as const;
 
-export const AceReStreamerConfSchema = {
-    properties: {
-        app: {
-            '$ref': '#/components/schemas/AppConf',
-            default: {
-                authentication_enabled: true,
-                ace_address: 'http://localhost:6878/',
-                transcode_audio: true,
-                ace_max_streams: 4
-            }
-        },
-        logging: {
-            '$ref': '#/components/schemas/LoggingConf',
-            default: {
-                level: 'INFO',
-                level_http: 'WARNING',
-                simple: false
-            }
-        },
-        scraper: {
-            '$ref': '#/components/schemas/AceScrapeConf',
-            default: {
-                playlist_name: 'AceReStreamer',
-                html: [],
-                iptv_m3u8: [],
-                api: [],
-                name_replacements: {},
-                content_id_infohash_name_overrides: {},
-                category_mapping: {
-                    kids: ['kids', 'children'],
-                    movies: ['movie', 'cinema', 'film'],
-                    music: ['music', 'concert', 'radio'],
-                    news: ['news'],
-                    sports: ['football', 'soccer', 'basketball', 'nba', 'sport', 'tennis', 'moto', 'f1', 'hockey', 'cricket', 'rugby', 'golf']
-                }
-            }
-        },
-        epgs: {
-            items: {
-                '$ref': '#/components/schemas/EPGInstanceConf'
-            },
-            type: 'array',
-            title: 'Epgs',
-            default: []
-        },
-        FRONTEND_HOST: {
-            type: 'string',
-            title: 'Frontend Host',
-            default: ''
-        },
-        ENVIRONMENT: {
-            type: 'string',
-            enum: ['local', 'staging', 'production'],
-            title: 'Environment',
-            default: 'local'
-        },
-        EXTERNAL_URL: {
-            type: 'string',
-            title: 'External Url',
-            default: 'http://localhost:5100'
-        },
-        ACCESS_TOKEN_EXPIRE_MINUTES: {
-            type: 'integer',
-            title: 'Access Token Expire Minutes',
-            default: 11520
-        },
-        SECRET_KEY: {
-            type: 'string',
-            title: 'Secret Key',
-            default: ''
-        },
-        FIRST_SUPERUSER: {
-            type: 'string',
-            title: 'First Superuser',
-            default: 'admin'
-        },
-        FIRST_SUPERUSER_PASSWORD: {
-            type: 'string',
-            title: 'First Superuser Password',
-            default: ''
-        },
-        BACKEND_CORS_ORIGINS: {
-            anyOf: [
-                {
-                    items: {
-                        type: 'string',
-                        minLength: 1,
-                        format: 'uri'
-                    },
-                    type: 'array'
-                },
-                {
-                    type: 'string'
-                }
-            ],
-            title: 'Backend Cors Origins',
-            default: []
-        },
-        all_cors_origins: {
-            items: {
-                type: 'string'
-            },
-            type: 'array',
-            title: 'All Cors Origins',
-            readOnly: true
-        }
-    },
-    type: 'object',
-    required: ['all_cors_origins'],
-    title: 'AceReStreamerConf',
-    description: 'Settings Definition.'
-} as const;
-
-export const AceScrapeConfSchema = {
-    properties: {
-        playlist_name: {
-            type: 'string',
-            title: 'Playlist Name',
-            default: 'AceReStreamer'
-        },
-        adhoc_playlist_external_url: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 2083,
-                    minLength: 1,
-                    format: 'uri'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Adhoc Playlist External Url'
-        },
-        tvg_logo_external_url: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 2083,
-                    minLength: 1,
-                    format: 'uri'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Tvg Logo External Url'
-        },
-        html: {
-            items: {
-                '$ref': '#/components/schemas/ScrapeSiteHTML'
-            },
-            type: 'array',
-            title: 'Html',
-            default: []
-        },
-        iptv_m3u8: {
-            items: {
-                '$ref': '#/components/schemas/ScrapeSiteIPTV'
-            },
-            type: 'array',
-            title: 'Iptv M3U8',
-            default: []
-        },
-        api: {
-            items: {
-                '$ref': '#/components/schemas/ScrapeSiteAPI'
-            },
-            type: 'array',
-            title: 'Api',
-            default: []
-        },
-        name_replacements: {
-            additionalProperties: {
-                type: 'string'
-            },
-            type: 'object',
-            title: 'Name Replacements',
-            default: {}
-        },
-        content_id_infohash_name_overrides: {
-            additionalProperties: {
-                type: 'string'
-            },
-            type: 'object',
-            title: 'Content Id Infohash Name Overrides',
-            default: {}
-        },
-        category_mapping: {
-            additionalProperties: {
-                items: {
-                    type: 'string'
-                },
-                type: 'array'
-            },
-            type: 'object',
-            title: 'Category Mapping',
-            default: {
-                sports: ['football', 'soccer', 'basketball', 'nba', 'sport', 'tennis', 'moto', 'f1', 'hockey', 'cricket', 'rugby', 'golf'],
-                movies: ['movie', 'cinema', 'film'],
-                news: ['news'],
-                kids: ['kids', 'children'],
-                music: ['music', 'concert', 'radio']
-            }
-        }
-    },
-    type: 'object',
-    title: 'AceScrapeConf',
-    description: 'Settings for scraping AceStreams.'
-} as const;
-
 export const AceScraperSourceApiSchema = {
     properties: {
         name: {
@@ -562,37 +351,6 @@ export const AceScraperSourceApiSchema = {
     required: ['name', 'url', 'type'],
     title: 'AceScraperSourceApi',
     description: 'Represent a scraper instance, generic for HTML and IPTV sources.'
-} as const;
-
-export const AppConfSchema = {
-    properties: {
-        authentication_enabled: {
-            type: 'boolean',
-            title: 'Authentication Enabled',
-            default: true
-        },
-        ace_address: {
-            type: 'string',
-            maxLength: 2083,
-            minLength: 1,
-            format: 'uri',
-            title: 'Ace Address',
-            default: 'http://localhost:6878/'
-        },
-        transcode_audio: {
-            type: 'boolean',
-            title: 'Transcode Audio',
-            default: true
-        },
-        ace_max_streams: {
-            type: 'integer',
-            title: 'Ace Max Streams',
-            default: 4
-        }
-    },
-    type: 'object',
-    title: 'AppConf',
-    description: 'Application configuration definition.'
 } as const;
 
 export const Body_Login_login_access_tokenSchema = {
@@ -652,7 +410,7 @@ export const Body_Login_login_access_tokenSchema = {
     title: 'Body_Login-login_access_token'
 } as const;
 
-export const EPGApiHandlerResponseSchema = {
+export const EPGApiHandlerHealthResponseSchema = {
     properties: {
         time_until_next_update: {
             type: 'integer',
@@ -667,7 +425,7 @@ export const EPGApiHandlerResponseSchema = {
         },
         epgs: {
             items: {
-                '$ref': '#/components/schemas/EPGApiResponse'
+                '$ref': '#/components/schemas/EPGApiHealthResponse'
             },
             type: 'array',
             title: 'Epgs'
@@ -675,11 +433,11 @@ export const EPGApiHandlerResponseSchema = {
     },
     type: 'object',
     required: ['time_until_next_update', 'tvg_ids', 'epgs'],
-    title: 'EPGApiHandlerResponse',
+    title: 'EPGApiHandlerHealthResponse',
     description: 'Model for EPG API handler response.'
 } as const;
 
-export const EPGApiResponseSchema = {
+export const EPGApiHealthResponseSchema = {
     properties: {
         url: {
             type: 'string',
@@ -688,9 +446,12 @@ export const EPGApiResponseSchema = {
             format: 'uri',
             title: 'Url'
         },
-        region_code: {
-            type: 'string',
-            title: 'Region Code'
+        overrides: {
+            additionalProperties: {
+                type: 'string'
+            },
+            type: 'object',
+            title: 'Overrides'
         },
         time_since_last_updated: {
             type: 'integer',
@@ -702,18 +463,13 @@ export const EPGApiResponseSchema = {
         }
     },
     type: 'object',
-    required: ['url', 'region_code', 'time_since_last_updated', 'time_until_next_update'],
-    title: 'EPGApiResponse',
+    required: ['url', 'overrides', 'time_since_last_updated', 'time_until_next_update'],
+    title: 'EPGApiHealthResponse',
     description: 'Model for EPG API response.'
 } as const;
 
-export const EPGInstanceConfSchema = {
+export const EPGInstanceConf_InputSchema = {
     properties: {
-        region_code: {
-            type: 'string',
-            title: 'Region Code',
-            default: 'UK'
-        },
         format: {
             type: 'string',
             enum: ['xml.gz', 'xml'],
@@ -725,8 +481,7 @@ export const EPGInstanceConfSchema = {
             maxLength: 2083,
             minLength: 1,
             format: 'uri',
-            title: 'Url',
-            default: 'https://www.open-epg.com/files/unitedkingdom1.xml.gz'
+            title: 'Url'
         },
         tvg_id_overrides: {
             additionalProperties: {
@@ -738,8 +493,49 @@ export const EPGInstanceConfSchema = {
         }
     },
     type: 'object',
+    required: ['url'],
     title: 'EPGInstanceConf',
-    description: 'EPG (Electronic Program Guide) configuration definition.'
+    description: `EPG (Electronic Program Guide) configuration definition.
+
+tvg_id_overrides is a str:str dict where you can override stream tvg_ids to match those in the EPG.`
+} as const;
+
+export const EPGInstanceConf_OutputSchema = {
+    properties: {
+        format: {
+            type: 'string',
+            enum: ['xml.gz', 'xml'],
+            title: 'Format',
+            default: 'xml.gz'
+        },
+        url: {
+            type: 'string',
+            maxLength: 2083,
+            minLength: 1,
+            format: 'uri',
+            title: 'Url'
+        },
+        tvg_id_overrides: {
+            additionalProperties: {
+                type: 'string'
+            },
+            type: 'object',
+            title: 'Tvg Id Overrides',
+            default: {}
+        },
+        slug: {
+            type: 'string',
+            title: 'Slug',
+            description: 'Generate a slug from the url.',
+            readOnly: true
+        }
+    },
+    type: 'object',
+    required: ['url', 'slug'],
+    title: 'EPGInstanceConf',
+    description: `EPG (Electronic Program Guide) configuration definition.
+
+tvg_id_overrides is a str:str dict where you can override stream tvg_ids to match those in the EPG.`
 } as const;
 
 export const ErrorDetailsSchema = {
@@ -786,17 +582,6 @@ export const ErrorDetailsSchema = {
 
 export const FoundAceStreamAPISchema = {
     properties: {
-        site_names: {
-            items: {
-                type: 'string'
-            },
-            type: 'array',
-            title: 'Site Names'
-        },
-        quality: {
-            type: 'integer',
-            title: 'Quality'
-        },
         title: {
             type: 'string',
             title: 'Title'
@@ -806,7 +591,14 @@ export const FoundAceStreamAPISchema = {
             title: 'Content Id'
         },
         infohash: {
-            type: 'string',
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
             title: 'Infohash'
         },
         tvg_id: {
@@ -824,25 +616,36 @@ export const FoundAceStreamAPISchema = {
             ],
             title: 'Tvg Logo'
         },
+        last_scraped_time: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Last Scraped Time'
+        },
         program_title: {
             type: 'string',
-            title: 'Program Title',
-            default: ''
+            title: 'Program Title'
         },
         program_description: {
             type: 'string',
-            title: 'Program Description',
-            default: ''
+            title: 'Program Description'
+        },
+        quality: {
+            type: 'integer',
+            title: 'Quality'
         },
         has_ever_worked: {
             type: 'boolean',
             title: 'Has Ever Worked'
+        },
+        m3u_failures: {
+            type: 'integer',
+            title: 'M3U Failures'
         }
     },
     type: 'object',
-    required: ['site_names', 'quality', 'title', 'content_id', 'infohash', 'tvg_id', 'has_ever_worked'],
+    required: ['title', 'content_id', 'tvg_id', 'last_scraped_time', 'program_title', 'program_description', 'quality', 'has_ever_worked', 'm3u_failures'],
     title: 'FoundAceStreamAPI',
-    description: 'Flat model for a found AceStream.'
+    description: 'Model for a found AceStream.'
 } as const;
 
 export const HTMLScraperFilterSchema = {
@@ -906,55 +709,6 @@ export const HealthResponseModelSchema = {
     type: 'object',
     required: ['version', 'version_full', 'time_zone', 'threads', 'memory_usage_mb'],
     title: 'HealthResponseModel'
-} as const;
-
-export const LoggingConfSchema = {
-    properties: {
-        level: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'integer'
-                }
-            ],
-            title: 'Level',
-            default: 'INFO'
-        },
-        level_http: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'integer'
-                }
-            ],
-            title: 'Level Http',
-            default: 'WARNING'
-        },
-        path: {
-            anyOf: [
-                {
-                    type: 'string',
-                    format: 'path'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Path'
-        },
-        simple: {
-            type: 'boolean',
-            title: 'Simple',
-            default: false
-        }
-    },
-    type: 'object',
-    title: 'LoggingConf',
-    description: 'Logging configuration definition.'
 } as const;
 
 export const MessageSchema = {
@@ -1073,121 +827,6 @@ export const QualitySchema = {
     description: 'Model for tracking quality of a stream.'
 } as const;
 
-export const ScrapeSiteAPISchema = {
-    properties: {
-        type: {
-            type: 'string',
-            const: 'api',
-            title: 'Type',
-            default: 'api'
-        },
-        name: {
-            type: 'string',
-            title: 'Name'
-        },
-        url: {
-            type: 'string',
-            maxLength: 2083,
-            minLength: 1,
-            format: 'uri',
-            title: 'Url'
-        },
-        title_filter: {
-            '$ref': '#/components/schemas/TitleFilter',
-            default: {
-                always_exclude_words: [],
-                always_include_words: [],
-                exclude_words: [],
-                include_words: [],
-                regex_postprocessing: []
-            }
-        }
-    },
-    type: 'object',
-    required: ['name', 'url'],
-    title: 'ScrapeSiteAPI',
-    description: 'Scraper for API Sites.'
-} as const;
-
-export const ScrapeSiteHTMLSchema = {
-    properties: {
-        type: {
-            type: 'string',
-            const: 'html',
-            title: 'Type',
-            default: 'html'
-        },
-        name: {
-            type: 'string',
-            title: 'Name'
-        },
-        url: {
-            type: 'string',
-            maxLength: 2083,
-            minLength: 1,
-            format: 'uri',
-            title: 'Url'
-        },
-        title_filter: {
-            '$ref': '#/components/schemas/TitleFilter',
-            default: {
-                always_exclude_words: [],
-                always_include_words: [],
-                exclude_words: [],
-                include_words: [],
-                regex_postprocessing: []
-            }
-        },
-        html_filter: {
-            '$ref': '#/components/schemas/HTMLScraperFilter',
-            default: {
-                target_class: '',
-                check_sibling: false
-            }
-        }
-    },
-    type: 'object',
-    required: ['name', 'url'],
-    title: 'ScrapeSiteHTML',
-    description: 'Model for a site to scrape.'
-} as const;
-
-export const ScrapeSiteIPTVSchema = {
-    properties: {
-        type: {
-            type: 'string',
-            const: 'iptv',
-            title: 'Type',
-            default: 'iptv'
-        },
-        name: {
-            type: 'string',
-            title: 'Name'
-        },
-        url: {
-            type: 'string',
-            maxLength: 2083,
-            minLength: 1,
-            format: 'uri',
-            title: 'Url'
-        },
-        title_filter: {
-            '$ref': '#/components/schemas/TitleFilter',
-            default: {
-                always_exclude_words: [],
-                always_include_words: [],
-                exclude_words: [],
-                include_words: [],
-                regex_postprocessing: []
-            }
-        }
-    },
-    type: 'object',
-    required: ['name', 'url'],
-    title: 'ScrapeSiteIPTV',
-    description: 'Scraper for IPTV Sites.'
-} as const;
-
 export const StreamTokenSchema = {
     properties: {
         stream_token: {
@@ -1198,6 +837,25 @@ export const StreamTokenSchema = {
     type: 'object',
     required: ['stream_token'],
     title: 'StreamToken'
+} as const;
+
+export const TVGEPGMappingsResponseSchema = {
+    additionalProperties: {
+        anyOf: [
+            {
+                type: 'string',
+                maxLength: 2083,
+                minLength: 1,
+                format: 'uri'
+            },
+            {
+                type: 'null'
+            }
+        ]
+    },
+    type: 'object',
+    title: 'TVGEPGMappingsResponse',
+    description: 'Model for TVG EPG mappings response.'
 } as const;
 
 export const ThreadHealthModelSchema = {
@@ -1261,7 +919,15 @@ export const TitleFilterSchema = {
     },
     type: 'object',
     title: 'TitleFilter',
-    description: 'Model for title filtering.'
+    description: `Model for title filtering.
+
+Items in regex_postprocessing will be applied to remove parts of the title via re.sub.
+
+The other lists will be evaluated in order:
+- always_exclude_words
+- always_include_words
+- exclude_words
+- include_words (if populated, otherwise allow any)`
 } as const;
 
 export const TokenSchema = {

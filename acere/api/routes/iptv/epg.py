@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Query, Response
 
 from acere.core.stream_token import verify_stream_token
-from acere.instances.scraper import get_ace_scraper
+from acere.instances.epg import get_epg_handler
 from acere.services.xc.helpers import check_xc_auth
 
 router = APIRouter(tags=["Media/XML"])
@@ -20,9 +20,7 @@ def get_epg(token: Annotated[str, Query()] = "") -> Response:
     """Get the merged EPG data."""
     verify_stream_token(token)
 
-    ace_scraper = get_ace_scraper()
-
-    condensed_epg = ace_scraper.epg_handler.get_condensed_epg()
+    condensed_epg = get_epg_handler().get_condensed_epg()
 
     return Response(
         content=condensed_epg,
@@ -36,9 +34,7 @@ def get_epg_xc(username: Annotated[str, Query()] = "", password: Annotated[str, 
     """Get the merged EPG data."""
     check_xc_auth(username, password)
 
-    ace_scraper = get_ace_scraper()
-
-    condensed_epg = ace_scraper.epg_handler.get_condensed_epg()
+    condensed_epg = get_epg_handler().get_condensed_epg()
 
     return Response(
         content=condensed_epg,

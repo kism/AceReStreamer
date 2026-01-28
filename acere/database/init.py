@@ -1,5 +1,6 @@
 import secrets
 
+from sqlalchemy import text
 from sqlmodel import Session, SQLModel, create_engine, select
 
 from acere import crud
@@ -20,13 +21,7 @@ engine = create_engine(
 # for more details: https://github.com/fastapi/full-stack-fastapi-template/issues/28
 
 
-def init_db(session: Session) -> None:
-    # Tables should be created with Alembic migrations
-    # But if you don't want to use migrations, create
-    # the tables un-commenting the next lines
-
-    SQLModel.metadata.create_all(engine)
-
+def _create_first_superuser(session: Session) -> None:
     user = session.exec(select(User).where(User.username == settings.FIRST_SUPERUSER)).first()
     if not user:
         password_clear = settings.FIRST_SUPERUSER_PASSWORD
@@ -51,3 +46,22 @@ Password: {password_clear}
             is_superuser=True,
         )
         user = crud.create_user(session=session, user_create=user_in)
+
+
+def _migrate_db(session: Session) -> None:
+    # Remove old tables if they exist
+    old_tables = ["acequalitycache", "contentidinfohash", "content_id_infohash", "content_id_xc_id"]
+    for table_name in old_tables:
+        session.connection().execute(text(f"DROP TABLE IF EXISTS {table_name}"))
+    session.commit()
+
+
+def init_db(session: Session) -> None:
+    # Tables should be created with Alembic migrations
+    # But if you don't want to use migrations, create
+    # the tables un-commenting the next lines
+
+    SQLModel.metadata.create_all(engine)
+
+    _migrate_db(session=session)
+    _create_first_superuser(session=session)

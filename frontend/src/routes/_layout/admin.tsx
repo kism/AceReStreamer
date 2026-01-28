@@ -1,6 +1,8 @@
 import { Tabs, VStack } from "@chakra-ui/react"
 import { createFileRoute } from "@tanstack/react-router"
+import EPGManagement from "@/components/Admin/EPGManagement"
 import ScraperManagement from "@/components/Admin/ScraperManagement"
+import StreamManagement from "@/components/Admin/StreamManagement"
 import UserManagement from "@/components/Admin/UserManagement"
 import useAuth from "@/hooks/useAuth"
 import { usePageTitle } from "@/hooks/usePageTitle"
@@ -8,6 +10,8 @@ import { usePageTitle } from "@/hooks/usePageTitle"
 const tabsConfig = [
   { value: "users", title: "Users", component: UserManagement },
   { value: "scrapers", title: "Scrapers", component: ScraperManagement },
+  { value: "epgs", title: "EPGs", component: EPGManagement },
+  { value: "streams", title: "Streams", component: StreamManagement },
 ]
 
 export const Route = createFileRoute("/_layout/admin")({
@@ -17,9 +21,7 @@ export const Route = createFileRoute("/_layout/admin")({
 function AdminSettings() {
   usePageTitle("Admin Settings")
   const { user: currentUser } = useAuth()
-  const finalTabs = currentUser?.is_superuser
-    ? tabsConfig.slice(0, 3)
-    : tabsConfig
+  const finalTabs = currentUser?.is_superuser ? tabsConfig : tabsConfig
 
   if (!currentUser) {
     return null

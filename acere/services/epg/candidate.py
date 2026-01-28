@@ -95,6 +95,8 @@ class EPGCandidate:
 
         n_programs_after_now = 0
         n_programs_with_description = 0
+        description_total_length = 0
+        n_programs_with_images = 0
         current_time = datetime.now(tz=OUR_TIMEZONE)
 
         for program in self._programs:
@@ -111,6 +113,11 @@ class EPGCandidate:
             description_elem = program.find("desc")
             if description_elem is not None and description_elem.text and description_elem.text.strip():
                 n_programs_with_description += 1
+                description_total_length += len(description_elem.text.strip())
+
+            has_image = program.find("icon") is not None
+            if has_image:
+                n_programs_with_images += 1
 
         if n_programs_after_now < _DESIRED_MIN_PROGRAMS:
             # Don't like having less than desired upcoming programs
@@ -119,7 +126,12 @@ class EPGCandidate:
             # Don't like having less than desired programs with descriptions.
             score = _DESIRED_MIN_PROGRAMS + n_programs_with_description
         else:
-            score = n_programs_after_now + n_programs_with_description
+            score = (
+                n_programs_after_now
+                + n_programs_with_description
+                + (description_total_length // 100)
+                + n_programs_with_images
+            )
 
         self._score = score
         return score
