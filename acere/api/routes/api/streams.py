@@ -10,7 +10,7 @@ from acere.instances.ace_quality import get_quality_handler
 from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.epg import get_epg_handler
 from acere.services.ace_quality import Quality
-from acere.services.scraper.models import FoundAceStreamAPI
+from acere.services.scraper.models import FoundAceStream, FoundAceStreamAPI, ManuallyAddedAceStream
 from acere.utils.api_models import MessageResponseModel
 from acere.utils.logger import get_logger
 
@@ -91,6 +91,28 @@ def streams() -> list[FoundAceStreamAPI]:
         )
 
     return streams_api
+
+
+@router.post("/", dependencies=[Depends(get_current_active_superuser)])
+def add_stream(
+    stream: ManuallyAddedAceStream,
+) -> MessageResponseModel:
+    """API endpoint to add a specific stream by Ace ID."""
+    handler = get_ace_streams_db_handler()
+
+    handler.update_stream(
+        FoundAceStream(
+            title=stream.title,
+            content_id=stream.content_id,
+            infohash=None,
+            tvg_id=stream.tvg_id,
+            tvg_logo=None,
+            group_title=stream.group_title,
+            sites_found_on=[],
+        )
+    )
+
+    return MessageResponseModel(message="Stream added successfully")
 
 
 @router.get("/health")

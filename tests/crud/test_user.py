@@ -4,7 +4,7 @@ from fastapi.encoders import jsonable_encoder
 
 from acere import crud
 from acere.core.security import verify_password
-from acere.models import User, UserCreate, UserUpdate
+from acere.database.models.user import User, UserCreate, UserUpdate
 from tests.test_utils.user_utils import random_lower_string
 
 if TYPE_CHECKING:

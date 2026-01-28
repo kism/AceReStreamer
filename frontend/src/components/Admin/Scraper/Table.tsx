@@ -62,7 +62,7 @@ function ScraperTable() {
 
   return (
     <>
-      <Heading size="md" py={4}>
+      <Heading size="md" mt={2} mb={1}>
         Scraper List
       </Heading>
       <VStack align="start">
@@ -96,6 +96,7 @@ function ScraperTable() {
                 <Button
                   m={2}
                   size="xs"
+                  colorPalette="red"
                   onClick={() => handleRemoveBySlug(scraper.name)}
                 >
                   Delete

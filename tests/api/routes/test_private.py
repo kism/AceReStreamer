@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from sqlmodel import Session, select
 
 from acere.constants import API_V1_STR
-from acere.models import User
+from acere.database.models.user import User
 
 if TYPE_CHECKING:
     from fastapi.testclient import TestClient

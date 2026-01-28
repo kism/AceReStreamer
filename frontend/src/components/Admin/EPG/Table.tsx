@@ -63,7 +63,9 @@ function EPGTable() {
 
   return (
     <>
-      <Heading>EPG Management</Heading>
+      <Heading size="md" mt={2} mb={1}>
+        EPG Management
+      </Heading>
       <VStack align="start">
         {data?.map((epg) => (
           <Flex
@@ -94,6 +96,7 @@ function EPGTable() {
                 <Button
                   m={2}
                   size="xs"
+                  colorPalette="red"
                   onClick={() => handleRemoveBySlug(epg.slug)}
                 >
                   Delete

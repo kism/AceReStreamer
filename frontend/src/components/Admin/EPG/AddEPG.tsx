@@ -77,7 +77,9 @@ function AddEPGJson() {
 
   return (
     <VStack align="start" gap={4}>
-      <Heading>Streams without an EPG</Heading>
+      <Heading size="md" mt={2} mb={1}>
+        Streams without an EPG
+      </Heading>
 
       {unmappedTvgIds.length > 0 && (
         <Box>
@@ -102,10 +104,12 @@ function AddEPGJson() {
         </Text>
       )}
 
-      <Heading size="md">Add EPG Source via JSON</Heading>
+      <Heading size="md" mt={2} mb={1}>
+        Add EPG Source via JSON
+      </Heading>
       <Text fontSize="sm">
         Enter the JSON configuration for your EPG source. Can also be done as a
-        list. Refer to EPGInstanceConf in the
+        list. Refer to EPGInstanceConf in the{" "}
         <Link href={`${VITE_API_URL}/docs`}>API docs</Link> schemas for
         filtering information.
       </Text>
@@ -136,7 +140,7 @@ function AddEPGJson() {
           onClick={handleSubmit}
           loading={isSubmitting}
           loadingText="Adding..."
-          colorScheme="blue"
+          colorPalette="teal"
         >
           Add EPG Source
         </Button>

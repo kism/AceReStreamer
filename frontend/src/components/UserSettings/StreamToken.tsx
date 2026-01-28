@@ -55,7 +55,7 @@ const StreamToken = () => {
 
   return (
     <Container maxW="full">
-      <Heading size="sm" py={4}>
+      <Heading size="md" mt={2} mb={1}>
         Stream Token
       </Heading>
       <Box w={{ sm: "full", md: "sm" }}>

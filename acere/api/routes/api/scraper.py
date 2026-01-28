@@ -106,3 +106,32 @@ def remove_source(slug: str) -> MessageResponseModel:
     settings.write_config()
 
     return MessageResponseModel(message=msg)
+
+
+@router.get("/name-override", dependencies=[Depends(get_current_active_superuser)])
+def get_name_overrides() -> dict[str, str]:
+    """API endpoint to get the scraper name overrides."""
+    return settings.scraper.content_id_infohash_name_overrides
+
+
+@router.delete("/name-override/{content_id}", dependencies=[Depends(get_current_active_superuser)])
+def delete_name_override(content_id: str) -> MessageResponseModel:
+    """API endpoint to delete a scraper name override."""
+    success = settings.scraper.delete_content_id_name_override(content_id)
+    if not success:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail=MessageResponseModel(message="Content ID name override not found").model_dump_json(),
+        )
+
+    settings.write_config()
+    return MessageResponseModel(message="Content ID name override deleted successfully")
+
+
+@router.post("/name-override/{content_id}", dependencies=[Depends(get_current_active_superuser)])
+def add_name_override(content_id: str, name: str) -> MessageResponseModel:
+    """API endpoint to add a scraper name override."""
+    settings.scraper.add_content_id_name_override(content_id, name)
+
+    settings.write_config()
+    return MessageResponseModel(message="Content ID name override added successfully")

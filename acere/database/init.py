@@ -5,8 +5,8 @@ from sqlmodel import Session, SQLModel, create_engine, select
 
 from acere import crud
 from acere.constants import DATABASE_FILE
+from acere.database.models.user import User, UserCreate
 from acere.instances.config import settings
-from acere.models import User, UserCreate
 from acere.utils.logger import get_logger
 
 logger = get_logger(__name__)

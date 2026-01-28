@@ -2,6 +2,7 @@ import datetime
 import json
 import os
 import secrets
+import typing
 import urllib
 import urllib.parse
 from typing import TYPE_CHECKING, Annotated, Any, Literal, Self
@@ -50,6 +51,7 @@ def parse_cors(v: Any) -> list[str] | str:  # noqa: ANN401 JSON things
 logger = get_logger(__name__)
 
 
+# region Scraper Models
 class TitleFilter(BaseModel):
     """Model for title filtering.
 
@@ -150,6 +152,7 @@ class ScrapeSiteIPTV(ScrapeSiteGeneric):
     type: Literal["iptv"] = "iptv"
 
 
+# region AceScrapeConf
 class AceScrapeConf(BaseModel):
     """Settings for scraping AceStreams."""
 
@@ -161,7 +164,6 @@ class AceScrapeConf(BaseModel):
     html: list[ScrapeSiteHTML] = []
     iptv_m3u8: list[ScrapeSiteIPTV] = []
     api: list[ScrapeSiteAPI] = []
-    name_replacements: dict[str, str] = {}
     content_id_infohash_name_overrides: dict[str, str] = {}
     category_mapping: dict[str, list[str]] = {
         "sports": [
@@ -357,7 +359,22 @@ class AceScrapeConf(BaseModel):
 
         return True, "Source removed"
 
+    def delete_content_id_name_override(self, content_id: str) -> bool:
+        """Delete a content ID to name override."""
+        if content_id in self.content_id_infohash_name_overrides:
+            del self.content_id_infohash_name_overrides[content_id]
+            logger.info("Deleted content ID name override for %s", content_id)
+            return True
 
+        return False
+
+    def add_content_id_name_override(self, content_id: str, name: str) -> None:
+        """Add a content ID to name override."""
+        self.content_id_infohash_name_overrides[content_id] = name
+        logger.info("Added content ID name override for %s", content_id)
+
+
+# region AppConf
 class AppConf(BaseModel):
     """Application configuration definition."""
 
@@ -398,6 +415,7 @@ class AppConf(BaseModel):
         return value
 
 
+# region EPGInstanceConf
 class EPGInstanceConf(BaseModel):
     """EPG (Electronic Program Guide) configuration definition.
 
@@ -419,6 +437,7 @@ class EPGInstanceConf(BaseModel):
         return slugify(urllib.parse.unquote(self.url.encoded_string()))
 
 
+# region AceReStreamerConf
 class AceReStreamerConf(BaseSettings):
     """Settings Definition."""
 
@@ -505,6 +524,27 @@ class AceReStreamerConf(BaseSettings):
 
         return False
 
+    def write_backup_config(
+        self,
+        config_path: Path | None,
+        existing_data: typing.Any,  # noqa: ANN401
+        reason: str = "Validation has changed the config file",
+    ) -> None:
+        if config_path is None:
+            config_path = SETTINGS_FILE
+
+        time_str = datetime.datetime.now(tz=OUR_TIMEZONE).strftime("%Y-%m-%d_%H%M%S")
+        config_backup_dir = config_path.parent / "config_backups"
+        config_backup_dir.mkdir(parents=True, exist_ok=True)
+        backup_file = config_backup_dir / f"{config_path.stem}_{time_str}{config_path.suffix}.bak"
+        logger.warning(
+            "%s, backing up the old one to %s",
+            reason,
+            backup_file,
+        )
+        with backup_file.open("w") as f:
+            f.write(json.dumps(existing_data))
+
     def write_config(self, config_path: Path | None = None) -> None:
         """Write the current settings to a JSON file."""
         if config_path is None:
@@ -522,22 +562,11 @@ class AceReStreamerConf(BaseSettings):
             with config_path.open("r") as f:
                 existing_data = json.load(f)
 
-        new_file_content_str = json.dumps(config_data)
-
         if existing_data != config_data:  # The new object will be valid, so we back up the old one
-            time_str = datetime.datetime.now(tz=OUR_TIMEZONE).strftime("%Y-%m-%d_%H%M%S")
-            config_backup_dir = config_path.parent / "config_backups"
-            config_backup_dir.mkdir(parents=True, exist_ok=True)
-            backup_file = config_backup_dir / f"{config_path.stem}_{time_str}{config_path.suffix}.bak"
-            logger.warning(
-                "Validation has changed the config file, backing up the old one to %s",
-                backup_file,
-            )
-            with backup_file.open("w") as f:
-                f.write(json.dumps(existing_data))
+            self.write_backup_config(config_path, existing_data)
 
         with config_path.open("w") as f:
-            f.write(new_file_content_str)
+            f.write(json.dumps(config_data))
 
         config_path_json = config_path.with_suffix(".json")
         logger.info("Writing config to %s", config_path_json)

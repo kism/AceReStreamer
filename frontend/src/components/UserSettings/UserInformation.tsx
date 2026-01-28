@@ -29,8 +29,8 @@ const UserInformation = () => {
     mode: "onBlur",
     criteriaMode: "all",
     defaultValues: {
-      full_name: currentUser?.full_name,
-      username: currentUser?.username,
+      full_name: currentUser?.full_name ?? null,
+      username: currentUser?.username ?? "",
     },
   })
 
@@ -63,7 +63,7 @@ const UserInformation = () => {
 
   return (
     <Container maxW="full">
-      <Heading size="sm" py={4}>
+      <Heading size="md" mt={2} mb={1}>
         User Information
       </Heading>
       <Box

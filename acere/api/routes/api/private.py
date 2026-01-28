@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 from acere.api.deps import SessionDep
 from acere.core.security import get_password_hash
-from acere.models import (
+from acere.database.models.user import (
     User,
     UserPublic,
 )

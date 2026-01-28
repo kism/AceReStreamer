@@ -42,7 +42,7 @@ function ProgramDescription({
 
   return (
     <Box>
-      <Heading size="sm">
+      <Heading size="sm" py={1}>
         <HStack px={1}>
           <Text>Now Playing: </Text> {title ? title : "No Program Information"}
         </HStack>
@@ -165,8 +165,8 @@ function WebPlayer() {
         <VStack align="stretch" gap={4}>
           <NowPlayingTable />
           <ProgramDescription
-            description={streamData?.program_description}
-            title={streamData?.program_title}
+            description={streamData?.program_description ?? ""}
+            title={streamData?.program_title ?? ""}
           />
           <AcePoolSection />
           <Box flexShrink={0} h={4} /> {/* Bit of a hack */}

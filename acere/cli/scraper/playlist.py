@@ -49,7 +49,6 @@ class PlaylistCreator:
 
         stream_name_processor.load_config(
             instance_path=self._instance_path,
-            name_replacements=self._conf.scraper.name_replacements,
             content_id_infohash_name_overrides=self._conf.scraper.content_id_infohash_name_overrides,
             category_mapping=self._conf.scraper.category_mapping,
         )

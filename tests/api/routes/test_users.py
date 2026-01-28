@@ -7,8 +7,8 @@ from sqlmodel import Session, select
 from acere import crud
 from acere.constants import API_V1_STR
 from acere.core.security import verify_password
+from acere.database.models.user import User, UserCreate
 from acere.instances.config import settings
-from acere.models import User, UserCreate
 from tests.test_utils.user_utils import random_lower_string
 
 if TYPE_CHECKING:

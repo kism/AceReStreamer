@@ -41,9 +41,9 @@ from sqlmodel import Session, delete
 
 from acere.database.handlers.quality_cache import AceQualityCacheHandler
 from acere.database.init import engine, init_db
+from acere.database.models.user import User
 from acere.instances.config import settings
 from acere.main import app
-from acere.models import User
 from tests.test_utils.user import authentication_token_from_username
 from tests.test_utils.user_utils import get_superuser_token_headers
 

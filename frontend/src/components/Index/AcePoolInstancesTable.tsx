@@ -74,7 +74,9 @@ export function AcePoolInstancesTable({
 
   return (
     <Box>
-      <Heading size="sm">AceStream Instances</Heading>
+      <Heading size="sm" py={1}>
+        AceStream Instances
+      </Heading>
       <AppTableRoot preset="outlineSm" maxW="fit-content">
         <TableHeader>
           <TableRow>

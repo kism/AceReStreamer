@@ -18,6 +18,7 @@ print_heading "ty"
 ty check
 
 print_heading "ruff"
+ruff format
 ruff check --fix
 
 print_heading "PyTest"

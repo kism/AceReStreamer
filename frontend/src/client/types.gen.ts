@@ -95,6 +95,42 @@ export type AcePoolStatResponseLivePos = {
 };
 
 /**
+ * Settings for scraping AceStreams.
+ */
+export type AceScrapeConf_Input = {
+    playlist_name?: string;
+    adhoc_playlist_external_url?: (string | null);
+    tvg_logo_external_url?: (string | null);
+    html?: Array<ScrapeSiteHTML>;
+    iptv_m3u8?: Array<ScrapeSiteIPTV>;
+    api?: Array<ScrapeSiteAPI>;
+    content_id_infohash_name_overrides?: {
+        [key: string]: (string);
+    };
+    category_mapping?: {
+        [key: string]: Array<(string)>;
+    };
+};
+
+/**
+ * Settings for scraping AceStreams.
+ */
+export type AceScrapeConf_Output = {
+    playlist_name?: string;
+    adhoc_playlist_external_url?: (string | null);
+    tvg_logo_external_url?: (string | null);
+    html?: Array<ScrapeSiteHTML>;
+    iptv_m3u8?: Array<ScrapeSiteIPTV>;
+    api?: Array<ScrapeSiteAPI>;
+    content_id_infohash_name_overrides?: {
+        [key: string]: (string);
+    };
+    category_mapping?: {
+        [key: string]: Array<(string)>;
+    };
+};
+
+/**
  * Represent a scraper instance, generic for HTML and IPTV sources.
  */
 export type AceScraperSourceApi = {
@@ -114,6 +150,16 @@ export type Body_Login_login_access_token = {
     scope?: string;
     client_id?: (string | null);
     client_secret?: (string | null);
+};
+
+export type ConfigExport_Input = {
+    scraper: AceScrapeConf_Input;
+    epgs: Array<EPGInstanceConf_Input>;
+};
+
+export type ConfigExport_Output = {
+    scraper: AceScrapeConf_Output;
+    epgs: Array<EPGInstanceConf_Output>;
 };
 
 /**
@@ -217,6 +263,16 @@ export type HTTPValidationError = {
     detail?: Array<ValidationError>;
 };
 
+/**
+ * Model for a manually added AceStream.
+ */
+export type ManuallyAddedAceStream = {
+    title: string;
+    content_id: string;
+    tvg_id: string;
+    group_title: string;
+};
+
 export type Message = {
     message: string;
 };
@@ -249,6 +305,37 @@ export type Quality = {
     has_ever_worked?: boolean;
     m3u_failures?: number;
     last_message?: string;
+};
+
+/**
+ * Scraper for API Sites.
+ */
+export type ScrapeSiteAPI = {
+    type?: "api";
+    name: string;
+    url: string;
+    title_filter?: TitleFilter;
+};
+
+/**
+ * Model for a site to scrape.
+ */
+export type ScrapeSiteHTML = {
+    type?: "html";
+    name: string;
+    url: string;
+    title_filter?: TitleFilter;
+    html_filter?: HTMLScraperFilter;
+};
+
+/**
+ * Scraper for IPTV Sites.
+ */
+export type ScrapeSiteIPTV = {
+    type?: "iptv";
+    name: string;
+    url: string;
+    title_filter?: TitleFilter;
 };
 
 export type StreamToken = {
@@ -379,6 +466,14 @@ export type AcePoolStatsByPidData = {
 
 export type AcePoolStatsByPidResponse = (AcePoolStat);
 
+export type ConfigGetConfigResponse = (ConfigExport_Output);
+
+export type ConfigUpdateConfigData = {
+    requestBody: ConfigExport_Input;
+};
+
+export type ConfigUpdateConfigResponse = (ConfigExport_Output);
+
 export type EpgEpgHealthResponse = (EPGApiHandlerHealthResponse);
 
 export type EpgGetEpgsResponse = (Array<EPGInstanceConf_Output>);
@@ -480,6 +575,23 @@ export type ScraperRemoveSourceData = {
 
 export type ScraperRemoveSourceResponse = (MessageResponseModel);
 
+export type ScraperGetNameOverridesResponse = ({
+    [key: string]: (string);
+});
+
+export type ScraperDeleteNameOverrideData = {
+    contentId: string;
+};
+
+export type ScraperDeleteNameOverrideResponse = (MessageResponseModel);
+
+export type ScraperAddNameOverrideData = {
+    contentId: string;
+    name: string;
+};
+
+export type ScraperAddNameOverrideResponse = (MessageResponseModel);
+
 export type StreamsByContentIdData = {
     contentId: string;
 };
@@ -493,6 +605,12 @@ export type StreamsDeleteByContentIdData = {
 export type StreamsDeleteByContentIdResponse = (MessageResponseModel);
 
 export type StreamsStreamsResponse = (Array<FoundAceStreamAPI>);
+
+export type StreamsAddStreamData = {
+    requestBody: ManuallyAddedAceStream;
+};
+
+export type StreamsAddStreamResponse = (MessageResponseModel);
 
 export type StreamsHealthResponse = ({
     [key: string]: Quality;

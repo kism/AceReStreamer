@@ -10,7 +10,7 @@ from acere.api.deps import (
     get_current_active_superuser,
 )
 from acere.core.security import get_password_hash, verify_password
-from acere.models import (
+from acere.database.models.user import (
     Message,
     StreamToken,
     UpdatePassword,

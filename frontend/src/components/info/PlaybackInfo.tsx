@@ -48,7 +48,9 @@ export function PlaybackInfo() {
           </Box>
 
           <Box>
-            <Heading size="sm">VLC (Linux, MacOS, Windows)</Heading>
+            <Heading size="sm" py={1}>
+              VLC (Linux, MacOS, Windows)
+            </Heading>
             <Text>
               On Computer, go to Media &gt; Open Network Stream, paste the
               Direct URL and click Open.
@@ -59,14 +61,18 @@ export function PlaybackInfo() {
             </Text>
           </Box>
           <Box>
-            <Heading size="sm">IINA (MacOS)</Heading>
+            <Heading size="sm" py={1}>
+              IINA (MacOS)
+            </Heading>
             <Text>
               Open IINA and select "Open URL" from the menu. Paste the Direct
               URL and click Open.
             </Text>
           </Box>
           <Box>
-            <Heading size="sm">MPV (Linux, MacOS, Windows)</Heading>
+            <Heading size="sm" py={1}>
+              MPV (Linux, MacOS, Windows)
+            </Heading>
             <Text>
               Run <Code>mpv &lt;Direct URL&gt;</Code> in a terminal.
             </Text>

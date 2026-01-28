@@ -2,7 +2,7 @@ from fastapi import HTTPException
 from sqlmodel import Session, select
 
 from acere.database.init import engine
-from acere.models import User
+from acere.database.models.user import User
 from acere.utils.logger import get_logger
 
 logger = get_logger(__name__)
