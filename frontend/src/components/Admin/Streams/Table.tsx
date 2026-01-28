@@ -91,7 +91,12 @@ function StreamAdminTable() {
             borderRadius="md"
             width="full"
           >
-            <Flex justify="space-between" width="full">
+            <Flex
+              justify="space-between"
+              width={{ base: "100%", md: "auto" }}
+              flexDirection={{ base: "column", md: "row" }}
+              gap={4}
+            >
               <VStack align="start" gap={1} p={0}>
                 <Heading size="sm" py={1}>
                   {item.title}

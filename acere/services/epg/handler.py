@@ -48,10 +48,11 @@ class EPGHandler:
         epg_conf_list: list[EPGInstanceConf],
     ) -> None:
         """Load EPG configurations."""
+        self._epgs.clear()
         for epg_conf in epg_conf_list:
             self._epgs.append(EPG(epg_conf=epg_conf))
 
-        self._update_epgs()
+        self.update_epgs()
 
         logger.info("Initialised EPGHandler with %d EPG configurations", len(epg_conf_list))
 
@@ -193,7 +194,7 @@ class EPGHandler:
 
         return time_to_wait
 
-    def _update_epgs(self) -> None:  # noqa: C901 I split it up within the function
+    def update_epgs(self) -> None:  # noqa: C901 I split it up within the function
         """Update all EPGs with the current instance path."""
 
         async def _safe_update_epg(epg: EPG) -> bool:
@@ -218,7 +219,7 @@ class EPGHandler:
 
             return any_epg_updated
 
-        def epg_update_thread() -> None:
+        def _start_epg_update_thread() -> None:
             """Thread function to update EPGs."""
             logger.info("Starting EPG update thread")
             while True:
@@ -241,6 +242,6 @@ class EPGHandler:
             if thread.is_alive():
                 thread.join(timeout=1)
 
-        thread = threading.Thread(target=epg_update_thread, name="EPGHandler: _update_epgs", daemon=True)
+        thread = threading.Thread(target=_start_epg_update_thread, name="EPGHandler: update_epgs", daemon=True)
         thread.start()
         self._update_threads.append(thread)

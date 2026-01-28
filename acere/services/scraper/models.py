@@ -1,7 +1,7 @@
 """Custom Pydantic models (objects) for scraping."""
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Literal, Self, TypedDict
+from typing import TYPE_CHECKING, Literal, Self
 
 from pydantic import AnyUrl, BaseModel, HttpUrl, field_serializer, model_validator
 
@@ -14,12 +14,10 @@ if TYPE_CHECKING:
 
     from acere.core.config import ScrapeSiteHTML, ScrapeSiteIPTV
 
-    from .name_processor import StreamNameProcessor
 else:
     ScrapeSiteHTML = object
     ScrapeSiteIPTV = object
     Path = object
-    StreamNameProcessor = object
 
 
 class ManuallyAddedAceStream(BaseModel):
@@ -27,7 +25,6 @@ class ManuallyAddedAceStream(BaseModel):
 
     title: str
     content_id: str
-    tvg_id: str
     group_title: str
 
 
@@ -128,10 +125,3 @@ class AceScraperSourceApi(BaseModel):
     def serialize_url(self, value: HttpUrl) -> str:
         """Serialize URL to string."""
         return value.encoded_string()
-
-
-class ScraperSettings(TypedDict):
-    """Type definition for scraper configuration settings."""
-
-    instance_path: Path
-    stream_name_processor: StreamNameProcessor

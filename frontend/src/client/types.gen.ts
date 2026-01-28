@@ -269,7 +269,6 @@ export type HTTPValidationError = {
 export type ManuallyAddedAceStream = {
     title: string;
     content_id: string;
-    tvg_id: string;
     group_title: string;
 };
 

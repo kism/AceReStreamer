@@ -46,7 +46,7 @@ def epg_handler(epg_conf: EPGInstanceConf, monkeypatch: pytest.MonkeyPatch, epg_
     epg.saved_file_path = epg_test_xml_path
 
     handler = EPGHandler()
-    monkeypatch.setattr(handler, "_update_epgs", lambda: None)
+    monkeypatch.setattr(handler, "update_epgs", lambda: None)
     handler.load_config([epg_conf])
     handler._epgs = [epg]
     return handler

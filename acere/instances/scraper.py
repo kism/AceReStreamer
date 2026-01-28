@@ -2,9 +2,6 @@
 
 from typing import TYPE_CHECKING
 
-from acere.constants import INSTANCE_DIR
-from acere.instances.config import settings
-
 if TYPE_CHECKING:
     from acere.services.scraper import AceScraper
 else:
@@ -17,10 +14,6 @@ def set_ace_scraper(scraper: AceScraper) -> None:
     """Set the global AceScraper instance."""
     global _ace_scraper  # noqa: PLW0603 Lazy Loading
     _ace_scraper = scraper
-    _ace_scraper.load_config(
-        ace_scrape_conf=settings.scraper,
-        instance_path=INSTANCE_DIR,
-    )
     _ace_scraper.start_scrape_thread()
 
 

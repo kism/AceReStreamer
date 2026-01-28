@@ -8,6 +8,8 @@ from acere.api.deps import (
 )
 from acere.core.config import AceScrapeConf, EPGInstanceConf
 from acere.instances.config import settings
+from acere.instances.epg import get_epg_handler
+from acere.instances.scraper import get_ace_scraper
 
 
 class ConfigExport(BaseModel):
@@ -43,6 +45,9 @@ def update_config(config: ConfigExport) -> ConfigExport:
         reason="Configuration updated via API",
     )
     settings.write_config()
+    get_ace_scraper().start_scrape_thread()
+    get_epg_handler().update_epgs()
+
     return ConfigExport(
         scraper=settings.scraper,
         epgs=settings.epgs,

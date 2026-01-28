@@ -937,17 +937,13 @@ export const ManuallyAddedAceStreamSchema = {
             type: 'string',
             title: 'Content Id'
         },
-        tvg_id: {
-            type: 'string',
-            title: 'Tvg Id'
-        },
         group_title: {
             type: 'string',
             title: 'Group Title'
         }
     },
     type: 'object',
-    required: ['title', 'content_id', 'tvg_id', 'group_title'],
+    required: ['title', 'content_id', 'group_title'],
     title: 'ManuallyAddedAceStream',
     description: 'Model for a manually added AceStream.'
 } as const;

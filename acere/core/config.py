@@ -158,7 +158,7 @@ class AceScrapeConf(BaseModel):
 
     model_config = ConfigDict(extra="ignore")  # Ignore extras for config related things
 
-    playlist_name: str = "AceReStreamer"
+    playlist_name: str = "acerestreamer"
     adhoc_playlist_external_url: HttpUrl | None = None
     tvg_logo_external_url: HttpUrl | None = None
     html: list[ScrapeSiteHTML] = []

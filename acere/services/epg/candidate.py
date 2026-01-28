@@ -60,7 +60,7 @@ class EPGCandidateHandler:
             if current_candidate_score > best_candidate_score:
                 best_candidate = candidate
 
-        logger.debug(msg.strip())
+        logger.trace(msg.strip())
         return best_candidate
 
 

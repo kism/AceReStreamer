@@ -11,7 +11,9 @@ from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.epg import get_epg_handler
 from acere.services.ace_quality import Quality
 from acere.services.scraper.models import FoundAceStream, FoundAceStreamAPI, ManuallyAddedAceStream
+from acere.services.scraper.name_processor import get_tvg_id_from_title, populate_group_title
 from acere.utils.api_models import MessageResponseModel
+from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -105,9 +107,9 @@ def add_stream(
             title=stream.title,
             content_id=stream.content_id,
             infohash=None,
-            tvg_id=stream.tvg_id,
-            tvg_logo=None,
-            group_title=stream.group_title,
+            tvg_id=get_tvg_id_from_title(stream.title),
+            tvg_logo=f"{slugify(stream.title)}.png",  # find_tvg_logo_image does this
+            group_title=populate_group_title("", stream.title),
             sites_found_on=[],
         )
     )

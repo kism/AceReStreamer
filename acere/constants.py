@@ -17,7 +17,10 @@ TVG_LOGOS_DIR = INSTANCE_DIR / "tvg_logos"
 TVG_LOGOS_DIR.mkdir(parents=True, exist_ok=True)
 EPG_XML_DIR = INSTANCE_DIR / "epg"
 EPG_XML_DIR.mkdir(parents=True, exist_ok=True)
-
+SCRAPER_CACHE_DIR = INSTANCE_DIR / "scraper_cache"
+SCRAPER_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+PLAYLISTS_DIR = INSTANCE_DIR / "playlists"
+PLAYLISTS_DIR.mkdir(parents=True, exist_ok=True)
 
 ## Directories Internal
 DEV_FRONTEND_DIR = Path(__file__).parent.parent / "frontend"

@@ -4,11 +4,11 @@ import asyncio
 import re
 import threading
 import time
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from acere.core.config import HTMLScraperFilter
 from acere.instances.ace_streams import get_ace_streams_db_handler
+from acere.instances.config import settings
 from acere.instances.epg import get_epg_handler
 from acere.utils.logger import get_logger
 
@@ -16,8 +16,7 @@ from .api import APIStreamScraper
 from .helpers import create_unique_stream_list, get_content_id_from_infohash_acestream_api
 from .html import HTMLStreamScraper
 from .iptv import IPTVStreamScraper
-from .models import AceScraperSourceApi, FoundAceStream, ScraperSettings
-from .name_processor import StreamNameProcessor
+from .models import AceScraperSourceApi, FoundAceStream
 
 if TYPE_CHECKING:
     from acere.core.config import (
@@ -51,37 +50,11 @@ class AceScraper:
         self._instance_id = instance_id
         logger.debug("Initializing AceScraper (%s)", self._instance_id)
         self.streams: dict[str, FoundAceStream] = {}
-        self.stream_name_processor: StreamNameProcessor = StreamNameProcessor()
         self.html_scraper: HTMLStreamScraper = HTMLStreamScraper()
         self.iptv_scraper: IPTVStreamScraper = IPTVStreamScraper()
         self.api_scraper: APIStreamScraper = APIStreamScraper()
         self.currently_checking_quality: bool = False
         self._scrape_threads: list[threading.Thread] = []
-
-    def load_config(
-        self,
-        ace_scrape_conf: AceScrapeConf,
-        instance_path: Path | str,
-    ) -> None:
-        """Load the configuration for the scraper."""
-        if isinstance(instance_path, str):
-            instance_path = Path(instance_path)
-
-        self._config = ace_scrape_conf
-
-        self.stream_name_processor.load_config(
-            instance_path=instance_path,
-            content_id_infohash_name_overrides=ace_scrape_conf.content_id_infohash_name_overrides,
-            category_mapping=ace_scrape_conf.category_mapping,
-        )
-        scraper_settings: ScraperSettings = {
-            "instance_path": instance_path,
-            "stream_name_processor": self.stream_name_processor,
-        }
-
-        self.html_scraper.load_config(**scraper_settings)
-        self.iptv_scraper.load_config(**scraper_settings)
-        self.api_scraper.load_config(**scraper_settings)
 
     # region Scrape
     def start_scrape_thread(self) -> None:  # noqa: C901
@@ -97,9 +70,9 @@ class AceScraper:
 
                 async def find_streams() -> list[FoundAceStream]:
                     tasks = [
-                        self.html_scraper.scrape_sites(sites=self._config.html),
-                        self.iptv_scraper.scrape_iptv_playlists(sites=self._config.iptv_m3u8),
-                        self.api_scraper.scrape_api_endpoints(sites=self._config.api),
+                        self.html_scraper.scrape_sites(sites=settings.scraper.html),
+                        self.iptv_scraper.scrape_iptv_playlists(sites=settings.scraper.iptv_m3u8),
+                        self.api_scraper.scrape_api_endpoints(sites=settings.scraper.api),
                     ]
 
                     all_results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -179,7 +152,7 @@ class AceScraper:
                     target_class=site.html_filter.target_class,
                 ),
             )
-            for site in self._config.html
+            for site in settings.scraper.html
         ]
 
         sources.extend(
@@ -190,7 +163,7 @@ class AceScraper:
                     title_filter=site.title_filter,
                     type="iptv",
                 )
-                for site in self._config.iptv_m3u8
+                for site in settings.scraper.iptv_m3u8
             ]
         )
 
@@ -202,7 +175,7 @@ class AceScraper:
                     title_filter=site.title_filter,
                     type="api",
                 )
-                for site in self._config.api
+                for site in settings.scraper.api
             ]
         )
 

@@ -37,7 +37,7 @@ REVERSE_PROXY_TIMEOUT = 10  # Very high but alas
 
 # region /hls/
 @router.get("/hls/{path}", response_class=Response)
-async def hls(
+async def hls(  # noqa: PLR0915 This is hell
     path: str,
     token: str = "",
     *,
@@ -60,7 +60,7 @@ async def hls(
     instance_ace_hls_m3u8_url = await ace_pool.get_instance_hls_url_by_content_id(path)
 
     if not instance_ace_hls_m3u8_url:
-        msg = f"Can't serve hls_stream, Ace pool is full: {path}"
+        msg = f"Can't serve hls_stream, Ace pool is full or invalid stream: {path}"
         logger.error("HLS stream error: %s", msg)
         raise HTTPException(
             status_code=HTTPStatus.SERVICE_UNAVAILABLE,
@@ -82,10 +82,11 @@ async def hls(
 
         # Get the HTTP status code from ace if available
         if isinstance(e, aiohttp.ClientResponseError):
-            ace_status_str = f"{e.status} {e.message}"
-            status_info = f" (ace status: {ace_status_str})" if ace_status_str else ""
+            status_info = f" (ace status: {e.status} {e.message})"
+        elif isinstance(e, TimeoutError):
+            status_info = f" (timeout: {REVERSE_PROXY_TIMEOUT}s)"
         else:
-            status_info = ""
+            status_info = " (???)"
 
         # Determine error type and response
         if isinstance(e, (aiohttp.ServerTimeoutError, TimeoutError)):
