@@ -137,7 +137,7 @@ class PlaylistCreator:
         logger.debug("n streams to append: %d", len(streams_to_append))
 
         streams = new_streams + streams_to_append
-        new_streams.sort(key=lambda x: x.title.lower())
+        streams.sort(key=lambda x: x.title.lower())
 
         infohash_scheme = "infohash-main"
         if infohash_scheme not in M3U_URI_SCHEMES:
