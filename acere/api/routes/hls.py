@@ -80,21 +80,25 @@ async def hls(
     except (aiohttp.ClientError, TimeoutError) as e:
         error_short = type(e).__name__
 
+        # Get the HTTP status code from ace if available
+        ace_status = getattr(e, "status", None)
+        status_info = f" (ace status: {ace_status})" if ace_status else ""
+
         # Determine error type and response
         if isinstance(e, (aiohttp.ServerTimeoutError, TimeoutError)):
-            logger.error("reverse proxy timeout /hls/%s %s", path, error_short)
+            logger.error("reverse proxy timeout /hls/%s %s%s", path, error_short, status_info)
             error_msg, status = "HLS stream timeout", HTTPStatus.REQUEST_TIMEOUT
             get_quality_handler().increment_quality(path, "")
         elif isinstance(e, aiohttp.ClientConnectionError):
-            logger.error("%s reverse proxy cannot connect to Ace", error_short)
+            logger.error("%s reverse proxy cannot connect to Ace%s", error_short, status_info)
             error_msg, status = (
                 "Cannot connect to Ace",
                 HTTPStatus.INTERNAL_SERVER_ERROR,
             )
         else:
-            logger.error("reverse proxy failure /hls/ %s", error_short)
+            logger.error("reverse proxy failure /hls/ %s%s", error_short, status_info)
             error_msg, status = (
-                "Failed to fetch HLS stream",
+                f"Failed to fetch HLS stream{status_info}",
                 HTTPStatus.INTERNAL_SERVER_ERROR,
             )
             get_quality_handler().increment_quality(path, "")
