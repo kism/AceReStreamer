@@ -217,11 +217,11 @@ class IPTVStreamScraper(ScraperCommon):
                 return
 
         # This logic is for if we have imported settings from a github scraper and want to fetch their images.
-        if settings.scraper.adhoc_playlist_external_url is not None:
+        if settings.scraper.tvg_logo_external_url is not None:
             for extension in SUPPORTED_TVG_LOGO_EXTENSIONS:
                 file_name = f"{title_slug}.{extension}"
                 logo = await self._actually_download_tvg_logo(
-                    HttpUrl(f"{settings.scraper.adhoc_playlist_external_url}/tvg_logos/{file_name}"),
+                    HttpUrl(f"{settings.scraper.tvg_logo_external_url}/tvg_logos/{file_name}"),
                     title,
                 )
                 if logo is not None:
