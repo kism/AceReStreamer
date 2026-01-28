@@ -49,7 +49,6 @@ Password: {password_clear}
 
 
 def _migrate_db(session: Session) -> None:
-    # Remove old tables if they exist
     old_tables = ["acequalitycache", "contentidinfohash", "content_id_infohash", "content_id_xc_id"]
     for table_name in old_tables:
         session.connection().execute(text(f"DROP TABLE IF EXISTS {table_name}"))

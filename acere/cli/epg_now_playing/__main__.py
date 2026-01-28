@@ -59,7 +59,7 @@ def main() -> None:
     epgs: dict[str, EPG] = {}
     for epg_file in epg_dir.glob("*.xml"):
         try:
-            epg = EPG(EPGInstanceConf(url=HttpUrl(f"file://{epg_file.resolve()}")))
+            epg = EPG(EPGInstanceConf(url=HttpUrl(f"http://localhost/{epg_file.resolve()}")))
             epg.saved_file_path = epg_file
             epgs[epg_file.name] = epg
         except etree.XMLSyntaxError as e:

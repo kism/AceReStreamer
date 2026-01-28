@@ -187,20 +187,25 @@ class IPTVStreamScraper(ScraperCommon):
         return None
 
     async def _actually_download_tvg_logo(self, tvg_logo_url: HttpUrl, title: str) -> bytes | None:
+        output_logo = None
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(
                     tvg_logo_url.encoded_string(), timeout=aiohttp.ClientTimeout(total=5)
                 ) as response:
                     response.raise_for_status()
-                    return await response.read()
+                    output_logo = await response.read()
         except aiohttp.ClientError as e:
             error_short = type(e).__name__
-            logger.error("Error downloading TVG logo for %s, %s", title, error_short)
+            logger.debug("Error downloading TVG logo for %s [%s], %s", title, tvg_logo_url, error_short)
         except TimeoutError:
-            logger.error("Timeout downloading TVG logo for %s", title)
+            logger.debug("Timeout downloading TVG logo for %s", title)
 
-        return None
+        if "git-lfs" in (output_logo or b"").decode(errors="ignore"):
+            logger.warning("TVG logo for %s appears to be a Git LFS placeholder, skipping", title)
+            return None
+
+        return output_logo
 
     async def _download_tvg_logo(self, line: str, title: str) -> None:
         """Download the TVG logo and the URL it got it from."""
@@ -221,7 +226,7 @@ class IPTVStreamScraper(ScraperCommon):
             for extension in SUPPORTED_TVG_LOGO_EXTENSIONS:
                 file_name = f"{title_slug}.{extension}"
                 logo = await self._actually_download_tvg_logo(
-                    HttpUrl(f"{settings.scraper.tvg_logo_external_url}/tvg_logos/{file_name}"),
+                    HttpUrl(f"{settings.scraper.tvg_logo_external_url}/{file_name}"),
                     title,
                 )
                 if logo is not None:
