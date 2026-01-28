@@ -79,7 +79,9 @@ function StreamAdminTable() {
 
   return (
     <>
-      <Heading>Streams Management</Heading>
+      <Heading size="md" mt={2} mb={1}>
+        Streams Management
+      </Heading>
       <VStack align="start">
         {items?.map((item) => (
           <Box
@@ -91,7 +93,9 @@ function StreamAdminTable() {
           >
             <Flex justify="space-between" width="full">
               <VStack align="start" gap={1} p={0}>
-                <Heading size="md">{item.title}</Heading>
+                <Heading size="sm" py={1}>
+                  {item.title}
+                </Heading>
                 <HStack>
                   Last scrape time:
                   {GetRelativeTimeText(item.last_scraped_time)}
@@ -150,7 +154,7 @@ function StreamAdminTable() {
                 </Box>
                 <Button
                   size="xs"
-                  backgroundColor="fg.error"
+                  colorPalette="red"
                   onClick={() => handleRemoveByContentId(item.content_id)}
                 >
                   Delete

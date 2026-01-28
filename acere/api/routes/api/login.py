@@ -8,8 +8,8 @@ from acere import crud
 from acere.api.deps import CurrentUser, SessionDep
 from acere.core import security
 from acere.core.security import get_password_hash
+from acere.database.models.user import Message, NewPassword, Token, UserPublic
 from acere.instances.config import settings
-from acere.models import Message, NewPassword, Token, UserPublic
 from acere.utils.auth import (
     verify_password_reset_token,
 )

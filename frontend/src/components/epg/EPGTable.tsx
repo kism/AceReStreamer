@@ -77,10 +77,10 @@ export function EPGTable({ programmes }: EPGTableProps) {
             >
               <HStack justify="normal" gap={4}>
                 <DateTimeVStack
-                  fontWeight={isCurrent ? "bold" : undefined}
+                  fontWeight={isCurrent ? "bold" : "normal"}
                   dateTimeStr={prog.start}
                 />
-                <Text fontWeight={isCurrent ? "bold" : undefined}>
+                <Text fontWeight={isCurrent ? "bold" : "normal"}>
                   {prog.title}
                 </Text>
               </HStack>

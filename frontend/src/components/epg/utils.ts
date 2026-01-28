@@ -19,6 +19,7 @@ export function parseEPGXML(xmlText: string): EPGData {
     const channelElements = xmlDoc.getElementsByTagName("channel")
     for (let i = 0; i < channelElements.length; i++) {
       const chan = channelElements[i]
+      if (!chan) continue
       const id = chan.getAttribute("id") || ""
       const displayNameElement = chan.getElementsByTagName("display-name")[0]
       const displayName = displayNameElement?.textContent || id
@@ -30,6 +31,7 @@ export function parseEPGXML(xmlText: string): EPGData {
     const programmeElements = xmlDoc.getElementsByTagName("programme")
     for (let i = 0; i < programmeElements.length; i++) {
       const prog = programmeElements[i]
+      if (!prog) continue
       const channel = prog.getAttribute("channel") || ""
       const start = prog.getAttribute("start") || ""
       const stop = prog.getAttribute("stop") || ""
@@ -53,6 +55,7 @@ export function parseEPGXML(xmlText: string): EPGData {
 export function parseXmltvDate(xmltvDate: string): Date {
   // Trim and split timezone
   const [datePart, tzPart] = xmltvDate.trim().split(" ")
+  if (!datePart) throw new Error("Invalid XMLTV date format")
 
   const year = datePart.slice(0, 4)
   const month = datePart.slice(4, 6)

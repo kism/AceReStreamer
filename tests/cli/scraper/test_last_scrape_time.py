@@ -30,7 +30,6 @@ def stream_name_processor(tmp_path: Path) -> StreamNameProcessor:
     processor = StreamNameProcessor()
     processor.load_config(
         instance_path=tmp_path,
-        name_replacements={},
         content_id_infohash_name_overrides={},
         category_mapping={},
     )

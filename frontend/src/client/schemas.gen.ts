@@ -308,6 +308,186 @@ export const AcePoolStatResponseLivePosSchema = {
     description: 'Matches the live position response from the AcePool API.'
 } as const;
 
+export const AceScrapeConf_InputSchema = {
+    properties: {
+        playlist_name: {
+            type: 'string',
+            title: 'Playlist Name',
+            default: 'AceReStreamer'
+        },
+        adhoc_playlist_external_url: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 2083,
+                    minLength: 1,
+                    format: 'uri'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Adhoc Playlist External Url'
+        },
+        tvg_logo_external_url: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 2083,
+                    minLength: 1,
+                    format: 'uri'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Tvg Logo External Url'
+        },
+        html: {
+            items: {
+                '$ref': '#/components/schemas/ScrapeSiteHTML'
+            },
+            type: 'array',
+            title: 'Html',
+            default: []
+        },
+        iptv_m3u8: {
+            items: {
+                '$ref': '#/components/schemas/ScrapeSiteIPTV'
+            },
+            type: 'array',
+            title: 'Iptv M3U8',
+            default: []
+        },
+        api: {
+            items: {
+                '$ref': '#/components/schemas/ScrapeSiteAPI'
+            },
+            type: 'array',
+            title: 'Api',
+            default: []
+        },
+        content_id_infohash_name_overrides: {
+            additionalProperties: {
+                type: 'string'
+            },
+            type: 'object',
+            title: 'Content Id Infohash Name Overrides',
+            default: {}
+        },
+        category_mapping: {
+            additionalProperties: {
+                items: {
+                    type: 'string'
+                },
+                type: 'array'
+            },
+            type: 'object',
+            title: 'Category Mapping',
+            default: {
+                sports: ['football', 'soccer', 'basketball', 'nba', 'sport', 'tennis', 'moto', 'f1', 'hockey', 'cricket', 'rugby', 'golf'],
+                movies: ['movie', 'cinema', 'film'],
+                news: ['news'],
+                kids: ['kids', 'children'],
+                music: ['music', 'concert', 'radio']
+            }
+        }
+    },
+    type: 'object',
+    title: 'AceScrapeConf',
+    description: 'Settings for scraping AceStreams.'
+} as const;
+
+export const AceScrapeConf_OutputSchema = {
+    properties: {
+        playlist_name: {
+            type: 'string',
+            title: 'Playlist Name',
+            default: 'AceReStreamer'
+        },
+        adhoc_playlist_external_url: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 2083,
+                    minLength: 1,
+                    format: 'uri'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Adhoc Playlist External Url'
+        },
+        tvg_logo_external_url: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 2083,
+                    minLength: 1,
+                    format: 'uri'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Tvg Logo External Url'
+        },
+        html: {
+            items: {
+                '$ref': '#/components/schemas/ScrapeSiteHTML'
+            },
+            type: 'array',
+            title: 'Html',
+            default: []
+        },
+        iptv_m3u8: {
+            items: {
+                '$ref': '#/components/schemas/ScrapeSiteIPTV'
+            },
+            type: 'array',
+            title: 'Iptv M3U8',
+            default: []
+        },
+        api: {
+            items: {
+                '$ref': '#/components/schemas/ScrapeSiteAPI'
+            },
+            type: 'array',
+            title: 'Api',
+            default: []
+        },
+        content_id_infohash_name_overrides: {
+            additionalProperties: {
+                type: 'string'
+            },
+            type: 'object',
+            title: 'Content Id Infohash Name Overrides',
+            default: {}
+        },
+        category_mapping: {
+            additionalProperties: {
+                items: {
+                    type: 'string'
+                },
+                type: 'array'
+            },
+            type: 'object',
+            title: 'Category Mapping',
+            default: {
+                sports: ['football', 'soccer', 'basketball', 'nba', 'sport', 'tennis', 'moto', 'f1', 'hockey', 'cricket', 'rugby', 'golf'],
+                movies: ['movie', 'cinema', 'film'],
+                news: ['news'],
+                kids: ['kids', 'children'],
+                music: ['music', 'concert', 'radio']
+            }
+        }
+    },
+    type: 'object',
+    title: 'AceScrapeConf',
+    description: 'Settings for scraping AceStreams.'
+} as const;
+
 export const AceScraperSourceApiSchema = {
     properties: {
         name: {
@@ -408,6 +588,42 @@ export const Body_Login_login_access_tokenSchema = {
     type: 'object',
     required: ['username', 'password'],
     title: 'Body_Login-login_access_token'
+} as const;
+
+export const ConfigExport_InputSchema = {
+    properties: {
+        scraper: {
+            '$ref': '#/components/schemas/AceScrapeConf-Input'
+        },
+        epgs: {
+            items: {
+                '$ref': '#/components/schemas/EPGInstanceConf-Input'
+            },
+            type: 'array',
+            title: 'Epgs'
+        }
+    },
+    type: 'object',
+    required: ['scraper', 'epgs'],
+    title: 'ConfigExport'
+} as const;
+
+export const ConfigExport_OutputSchema = {
+    properties: {
+        scraper: {
+            '$ref': '#/components/schemas/AceScrapeConf-Output'
+        },
+        epgs: {
+            items: {
+                '$ref': '#/components/schemas/EPGInstanceConf-Output'
+            },
+            type: 'array',
+            title: 'Epgs'
+        }
+    },
+    type: 'object',
+    required: ['scraper', 'epgs'],
+    title: 'ConfigExport'
 } as const;
 
 export const EPGApiHandlerHealthResponseSchema = {
@@ -711,6 +927,31 @@ export const HealthResponseModelSchema = {
     title: 'HealthResponseModel'
 } as const;
 
+export const ManuallyAddedAceStreamSchema = {
+    properties: {
+        title: {
+            type: 'string',
+            title: 'Title'
+        },
+        content_id: {
+            type: 'string',
+            title: 'Content Id'
+        },
+        tvg_id: {
+            type: 'string',
+            title: 'Tvg Id'
+        },
+        group_title: {
+            type: 'string',
+            title: 'Group Title'
+        }
+    },
+    type: 'object',
+    required: ['title', 'content_id', 'tvg_id', 'group_title'],
+    title: 'ManuallyAddedAceStream',
+    description: 'Model for a manually added AceStream.'
+} as const;
+
 export const MessageSchema = {
     properties: {
         message: {
@@ -825,6 +1066,121 @@ export const QualitySchema = {
     type: 'object',
     title: 'Quality',
     description: 'Model for tracking quality of a stream.'
+} as const;
+
+export const ScrapeSiteAPISchema = {
+    properties: {
+        type: {
+            type: 'string',
+            const: 'api',
+            title: 'Type',
+            default: 'api'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        url: {
+            type: 'string',
+            maxLength: 2083,
+            minLength: 1,
+            format: 'uri',
+            title: 'Url'
+        },
+        title_filter: {
+            '$ref': '#/components/schemas/TitleFilter',
+            default: {
+                always_exclude_words: [],
+                always_include_words: [],
+                exclude_words: [],
+                include_words: [],
+                regex_postprocessing: []
+            }
+        }
+    },
+    type: 'object',
+    required: ['name', 'url'],
+    title: 'ScrapeSiteAPI',
+    description: 'Scraper for API Sites.'
+} as const;
+
+export const ScrapeSiteHTMLSchema = {
+    properties: {
+        type: {
+            type: 'string',
+            const: 'html',
+            title: 'Type',
+            default: 'html'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        url: {
+            type: 'string',
+            maxLength: 2083,
+            minLength: 1,
+            format: 'uri',
+            title: 'Url'
+        },
+        title_filter: {
+            '$ref': '#/components/schemas/TitleFilter',
+            default: {
+                always_exclude_words: [],
+                always_include_words: [],
+                exclude_words: [],
+                include_words: [],
+                regex_postprocessing: []
+            }
+        },
+        html_filter: {
+            '$ref': '#/components/schemas/HTMLScraperFilter',
+            default: {
+                target_class: '',
+                check_sibling: false
+            }
+        }
+    },
+    type: 'object',
+    required: ['name', 'url'],
+    title: 'ScrapeSiteHTML',
+    description: 'Model for a site to scrape.'
+} as const;
+
+export const ScrapeSiteIPTVSchema = {
+    properties: {
+        type: {
+            type: 'string',
+            const: 'iptv',
+            title: 'Type',
+            default: 'iptv'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        url: {
+            type: 'string',
+            maxLength: 2083,
+            minLength: 1,
+            format: 'uri',
+            title: 'Url'
+        },
+        title_filter: {
+            '$ref': '#/components/schemas/TitleFilter',
+            default: {
+                always_exclude_words: [],
+                always_include_words: [],
+                exclude_words: [],
+                include_words: [],
+                regex_postprocessing: []
+            }
+        }
+    },
+    type: 'object',
+    required: ['name', 'url'],
+    title: 'ScrapeSiteIPTV',
+    description: 'Scraper for IPTV Sites.'
 } as const;
 
 export const StreamTokenSchema = {

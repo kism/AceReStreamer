@@ -21,7 +21,7 @@ export function EPGViewer({ user }: EPGViewerProps) {
     queryFn: async () => {
       try {
         const response = await MediaXmlService.epgXml({
-          token: user?.stream_token,
+          token: user?.stream_token ?? "",
         })
         return parseEPGXML(response as string)
       } catch (err) {
@@ -38,7 +38,7 @@ export function EPGViewer({ user }: EPGViewerProps) {
 
   useEffect(() => {
     // Set default channel
-    if (channels.length > 0 && !selectedChannel) {
+    if (channels.length > 0 && !selectedChannel && channels[0]) {
       setSelectedChannel(channels[0].id)
     }
   }, [channels, selectedChannel])

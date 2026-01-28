@@ -112,7 +112,7 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
         self.set_quality(content_id, entry)
 
     # region Quality
-    async def check_missing_quality(self) -> bool:
+    async def check_missing_quality(self, attempt_delay: float = 1, stream_delay: float = 10) -> bool:
         """Check the quality of all streams.
 
         This is an async function since threading doesn't get app context no matter how hard I try.
@@ -167,9 +167,9 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
                                 asyncio.TimeoutError,
                             ):
                                 await hls(path=stream.content_id, authentication_override=True)
-                            await asyncio.sleep(1)
+                            await asyncio.sleep(attempt_delay)
 
-                        await asyncio.sleep(10)
+                        await asyncio.sleep(stream_delay)
             except Exception:  # This is a background task so it won't crash the app  # noqa: BLE001
                 exception_name = Exception.__name__
                 logger.warning("Exception occurred during quality check: %s", exception_name)

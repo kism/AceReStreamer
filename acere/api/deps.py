@@ -12,8 +12,8 @@ from sqlmodel import Session
 from acere.constants import API_V1_STR
 from acere.core import security
 from acere.database.init import engine
+from acere.database.models.user import TokenPayload, User
 from acere.instances.config import settings
-from acere.models import TokenPayload, User
 from acere.utils.logger import get_logger
 
 logger = get_logger(__name__)

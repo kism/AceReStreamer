@@ -43,7 +43,7 @@ const ChangePassword = () => {
 
   return (
     <Container maxW="full">
-      <Heading size="sm" py={4}>
+      <Heading size="md" mt={2} mb={1}>
         Change Password
       </Heading>
       <Box as="form" onSubmit={handleSubmit(onSubmit)}>

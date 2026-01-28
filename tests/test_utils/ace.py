@@ -12,7 +12,9 @@ from acere.services.ace_pool.models import (
 
 def get_random_content_id() -> str:
     """Generate a 40 digit hex string."""
-    return "".join(random.choices("0123456789abcdef", k=40))
+    desired_length = 40
+    prefix = "acecafe"  # Indicates a test content ID
+    return prefix + "".join(random.choices("0123456789abcdef", k=desired_length - len(prefix)))
 
 
 def create_mock_middleware_response(

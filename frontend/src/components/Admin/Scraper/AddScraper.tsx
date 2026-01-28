@@ -63,11 +63,13 @@ function AddScraperJson() {
 
   return (
     <VStack align="start" gap={4}>
-      <Heading size="md">Add Scraper via JSON</Heading>
+      <Heading size="md" mt={2} mb={1}>
+        Add Scraper via JSON
+      </Heading>
 
       <Text fontSize="sm">
         Enter the JSON configuration for your scraper source. Can also be done
-        as a list. Refer to TitleFilter in the
+        as a list. Refer to TitleFilter in the{" "}
         <Link href={`${VITE_API_URL}/docs`}>API docs</Link> Schemas for
         filtering information.
       </Text>
@@ -91,7 +93,9 @@ function AddScraperJson() {
           onValueChange={(details) => {
             if (details.items && details.items.length > 0) {
               const selectedItem = details.items[0]
-              setJsonInput(selectedItem.value)
+              if (selectedItem) {
+                setJsonInput(selectedItem.value)
+              }
             }
           }}
           width="200px"
@@ -124,7 +128,7 @@ function AddScraperJson() {
           onClick={handleSubmit}
           loading={isSubmitting}
           loadingText="Adding..."
-          colorScheme="blue"
+          colorPalette="teal"
         >
           Add Scraper Source
         </Button>

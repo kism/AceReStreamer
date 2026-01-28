@@ -169,7 +169,7 @@ disable_error_code = [
     "prop-decorator", # Conflicts with pydantic computed_field
 ]
 [[tool.mypy.overrides]]
-module = "acere.models"
+module = "acere.database.models.user"
 disable_error_code = [
     "override",   # SqlModel handles the None
     "assignment", # Classmethod is fine

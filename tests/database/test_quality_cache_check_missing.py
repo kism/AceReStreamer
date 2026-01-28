@@ -47,9 +47,9 @@ async def test_check_missing_quality_no_streams(
     )
 
     # Call check_missing_quality
-    result = await handler.check_missing_quality()
+    result = await handler.check_missing_quality(stream_delay=0, attempt_delay=0)
     assert result is True
-    await asyncio.sleep(0.2)  # Bit sketchy
+    await asyncio.sleep(0.01)  # Bit sketchy
     assert handler._currently_checking_quality is False
 
 
@@ -59,7 +59,7 @@ async def test_check_missing_quality_already_checking(
 ) -> None:
     """Test check_missing_quality when already checking."""
     quality_cache_handler._currently_checking_quality = True
-    assert await quality_cache_handler.check_missing_quality() is False
+    assert await quality_cache_handler.check_missing_quality(stream_delay=0, attempt_delay=0) is False
 
 
 @pytest.mark.asyncio
@@ -111,12 +111,12 @@ async def test_check_missing_quality_with_streams(
     monkeypatch.setattr("acere.api.routes.hls.hls", mock_hls)
 
     # Call check_missing_quality
-    result = await handler.check_missing_quality()
+    result = await handler.check_missing_quality(stream_delay=0, attempt_delay=0)
     assert result is True
 
     # Wait for quality to be checked
     for _ in range(50):
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0.01)
         if not handler._currently_checking_quality:
             break
 
@@ -172,10 +172,10 @@ async def test_check_missing_quality_with_exception(
 
     monkeypatch.setattr("acere.api.routes.hls.hls", mock_hls_exception)
 
-    assert await handler.check_missing_quality() is True
+    assert await handler.check_missing_quality(stream_delay=0, attempt_delay=0) is True
 
     for _ in range(50):
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0.01)
         if not handler._currently_checking_quality:
             break
 

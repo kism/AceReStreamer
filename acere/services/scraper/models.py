@@ -22,6 +22,15 @@ else:
     StreamNameProcessor = object
 
 
+class ManuallyAddedAceStream(BaseModel):
+    """Model for a manually added AceStream."""
+
+    title: str
+    content_id: str
+    tvg_id: str
+    group_title: str
+
+
 class FoundAceStream(BaseModel):
     """Model for a found AceStream."""
 

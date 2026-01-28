@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from acere import crud
 from acere.constants import API_V1_STR
-from acere.models import User, UserCreate, UserUpdate
+from acere.database.models.user import User, UserCreate, UserUpdate
 
 from .user_utils import random_lower_string
 

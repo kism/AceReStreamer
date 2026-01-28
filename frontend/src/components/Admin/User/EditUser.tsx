@@ -72,7 +72,7 @@ const EditUser = ({ user, size = "sm", disabled = false }: EditUserProps) => {
 
   const onSubmit: SubmitHandler<UserUpdateForm> = async (data) => {
     if (data.password === "") {
-      data.password = undefined
+      data.password = null
     }
     mutation.mutate(data)
   }

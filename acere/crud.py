@@ -3,7 +3,7 @@ import secrets
 from sqlmodel import Session, select
 
 from acere.core.security import get_password_hash, verify_password
-from acere.models import User, UserCreate, UserUpdate
+from acere.database.models.user import User, UserCreate, UserUpdate
 from acere.utils.logger import get_logger
 
 logger = get_logger(__name__)

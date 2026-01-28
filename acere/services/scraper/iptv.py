@@ -8,6 +8,7 @@ import aiohttp
 from pydantic import HttpUrl
 
 from acere.constants import OUR_TIMEZONE, SUPPORTED_TVG_LOGO_EXTENSIONS
+from acere.instances.config import settings
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger
@@ -185,17 +186,50 @@ class IPTVStreamScraper(ScraperCommon):
             return HttpUrl(match.group(1))
         return None
 
+    async def _actually_download_tvg_logo(self, tvg_logo_url: HttpUrl, title: str) -> bytes | None:
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    tvg_logo_url.encoded_string(), timeout=aiohttp.ClientTimeout(total=5)
+                ) as response:
+                    response.raise_for_status()
+                    return await response.read()
+        except aiohttp.ClientError as e:
+            error_short = type(e).__name__
+            logger.error("Error downloading TVG logo for %s, %s", title, error_short)
+        except TimeoutError:
+            logger.error("Timeout downloading TVG logo for %s", title)
+
+        return None
+
     async def _download_tvg_logo(self, line: str, title: str) -> None:
         """Download the TVG logo and the URL it got it from."""
         if self.instance_path is None:
             return
 
+        tvg_logos_path = self.instance_path / "tvg_logos"
+        tvg_logos_path.mkdir(parents=True, exist_ok=True)
         title_slug = slugify(title)
 
         for extension in SUPPORTED_TVG_LOGO_EXTENSIONS:
-            logo_path = self.instance_path / "tvg_logos" / f"{title_slug}.{extension}"
+            logo_path = tvg_logos_path / f"{title_slug}.{extension}"
             if logo_path.is_file():
                 return
+
+        # This logic is for if we have imported settings from a github scraper and want to fetch their images.
+        if settings.scraper.adhoc_playlist_external_url is not None:
+            for extension in SUPPORTED_TVG_LOGO_EXTENSIONS:
+                file_name = f"{title_slug}.{extension}"
+                logo = await self._actually_download_tvg_logo(
+                    HttpUrl(f"{settings.scraper.adhoc_playlist_external_url}/tvg_logos/{file_name}"),
+                    title,
+                )
+                if logo is not None:
+                    logo_path = tvg_logos_path / file_name
+                    logo_path.parent.mkdir(parents=True, exist_ok=True)
+                    with logo_path.open("wb") as file:
+                        file.write(logo)
+                    return
 
         tvg_logo_url = self._get_tvg_url(line)
         if tvg_logo_url is None:
@@ -212,20 +246,12 @@ class IPTVStreamScraper(ScraperCommon):
             )
             return
 
-        logger.info("Downloading TVG logo for %s from %s", title, tvg_logo_url)
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(
-                    tvg_logo_url.encoded_string(), timeout=aiohttp.ClientTimeout(total=5)
-                ) as response:
-                    response.raise_for_status()
-                    content = await response.read()
-        except aiohttp.ClientError as e:
-            error_short = type(e).__name__
-            logger.error("Error downloading TVG logo for %s, %s", title, error_short)
+        logger.info("Downloading TVG logo for %s from m3u8 %s", title, tvg_logo_url)
+        content = await self._actually_download_tvg_logo(tvg_logo_url, title)
+        if content is None:
             return
 
-        tvg_logo_path = self.instance_path / "tvg_logos" / f"{title_slug}.{url_file_extension}"
+        tvg_logo_path = tvg_logos_path / f"{title_slug}.{url_file_extension}"
         tvg_logo_path.parent.mkdir(parents=True, exist_ok=True)
         with tvg_logo_path.open("wb") as file:
             file.write(content)

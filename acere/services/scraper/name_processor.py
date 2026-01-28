@@ -48,13 +48,11 @@ class StreamNameProcessor:
 
     def __init__(self) -> None:
         """Initialize the cache."""
-        self._name_replacements: dict[str, str] = {}
         self._instance_path: Path | None = None
 
     def load_config(
         self,
         instance_path: str | Path,
-        name_replacements: dict[str, str],
         content_id_infohash_name_overrides: dict[str, str],
         category_mapping: dict[str, list[str]],
     ) -> None:
@@ -63,18 +61,8 @@ class StreamNameProcessor:
             instance_path = Path(instance_path)
 
         self._instance_path = instance_path
-        self._name_replacements = name_replacements
         self._content_id_infohash_name_overrides = content_id_infohash_name_overrides
         self._category_mapping = category_mapping
-
-    def _do_replacements(self, name: str) -> str:
-        """Perform replacements in the M3U content."""
-        for key, value in self._name_replacements.items():
-            if key in name:
-                logger.trace("Replacing '%s' with '%s' in '%s'", key, value, name)
-                name = name.replace(key, value)
-
-        return name
 
     def cleanup_candidate_title(self, title: str) -> str:
         """Cleanup the candidate title."""
@@ -85,7 +73,6 @@ class StreamNameProcessor:
 
         title = title.split("\n")[0].strip()  # Remove any newlines
         title = ACE_ID_PATTERN.sub("", title).strip()  # Remove any ace 40 digit hex ids from the title
-        title = self._do_replacements(title)
         return title.strip()
 
     def candidates_regex_cleanup(self, candidate_titles: list[str], regex_list: list[str]) -> list[str]:
