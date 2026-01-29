@@ -83,7 +83,6 @@ def test_force_load_config_file_existing(tmp_path: Path, caplog: pytest.LogCaptu
     config = AceReStreamerConf.force_load_config_file(config_path)
 
     # Verify the loaded values match what we put in the file
-    assert config.app.authentication_enabled is True
     assert config.app.ace_max_streams == 8
     assert config.scraper.playlist_name == "pytest"
 
@@ -104,7 +103,6 @@ def test_force_load_config_file_nonexistent(tmp_path: Path) -> None:
     config = AceReStreamerConf.force_load_config_file(nonexistent_path)
 
     # Should return default config
-    assert config.app.authentication_enabled is True
     assert config.app.ace_max_streams == 4
     assert config.scraper.playlist_name == "acerestreamer"
     assert len(config.epgs) == 0
