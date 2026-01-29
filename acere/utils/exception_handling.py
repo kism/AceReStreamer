@@ -1,6 +1,7 @@
 """Nice method to log aiohttp exceptions."""
 
 from typing import TYPE_CHECKING
+from aiohttp import ClientResponseError
 
 if TYPE_CHECKING:
     from logging import Logger as CustomLogger
@@ -25,3 +26,12 @@ def log_aiohttp_exception(logger: CustomLogger, site_url: HttpUrl, exception: Cl
     msg += f" message: {error_message}"
 
     logger.error(msg)
+
+def get_status_of_aiohttp_exception(e: ClientError | TimeoutError)
+
+    if isinstance(e, ClientResponseError):
+        status_info = f" (ace status: {e.status} {e.message})"
+    elif isinstance(e, TimeoutError):
+        status_info = f" (TimeoutError)"
+    else:
+        status_info = f" (??? {e.__class__.__name__})"

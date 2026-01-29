@@ -21,6 +21,7 @@ from acere.utils.hls import (
     replace_hls_m3u_sources,
 )
 from acere.utils.logger import get_logger
+from acere.utils.exception_handling import get_status_of_aiohttp_exception
 
 logger = get_logger(__name__)
 router = APIRouter(tags=["Media/Stream"])
@@ -79,14 +80,7 @@ async def hls(  # noqa: PLR0915 This is hell
                 headers = ace_resp.headers
     except (aiohttp.ClientError, TimeoutError) as e:
         error_short = type(e).__name__
-
-        # Get the HTTP status code from ace if available
-        if isinstance(e, aiohttp.ClientResponseError):
-            status_info = f" (ace status: {e.status} {e.message})"
-        elif isinstance(e, TimeoutError):
-            status_info = f" (timeout: {REVERSE_PROXY_TIMEOUT}s)"
-        else:
-            status_info = " (???)"
+        status_info = get_status_of_aiohttp_exception(e)
 
         # Determine error type and response
         if isinstance(e, (aiohttp.ServerTimeoutError, TimeoutError)):
@@ -160,7 +154,9 @@ async def hls_multi(path: str, token: str = "") -> Response:
                 status_code = ace_resp.status
     except (aiohttp.ClientError, TimeoutError) as e:
         error_short = type(e).__name__
-        logger.error("reverse proxy failure /hls/m/ %s", error_short)
+        status_info = get_status_of_aiohttp_exception(e)
+
+        logger.error("reverse proxy failure /hls/m/ %s%s", error_short, status_info)
         error_msg = "Failed to fetch HLS multistream"
 
         raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=error_msg) from e
@@ -289,7 +285,8 @@ async def ace_content(path: str, request: Request, token: str = "") -> Response:
         )
     except aiohttp.ClientError as e:
         error_short = type(e).__name__
-        logger.error("%s reverse proxy failure %s", route_prefix, error_short)
+        status_info = get_status_of_aiohttp_exception(e)
+        logger.error("%s reverse proxy failure %s%s", route_prefix, error_short, status_info)
         response_body = MessageResponseModel(message="Failed to fetch HLS stream").model_dump_json()
         return Response(
             content=response_body,
