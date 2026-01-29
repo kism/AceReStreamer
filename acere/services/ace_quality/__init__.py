@@ -1,11 +1,10 @@
 """AceQuality, for tracking quality of Ace URIs."""
 
 import re
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from pydantic import BaseModel
 
-from acere.constants import OUR_TIMEZONE
 from acere.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -31,8 +30,8 @@ class Quality(BaseModel):
     has_ever_worked: bool = False
     m3u_failures: int = 0
     _last_segment_number: int = 0
-    _last_segment_fetched: datetime = datetime.now(tz=OUR_TIMEZONE)
-    _last_db_write: datetime = datetime.min.replace(tzinfo=OUR_TIMEZONE)
+    _last_segment_fetched: datetime = datetime.now(tz=UTC)
+    _last_db_write: datetime = datetime.min.replace(tzinfo=UTC)
     _next_segment_expected: timedelta = DEFAULT_NEXT_SEGMENT_EXPECTED
     last_message: str = ""
 
@@ -55,7 +54,7 @@ class Quality(BaseModel):
                 return  # Weird
             ts_number_int: int = int(ts_number)
 
-            current_time = datetime.now(tz=OUR_TIMEZONE)
+            current_time = datetime.now(tz=UTC)
 
             # Get the time between now and when we last successfully fetched a segment
             time_since_last_segment = current_time - self._last_segment_fetched
@@ -105,7 +104,7 @@ class Quality(BaseModel):
 
     def time_to_write_to_db(self) -> bool:
         """Determine if it's time to write the quality to the database."""
-        current_time = datetime.now(tz=OUR_TIMEZONE)
+        current_time = datetime.now(tz=UTC)
         if current_time - self._last_db_write >= TIME_BETWEEN_DB_WRITES:
             self._last_db_write = current_time
             return True

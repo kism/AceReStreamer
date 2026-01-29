@@ -37,13 +37,9 @@ def get_stream() -> FoundAceStream:
 async def test_scraper_main(tmp_path: Path) -> None:
     """Test the AceScraper main functionality."""
     scraper = AceScraper()
-    scraper.load_config(
-        ace_scrape_conf=get_test_config(),
-        instance_path=tmp_path,
-    )
 
     scraper.start_scrape_thread()
-    for thread in scraper._scrape_threads:
+    for thread in scraper._threads:
         thread.join(timeout=1)
 
     steam_api_example = get_stream()

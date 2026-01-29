@@ -42,6 +42,11 @@ async def async_main() -> None:
         logger.error("No application configuration path provided. Use --app-config to specify a path.")
         sys.exit(1)
 
+    if not args.app_config.parent.exists():
+        logger.error("The directory for the application configuration does not exist: %s", args.app_config.parent)
+        sys.exit(1)
+
+    # Here in CLI land, everything we touch will need the instance path to be set
     instance_path = args.app_config.parent
 
     setup_logger()
@@ -49,7 +54,7 @@ async def async_main() -> None:
     logger.info(msg)
     conf = AceReStreamerConf.force_load_config_file(config_path=args.app_config)
     conf.write_config(config_path=args.app_config)
-    pl_cr = PlaylistCreator(instance_path=instance_path, config=conf)
+    pl_cr = PlaylistCreator(instance_path=instance_path)
     if len(conf.scraper.html) == 0 and len(conf.scraper.iptv_m3u8) == 0:
         logger.error("No scraper sites defined, cannot continue.")
         return

@@ -1,8 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from pydantic import HttpUrl
 
-from acere.constants import OUR_TIMEZONE
 from acere.services.ace_pool.entry import AcePoolEntry
 from tests.test_utils.ace import (
     get_random_content_id,
@@ -29,7 +28,7 @@ def test_stale_logic() -> None:
 
     # Test 2: New entry (< 5 min running), recently used - not stale
     # Running for 3 minutes, last used 1 minute ago
-    now = datetime.now(tz=OUR_TIMEZONE)
+    now = datetime.now(tz=UTC)
     entry.date_started = now - timedelta(minutes=3)
     entry.date_last_used = now - timedelta(minutes=1)
     assert entry.check_if_stale() is False

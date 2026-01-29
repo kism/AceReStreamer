@@ -1,11 +1,10 @@
 # Wait for background task
 import asyncio
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 import pytest
 
-from acere.constants import OUR_TIMEZONE
 from acere.database.handlers.quality_cache import AceQualityCacheHandler
 from acere.database.models import AceStreamDBEntry
 from acere.services.ace_quality import Quality
@@ -85,7 +84,7 @@ async def test_check_missing_quality_with_streams(
             tvg_id=f"test{i + 1}.tv",
             infohash="",
             group_title="Test",
-            last_scraped_time=datetime.now(tz=OUR_TIMEZONE),
+            last_scraped_time=datetime.now(tz=UTC),
         )
         for i, content_id in enumerate(content_ids)
     ]
@@ -150,7 +149,7 @@ async def test_check_missing_quality_with_exception(
             tvg_id="test1.tv",
             infohash="",
             group_title="Test",
-            last_scraped_time=datetime.now(tz=OUR_TIMEZONE),
+            last_scraped_time=datetime.now(tz=UTC),
         ),
     ]
 

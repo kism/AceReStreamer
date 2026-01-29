@@ -139,7 +139,6 @@ export function AppsInfo() {
             <Box
               key={app.name}
               borderWidth="1px"
-              borderRadius="md"
               p={4}
               width={{ base: "100%", sm: "400px" }}
             >

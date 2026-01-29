@@ -1,4 +1,4 @@
-import { Box, Heading, HStack, Input, SimpleGrid, Text } from "@chakra-ui/react"
+import { Box, Heading, Input, SimpleGrid, Text, VStack } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { type ManuallyAddedAceStream, StreamsService } from "@/client"
@@ -12,7 +12,6 @@ function AddStream() {
   const [formData, setFormData] = useState<ManuallyAddedAceStream>({
     title: "",
     content_id: "",
-    tvg_id: "",
     group_title: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -27,7 +26,6 @@ function AddStream() {
       setFormData({
         title: "",
         content_id: "",
-        tvg_id: "",
         group_title: "",
       })
       setIsSubmitting(false)
@@ -45,7 +43,6 @@ function AddStream() {
     if (
       !formData.title.trim() ||
       !formData.content_id.trim() ||
-      !formData.tvg_id.trim() ||
       !formData.group_title.trim()
     ) {
       showErrorToast("Please fill in all required fields.")
@@ -64,59 +61,43 @@ function AddStream() {
 
   return (
     <Box>
-      <HStack justify="space-between" align="center" mb={3}>
+      <VStack justify="space-between" align="left" mb={3}>
         <Heading size="md" mt={2} mb={1}>
           Manually Add Stream
         </Heading>
-      </HStack>
+        <Text>Scraped streams will override manual entries.</Text>
 
-      <Box bg="orange.50" borderRadius="md" p={2} mb={3}>
-        <Text fontSize="xs" color="orange.800">
-          <strong>Warning:</strong> Scraped streams will override manual
-          entries.
-        </Text>
-      </Box>
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={3}>
+          <Field label="Title" required>
+            <Input
+              value={formData.title}
+              onChange={handleInputChange("title")}
+              placeholder="Channel 1 [AU]"
+              size="xs"
+            />
+          </Field>
 
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={3}>
-        <Field label="Title" required>
-          <Input
-            value={formData.title}
-            onChange={handleInputChange("title")}
-            placeholder="Channel 1"
-            size="xs"
-          />
-        </Field>
+          <Field label="Ace Content ID" required>
+            <Input
+              value={formData.content_id}
+              onChange={handleInputChange("content_id")}
+              placeholder="40 character content ID"
+              size="xs"
+            />
+          </Field>
 
-        <Field label="Ace Content ID" required>
-          <Input
-            value={formData.content_id}
-            onChange={handleInputChange("content_id")}
-            placeholder="40 character content ID"
-            size="xs"
-          />
-        </Field>
-
-        <Field label="TVG ID" required>
-          <Input
-            value={formData.tvg_id}
-            onChange={handleInputChange("tvg_id")}
-            placeholder="Channel 1.au"
-            size="xs"
-          />
-        </Field>
-
-        <Field label="Group Title" required>
-          <Input
-            value={formData.group_title}
-            onChange={handleInputChange("group_title")}
-            placeholder="General"
-            size="xs"
-          />
-        </Field>
-
+          <Field label="Group Title" required>
+            <Input
+              value={formData.group_title}
+              onChange={handleInputChange("group_title")}
+              placeholder="General"
+              size="xs"
+            />
+          </Field>
+        </SimpleGrid>
         <Button
           size="xs"
-          maxW="150px"
+          maxW="100px"
           onClick={handleSubmit}
           loading={isSubmitting}
           loadingText="Adding..."
@@ -124,7 +105,7 @@ function AddStream() {
         >
           Add Stream
         </Button>
-      </SimpleGrid>
+      </VStack>
     </Box>
   )
 }

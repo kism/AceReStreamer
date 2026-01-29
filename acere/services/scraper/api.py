@@ -1,20 +1,20 @@
 """API Scraper."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 import aiohttp
 from pydantic import BaseModel, ConfigDict, ValidationError
 
-from acere.constants import OUR_TIMEZONE
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.logger import get_logger
 
+from . import name_processor
 from .common import ScraperCommon
 from .models import FoundAceStream
 
 if TYPE_CHECKING:
-    from acere.core.config import ScrapeSiteAPI, TitleFilter
+    from acere.core.config.scraper import ScrapeSiteAPI, TitleFilter
 else:
     ScrapeSiteAPI = object
     TitleFilter = object
@@ -72,20 +72,22 @@ class APIStreamScraper(ScraperCommon):
                 logger.exception("Failed to validate API response item: %s", item)
 
         for stream in stream_list:
-            override_title = self.name_processor.get_title_override_from_content_id(stream.infohash)
-            title = override_title or self.name_processor.cleanup_candidate_title(stream.name)
+            override_title = name_processor.get_title_override_from_content_id(stream.infohash)
+            title = override_title or name_processor.cleanup_candidate_title(stream.name)
 
-            if not self.name_processor.check_title_allowed(title=title, title_filter=site.title_filter):
+            if not name_processor.check_title_allowed(title=title, title_filter=site.title_filter):
                 continue
 
-            tvg_id = self.name_processor.get_tvg_id_from_title(title)
+            tvg_id = name_processor.get_tvg_id_from_title(title)
             group_title = stream.categories[0] if stream.categories else ""
-            group_title = self.name_processor.populate_group_title(group_title, title)
-            tvg_logo = self.name_processor.find_tvg_logo_image(title)
+            group_title = name_processor.populate_group_title(group_title, title)
+            tvg_logo = name_processor.find_tvg_logo_image(title)
 
             # We call it fresh if availability is 100%
-            last_scraped_epoch = stream.availability_updated_at if stream.availability < 1 else 0
-            last_scraped_time = datetime.fromtimestamp(last_scraped_epoch, tz=OUR_TIMEZONE)
+            last_scraped_epoch = (
+                stream.availability_updated_at if stream.availability < 1 else datetime.now(tz=UTC).timestamp()
+            )
+            last_scraped_time = datetime.fromtimestamp(last_scraped_epoch, tz=UTC)
 
             streams.append(
                 FoundAceStream(

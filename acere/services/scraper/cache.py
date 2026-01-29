@@ -1,17 +1,19 @@
 """Cache management for the AceReStreamer scraper."""
 
-from datetime import datetime, timedelta
-from pathlib import Path
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
-from acere.constants import OUR_TIMEZONE
+from acere.constants import SCRAPER_CACHE_DIR
 from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from pydantic import HttpUrl
 else:
     HttpUrl = object
+    Path = object
 
 logger = get_logger(__name__)
 
@@ -20,17 +22,6 @@ DEFAULT_CACHE_MAX_AGE = timedelta(hours=2)
 
 class ScraperCache:
     """Cache management for the AceReStreamer scraper."""
-
-    def __init__(self) -> None:
-        """Init."""
-        self.cache_path: Path | None = None
-
-    def load_config(self, instance_path: Path | str) -> None:
-        """Initialize the cache directory."""
-        if isinstance(instance_path, str):
-            instance_path = Path(instance_path)
-        self.cache_path = instance_path / "scraper_cache"
-        self.cache_path.mkdir(parents=True, exist_ok=True)
 
     def load_from_cache(self, url: HttpUrl) -> str:
         """Load the content from cache if available."""
@@ -44,8 +35,8 @@ class ScraperCache:
         """Check if the cache for the given URL is valid."""
         cache_path = self._get_cache_file_path(url)
         if cache_path.exists():
-            time_now = datetime.now(tz=OUR_TIMEZONE)
-            file_mod_time = datetime.fromtimestamp(cache_path.stat().st_mtime, tz=OUR_TIMEZONE)
+            time_now = datetime.now(tz=UTC)
+            file_mod_time = datetime.fromtimestamp(cache_path.stat().st_mtime, tz=UTC)
 
             time_since_mod = time_now - file_mod_time
 
@@ -67,7 +58,4 @@ class ScraperCache:
 
     def _get_cache_file_path(self, url: HttpUrl) -> Path:
         """Get the cache file path for a given URL."""
-        if not self.cache_path:
-            msg = "Cache path is not set. Call load_config() first."
-            raise ValueError(msg)
-        return self.cache_path / f"{slugify(url.encoded_string())}.txt"
+        return SCRAPER_CACHE_DIR / f"{slugify(url.encoded_string())}.txt"

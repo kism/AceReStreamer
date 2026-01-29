@@ -8,7 +8,7 @@ from acere.api.deps import (
     get_current_active_superuser,
     get_current_user,
 )
-from acere.core.config import ScrapeSiteAPI, ScrapeSiteHTML, ScrapeSiteIPTV
+from acere.core.config.scraper import ScrapeSiteAPI, ScrapeSiteHTML, ScrapeSiteIPTV
 from acere.instances.config import settings
 from acere.instances.scraper import get_ace_scraper
 from acere.services.scraper.models import AceScraperSourceApi
@@ -82,12 +82,11 @@ def add_source(  # noqa: C901 Revisit once I have some tests
             detail=MessageResponseModel(message=msg, errors=errors).model_dump_json(),
         )
 
-    settings.write_config()
-
     msg = "Sources added successfully"
     if len(body_json) == 1:
         msg = "Source added successfully"
 
+    settings.write_config()
     get_ace_scraper().start_scrape_thread()
 
     return MessageResponseModel(message=msg)
@@ -104,6 +103,7 @@ def remove_source(slug: str) -> MessageResponseModel:
         )
 
     settings.write_config()
+    # No need to rescrape since the database will have whatever this source found
 
     return MessageResponseModel(message=msg)
 
@@ -125,6 +125,7 @@ def delete_name_override(content_id: str) -> MessageResponseModel:
         )
 
     settings.write_config()
+    get_ace_scraper().start_scrape_thread()
     return MessageResponseModel(message="Content ID name override deleted successfully")
 
 
@@ -134,4 +135,5 @@ def add_name_override(content_id: str, name: str) -> MessageResponseModel:
     settings.scraper.add_content_id_name_override(content_id, name)
 
     settings.write_config()
+    get_ace_scraper().start_scrape_thread()
     return MessageResponseModel(message="Content ID name override added successfully")

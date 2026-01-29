@@ -6,7 +6,6 @@ function print_heading() {
     echo
     echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
     echo "$1 >>>"
-    echo
 }
 
 source .venv/bin/activate

@@ -6,9 +6,20 @@ from pydantic import HttpUrl
 
 from acere.constants import EPG_XML_DIR as DEFAULT_EPG_XML_DIR
 from acere.core.config import EPGInstanceConf
+from acere.instances.config import settings
 from acere.services.epg.epg import EPG
 from acere.services.epg.helpers import find_current_program_xml, normalise_epg_tvg_id
 from acere.utils.cli import console, prompt
+from acere.utils.helpers import slugify
+
+
+def find_overrides_match_for_file(epg_file: Path) -> dict[str, str]:
+    for epg_config in settings.epgs:
+        if slugify(epg_file.name) in slugify(epg_config.url.encoded_string()) and epg_config.tvg_id_overrides != {}:
+            console.print(f"Found matching EPG config and tvg_id_overrides for file {epg_file.name}")
+            return epg_config.tvg_id_overrides
+
+    return {}
 
 
 def find_now_playing(tvg_id: str, epgs: dict[str, EPG]) -> None:
@@ -59,7 +70,12 @@ def main() -> None:
     epgs: dict[str, EPG] = {}
     for epg_file in epg_dir.glob("*.xml"):
         try:
-            epg = EPG(EPGInstanceConf(url=HttpUrl(f"file://{epg_file.resolve()}")))
+            epg = EPG(
+                EPGInstanceConf(
+                    url=HttpUrl(f"http://localhost/{epg_file.resolve()}"),
+                    tvg_id_overrides=find_overrides_match_for_file(epg_file),
+                )
+            )
             epg.saved_file_path = epg_file
             epgs[epg_file.name] = epg
         except etree.XMLSyntaxError as e:

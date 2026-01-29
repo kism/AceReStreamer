@@ -86,21 +86,42 @@ function StreamAdminTable() {
         {items?.map((item) => (
           <Box
             key={item.content_id}
-            p={4}
+            px={2}
+            py={1}
             borderWidth="1px"
-            borderRadius="md"
             width="full"
           >
-            <Flex justify="space-between" width="full">
-              <VStack align="start" gap={1} p={0}>
-                <Heading size="sm" py={1}>
+            <Flex width="full" flexDirection="column" gap={1}>
+              <Flex justify="space-between" align="center" width="full">
+                <Heading size="sm" py={0}>
                   {item.title}
                 </Heading>
-                <HStack>
+                <Button
+                  size="2xs"
+                  colorPalette="red"
+                  onClick={() => handleRemoveByContentId(item.content_id)}
+                >
+                  Delete
+                </Button>
+              </Flex>
+              <Flex flexWrap="wrap" gap={1} fontSize={"xs"} alignItems="center">
+                <Box flex="0 1 auto" bg="bg.muted" px={2} py={1}>
+                  Content ID:{" "}
+                  <Code backgroundColor="bg.emphasized">{item.content_id}</Code>
+                </Box>
+                <Box flex="0 1 auto" bg="bg.muted" px={2} py={1}>
+                  Infohash:{" "}
+                  <Code backgroundColor="bg.emphasized">
+                    {item.infohash ?? "???"}
+                  </Code>
+                </Box>
+              </Flex>
+              <Flex flexWrap="wrap" gap={1} fontSize={"xs"} alignItems="center">
+                <HStack flex="0 1 auto" bg="bg.muted" px={2} py={1}>
                   Last scrape time:
                   {GetRelativeTimeText(item.last_scraped_time)}
                 </HStack>
-                <HStack>
+                <HStack flex="0 1 auto" bg="bg.muted" px={2} py={1}>
                   <Text>Has ever worked: </Text>
                   <Text
                     color={item.has_ever_worked ? "fg.success" : "fg.error"}
@@ -114,19 +135,23 @@ function StreamAdminTable() {
                     <Text>(Never loaded)</Text>
                   )}
                 </HStack>
-                <HStack>
+                <HStack flex="0 1 auto" bg="bg.muted" px={2} py={1}>
                   Quality:
                   <Text color={getQualityColor(Number(item.quality))}>
                     {item.quality !== -1 ? item.quality : "???"}
                   </Text>
                 </HStack>
-                <Box>
-                  TVG ID: <Code>{item.tvg_id}</Code>
+              </Flex>
+              <Flex flexWrap="wrap" gap={1} fontSize={"xs"} alignItems="center">
+                <Box flex="0 1 auto" bg="bg.muted" px={2} py={1}>
+                  TVG ID:{" "}
+                  <Code backgroundColor="bg.emphasized">{item.tvg_id}</Code>
                 </Box>
-                <Box>
-                  TVG Logo: <Code>{item.tvg_logo}</Code>
+                <Box flex="0 1 auto" bg="bg.muted" px={2} py={1}>
+                  TVG Logo:{" "}
+                  <Code backgroundColor="bg.emphasized">{item.tvg_logo}</Code>
                 </Box>
-                <HStack>
+                <HStack flex="0 1 auto" bg="bg.muted" px={2} py={1}>
                   Program:
                   <Text
                     maxW="200px"
@@ -138,28 +163,7 @@ function StreamAdminTable() {
                     {item.program_title !== "" ? item.program_title : "???"}
                   </Text>
                 </HStack>
-              </VStack>
-              <VStack align="start" gap={2} p={0}>
-                <Box border={"1px solid"} borderColor="fg.subtle" p={1}>
-                  <Text m={0} p={0}>
-                    Content ID
-                  </Text>
-                  <Code p={0}>{item.content_id}</Code>
-                </Box>
-                <Box border={"1px solid"} borderColor="fg.subtle" p={1}>
-                  <Text m={0} p={0}>
-                    Infohash
-                  </Text>
-                  <Code p={0}>{item.infohash ?? "???"}</Code>
-                </Box>
-                <Button
-                  size="xs"
-                  colorPalette="red"
-                  onClick={() => handleRemoveByContentId(item.content_id)}
-                >
-                  Delete
-                </Button>
-              </VStack>
+              </Flex>
             </Flex>
           </Box>
         ))}

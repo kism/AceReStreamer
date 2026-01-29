@@ -48,7 +48,8 @@ export async function loadStream(content_id?: string) {
     updateStreamStatus({ hlsStatus: "Loading" })
 
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
-      updateStreamStatus({ hlsStatus: "Healthy" })
+      updateStreamStatus({ hlsStatus: "Healthy", playerStatus: "Ready" })
+      video.play() // Hopefully prevents the grey overlay persisting
     })
 
     hls.on(Hls.Events.ERROR, (_event, data) => {
@@ -76,7 +77,7 @@ export async function loadStream(content_id?: string) {
     video.src = streamUrl
     video.addEventListener("loadedmetadata", () => {
       console.log("HLS metadata loaded")
-      updateStreamStatus({ hlsStatus: "Loaded" })
+      updateStreamStatus({ hlsStatus: "Loaded", playerStatus: "Ready" })
     })
   } else {
     console.error("HLS not supported in this browser")

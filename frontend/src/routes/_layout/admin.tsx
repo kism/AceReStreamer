@@ -2,6 +2,7 @@ import { Tabs, VStack } from "@chakra-ui/react"
 import { createFileRoute } from "@tanstack/react-router"
 import ConfigManagement from "@/components/Admin/ConfigManagement"
 import EPGManagement from "@/components/Admin/EPGManagement"
+import RemoteConfigManagement from "@/components/Admin/RemoteConfigManagement"
 import ScraperManagement from "@/components/Admin/ScraperManagement"
 import StreamManagement from "@/components/Admin/StreamManagement"
 import UserManagement from "@/components/Admin/UserManagement"
@@ -10,10 +11,15 @@ import { usePageTitle } from "@/hooks/usePageTitle"
 
 const tabsConfig = [
   { value: "users", title: "Users", component: UserManagement },
+  { value: "streams", title: "Streams", component: StreamManagement },
   { value: "scrapers", title: "Scrapers", component: ScraperManagement },
   { value: "epgs", title: "EPGs", component: EPGManagement },
-  { value: "streams", title: "Streams", component: StreamManagement },
   { value: "config", title: "Config", component: ConfigManagement },
+  {
+    value: "remote-config",
+    title: "Remote Config",
+    component: RemoteConfigManagement,
+  },
 ]
 
 export const Route = createFileRoute("/_layout/admin")({

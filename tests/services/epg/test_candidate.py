@@ -1,11 +1,10 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
 import pytest
 from pydantic import HttpUrl
 
-from acere.constants import OUR_TIMEZONE
 from acere.services.epg.candidate import EPGCandidate, EPGCandidateHandler
 from tests.test_utils.epg import generate_future_program_xml
 
@@ -59,11 +58,11 @@ def xml_past_programs_only() -> etree._Element:
         programs_in_past=6,
     )
 
-    time_now = datetime.now(tz=OUR_TIMEZONE)
+    time_now = datetime.now(tz=UTC)
     for programme in wip_xml.findall("programme"):
         start_str = programme.get("start")
         assert start_str is not None
-        start_time = datetime.strptime(start_str, "%Y%m%d%H%M%S %z").astimezone(OUR_TIMEZONE)
+        start_time = datetime.strptime(start_str, "%Y%m%d%H%M%S %z").astimezone(UTC)
         assert start_time < time_now  # Programs should be in the past
 
     return wip_xml

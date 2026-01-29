@@ -27,6 +27,10 @@ export const system = createSystem(defaultConfig, {
       margin: 0,
       padding: 0,
     },
+    "::selection": {
+      backgroundColor: "teal",
+      color: "white",
+    },
   },
   theme: {
     semanticTokens: {

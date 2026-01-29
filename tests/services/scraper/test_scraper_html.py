@@ -3,9 +3,8 @@ from typing import TYPE_CHECKING
 import pytest
 from pydantic import HttpUrl
 
-from acere.core.config import HTMLScraperFilter, ScrapeSiteHTML, TitleFilter
+from acere.core.config.scraper import HTMLScraperFilter, ScrapeSiteHTML, TitleFilter
 from acere.services.scraper.html import HTMLStreamScraper
-from acere.services.scraper.name_processor import StreamNameProcessor
 
 from . import SCRAPER_TEST_SITES
 from .utils import common_title_check
@@ -17,26 +16,9 @@ else:
 
 
 @pytest.fixture
-def name_processor(tmp_path: Path) -> StreamNameProcessor:
-    """Fixture providing a configured StreamNameProcessor."""
-    processor = StreamNameProcessor()
-    processor.load_config(
-        instance_path=tmp_path,
-        content_id_infohash_name_overrides={},
-        category_mapping={},
-    )
-    return processor
-
-
-@pytest.fixture
-def scraper(tmp_path: Path, name_processor: StreamNameProcessor) -> HTMLStreamScraper:
+def scraper(tmp_path: Path) -> HTMLStreamScraper:
     """Fixture providing a configured HTMLStreamScraper."""
-    scraper = HTMLStreamScraper()
-    scraper.load_config(
-        instance_path=tmp_path,
-        stream_name_processor=name_processor,
-    )
-    return scraper
+    return HTMLStreamScraper()
 
 
 def _get_test_sites() -> dict[str, ScrapeSiteHTML]:

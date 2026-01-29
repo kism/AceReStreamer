@@ -2,8 +2,9 @@
 
 from typing import TYPE_CHECKING
 
+from acere.constants import INSTANCE_DIR, TVG_LOGOS_DIR
+
 from .cache import ScraperCache
-from .name_processor import StreamNameProcessor
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -14,18 +15,8 @@ else:
 class ScraperCommon:
     """Common setupmethods for scrapers."""
 
-    def __init__(self) -> None:
+    def __init__(self, instance_path: Path | None = None) -> None:
         """Initialize the IPTVStreamScraper with the instance path."""
+        self._instance_path: Path = instance_path or INSTANCE_DIR
+        self._tvg_logos_path: Path = self._instance_path / TVG_LOGOS_DIR.name
         self.scraper_cache: ScraperCache = ScraperCache()
-        self.name_processor: StreamNameProcessor = StreamNameProcessor()
-        self.instance_path: Path | None = None
-
-    def load_config(
-        self,
-        instance_path: Path,
-        stream_name_processor: StreamNameProcessor,
-    ) -> None:
-        """Initialize the IPTVStreamScraper with the instance path."""
-        self.name_processor = stream_name_processor
-        self.scraper_cache.load_config(instance_path=instance_path)
-        self.instance_path = instance_path

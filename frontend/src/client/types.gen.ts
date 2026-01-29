@@ -269,7 +269,6 @@ export type HTTPValidationError = {
 export type ManuallyAddedAceStream = {
     title: string;
     content_id: string;
-    tvg_id: string;
     group_title: string;
 };
 
@@ -305,6 +304,16 @@ export type Quality = {
     has_ever_worked?: boolean;
     m3u_failures?: number;
     last_message?: string;
+};
+
+export type RemoteSettingsURLGetModel = {
+    url: (string | null);
+    status: string;
+    last_fetched: (string | null);
+};
+
+export type RemoteSettingsURLSetModel = {
+    url: (string | null);
 };
 
 /**
@@ -473,6 +482,14 @@ export type ConfigUpdateConfigData = {
 };
 
 export type ConfigUpdateConfigResponse = (ConfigExport_Output);
+
+export type ConfigFetchRemoteSettingsResponse = (RemoteSettingsURLGetModel);
+
+export type ConfigTriggerFetchRemoteSettingsData = {
+    requestBody: RemoteSettingsURLSetModel;
+};
+
+export type ConfigTriggerFetchRemoteSettingsResponse = (MessageResponseModel);
 
 export type EpgEpgHealthResponse = (EPGApiHandlerHealthResponse);
 

@@ -1,5 +1,6 @@
 """Pydantic models for XC (Xtream Codes) IPTV services."""
 
+from datetime import UTC
 from typing import Self
 
 from pydantic import (
@@ -10,7 +11,6 @@ from pydantic import (
     model_validator,
 )
 
-from acere.constants import OUR_TIMEZONE_NAME
 from acere.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -40,7 +40,7 @@ class XCServerInfo(BaseModel):
     https_port: int | None
     server_protocol: str
     # rtmp_port would go here, but naa null
-    timezone: str = OUR_TIMEZONE_NAME
+    timezone: str = UTC.tzname(None)
     timestamp_now: int
     time_now: str
     process: bool = True

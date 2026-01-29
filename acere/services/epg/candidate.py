@@ -1,7 +1,6 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-from acere.constants import OUR_TIMEZONE
 from acere.utils.logger import get_logger
 
 if TYPE_CHECKING:
@@ -60,7 +59,7 @@ class EPGCandidateHandler:
             if current_candidate_score > best_candidate_score:
                 best_candidate = candidate
 
-        logger.debug(msg.strip())
+        logger.trace(msg.strip())
         return best_candidate
 
 
@@ -97,7 +96,7 @@ class EPGCandidate:
         n_programs_with_description = 0
         description_total_length = 0
         n_programs_with_images = 0
-        current_time = datetime.now(tz=OUR_TIMEZONE)
+        current_time = datetime.now(tz=UTC)
 
         for program in self._programs:
             start_time_str = program.get("start")

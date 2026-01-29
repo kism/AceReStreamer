@@ -5,6 +5,7 @@ This module MUST set up the test environment before any application imports.
 
 import os
 import shutil
+import sys
 import tempfile
 from pathlib import Path
 
@@ -30,9 +31,9 @@ shutil.copyfile(
     Path(__file__).parent / "configs" / "test_valid.json",
     config_file,
 )
+assert "acere" not in sys.modules, "acere module was imported too early!"
 
 # NOW we can import the application modules
-
 from typing import TYPE_CHECKING
 
 import pytest

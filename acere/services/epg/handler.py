@@ -2,13 +2,11 @@
 
 import asyncio
 import threading
-import time
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
 from lxml import etree
 
-from acere.constants import OUR_TIMEZONE
 from acere.utils.logger import get_logger
 from acere.version import PROGRAM_NAME, URL
 
@@ -33,27 +31,17 @@ EPG_CHECK_INTERVAL_MINIMUM = timedelta(minutes=1)  # Used if EPG is incomplete
 class EPGHandler:
     """Handler for EPG (Electronic Program Guide) data."""
 
-    def __init__(self) -> None:
+    def __init__(self, instance_id: str) -> None:
         """Initialize the EPGHandler with a list of URLs."""
+        self._instance_id = instance_id
         self._epgs: list[EPG] = []
         self._condensed_epg: etree._Element | None = None
         self._condensed_epg_bytes: bytes = b""
         self._set_of_tvg_ids: set[str] = set()  # Desired TVG IDs to include in condensed EPG
         self._tvg_epg_mappings: dict[str, HttpUrl | None] = {}
-        self._next_update_time: datetime = datetime.now(tz=OUR_TIMEZONE)
-        self._update_threads: list[threading.Thread] = []
-
-    def load_config(
-        self,
-        epg_conf_list: list[EPGInstanceConf],
-    ) -> None:
-        """Load EPG configurations."""
-        for epg_conf in epg_conf_list:
-            self._epgs.append(EPG(epg_conf=epg_conf))
-
-        self._update_epgs()
-
-        logger.info("Initialised EPGHandler with %d EPG configurations", len(epg_conf_list))
+        self._next_update_time: datetime = datetime.now(tz=UTC)
+        self._threads: list[threading.Thread] = []
+        self._stop_event = threading.Event()
 
     # region Helpers
     def _create_tv_element(self) -> etree._Element:
@@ -142,6 +130,9 @@ class EPGHandler:
 
     def get_current_program(self, tvg_id: str) -> tuple[str, str]:
         """Get the current program for a given TVG ID."""
+        if len(self._epgs) == 0:
+            logger.error("No EPGs loaded to get current program, either none are configured or they haven't loaded yet")
+            return "", ""
         if self._condensed_epg is None:
             logger.error("No condensed EPG data available to get current program")
             return "", ""
@@ -161,7 +152,7 @@ class EPGHandler:
             for epg in self._epgs
         ]
 
-        time_until_next_update = self._next_update_time - datetime.now(tz=OUR_TIMEZONE)
+        time_until_next_update = self._next_update_time - datetime.now(tz=UTC)
         return EPGApiHandlerHealthResponse(
             time_until_next_update=time_until_next_update,
             tvg_ids=self._set_of_tvg_ids,
@@ -172,7 +163,7 @@ class EPGHandler:
         """Get the mapping of TVG IDs to their source EPG URLs."""
         return TVGEPGMappingsResponse(root=self._tvg_epg_mappings)
 
-    # region Update Thread
+    # region Thread
     def _get_time_to_next_update(self) -> timedelta:
         """Get the time until the next EPG update."""
         wait_time = EPG_LIFESPAN
@@ -193,7 +184,7 @@ class EPGHandler:
 
         return time_to_wait
 
-    def _update_epgs(self) -> None:  # noqa: C901 I split it up within the function
+    def update_epgs(self, epg_conf_list: list[EPGInstanceConf]) -> None:  # noqa: C901 I split it up within the function
         """Update all EPGs with the current instance path."""
 
         async def _safe_update_epg(epg: EPG) -> bool:
@@ -218,14 +209,15 @@ class EPGHandler:
 
             return any_epg_updated
 
-        def epg_update_thread() -> None:
+        def _start_epg_update_thread() -> None:
             """Thread function to update EPGs."""
-            logger.info("Starting EPG update thread")
-            while True:
+            logger.info("EPGHandler has %d EPGs starting EPG update thread [%s]", len(self._epgs), self._instance_id)
+            while not self._stop_event.is_set():
                 epg_actually_updated = asyncio.run(_update_epgs_async())
 
                 if epg_actually_updated:
-                    time.sleep(10)  # Bit silly but prevents double condense on startup
+                    if self._stop_event.wait(10):  # Wait 10s or until stop is signaled
+                        break
                     try:
                         logger.info("There are epg updates, condensing EPGs now.")
                         self._condense_epgs()
@@ -233,14 +225,31 @@ class EPGHandler:
                         logger.exception("Failed to condense EPGs")
 
                 time_until_next_update = self._get_time_to_next_update()
-                self._next_update_time = datetime.now(tz=OUR_TIMEZONE) + time_until_next_update
+                self._next_update_time = datetime.now(tz=UTC) + time_until_next_update
 
-                time.sleep(time_until_next_update.total_seconds())
+                # Use wait instead of sleep so we can be interrupted
+                if self._stop_event.wait(time_until_next_update.total_seconds()):
+                    break
 
-        for thread in self._update_threads:
-            if thread.is_alive():
-                thread.join(timeout=1)
+        self.stop_all_threads()
 
-        thread = threading.Thread(target=epg_update_thread, name="EPGHandler: _update_epgs", daemon=True)
+        self._epgs.clear()
+        for epg_conf in epg_conf_list:
+            self._epgs.append(EPG(epg_conf=epg_conf))
+
+        thread = threading.Thread(target=_start_epg_update_thread, name="EPGHandler: update_epgs", daemon=True)
         thread.start()
-        self._update_threads.append(thread)
+        self._threads.append(thread)
+
+    def stop_all_threads(self) -> None:
+        """Stop all threads in the AcePool."""
+        if len(self._threads) == 0:
+            return
+
+        logger.info("Stopping all %s threads [%s]", self.__class__.__name__, self._instance_id)
+        self._stop_event.set()
+        for thread in self._threads:
+            if thread.is_alive():
+                thread.join(timeout=60)
+
+        self._stop_event.clear()

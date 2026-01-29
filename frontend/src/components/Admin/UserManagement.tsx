@@ -12,7 +12,6 @@ import {
   PaginationPrevTrigger,
   PaginationRoot,
 } from "@/components/ui/pagination.tsx"
-import { SectionSeparator } from "@/components/ui/separator-section"
 import {
   AppTableRoot,
   TableBody,
@@ -119,7 +118,6 @@ function UserManagement() {
         Users Management
       </Heading>
       <AddUser />
-      <SectionSeparator />
       <UsersTable />
     </Container>
   )

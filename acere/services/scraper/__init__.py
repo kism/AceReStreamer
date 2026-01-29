@@ -11,7 +11,6 @@ from acere.services.scraper.models import (
     FoundAceStream,
     FoundAceStreamAPI,
 )
-from acere.services.scraper.name_processor import StreamNameProcessor
 
 __all__ = [
     "APIStreamScraper",
@@ -23,6 +22,5 @@ __all__ = [
     "IPTVStreamScraper",
     "Quality",
     "ScraperCache",
-    "StreamNameProcessor",
     "create_unique_stream_list",
 ]

@@ -1,23 +1,24 @@
 """Scraper for IPTV sites to find AceStream streams."""
 
 import re
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 import aiohttp
 from pydantic import HttpUrl
 
-from acere.constants import OUR_TIMEZONE, SUPPORTED_TVG_LOGO_EXTENSIONS
+from acere.constants import SUPPORTED_TVG_LOGO_EXTENSIONS
 from acere.instances.config import settings
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger
 
+from . import name_processor
 from .common import ScraperCommon
 from .models import FoundAceStream
 
 if TYPE_CHECKING:
-    from acere.core.config import ScrapeSiteIPTV, TitleFilter
+    from acere.core.config.scraper import ScrapeSiteIPTV, TitleFilter
 else:
     ScrapeSiteIPTV = object
     TitleFilter = object
@@ -59,7 +60,7 @@ class IPTVStreamScraper(ScraperCommon):
         found_streams = await self.parse_m3u_content(content, site)
 
         for stream in found_streams:  # These streams are freshly scraped
-            stream.last_scraped_time = datetime.now(tz=OUR_TIMEZONE)
+            stream.last_scraped_time = datetime.now(tz=UTC)
 
         logger.debug("Found %d streams on IPTV site %s", len(found_streams), site.name)
 
@@ -105,22 +106,22 @@ class IPTVStreamScraper(ScraperCommon):
         title = parts[1].strip()
 
         tvg_id, title = self._extract_tvg_id(line, title)
-        override_title = self.name_processor.get_title_override_from_content_id(content_id or infohash)
-        title = override_title or self.name_processor.cleanup_candidate_title(title)
+        override_title = name_processor.get_title_override_from_content_id(content_id or infohash)
+        title = override_title or name_processor.cleanup_candidate_title(title)
 
-        tvg_id = self.name_processor.get_tvg_id_from_title(title)  # Redo since we have our own logic for tvg ids
+        tvg_id = name_processor.get_tvg_id_from_title(title)  # Redo since we have our own logic for tvg ids
 
-        if not self.name_processor.check_title_allowed(title=title, title_filter=title_filter):
+        if not name_processor.check_title_allowed(title=title, title_filter=title_filter):
             return None
 
         group_title = self._extract_group_title(line)
-        group_title = self.name_processor.populate_group_title(group_title, title)
+        group_title = name_processor.populate_group_title(group_title, title)
 
         await self._download_tvg_logo(parts[0], title)
-        tvg_logo = self.name_processor.find_tvg_logo_image(title)
+        tvg_logo = name_processor.find_tvg_logo_image(title)
 
         _get_last_found_time_epoch = self._get_last_found_time(line)
-        _get_last_found_time = datetime.fromtimestamp(_get_last_found_time_epoch, tz=OUR_TIMEZONE)
+        _get_last_found_time = datetime.fromtimestamp(_get_last_found_time_epoch, tz=UTC)
 
         return FoundAceStream(
             title=title,
@@ -152,11 +153,11 @@ class IPTVStreamScraper(ScraperCommon):
                 continue
 
             # Second line of an entry, creates the ace stream object
-            valid_ace_uri = self.name_processor.check_valid_ace_uri(line_normalised)
+            valid_ace_uri = name_processor.check_valid_ace_uri(line_normalised)
 
             if not line.startswith("#EXTINF:") and valid_ace_uri is not None and line_one:
-                content_id = self.name_processor.extract_content_id_from_url(valid_ace_uri)
-                infohash = self.name_processor.extract_infohash_from_url(valid_ace_uri)
+                content_id = name_processor.extract_content_id_from_url(valid_ace_uri)
+                infohash = name_processor.extract_infohash_from_url(valid_ace_uri)
 
                 ace_stream = await self._found_ace_stream_from_extinf_line(
                     line=line_one,
@@ -177,7 +178,7 @@ class IPTVStreamScraper(ScraperCommon):
         match = LAST_FOUND_REGEX.search(line)
         if match:
             return int(match.group(1))
-        return 0
+        return int(datetime.now(tz=UTC).timestamp())  # Could break adhoc?
 
     def _get_tvg_url(self, line: str) -> HttpUrl | None:
         """Extract the TVG logo URL from the line."""
@@ -187,32 +188,32 @@ class IPTVStreamScraper(ScraperCommon):
         return None
 
     async def _actually_download_tvg_logo(self, tvg_logo_url: HttpUrl, title: str) -> bytes | None:
+        output_logo = None
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(
                     tvg_logo_url.encoded_string(), timeout=aiohttp.ClientTimeout(total=5)
                 ) as response:
                     response.raise_for_status()
-                    return await response.read()
+                    output_logo = await response.read()
         except aiohttp.ClientError as e:
             error_short = type(e).__name__
-            logger.error("Error downloading TVG logo for %s, %s", title, error_short)
+            logger.debug("Error downloading TVG logo for %s [%s], %s", title, tvg_logo_url, error_short)
         except TimeoutError:
-            logger.error("Timeout downloading TVG logo for %s", title)
+            logger.debug("Timeout downloading TVG logo for %s", title)
 
-        return None
+        if "git-lfs" in (output_logo or b"").decode(errors="ignore"):
+            logger.warning("TVG logo for %s appears to be a Git LFS placeholder, skipping", title)
+            return None
+
+        return output_logo
 
     async def _download_tvg_logo(self, line: str, title: str) -> None:
         """Download the TVG logo and the URL it got it from."""
-        if self.instance_path is None:
-            return
-
-        tvg_logos_path = self.instance_path / "tvg_logos"
-        tvg_logos_path.mkdir(parents=True, exist_ok=True)
         title_slug = slugify(title)
 
         for extension in SUPPORTED_TVG_LOGO_EXTENSIONS:
-            logo_path = tvg_logos_path / f"{title_slug}.{extension}"
+            logo_path = self._tvg_logos_path / f"{title_slug}.{extension}"
             if logo_path.is_file():
                 return
 
@@ -221,11 +222,11 @@ class IPTVStreamScraper(ScraperCommon):
             for extension in SUPPORTED_TVG_LOGO_EXTENSIONS:
                 file_name = f"{title_slug}.{extension}"
                 logo = await self._actually_download_tvg_logo(
-                    HttpUrl(f"{settings.scraper.tvg_logo_external_url}/tvg_logos/{file_name}"),
+                    HttpUrl(f"{settings.scraper.tvg_logo_external_url}/{file_name}"),
                     title,
                 )
                 if logo is not None:
-                    logo_path = tvg_logos_path / file_name
+                    logo_path = self._tvg_logos_path / file_name
                     logo_path.parent.mkdir(parents=True, exist_ok=True)
                     with logo_path.open("wb") as file:
                         file.write(logo)
@@ -251,7 +252,7 @@ class IPTVStreamScraper(ScraperCommon):
         if content is None:
             return
 
-        tvg_logo_path = tvg_logos_path / f"{title_slug}.{url_file_extension}"
+        tvg_logo_path = self._tvg_logos_path / f"{title_slug}.{url_file_extension}"
         tvg_logo_path.parent.mkdir(parents=True, exist_ok=True)
         with tvg_logo_path.open("wb") as file:
             file.write(content)
@@ -272,7 +273,7 @@ class IPTVStreamScraper(ScraperCommon):
         match = TVG_ID_REGEX.search(line)
         if not match:
             logger.debug("No TVG ID found in line, using name processor for title: %s", title)
-            return self.name_processor.get_tvg_id_from_title(title), title
+            return name_processor.get_tvg_id_from_title(title), title
         wip_tvg_id = match.group(1).strip()
 
         # If we have a country code in the title, we leave it as is
@@ -288,7 +289,7 @@ class IPTVStreamScraper(ScraperCommon):
                 break
 
         if original_title != title:
-            logger.debug(
+            logger.trace(
                 "Extracted TVG ID: %s from line, updated title from: %s to: %s", wip_tvg_id, original_title, title
             )
         else:

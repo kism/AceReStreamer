@@ -37,7 +37,7 @@ REVERSE_PROXY_TIMEOUT = 10  # Very high but alas
 
 # region /hls/
 @router.get("/hls/{path}", response_class=Response)
-async def hls(
+async def hls(  # noqa: PLR0915 This is hell
     path: str,
     token: str = "",
     *,
@@ -60,7 +60,7 @@ async def hls(
     instance_ace_hls_m3u8_url = await ace_pool.get_instance_hls_url_by_content_id(path)
 
     if not instance_ace_hls_m3u8_url:
-        msg = f"Can't serve hls_stream, Ace pool is full: {path}"
+        msg = f"Can't serve hls_stream, Ace pool is full or invalid stream: {path}"
         logger.error("HLS stream error: %s", msg)
         raise HTTPException(
             status_code=HTTPStatus.SERVICE_UNAVAILABLE,
@@ -80,21 +80,29 @@ async def hls(
     except (aiohttp.ClientError, TimeoutError) as e:
         error_short = type(e).__name__
 
+        # Get the HTTP status code from ace if available
+        if isinstance(e, aiohttp.ClientResponseError):
+            status_info = f" (ace status: {e.status} {e.message})"
+        elif isinstance(e, TimeoutError):
+            status_info = f" (timeout: {REVERSE_PROXY_TIMEOUT}s)"
+        else:
+            status_info = " (???)"
+
         # Determine error type and response
         if isinstance(e, (aiohttp.ServerTimeoutError, TimeoutError)):
-            logger.error("reverse proxy timeout /hls/%s %s", path, error_short)
+            logger.error("reverse proxy timeout /hls/%s %s%s", path, error_short, status_info)
             error_msg, status = "HLS stream timeout", HTTPStatus.REQUEST_TIMEOUT
             get_quality_handler().increment_quality(path, "")
         elif isinstance(e, aiohttp.ClientConnectionError):
-            logger.error("%s reverse proxy cannot connect to Ace", error_short)
+            logger.error("%s reverse proxy cannot connect to Ace%s", error_short, status_info)
             error_msg, status = (
                 "Cannot connect to Ace",
                 HTTPStatus.INTERNAL_SERVER_ERROR,
             )
         else:
-            logger.error("reverse proxy failure /hls/ %s", error_short)
+            logger.error("reverse proxy failure /hls/ %s%s", error_short, status_info)
             error_msg, status = (
-                "Failed to fetch HLS stream",
+                f"Failed to fetch HLS stream{status_info}",
                 HTTPStatus.INTERNAL_SERVER_ERROR,
             )
             get_quality_handler().increment_quality(path, "")

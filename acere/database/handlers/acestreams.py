@@ -28,6 +28,7 @@ class AceStreamDBHandler(BaseDatabaseHandler):
     _get_streams_cache: list[AceStreamDBEntry] | None = None
 
     def update_stream(self, stream: FoundAceStream) -> None:
+        self._get_streams_cache = None  # Invalidate cache
         with self._get_session() as session:
             statement = select(AceStreamDBEntry).where(AceStreamDBEntry.content_id == stream.content_id)
             result = session.exec(statement).first()

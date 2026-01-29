@@ -1,11 +1,11 @@
 """Health API Blueprint."""
 
 import threading
+from datetime import UTC
 
 from fastapi import APIRouter
 from psutil import Process
 
-from acere.constants import OUR_TIMEZONE
 from acere.utils.health import HealthResponseModel, ThreadHealthModel
 from acere.utils.logger import get_logger
 from acere.version import VERSION_FULL, __version__
@@ -28,7 +28,7 @@ def health() -> HealthResponseModel:
     return HealthResponseModel(
         version=__version__,
         version_full=VERSION_FULL,
-        time_zone=str(OUR_TIMEZONE.tzname(None)),
+        time_zone=str(UTC.tzname(None)),
         threads=thread_list,
         memory_usage_mb=memory,
     )

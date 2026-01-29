@@ -1,8 +1,6 @@
 import re
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
-
-from acere.constants import OUR_TIMEZONE
 
 if TYPE_CHECKING:
     from lxml import etree
@@ -69,7 +67,7 @@ def find_current_program_xml(tvg_id: str, epg_data: etree._Element) -> tuple[str
         return "", ""
 
     # Find the current programme for this channel
-    now = datetime.now(tz=OUR_TIMEZONE)
+    now = datetime.now(tz=UTC)
     programmes = epg_data.findall(f"programme[@channel='{tvg_id}']")
     for programme in programmes:
         start_time = programme.get("start")

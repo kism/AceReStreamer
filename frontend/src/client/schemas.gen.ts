@@ -313,7 +313,7 @@ export const AceScrapeConf_InputSchema = {
         playlist_name: {
             type: 'string',
             title: 'Playlist Name',
-            default: 'AceReStreamer'
+            default: 'acerestreamer'
         },
         adhoc_playlist_external_url: {
             anyOf: [
@@ -403,7 +403,7 @@ export const AceScrapeConf_OutputSchema = {
         playlist_name: {
             type: 'string',
             title: 'Playlist Name',
-            default: 'AceReStreamer'
+            default: 'acerestreamer'
         },
         adhoc_playlist_external_url: {
             anyOf: [
@@ -937,17 +937,13 @@ export const ManuallyAddedAceStreamSchema = {
             type: 'string',
             title: 'Content Id'
         },
-        tvg_id: {
-            type: 'string',
-            title: 'Tvg Id'
-        },
         group_title: {
             type: 'string',
             title: 'Group Title'
         }
     },
     type: 'object',
-    required: ['title', 'content_id', 'tvg_id', 'group_title'],
+    required: ['title', 'content_id', 'group_title'],
     title: 'ManuallyAddedAceStream',
     description: 'Model for a manually added AceStream.'
 } as const;
@@ -1066,6 +1062,66 @@ export const QualitySchema = {
     type: 'object',
     title: 'Quality',
     description: 'Model for tracking quality of a stream.'
+} as const;
+
+export const RemoteSettingsURLGetModelSchema = {
+    properties: {
+        url: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 2083,
+                    minLength: 1,
+                    format: 'uri'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Url'
+        },
+        status: {
+            type: 'string',
+            title: 'Status'
+        },
+        last_fetched: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Last Fetched'
+        }
+    },
+    type: 'object',
+    required: ['url', 'status', 'last_fetched'],
+    title: 'RemoteSettingsURLGetModel'
+} as const;
+
+export const RemoteSettingsURLSetModelSchema = {
+    properties: {
+        url: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 2083,
+                    minLength: 1,
+                    format: 'uri'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Url'
+        }
+    },
+    type: 'object',
+    required: ['url'],
+    title: 'RemoteSettingsURLSetModel'
 } as const;
 
 export const ScrapeSiteAPISchema = {

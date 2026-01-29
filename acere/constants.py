@@ -17,7 +17,10 @@ TVG_LOGOS_DIR = INSTANCE_DIR / "tvg_logos"
 TVG_LOGOS_DIR.mkdir(parents=True, exist_ok=True)
 EPG_XML_DIR = INSTANCE_DIR / "epg"
 EPG_XML_DIR.mkdir(parents=True, exist_ok=True)
-
+SCRAPER_CACHE_DIR = INSTANCE_DIR / "scraper_cache"
+SCRAPER_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+PLAYLISTS_DIR = INSTANCE_DIR / "playlists"
+PLAYLISTS_DIR.mkdir(parents=True, exist_ok=True)
 
 ## Directories Internal
 DEV_FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
@@ -29,7 +32,7 @@ STATIC_DIR = DIST_DIR / "static"  # Static that applies to the API/IPTV backend
 OUR_TIMEZONE = datetime.now().astimezone().tzinfo or UTC
 OUR_TIMEZONE_NAME = str(OUR_TIMEZONE)
 
-_current_time = datetime.now(tz=OUR_TIMEZONE)
+_current_time = datetime.now(tz=UTC)
 
 for tz in pytz.all_timezones:  # Iterate through all timzones list[str]
     timezone = pytz.timezone(tz)  # Create a timezone object based on the string

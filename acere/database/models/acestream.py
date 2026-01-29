@@ -1,10 +1,8 @@
 """Model for storing ace streams."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sqlmodel import Field, SQLModel
-
-from acere.constants import OUR_TIMEZONE
 
 
 class AceStreamDBEntry(SQLModel, table=True):
@@ -18,4 +16,4 @@ class AceStreamDBEntry(SQLModel, table=True):
     tvg_id: str = Field(default=None, max_length=100)
     tvg_logo: str | None = Field(default=None, max_length=255)
     group_title: str = Field(default="", max_length=100)
-    last_scraped_time: datetime = Field(default_factory=lambda: datetime.now(tz=OUR_TIMEZONE))
+    last_scraped_time: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))

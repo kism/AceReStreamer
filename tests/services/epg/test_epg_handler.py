@@ -1,12 +1,11 @@
 import io
 from compression import gzip
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Literal
 
 import pytest
 from lxml import etree
 
-from acere.constants import OUR_TIMEZONE
 from acere.core.config import EPGInstanceConf
 from acere.services.epg.epg import EPG, ONE_WEEK
 from acere.services.epg.handler import EPGHandler
@@ -45,9 +44,9 @@ def epg_handler(epg_conf: EPGInstanceConf, monkeypatch: pytest.MonkeyPatch, epg_
     epg = EPG(epg_conf)
     epg.saved_file_path = epg_test_xml_path
 
-    handler = EPGHandler()
-    monkeypatch.setattr(handler, "_update_epgs", lambda: None)
-    handler.load_config([epg_conf])
+    handler = EPGHandler(instance_id="pytest")
+    monkeypatch.setattr(handler, "update_epgs", lambda epg_conf_list: None)
+    handler.update_epgs([epg_conf])
     handler._epgs = [epg]
     return handler
 
@@ -65,7 +64,7 @@ def test_epg_object_with_data(epg_conf: EPGInstanceConf, epg_test_xml_path: Path
     """Test EPG object with actual data."""
     epg = EPG(epg_conf)
     epg.saved_file_path = epg_test_xml_path
-    epg.last_updated = datetime.now(tz=OUR_TIMEZONE)
+    epg.last_updated = datetime.now(tz=UTC)
 
     etree = epg.get_epg_etree_normalised()
     assert etree is not None

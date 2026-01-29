@@ -1,39 +1,21 @@
 import inspect
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 from pydantic import HttpUrl
 
 from acere.cli.scraper.playlist import PlaylistCreator
-from acere.constants import OUR_TIMEZONE
-from acere.core.config import AceReStreamerConf, ScrapeSiteIPTV
+from acere.core.config.scraper import ScrapeSiteIPTV
 from acere.services.scraper import IPTVStreamScraper
-from acere.services.scraper.name_processor import StreamNameProcessor
 
 _M3U_TEST_DATA_DIR = Path(__file__).parent / "m3u8"
 
 
 @pytest.fixture
 def playlist_creator(tmp_path: Path) -> PlaylistCreator:
-    conf = AceReStreamerConf()
-
-    return PlaylistCreator(
-        instance_path=tmp_path,
-        config=conf,
-    )
-
-
-@pytest.fixture
-def stream_name_processor(tmp_path: Path) -> StreamNameProcessor:
-    processor = StreamNameProcessor()
-    processor.load_config(
-        instance_path=tmp_path,
-        content_id_infohash_name_overrides={},
-        category_mapping={},
-    )
-    return processor
+    return PlaylistCreator(instance_path=tmp_path)
 
 
 def get_playlist_content(function_name: str, number: int) -> str:
@@ -41,15 +23,9 @@ def get_playlist_content(function_name: str, number: int) -> str:
     return m3u_file.read_text()
 
 
-def test_playlist_creator_init(playlist_creator: PlaylistCreator, tmp_path: Path) -> None:
-    assert playlist_creator._instance_path == tmp_path
-    assert playlist_creator.playlist_name == "acerestreamer"
-
-
 @pytest.mark.asyncio
 async def test_infohash_last_scraped_time(
     tmp_path: Path,
-    stream_name_processor: StreamNameProcessor,
     playlist_creator: PlaylistCreator,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
@@ -57,11 +33,8 @@ async def test_infohash_last_scraped_time(
     function_name = frame.f_code.co_name if frame else "unknown_function"
     infohash_playlist_path = tmp_path / "playlists" / "acerestreamer-infohash-main.m3u"
 
-    iptv_scraper = IPTVStreamScraper()
-    iptv_scraper.load_config(
-        instance_path=tmp_path,
-        stream_name_processor=stream_name_processor,
-    )
+    iptv_scraper = IPTVStreamScraper(instance_path=tmp_path)
+
     scrape_site = ScrapeSiteIPTV(
         name="Test IPTV Site",
         url=HttpUrl("http://pytest.internal/lists/playlist.m3u"),
@@ -124,7 +97,7 @@ async def test_infohash_last_scraped_time(
         site=scrape_site,
     )
     for stream in found_streams:  # These streams are freshly scraped, simulate _scrape_iptv_playlist
-        stream.last_scraped_time = datetime.now(tz=OUR_TIMEZONE)
+        stream.last_scraped_time = datetime.now(tz=UTC)
 
     assert len(found_streams) == 2
     await playlist_creator._create_playlists(new_streams=found_streams)

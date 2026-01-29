@@ -3,9 +3,8 @@ from typing import TYPE_CHECKING, Any
 import pytest
 from pydantic import HttpUrl
 
-from acere.core.config import ScrapeSiteIPTV
+from acere.core.config.scraper import ScrapeSiteIPTV
 from acere.services.scraper.iptv import IPTVStreamScraper
-from acere.services.scraper.name_processor import StreamNameProcessor
 from tests.test_utils.aiohttp import FakeResponseDef, FakeSession
 
 from . import SCRAPER_TEST_SITES
@@ -18,27 +17,9 @@ else:
 
 
 @pytest.fixture
-def name_processor(tmp_path: Path) -> StreamNameProcessor:
-    """Fixture providing a configured StreamNameProcessor."""
-    processor = StreamNameProcessor()
-    processor.load_config(
-        instance_path=tmp_path,
-        content_id_infohash_name_overrides={},
-        category_mapping={},
-    )
-    return processor
-
-
-@pytest.fixture
-async def scraper(
-    tmp_path: Path, name_processor: StreamNameProcessor, monkeypatch: pytest.MonkeyPatch
-) -> IPTVStreamScraper:
+async def scraper(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> IPTVStreamScraper:
     """Fixture providing a configured IPTVStreamScraper."""
     scraper = IPTVStreamScraper()
-    scraper.load_config(
-        instance_path=tmp_path,
-        stream_name_processor=name_processor,
-    )
 
     async def _mock_get_site_content(site: ScrapeSiteIPTV) -> str:
         assert site.url.path is not None
@@ -57,7 +38,7 @@ async def scraper(
     def _mock_find_tvg_logo_image(title: str) -> str:
         return f"http://pytest.internal/logos/{title.replace(' ', '_')}.png"
 
-    monkeypatch.setattr(scraper.name_processor, "find_tvg_logo_image", _mock_find_tvg_logo_image)
+    monkeypatch.setattr("acere.services.scraper.name_processor.find_tvg_logo_image", _mock_find_tvg_logo_image)
 
     return scraper
 
@@ -113,16 +94,11 @@ async def test_site2(scraper: IPTVStreamScraper) -> None:
 
 async def test_get_site_content(
     tmp_path: Path,
-    name_processor: StreamNameProcessor,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test _get_site_content method with aiohttp mocks."""
     # Create scraper without mocking _get_site_content
     scraper = IPTVStreamScraper()
-    scraper.load_config(
-        instance_path=tmp_path,
-        stream_name_processor=name_processor,
-    )
 
     # Read test data
     test_content = (SCRAPER_TEST_SITES / "playlist1.m3u8").read_text(encoding="utf-8")
@@ -164,15 +140,10 @@ async def test_get_site_content(
 
 async def test_download_tvg_logo(
     tmp_path: Path,
-    name_processor: StreamNameProcessor,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test _download_tvg_logo method with aiohttp mocks."""
-    scraper = IPTVStreamScraper()
-    scraper.load_config(
-        instance_path=tmp_path,
-        stream_name_processor=name_processor,
-    )
+    scraper = IPTVStreamScraper(instance_path=tmp_path)
 
     # Create fake logo content
     fake_logo_data = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01"
