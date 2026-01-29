@@ -42,8 +42,8 @@ async def async_main() -> None:
         logger.error("No application configuration path provided. Use --app-config to specify a path.")
         sys.exit(1)
 
-    if not args.app_config.parent.exists():
-        logger.error("The directory for the application configuration does not exist: %s", args.app_config.parent)
+    if not args.app_config.is_file():
+        logger.error("Application configuration file does not exist at: %s", args.app_config)
         sys.exit(1)
 
     # Here in CLI land, everything we touch will need the instance path to be set
