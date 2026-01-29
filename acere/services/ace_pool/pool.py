@@ -12,7 +12,7 @@ from pydantic import HttpUrl, TypeAdapter
 from acere.instances.config import settings
 from acere.utils.helpers import check_valid_content_id_or_infohash
 from acere.utils.logger import get_logger
-
+from acere.utils.exception_handling import log_aiohttp_exception
 from .constants import ACESTREAM_API_TIMEOUT
 from .entry import AcePoolEntry
 from .models import AcePoolAllStatsApi, AcePoolEntryForAPI, AcePoolForApi, AcePoolStat
@@ -60,12 +60,10 @@ class AcePool:
             if not self.healthy:
                 logger.info("Ace Instance %s is now healthy", self.ace_address)
             healthy = True
-        except aiohttp.ClientError as e:
-            error_short = type(e).__name__
-            logger.error("Ace Instance %s is not healthy: %s", self.ace_address, error_short)
+        except (aiohttp.ClientError, TimeoutError) as e:
+            log_aiohttp_exception(logger, url, e, "Ace Instance is not healthy")
             healthy = False
         except Exception as e:  # noqa: BLE001 Last resort
-            error_short = type(e).__name__
             logger.error(
                 "Ace Instance %s is not healthy for a weird reason: %s",
                 self.ace_address,

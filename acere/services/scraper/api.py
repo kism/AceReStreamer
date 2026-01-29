@@ -59,7 +59,7 @@ class APIStreamScraper(ScraperCommon):
                 async with session.get(site.url.encoded_string()) as response:
                     response.raise_for_status()
                     response_json = await response.json()
-        except aiohttp.ClientError as e:
+        except (aiohttp.ClientError, TimeoutError) as e:
             log_aiohttp_exception(logger, site.url, e)
             return []
 

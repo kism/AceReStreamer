@@ -163,7 +163,7 @@ class EPG:
 
             self.last_updated = datetime.now(tz=UTC)
 
-        except aiohttp.ClientError as e:
+        except (aiohttp.ClientError, TimeoutError) as e:
             log_aiohttp_exception(logger, self.url, e)
 
         return data

@@ -78,7 +78,7 @@ class IPTVStreamScraper(ScraperCommon):
                 async with session.get(site.url.encoded_string()) as response:
                     response.raise_for_status()
                     content = await response.text(encoding="utf-8")
-        except aiohttp.ClientError as e:
+        except (aiohttp.ClientError, TimeoutError) as e:
             log_aiohttp_exception(logger, site.url, e)
             return None
 
@@ -196,11 +196,9 @@ class IPTVStreamScraper(ScraperCommon):
                 ) as response:
                     response.raise_for_status()
                     output_logo = await response.read()
-        except aiohttp.ClientError as e:
+        except (aiohttp.ClientError, TimeoutError) as e:
             error_short = type(e).__name__
             logger.debug("Error downloading TVG logo for %s [%s], %s", title, tvg_logo_url, error_short)
-        except TimeoutError:
-            logger.debug("Timeout downloading TVG logo for %s", title)
 
         if "git-lfs" in (output_logo or b"").decode(errors="ignore"):
             logger.warning("TVG logo for %s appears to be a Git LFS placeholder, skipping", title)

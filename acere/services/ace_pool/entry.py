@@ -11,7 +11,7 @@ from acere.utils.ace import get_middleware_url
 from acere.utils.helpers import check_valid_content_id_or_infohash
 from acere.utils.hls import get_last_m3u8_segment_url
 from acere.utils.logger import get_logger
-
+from acere.utils.exception_handling import log_aiohttp_exception
 from .constants import ACESTREAM_API_TIMEOUT
 from .models import AceMiddlewareResponse, AceMiddlewareResponseFull, AcePoolStat
 
@@ -284,10 +284,5 @@ class AcePoolEntry:
                 async with session.get(url) as resp:
                     resp.raise_for_status()
                     logger.info("Stopped AceStream instance with content_id %s", self.content_id)
-        except aiohttp.ClientError as e:
-            error_short = type(e).__name__
-            logger.error(
-                "%s Failed to stop AceStream instance with content_id %s: ",
-                error_short,
-                self.content_id,
-            )
+        except (aiohttp.ClientError, TimeoutError) as e:
+            log_aiohttp_exception(logger, url, e, "Failed to stop AceStream instance")

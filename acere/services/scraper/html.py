@@ -54,7 +54,7 @@ class HTMLStreamScraper(ScraperCommon):
                         response.raise_for_status()
                         scraped_site_str = await response.text()
 
-            except aiohttp.ClientError as e:
+            except (aiohttp.ClientError, TimeoutError) as e:
                 log_aiohttp_exception(logger, site.url, e)
                 return []
         else:

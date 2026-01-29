@@ -11,7 +11,7 @@ from acere.instances.config import settings
 from acere.instances.epg import get_epg_handler
 from acere.instances.scraper import get_ace_scraper
 from acere.utils.logger import get_logger
-
+from acere.utils.exception_handling import log_aiohttp_exception
 from .models import RemoteSettingsURLGetModel
 
 logger = get_logger(__name__)
@@ -91,8 +91,7 @@ class RemoteSettingsFetcher:
                     resp.raise_for_status()
                     data = await resp.text()
             except (aiohttp.ClientError, TimeoutError) as e:
-                self._status = e.__class__.__name__
-                logger.error("Failed to fetch remote settings: %s", e)
+                log_aiohttp_exception(logger, settings.REMOTE_SETTINGS_URL, e, "Failed to fetch remote settings")
                 return
             except Exception as e:
                 self._status = e.__class__.__name__
