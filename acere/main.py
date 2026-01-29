@@ -105,7 +105,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     for handler in handlers:
         handler.stop_all_threads()
 
-    logger.info("End of application lifespan? [%s]", instance_id)
+    logger.info("End of application lifespan [%s]", instance_id)
 
 
 app = FastAPI(

@@ -21,7 +21,6 @@ class AppConf(BaseModel):
 
     model_config = ConfigDict(extra="ignore")  # Ignore extras for config related things
 
-    authentication_enabled: bool = True
     ace_address: HttpUrl = HttpUrl("http://localhost:6878")
     transcode_audio: bool = True
     ace_max_streams: int = 4
