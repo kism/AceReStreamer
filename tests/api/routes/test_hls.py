@@ -7,13 +7,17 @@ import pytest
 from pydantic import HttpUrl
 
 from acere.constants import STATIC_DIR, TVG_LOGOS_DIR
+from acere.instances import epg as epg_instance_module
 from acere.instances.config import settings
+from acere.services.epg.handler import EPGHandler
+from acere.services.scraper import main as scraper_main_module
 from tests.test_utils.ace import get_random_content_id
 from tests.test_utils.aiohttp import FakeSession
 from tests.test_utils.hls import generate_hls_m3u8
 from tests.test_utils.user import create_random_user
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
     from pathlib import Path
 
     from fastapi.testclient import TestClient
@@ -22,12 +26,27 @@ else:
     TestClient = object
     Session = object
     Path = object
+    Generator = object
 
 
 # Sample HLS M3U8 content
 SAMPLE_HLS_M3U8 = generate_hls_m3u8(5)
 
 INVALID_HLS_RESPONSE = "ERROR: Something went wrong"
+
+
+@pytest.fixture(autouse=True)
+def setup_epg_handler(monkeypatch: pytest.MonkeyPatch) -> Generator[None, None, None]:
+    """Setup EPG handler before tests."""
+    epg_handler = EPGHandler(instance_id="test_epg_handler")
+    monkeypatch.setattr(epg_instance_module, "get_epg_handler", lambda: epg_handler)
+    monkeypatch.setattr(scraper_main_module, "get_epg_handler", lambda: epg_handler)
+
+    assert epg_instance_module.get_epg_handler() is epg_handler
+
+    yield
+
+    epg_handler.stop_all_threads()
 
 
 @pytest.fixture

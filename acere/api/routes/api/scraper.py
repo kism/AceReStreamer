@@ -8,7 +8,7 @@ from acere.api.deps import (
     get_current_active_superuser,
     get_current_user,
 )
-from acere.core.config import ScrapeSiteAPI, ScrapeSiteHTML, ScrapeSiteIPTV
+from acere.core.config.scraper import ScrapeSiteAPI, ScrapeSiteHTML, ScrapeSiteIPTV
 from acere.instances.config import settings
 from acere.instances.scraper import get_ace_scraper
 from acere.services.scraper.models import AceScraperSourceApi

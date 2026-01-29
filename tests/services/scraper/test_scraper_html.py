@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 import pytest
 from pydantic import HttpUrl
 
-from acere.core.config import HTMLScraperFilter, ScrapeSiteHTML, TitleFilter
+from acere.core.config.scraper import HTMLScraperFilter, ScrapeSiteHTML, TitleFilter
 from acere.services.scraper.html import HTMLStreamScraper
 
 from . import SCRAPER_TEST_SITES

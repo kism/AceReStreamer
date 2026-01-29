@@ -32,7 +32,7 @@ STATIC_DIR = DIST_DIR / "static"  # Static that applies to the API/IPTV backend
 OUR_TIMEZONE = datetime.now().astimezone().tzinfo or UTC
 OUR_TIMEZONE_NAME = str(OUR_TIMEZONE)
 
-_current_time = datetime.now(tz=OUR_TIMEZONE)
+_current_time = datetime.now(tz=UTC)
 
 for tz in pytz.all_timezones:  # Iterate through all timzones list[str]
     timezone = pytz.timezone(tz)  # Create a timezone object based on the string

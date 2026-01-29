@@ -1,4 +1,4 @@
-from acere.core.config import (
+from acere.core.config.scraper import (
     AceScrapeConf,
     ScrapeSiteAPI,
     ScrapeSiteHTML,

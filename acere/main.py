@@ -1,7 +1,6 @@
 import os
 import random
-from contextlib import asynccontextmanager, suppress
-from pathlib import Path
+from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING
 
 from fastapi import FastAPI
@@ -15,8 +14,12 @@ from acere.constants import API_V1_STR, SETTINGS_FILE
 from acere.database.init import engine, init_db
 from acere.instances.ace_pool import set_ace_pool
 from acere.instances.config import settings
+from acere.instances.epg import set_epg_handler
+from acere.instances.remote_settings import set_remote_settings_fetcher
 from acere.instances.scraper import set_ace_scraper
 from acere.services.ace_pool.pool import AcePool
+from acere.services.epg import EPGHandler
+from acere.services.remote_settings import RemoteSettingsFetcher
 from acere.services.scraper import AceScraper
 from acere.utils.logger import get_logger, setup_logger
 from acere.version import PROGRAM_NAME, __version__
@@ -33,30 +36,6 @@ else:
 # Don't put anything on stdout if we are generating openapi json
 IN_OPEN_API_MODE: bool = os.getenv("IN_OPEN_API_MODE", "false").lower() == "true"
 
-# Lock file to detect multiple worker processes
-WORKER_LOCK_FILE = Path("/tmp/acerestreamer_worker.lock")  # noqa: S108 Contents never get read
-
-
-# Check for multiple workers - this application does not support multiple workers
-# due to singleton instances and shared state
-def check_single_worker() -> None:
-    """Check that only one worker is running."""
-    logger = get_logger(__name__)
-    if WORKER_LOCK_FILE.exists():
-        msg = [
-            ("This application does not support multiple workers. Another worker instance is already running. "),
-            "Please run with --workers 1 or remove the --workers flag.",
-            "Or the application crashed previously and the lock file was not removed.",
-        ]
-        logger.critical("\n".join(msg))
-
-    # Create lock file
-    try:
-        WORKER_LOCK_FILE.write_text(str(os.getpid()))
-    except Exception as e:  # noqa: BLE001 Catch all to prevent crash on startup
-        msg_str = f"Could not create worker lock file: {e}"
-        logger.critical(msg_str)
-
 
 if not IN_OPEN_API_MODE:
     traceback.install()
@@ -64,8 +43,6 @@ if not IN_OPEN_API_MODE:
     settings.write_config(SETTINGS_FILE)
     setup_logger(settings=settings.logging)
     setup_logger(settings=settings.logging, in_logger="uvicorn.error")
-
-    check_single_worker()
 
     logger = get_logger(__name__)
 
@@ -94,22 +71,42 @@ def custom_generate_unique_id(route: APIRoute) -> str:
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     """Manage application lifespan - startup and shutdown."""
     # Startup
+    # Initialize database
+    with Session(engine) as session:
+        session.exec(select(1))
+        init_db(session)
+
     instance_id = str(random.randbytes(4).hex())  # noqa: S311 Not crypto related
+
+    # Pool
     ace_pool = AcePool(instance_id=instance_id)
     set_ace_pool(ace_pool)
+
+    # Scraper
     ace_scraper = AceScraper(instance_id=instance_id)
     set_ace_scraper(ace_scraper)
 
+    # Settings Fetcher
+    remote_settings_fetcher = RemoteSettingsFetcher(instance_id=instance_id)
+    set_remote_settings_fetcher(remote_settings_fetcher)
+
+    # EPG Handler
+    epg_handler = EPGHandler(instance_id=instance_id)
+    set_epg_handler(epg_handler)
+
     yield
-    # Shutdown - cleanup lock file
-    if WORKER_LOCK_FILE.exists():
-        with suppress(Exception):
-            WORKER_LOCK_FILE.unlink()
 
+    handlers: list[AceScraper | AcePool | RemoteSettingsFetcher | EPGHandler] = [
+        ace_pool,
+        ace_scraper,
+        remote_settings_fetcher,
+        epg_handler,
+    ]
+    for handler in handlers:
+        handler.stop_all_threads()
 
-with Session(engine) as session:
-    session.exec(select(1))
-    init_db(session)
+    logger.info("End of application lifespan? [%s]", instance_id)
+
 
 app = FastAPI(
     title=PROGRAM_NAME,

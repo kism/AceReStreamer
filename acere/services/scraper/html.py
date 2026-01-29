@@ -16,7 +16,7 @@ from .common import ScraperCommon
 from .models import CandidateAceStream, FoundAceStream
 
 if TYPE_CHECKING:
-    from acere.core.config import ScrapeSiteHTML
+    from acere.core.config.scraper import ScrapeSiteHTML
 else:
     ScrapeSiteHTML = object
 

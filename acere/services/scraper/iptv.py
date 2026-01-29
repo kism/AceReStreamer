@@ -1,13 +1,13 @@
 """Scraper for IPTV sites to find AceStream streams."""
 
 import re
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 import aiohttp
 from pydantic import HttpUrl
 
-from acere.constants import OUR_TIMEZONE, SUPPORTED_TVG_LOGO_EXTENSIONS
+from acere.constants import SUPPORTED_TVG_LOGO_EXTENSIONS
 from acere.instances.config import settings
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.helpers import slugify
@@ -18,7 +18,7 @@ from .common import ScraperCommon
 from .models import FoundAceStream
 
 if TYPE_CHECKING:
-    from acere.core.config import ScrapeSiteIPTV, TitleFilter
+    from acere.core.config.scraper import ScrapeSiteIPTV, TitleFilter
 else:
     ScrapeSiteIPTV = object
     TitleFilter = object
@@ -60,7 +60,7 @@ class IPTVStreamScraper(ScraperCommon):
         found_streams = await self.parse_m3u_content(content, site)
 
         for stream in found_streams:  # These streams are freshly scraped
-            stream.last_scraped_time = datetime.now(tz=OUR_TIMEZONE)
+            stream.last_scraped_time = datetime.now(tz=UTC)
 
         logger.debug("Found %d streams on IPTV site %s", len(found_streams), site.name)
 
@@ -121,7 +121,7 @@ class IPTVStreamScraper(ScraperCommon):
         tvg_logo = name_processor.find_tvg_logo_image(title)
 
         _get_last_found_time_epoch = self._get_last_found_time(line)
-        _get_last_found_time = datetime.fromtimestamp(_get_last_found_time_epoch, tz=OUR_TIMEZONE)
+        _get_last_found_time = datetime.fromtimestamp(_get_last_found_time_epoch, tz=UTC)
 
         return FoundAceStream(
             title=title,
@@ -178,7 +178,7 @@ class IPTVStreamScraper(ScraperCommon):
         match = LAST_FOUND_REGEX.search(line)
         if match:
             return int(match.group(1))
-        return int(datetime.now(tz=OUR_TIMEZONE).timestamp())  # Could break adhoc?
+        return int(datetime.now(tz=UTC).timestamp())  # Could break adhoc?
 
     def _get_tvg_url(self, line: str) -> HttpUrl | None:
         """Extract the TVG logo URL from the line."""
@@ -289,7 +289,7 @@ class IPTVStreamScraper(ScraperCommon):
                 break
 
         if original_title != title:
-            logger.debug(
+            logger.trace(
                 "Extracted TVG ID: %s from line, updated title from: %s to: %s", wip_tvg_id, original_title, title
             )
         else:

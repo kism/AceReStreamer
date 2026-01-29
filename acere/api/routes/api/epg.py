@@ -61,7 +61,7 @@ def add_epg(body_json: EPGInstanceConf | list[EPGInstanceConf]) -> None:
     for epg_instance in body_json:
         settings.add_epg(epg_instance)
 
-    epg_handler.load_config(settings.epgs)
+    epg_handler.update_epgs(settings.epgs)
 
 
 @router.delete("/slug/{slug}", dependencies=[Depends(get_current_active_superuser)])
@@ -76,7 +76,7 @@ def delete_epg(slug: str) -> None:
             detail="EPG not found",
         )
 
-    epg_handler.load_config(settings.epgs)
+    epg_handler.update_epgs(settings.epgs)
 
 
 @router.get("/tvg-ids")

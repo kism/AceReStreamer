@@ -1,18 +1,17 @@
 """Custom Pydantic models (objects) for scraping."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Literal, Self
 
 from pydantic import AnyUrl, BaseModel, HttpUrl, field_serializer, model_validator
 
-from acere.constants import OUR_TIMEZONE
-from acere.core.config import HTMLScraperFilter, TitleFilter
+from acere.core.config.scraper import HTMLScraperFilter, TitleFilter
 from acere.utils.helpers import check_valid_content_id_or_infohash
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from acere.core.config import ScrapeSiteHTML, ScrapeSiteIPTV
+    from acere.core.config.scraper import ScrapeSiteHTML, ScrapeSiteIPTV
 
 else:
     ScrapeSiteHTML = object
@@ -38,7 +37,7 @@ class FoundAceStream(BaseModel):
     tvg_logo: str | None = None
     group_title: str = ""
     sites_found_on: list[str]
-    last_scraped_time: datetime = datetime.now(tz=OUR_TIMEZONE)
+    last_scraped_time: datetime = datetime.now(tz=UTC)
 
     @model_validator(mode="after")
     def manual_validate(self) -> Self:

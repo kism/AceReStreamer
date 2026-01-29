@@ -49,6 +49,7 @@ export async function loadStream(content_id?: string) {
 
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
       updateStreamStatus({ hlsStatus: "Healthy", playerStatus: "Ready" })
+      video.play() // Hopefully prevents the grey overlay persisting
     })
 
     hls.on(Hls.Events.ERROR, (_event, data) => {

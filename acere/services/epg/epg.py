@@ -2,13 +2,13 @@
 
 import gzip
 import io
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Literal
 
 import aiohttp
 from lxml import etree
 
-from acere.constants import EPG_XML_DIR, OUR_TIMEZONE
+from acere.constants import EPG_XML_DIR
 from acere.core.config import EPGInstanceConf
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.helpers import slugify
@@ -112,7 +112,7 @@ class EPG:
         if self.last_updated is None:
             return ONE_WEEK
 
-        current_time = datetime.now(tz=OUR_TIMEZONE)
+        current_time = datetime.now(tz=UTC)
         return current_time - self.last_updated
 
     def get_time_until_next_update(self) -> timedelta:
@@ -121,7 +121,7 @@ class EPG:
         if self.last_updated is None:
             return min_timedelta
 
-        time_since_last_update = datetime.now(tz=OUR_TIMEZONE) - self.last_updated
+        time_since_last_update = datetime.now(tz=UTC) - self.last_updated
         time_until_next_update = EPG_LIFESPAN - time_since_last_update
         return max(min_timedelta, time_until_next_update)
 
@@ -132,11 +132,11 @@ class EPG:
             if self.saved_file_path.is_file():
                 # Stat the existing file to get its last modified time, this is the last updated time
                 mtime = self.saved_file_path.stat().st_mtime
-                self.last_updated = datetime.fromtimestamp(mtime, tz=OUR_TIMEZONE)
+                self.last_updated = datetime.fromtimestamp(mtime, tz=UTC)
             else:
                 return True  # If no file exists, we need to update
 
-        time_since_last_update = datetime.now(tz=OUR_TIMEZONE) - self.last_updated
+        time_since_last_update = datetime.now(tz=UTC) - self.last_updated
         need_to_update = time_since_last_update > EPG_LIFESPAN
 
         logger.debug(
@@ -161,7 +161,7 @@ class EPG:
             if self.format == "xml.gz":
                 data = self._un_gz_data(data)
 
-            self.last_updated = datetime.now(tz=OUR_TIMEZONE)
+            self.last_updated = datetime.now(tz=UTC)
 
         except aiohttp.ClientError as e:
             log_aiohttp_exception(logger, self.url, e)
@@ -170,7 +170,7 @@ class EPG:
 
     def _un_gz_data(self, data: bytes) -> bytes:
         """Uncompress gzipped EPG data."""
-        logger.info("Uncompressing gzipped EPG data")
+        logger.trace("Uncompressing gzipped EPG data")
 
         buffer = io.BytesIO(data)
         with gzip.GzipFile(fileobj=buffer, mode="rb") as gz_file:

@@ -306,6 +306,16 @@ export type Quality = {
     last_message?: string;
 };
 
+export type RemoteSettingsURLGetModel = {
+    url: (string | null);
+    status: string;
+    last_fetched: (string | null);
+};
+
+export type RemoteSettingsURLSetModel = {
+    url: (string | null);
+};
+
 /**
  * Scraper for API Sites.
  */
@@ -472,6 +482,14 @@ export type ConfigUpdateConfigData = {
 };
 
 export type ConfigUpdateConfigResponse = (ConfigExport_Output);
+
+export type ConfigFetchRemoteSettingsResponse = (RemoteSettingsURLGetModel);
+
+export type ConfigTriggerFetchRemoteSettingsData = {
+    requestBody: RemoteSettingsURLSetModel;
+};
+
+export type ConfigTriggerFetchRemoteSettingsResponse = (MessageResponseModel);
 
 export type EpgEpgHealthResponse = (EPGApiHandlerHealthResponse);
 

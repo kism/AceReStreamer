@@ -1,9 +1,9 @@
 """Cache management for the AceReStreamer scraper."""
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
-from acere.constants import OUR_TIMEZONE, SCRAPER_CACHE_DIR
+from acere.constants import SCRAPER_CACHE_DIR
 from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger
 
@@ -35,8 +35,8 @@ class ScraperCache:
         """Check if the cache for the given URL is valid."""
         cache_path = self._get_cache_file_path(url)
         if cache_path.exists():
-            time_now = datetime.now(tz=OUR_TIMEZONE)
-            file_mod_time = datetime.fromtimestamp(cache_path.stat().st_mtime, tz=OUR_TIMEZONE)
+            time_now = datetime.now(tz=UTC)
+            file_mod_time = datetime.fromtimestamp(cache_path.stat().st_mtime, tz=UTC)
 
             time_since_mod = time_now - file_mod_time
 

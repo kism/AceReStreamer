@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any
 import pytest
 from pydantic import HttpUrl
 
-from acere.core.config import ScrapeSiteIPTV
+from acere.core.config.scraper import ScrapeSiteIPTV
 from acere.services.scraper.iptv import IPTVStreamScraper
 from tests.test_utils.aiohttp import FakeResponseDef, FakeSession
 

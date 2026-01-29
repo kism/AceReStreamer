@@ -1,12 +1,11 @@
 """API Scraper."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 import aiohttp
 from pydantic import BaseModel, ConfigDict, ValidationError
 
-from acere.constants import OUR_TIMEZONE
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.logger import get_logger
 
@@ -15,7 +14,7 @@ from .common import ScraperCommon
 from .models import FoundAceStream
 
 if TYPE_CHECKING:
-    from acere.core.config import ScrapeSiteAPI, TitleFilter
+    from acere.core.config.scraper import ScrapeSiteAPI, TitleFilter
 else:
     ScrapeSiteAPI = object
     TitleFilter = object
@@ -86,9 +85,9 @@ class APIStreamScraper(ScraperCommon):
 
             # We call it fresh if availability is 100%
             last_scraped_epoch = (
-                stream.availability_updated_at if stream.availability < 1 else datetime.now(tz=OUR_TIMEZONE).timestamp()
+                stream.availability_updated_at if stream.availability < 1 else datetime.now(tz=UTC).timestamp()
             )
-            last_scraped_time = datetime.fromtimestamp(last_scraped_epoch, tz=OUR_TIMEZONE)
+            last_scraped_time = datetime.fromtimestamp(last_scraped_epoch, tz=UTC)
 
             streams.append(
                 FoundAceStream(

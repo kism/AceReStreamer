@@ -1,14 +1,13 @@
 import inspect
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 from pydantic import HttpUrl
 
 from acere.cli.scraper.playlist import PlaylistCreator
-from acere.constants import OUR_TIMEZONE
-from acere.core.config import ScrapeSiteIPTV
+from acere.core.config.scraper import ScrapeSiteIPTV
 from acere.services.scraper import IPTVStreamScraper
 
 _M3U_TEST_DATA_DIR = Path(__file__).parent / "m3u8"
@@ -98,7 +97,7 @@ async def test_infohash_last_scraped_time(
         site=scrape_site,
     )
     for stream in found_streams:  # These streams are freshly scraped, simulate _scrape_iptv_playlist
-        stream.last_scraped_time = datetime.now(tz=OUR_TIMEZONE)
+        stream.last_scraped_time = datetime.now(tz=UTC)
 
     assert len(found_streams) == 2
     await playlist_creator._create_playlists(new_streams=found_streams)

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from pydantic import HttpUrl
 
 from acere.constants import PLAYLISTS_DIR
-from acere.core.config import ScrapeSiteIPTV
+from acere.core.config.scraper import ScrapeSiteIPTV
 from acere.instances.config import settings
 from acere.services.scraper import (
     APIStreamScraper,
@@ -34,10 +34,10 @@ _TIMEDELTA_INVALIDATE_FRESH = _TIMEDELTA_FRESH + timedelta(seconds=1)
 class PlaylistCreator:
     """Class to generate playlists."""
 
-    def __init__(self, instance_path: Path | None = None) -> None:
+    def __init__(self, instance_path: Path) -> None:
         """Initialize the PlaylistCreator."""
-        self._instance_path: Path = instance_path or Path()
-        self._playlists_dir = (self._instance_path / PLAYLISTS_DIR.name) if instance_path else PLAYLISTS_DIR
+        self._instance_path: Path = instance_path
+        self._playlists_dir = self._instance_path / PLAYLISTS_DIR.name
         self._playlists_dir.mkdir(parents=True, exist_ok=True)
         self._html_scraper = HTMLStreamScraper(instance_path=instance_path)
         self._iptv_scraper = IPTVStreamScraper(instance_path=instance_path)

@@ -1,4 +1,4 @@
-from acere.core.config import TitleFilter
+from acere.core.config.scraper import TitleFilter
 
 
 def test_title_filter_postprocessing() -> None:

@@ -7,7 +7,6 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import HttpUrl
 
-from acere.constants import OUR_TIMEZONE
 from acere.database.handlers.category_xc import CategoryXCCategoryIDDatabaseHandler
 from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.config import settings
@@ -53,7 +52,7 @@ def _populate_xc_api_response(
             https_port=https_port,
             server_protocol=protocol,
             timestamp_now=int(datetime.now(tz=UTC).timestamp()),
-            time_now=datetime.now(tz=OUR_TIMEZONE).strftime("%Y-%m-%d %H:%M:%S"),
+            time_now=datetime.now(tz=UTC).strftime("%Y-%m-%d %H:%M:%S"),
         ),
     )
 

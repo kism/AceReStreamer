@@ -3,14 +3,12 @@
 import asyncio
 import contextlib
 import threading
-import time
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
 import aiohttp
 from pydantic import HttpUrl, TypeAdapter
 
-from acere.constants import OUR_TIMEZONE
 from acere.instances.config import settings
 from acere.utils.helpers import check_valid_content_id_or_infohash
 from acere.utils.logger import get_logger
@@ -33,7 +31,8 @@ class AcePool:
     def __init__(self, instance_id: str = "") -> None:
         """Initialize the AcePool."""
         self._instance_id = instance_id
-        logger.debug("Initializing AcePool (%s)", self._instance_id)
+        self._threads: list[threading.Thread] = []
+        self._stop_event = threading.Event()
         self.ace_address = settings.app.ace_address
         self.max_size = settings.app.ace_max_streams
         self.transcode_audio = settings.app.transcode_audio
@@ -46,7 +45,7 @@ class AcePool:
     # region Health
     async def check_ace_running(self) -> bool:
         """Use the AceStream API to check if the instance is running."""
-        logger.trace("AcePool check_ace_running (%s)", self._instance_id)
+        logger.trace("AcePool check_ace_running [%s]", self._instance_id)
         healthy = False
 
         url = HttpUrl(f"{self.ace_address}webui/api/service?method=get_version").encoded_string()
@@ -261,7 +260,7 @@ class AcePool:
 
         total_time_running = timedelta(seconds=0)
         if instance.content_id != "":
-            total_time_running = datetime.now(tz=OUR_TIMEZONE) - instance.date_started
+            total_time_running = datetime.now(tz=UTC) - instance.date_started
 
         return AcePoolEntryForAPI(
             ace_pid=instance.ace_pid,
@@ -274,7 +273,7 @@ class AcePool:
             ace_hls_m3u8_url=instance.get_m3u8_url(),
         )
 
-    # region Poolboy
+    # region Thread
     def ace_poolboy(self) -> None:
         """Run the AcePoolboy to clean up instances."""
 
@@ -283,9 +282,10 @@ class AcePool:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
 
-            while True:
+            while not self._stop_event.is_set():
                 loop.run_until_complete(self.check_ace_running())
-                time.sleep(10)
+                if self._stop_event.wait(10):  # Wait 10s or until stop is signaled
+                    break
 
                 instances_to_remove: list[str] = []
 
@@ -301,5 +301,23 @@ class AcePool:
 
         if not self._ace_poolboy_running:
             self._ace_poolboy_running = True
-            logger.info("Starting ace_poolboy_thread (%s)", self._instance_id)
-        threading.Thread(target=ace_poolboy_thread, name="AcePool: ace_poolboy", daemon=True).start()
+            logger.info("Starting ace_poolboy_thread [%s]", self._instance_id)
+
+        logger.debug("Initializing AcePool thread [%s]", self._instance_id)
+        self.stop_all_threads()
+        thread = threading.Thread(target=ace_poolboy_thread, name="AcePool: ace_poolboy", daemon=True)
+        thread.start()
+        self._threads.append(thread)
+
+    def stop_all_threads(self) -> None:
+        """Stop all threads in the AcePool."""
+        if len(self._threads) == 0:
+            return
+
+        logger.info("Stopping all %s threads [%s]", self.__class__.__name__, self._instance_id)
+        self._stop_event.set()
+        for thread in self._threads:
+            if thread.is_alive():
+                thread.join(timeout=60)
+
+        self._stop_event.clear()
