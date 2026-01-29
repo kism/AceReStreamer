@@ -1,6 +1,6 @@
 [project]
 name = "acere"
-version = "1.1.1b3"
+version = "1.1.1b4"
 description = ""
 requires-python = ">=3.14,<4.0"
 dependencies = [
@@ -33,7 +33,7 @@ type = [
     "types-psutil>=7.0.0.20250601",
     "types-pytz>=2025.2.0.20250516",
 ]
-lint = ["ruff"]
+lint = ["ruff", "memray"]
 test = [
     "pytest >=9.0",
     "pytest-cov",

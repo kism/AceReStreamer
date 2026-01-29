@@ -21,7 +21,7 @@ def create_access_token(subject: str | Any, expires_delta: timedelta) -> str:  #
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
-        return ph.verify(hashed_password, plain_password)
+        return ph.verify(hash=hashed_password, password=plain_password)
     except VerifyMismatchError:
         logger.debug("User entered the wrong password")
         return False

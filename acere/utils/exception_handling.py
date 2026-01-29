@@ -2,6 +2,8 @@
 
 from typing import TYPE_CHECKING
 
+from aiohttp import ClientResponseError
+
 if TYPE_CHECKING:
     from logging import Logger as CustomLogger
 
@@ -13,15 +15,26 @@ else:
     HttpUrl = object
 
 
-def log_aiohttp_exception(logger: CustomLogger, site_url: HttpUrl, exception: ClientError) -> None:
+def _get_client_error_status(e: ClientError) -> str:
+    if isinstance(e, ClientResponseError):
+        return f"status: {e.status} {e.message}"
+    return ""
+
+
+def log_aiohttp_exception(
+    logger: CustomLogger,
+    url: HttpUrl | str,
+    exception: ClientError | TimeoutError,
+    message: str = "",
+) -> None:
     """Log details of an aiohttp exception."""
     error_name = type(exception).__name__
-    error_status = getattr(exception, "status", "N/A")
-    error_message = getattr(exception, "message", str(exception))
+    error_status = ""
 
-    msg = f"aiohttp, error scraping: {site_url}\n"
-    msg += error_name
-    msg += f" status: {error_status}"
-    msg += f" message: {error_message}"
+    if isinstance(exception, ClientError):
+        error_status = _get_client_error_status(exception)
+
+    msg = f"aiohttp {error_name} {message} {url}".replace("  ", " ")
+    msg += f"\n{error_status}" if error_status else ""
 
     logger.error(msg)

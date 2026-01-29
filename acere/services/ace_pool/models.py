@@ -1,11 +1,13 @@
 """Pydantic models for the AcePool service."""
 
 from datetime import datetime, timedelta
+from typing import Literal
 
 from pydantic import BaseModel, HttpUrl, field_serializer
 from typing_extensions import TypedDict
 
 
+# region Ace Middleware
 class AceMiddlewareResponse(BaseModel):
     """Response data from the AceStream middleware."""
 
@@ -26,7 +28,7 @@ class AceMiddlewareResponseFull(BaseModel):
     error: str | None
 
 
-# region Stat
+# region Ace Stat
 # This is to match the response from the AcePool API for the stat endpoint.
 class AcePoolStatResponseDiskCache(BaseModel):
     """Matches the disk cache response from the AcePool API."""
@@ -78,6 +80,18 @@ class AcePoolStatResponse(BaseModel):
     livepos: AcePoolStatResponseLivePos | None = None
 
 
+# region Ace Version
+class AceVersionResult(BaseModel):
+    code: int
+    version: str
+    platform: Literal["win32", "linux", "android"]
+
+
+class AceVersionResponse(BaseModel):
+    result: AceVersionResult
+    error: None = None
+
+
 class AcePoolStat(BaseModel):
     """Matches the stat response from the AcePool API."""
 
@@ -100,17 +114,17 @@ class AcePoolEntryForAPI(BaseModel):
     date_started: datetime
     ace_hls_m3u8_url: HttpUrl | None = None
 
-    @field_serializer("time_until_unlock")
+    @field_serializer("time_until_unlock", mode="plain")
     def serialize_time_until_unlock(self, time_until_unlock: timedelta) -> int:
         """Serialize the time until unlock as a timestamp."""
-        return time_until_unlock.seconds
+        return int(time_until_unlock.total_seconds())
 
-    @field_serializer("time_running")
+    @field_serializer("time_running", mode="plain")
     def serialize_time_running(self, time_running: timedelta) -> int:
         """Serialize the time running as a timestamp."""
-        return time_running.seconds
+        return int(time_running.total_seconds())
 
-    @field_serializer("ace_hls_m3u8_url")
+    @field_serializer("ace_hls_m3u8_url", mode="plain")
     def serialize_ace_hls_m3u8_url(self, ace_hls_m3u8_url: HttpUrl | None) -> str | None:
         """Serialize the Ace HLS M3U8 URL as a string."""
         return ace_hls_m3u8_url.encoded_string() if ace_hls_m3u8_url else None
@@ -120,7 +134,7 @@ class AcePoolEntryForAPI(BaseModel):
 class AcePoolForApi(BaseModel):
     """Model for the AcePool API response."""
 
-    ace_version: str
+    ace_version: AceVersionResult | None
     ace_address: HttpUrl | None
     max_size: int
     healthy: bool

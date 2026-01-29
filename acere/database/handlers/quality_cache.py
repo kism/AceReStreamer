@@ -28,19 +28,6 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
     _cache: ClassVar[dict[str, Quality]] = {}
     _currently_checking_quality = False
 
-    def get_all(self) -> dict[str, Quality]:
-        """Get all entries as a dict."""
-        with self._get_session() as session:
-            result = session.exec(select(AceQualityCache)).all()
-            return {
-                entry.content_id: Quality(
-                    quality=entry.quality,
-                    has_ever_worked=entry.has_ever_worked,
-                    m3u_failures=entry.m3u_failures,
-                )
-                for entry in result
-            }
-
     def get_quality(self, content_id: str) -> Quality:
         """Get the quality for a given content_id."""
         if content_id in self._cache:
@@ -59,6 +46,7 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
             self.set_quality(content_id=content_id, quality=new_quality)
             return new_quality
 
+    # region SET
     def set_quality(self, content_id: str, quality: Quality) -> None:
         """Set the quality for a given content_id."""
         self._cache[content_id] = quality
@@ -77,19 +65,6 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
             result.has_ever_worked = quality.has_ever_worked
             result.m3u_failures = quality.m3u_failures
 
-            session.commit()
-
-    def clean_table(self) -> None:
-        """Clean the quality cache table."""
-        with self._get_session() as session:
-            all_entries = session.exec(select(AceQualityCache)).all()
-            for entry in all_entries:
-                if not check_valid_content_id_or_infohash(entry.content_id):
-                    logger.error(
-                        "Found invalid content_id in quality cache: %s",
-                        entry.content_id,
-                    )
-                    session.delete(entry)
             session.commit()
 
     def increment_quality(self, content_id: str, m3u_playlist: str) -> None:
@@ -137,11 +112,12 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
                     self._currently_checking_quality = False
                     return
 
+                with self._get_session() as session:
+                    all_quality = list(session.exec(select(AceQualityCache)).all())
+
                 ace_streams_never_worked = len(
-                    [  # We also check if the quality is zero, since maybe it started working
-                        content_id
-                        for content_id, stream in self.get_all().items()
-                        if not stream.has_ever_worked or stream.quality == 0
+                    [  # We also check if the quality is zero, since maybe it worked but is now dead
+                        stream for stream in all_quality if not stream.has_ever_worked or stream.quality == 0
                     ]
                 )
 
@@ -183,3 +159,17 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
         task.add_done_callback(_async_background_tasks.discard)
 
         return True
+
+    # region Helpers
+    def clean_table(self) -> None:
+        """Clean the quality cache table."""
+        with self._get_session() as session:
+            all_entries = session.exec(select(AceQualityCache)).all()
+            for entry in all_entries:
+                if not check_valid_content_id_or_infohash(entry.content_id):
+                    logger.error(
+                        "Found invalid content_id in quality cache: %s",
+                        entry.content_id,
+                    )
+                    session.delete(entry)
+            session.commit()

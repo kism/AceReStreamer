@@ -55,7 +55,7 @@ def add_epg(body_json: EPGInstanceConf | list[EPGInstanceConf]) -> None:
         )
 
     epg_handler = get_epg_handler()
-    if not isinstance(body_json, (list)):
+    if not isinstance(body_json, list):
         body_json = [body_json]
 
     for epg_instance in body_json:

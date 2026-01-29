@@ -12,10 +12,7 @@ from acere.utils.logger import get_logger
 
 if TYPE_CHECKING:
     from acere.core.config.scraper import TitleFilter
-
-    from .models import FoundAceStreamAPI
 else:
-    FoundAceStreamAPI = object
     TitleFilter = object
 
 logger = get_logger(__name__)
@@ -48,8 +45,8 @@ def cleanup_candidate_title(title: str) -> str:
     for prefix in ACE_URL_PREFIXES_CONTENT_ID:
         title = title.removeprefix(prefix)
 
-    title = title.split("\n")[0].strip()  # Remove any newlines
-    title = ACE_ID_PATTERN.sub("", title).strip()  # Remove any ace 40 digit hex ids from the title
+    title = title.split("\n")[0]  # Remove any newlines
+    title = ACE_ID_PATTERN.sub("", title)  # Remove any ace 40 digit hex ids from the title
     return title.strip()
 
 
@@ -64,17 +61,14 @@ def candidates_regex_cleanup(candidate_titles: list[str], regex_list: list[str])
     for title in candidate_titles:
         wip_title = title
         for regex_str in regex_list:
-            compiled_regex = COMPILED_REGEX_CACHE.get(regex_str)
-            if compiled_regex is None:
-                compiled_regex = re.compile(regex_str)
-                COMPILED_REGEX_CACHE[regex_str] = compiled_regex
+            if regex_str not in COMPILED_REGEX_CACHE:
+                COMPILED_REGEX_CACHE[regex_str] = re.compile(regex_str)
 
+            compiled_regex = COMPILED_REGEX_CACHE[regex_str]
             wip_title = compiled_regex.sub("", wip_title).strip()
 
-        wip_title = wip_title.strip()
-
         # If name is not empty or only non-alphanumeric characters, add it
-        if wip_title != "" and not all(not c.isalnum() for c in wip_title):
+        if wip_title and not all(not c.isalnum() for c in wip_title):
             new_candidate_titles.append(wip_title)
             if wip_title != title:
                 logger.trace("Regex cleaned up title from '%s' to '%s'", title, wip_title)
@@ -160,9 +154,7 @@ def check_title_allowed(title: str, title_filter: TitleFilter) -> bool:
 
 def trim_title(title: str) -> str:
     """Trim the title to a maximum length, only really needs to be used for HTML titles."""
-    if len(title) > STREAM_TITLE_MAX_LENGTH:
-        return title[:STREAM_TITLE_MAX_LENGTH].strip()
-    return title.strip()
+    return title[:STREAM_TITLE_MAX_LENGTH].strip() if len(title) > STREAM_TITLE_MAX_LENGTH else title.strip()
 
 
 def find_tvg_logo_image(title: str) -> str:
@@ -188,9 +180,9 @@ def get_title_override_from_content_id(content_id: str | None) -> str | None:
 
 def get_tvg_id_from_title(title: str) -> str:
     """Extract the TVG ID from the title."""
-    country_code_regex = COUNTRY_CODE_PATTERN.search(title)
-    if country_code_regex and isinstance(country_code_regex.group(1), str):
-        country_code = country_code_regex.group(1)
+    country_code_match = COUNTRY_CODE_PATTERN.search(title)
+    if country_code_match:
+        country_code = country_code_match.group(1)
         title_no_cc = title.replace(f"[{country_code}]", "").strip()
         return f"{title_no_cc}.{country_code.lower()}"
     return ""

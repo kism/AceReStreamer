@@ -9,7 +9,6 @@ from acere.api.deps import (
 from acere.instances.ace_quality import get_quality_handler
 from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.epg import get_epg_handler
-from acere.services.ace_quality import Quality
 from acere.services.scraper.models import FoundAceStream, FoundAceStreamAPI, ManuallyAddedAceStream
 from acere.services.scraper.name_processor import get_tvg_id_from_title, populate_group_title
 from acere.utils.api_models import MessageResponseModel
@@ -70,8 +69,8 @@ def streams() -> list[FoundAceStreamAPI]:
 
     streams_api: list[FoundAceStreamAPI] = []
     epg_handler = get_epg_handler()
+    quality_handler = get_quality_handler()
     for stream in streams:
-        quality_handler = get_quality_handler()
         quality = quality_handler.get_quality(stream.content_id)
 
         program_title, program_description = epg_handler.get_current_program(stream.tvg_id)
@@ -115,13 +114,6 @@ def add_stream(
     )
 
     return MessageResponseModel(message="Stream added successfully")
-
-
-@router.get("/health")
-def health() -> dict[str, Quality]:
-    """API endpoint to get the streams."""
-    quality_handler = get_quality_handler()
-    return quality_handler.get_all()
 
 
 @router.post("/check", dependencies=[Depends(get_current_active_superuser)])

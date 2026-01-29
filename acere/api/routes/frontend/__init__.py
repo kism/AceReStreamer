@@ -16,9 +16,9 @@ router = APIRouter(tags=["Frontend"])
 
 GENERATED_FRONTEND_PATHS = Path(__file__).parent / "generated_frontend_paths.json"
 
-
+# If there is no frontend host, we assume we are the frontend host
+# Generally we just use a separate host for dev with vite
 if settings.FRONTEND_HOST == "":
-    # If a frontend host is set, we assume it's a separate frontend server (e.g., Vite dev server or deployed frontend)
     logger.debug("Frontend: Serving from FastAPI.")
 
     INDEX_HTML = DIST_DIR / "index.html"
@@ -76,13 +76,17 @@ if settings.FRONTEND_HOST == "":
 
     @router.get(
         "/assets/{full_path:path}",
-        response_class=HTMLResponse,
         name="frontend_catch_all",
     )
     def get_frontend_catch_all(full_path: str) -> Response:
         """Catch all route to serve frontend files."""
         requested_path = DIST_DIR / full_path
         relative_path = requested_path.relative_to(DIST_DIR)
+
+        # Security: Ensure the path doesn't escape DIST_DIR TODO: TEST
+        if not str(relative_path.resolve()).startswith(str(DIST_DIR.resolve())):
+            raise HTTPException(status_code=404, detail="File not found")
+
         if relative_path in ALL_VITE_STATIC:
             content, mime_type = ALL_VITE_STATIC[relative_path]
             return Response(content=content, media_type=mime_type)

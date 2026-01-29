@@ -8,7 +8,7 @@ from sqlmodel import select
 from acere.database.models import AceStreamDBEntry
 from acere.instances.config import settings
 from acere.instances.xc_category import get_xc_category_db_handler
-from acere.services.xc.models import XCStream
+from acere.services.xc.models import XCCategory, XCStream
 from acere.utils.logger import get_logger
 from acere.utils.m3u8 import create_extinf_line
 
@@ -100,10 +100,12 @@ class AceStreamDBHandler(BaseDatabaseHandler):
 
     def get_content_id_by_tvg_id(self, tvg_id: str) -> str | None:
         """Get the content ID by TVG ID."""
-        for stream in self.get_streams():
-            if stream.tvg_id == tvg_id:
-                return stream.content_id
-        return None
+        with self._get_session() as session:
+            statement = select(AceStreamDBEntry).where(AceStreamDBEntry.tvg_id == tvg_id)
+            result = session.exec(statement).first()
+            if result:
+                return result.content_id
+            return None
 
     # region Get API XC
     def get_content_id_by_xc_id(self, xc_id: int) -> str | None:
@@ -155,6 +157,7 @@ class AceStreamDBHandler(BaseDatabaseHandler):
 
         return m3u8_content + "\n".join(sorted(iptv_set))
 
+    # region GET IPTV XC
     def get_streams_as_iptv_xc(
         self,
         xc_category_filter: int | None,
@@ -188,6 +191,13 @@ class AceStreamDBHandler(BaseDatabaseHandler):
             current_stream_number += 1
 
         return result_streams
+
+    def get_xc_categories(self) -> list[XCCategory]:
+        """Get all XC categories from the database."""
+        handler = get_xc_category_db_handler()
+        categories_in_use = {stream.category_id for stream in self.get_streams_as_iptv_xc(xc_category_filter=None)}
+        categories_in_use_int = {int(cat_id) for cat_id in categories_in_use if cat_id.isdigit()}
+        return handler.get_all_categories_api(categories_in_use_int)
 
     # region Helpers
     def _mark_alternate_streams(self, streams: list[AceStreamDBEntry]) -> None:

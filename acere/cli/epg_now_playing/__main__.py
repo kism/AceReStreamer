@@ -72,7 +72,7 @@ def main() -> None:
         try:
             epg = EPG(
                 EPGInstanceConf(
-                    url=HttpUrl(f"http://localhost/{epg_file.resolve()}"),
+                    url=HttpUrl("http://localhost/epgcli"),  # Dummy URL
                     tvg_id_overrides=find_overrides_match_for_file(epg_file),
                 )
             )

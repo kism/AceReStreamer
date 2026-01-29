@@ -1,7 +1,8 @@
 """Object for adhoc playlist creation."""
 
+import asyncio
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from pydantic import HttpUrl
 
@@ -49,9 +50,33 @@ class PlaylistCreator:
         await self._create_playlists(new_streams=found_streams)
 
     async def _scrape_remote(self) -> list[FoundAceStream]:
-        found_html_streams = await self._html_scraper.scrape_sites(sites=settings.scraper.html)
-        found_iptv_streams = await self._iptv_scraper.scrape_iptv_playlists(sites=settings.scraper.iptv_m3u8)
-        found_api_streams = await self._api_scraper.scrape_api_endpoints(sites=settings.scraper.api)
+        tasks = [
+            self._html_scraper.scrape_sites(sites=settings.scraper.html),
+            self._iptv_scraper.scrape_iptv_playlists(sites=settings.scraper.iptv_m3u8),
+            self._api_scraper.scrape_api_endpoints(sites=settings.scraper.api),
+        ]
+
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        found_html_streams: list[FoundAceStream] = []
+        found_iptv_streams: list[FoundAceStream] = []
+        found_api_streams: list[FoundAceStream] = []
+
+        if isinstance(results[0], Exception):
+            logger.error("Error occurred during HTML scraping: %s", results[0])
+        else:
+            found_html_streams = cast("list[FoundAceStream]", results[0])
+
+        if isinstance(results[1], Exception):
+            logger.error("Error occurred during IPTV scraping: %s", results[1])
+        else:
+            found_iptv_streams = cast("list[FoundAceStream]", results[1])
+
+        if isinstance(results[2], Exception):
+            logger.error("Error occurred during API scraping: %s", results[2])
+        else:
+            found_api_streams = cast("list[FoundAceStream]", results[2])
+
         logger.info(
             "Scraper has found streams: %d from HTML, %d from IPTV, %d from API",
             len(found_html_streams),
@@ -124,6 +149,14 @@ class PlaylistCreator:
             logger.error("Infohash URI scheme not found in M3U_URI_SCHEMES, the developer needs to fix this.")
             return
 
+        infohash_streams = len([s for s in streams if s.infohash is not None])
+        content_id_streams = len([s for s in streams if s.content_id != ""])
+        logger.info(
+            "Creating playlists with %d infohash streams and %d content ID streams",
+            infohash_streams,
+            content_id_streams,
+        )
+
         for uri_scheme, prefix in M3U_URI_SCHEMES.items():
             playlist_path = self._playlists_dir / f"{settings.scraper.playlist_name}-{uri_scheme}.m3u"
             with playlist_path.open("w", encoding="utf-8") as m3u_file:
@@ -133,7 +166,7 @@ class PlaylistCreator:
                     epg_str = f'x-tvg-url="{",".join(epg_url.encoded_string() for epg_url in epg_urls)}"'
 
                 m3u_file.write(f"#EXTM3U {epg_str}\n")
-                logger.debug("Creating playlist %s with %d streams", playlist_path.name, len(streams))
+                logger.debug("Creating playlist %s", playlist_path.name)
                 for stream in streams:
                     # This logic is for adhoc scraper not chaning playlists unless they are not found recently
                     scraped_within_minute = datetime.now(tz=UTC) - stream.last_scraped_time < _TIMEDELTA_FRESH
@@ -142,9 +175,9 @@ class PlaylistCreator:
                     top_line = create_extinf_line(
                         stream, tvg_url_base=settings.scraper.tvg_logo_external_url, last_found=last_scraped_time
                     )
-                    if stream.infohash is not None and uri_scheme == infohash_scheme:
+                    if uri_scheme == infohash_scheme and stream.infohash is not None:
                         m3u_file.write(top_line)
                         m3u_file.write(f"{prefix}{stream.infohash}\n")
-                    elif stream.content_id != "" and uri_scheme != infohash_scheme:
+                    elif uri_scheme != infohash_scheme and stream.content_id != "":
                         m3u_file.write(top_line)
                         m3u_file.write(f"{prefix}{stream.content_id}\n")

@@ -2,6 +2,7 @@ import { Tabs, VStack } from "@chakra-ui/react"
 import { createFileRoute } from "@tanstack/react-router"
 import ConfigManagement from "@/components/Admin/ConfigManagement"
 import EPGManagement from "@/components/Admin/EPGManagement"
+import HealthManagement from "@/components/Admin/HealthManagement"
 import RemoteConfigManagement from "@/components/Admin/RemoteConfigManagement"
 import ScraperManagement from "@/components/Admin/ScraperManagement"
 import StreamManagement from "@/components/Admin/StreamManagement"
@@ -20,6 +21,7 @@ const tabsConfig = [
     title: "Remote Config",
     component: RemoteConfigManagement,
   },
+  { value: "health", title: "Health", component: HealthManagement },
 ]
 
 export const Route = createFileRoute("/_layout/admin")({

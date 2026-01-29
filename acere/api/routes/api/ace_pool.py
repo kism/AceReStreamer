@@ -43,7 +43,7 @@ def get_by_content_id(content_id: str) -> AcePoolEntryForAPI:
     if result is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail=MessageResponseModel(message=content_id_not_found_tmp_str.format(content_id=content_id)),
+            detail=content_id_not_found_tmp_str.format(content_id=content_id),
         )
 
     return result
@@ -57,7 +57,7 @@ async def delete_by_content_id(content_id: str) -> MessageResponseModel:
     if instance is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail=MessageResponseModel(message=content_id_not_found_tmp_str.format(content_id=content_id)),
+            detail=content_id_not_found_tmp_str.format(content_id=content_id),
         )
 
     await ace_pool.remove_instance_by_content_id(content_id, caller="API")
@@ -66,20 +66,21 @@ async def delete_by_content_id(content_id: str) -> MessageResponseModel:
 
 @router.get("/pid/{pid}")
 def get_by_pid(pid: str) -> AcePoolEntryForAPI:
-    """API endpoint to get the Ace pool."""
+    """API endpoint to get an Ace instance by PID."""
     ace_pool = get_ace_pool()
-    if not pid.isdigit():
+    try:
+        pid_int = int(pid)
+    except ValueError:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND,
-            detail=MessageResponseModel(message=pid_not_found_tmp_str.format(pid=pid)),
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail=pid_not_found_tmp_str.format(pid=pid),
         )
 
-    pid_int = int(pid)
     instance = ace_pool.get_instance_by_pid_api(pid_int)
     if instance is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail=MessageResponseModel(message=pid_not_found_tmp_str.format(pid=pid)),
+            detail=pid_not_found_tmp_str.format(pid=pid),
         )
 
     return instance
@@ -101,7 +102,7 @@ async def stats_by_content_id(content_id: str) -> AcePoolStat:
     if ace_pool_stat is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail=MessageResponseModel(message=content_id_not_found_tmp_str.format(content_id=content_id)),
+            detail=content_id_not_found_tmp_str.format(content_id=content_id),
         )
 
     return ace_pool_stat
@@ -113,18 +114,18 @@ async def stats_by_pid(pid: str) -> AcePoolStat:
     ace_pool = get_ace_pool()
     try:
         pid_int = int(pid)
-        ace_pool_stat = await ace_pool.get_stats_by_pid(pid_int)
-
-        if ace_pool_stat is None:
-            raise HTTPException(
-                status_code=HTTPStatus.NOT_FOUND,
-                detail=MessageResponseModel(message=pid_not_found_tmp_str.format(pid=pid)),
-            )
-
     except ValueError:
         raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail=pid_not_found_tmp_str.format(pid=pid),
+        )
+
+    ace_pool_stat = await ace_pool.get_stats_by_pid(pid_int)
+
+    if ace_pool_stat is None:
+        raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail=MessageResponseModel(message=pid_not_found_tmp_str.format(pid=pid)),
+            detail=pid_not_found_tmp_str.format(pid=pid),
         )
 
     return ace_pool_stat

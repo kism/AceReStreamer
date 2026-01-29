@@ -34,13 +34,14 @@ def main() -> None:
             console.print(f"User '{username}' not found.")
             return
 
-        new_password = input(f"Enter the new password for user '{username}': ").strip()
+        new_password = prompt(f"Enter the new password for user '{username}':")
         if not new_password:
             console.print("Password cannot be empty.")
             return
 
         user_update = UserUpdate(password=new_password)
         update_user(session=session, db_user=user, user_in=user_update)
+        session.commit()
         console.print(f"Password for user '{username}' has been reset successfully.")
 
 

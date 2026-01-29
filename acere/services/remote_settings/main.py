@@ -10,6 +10,7 @@ from acere.core.config import AceReStreamerConf, ConfigExport
 from acere.instances.config import settings
 from acere.instances.epg import get_epg_handler
 from acere.instances.scraper import get_ace_scraper
+from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.logger import get_logger
 
 from .models import RemoteSettingsURLGetModel
@@ -91,8 +92,7 @@ class RemoteSettingsFetcher:
                     resp.raise_for_status()
                     data = await resp.text()
             except (aiohttp.ClientError, TimeoutError) as e:
-                self._status = e.__class__.__name__
-                logger.error("Failed to fetch remote settings: %s", e)
+                log_aiohttp_exception(logger, settings.REMOTE_SETTINGS_URL, e, "Failed to fetch remote settings")
                 return
             except Exception as e:
                 self._status = e.__class__.__name__
@@ -145,8 +145,12 @@ class RemoteSettingsFetcher:
 
         logger.info("Stopping all %s threads [%s]", self.__class__.__name__, self._instance_id)
         self._stop_event.set()
-        for thread in self._threads:
+        for thread in self._threads.copy():
             if thread.is_alive():
                 thread.join(timeout=60)
+                if not thread.is_alive():
+                    self._threads.remove(thread)
+                else:
+                    logger.warning("Thread %s did not stop in time.", thread.name)
 
         self._stop_event.clear()

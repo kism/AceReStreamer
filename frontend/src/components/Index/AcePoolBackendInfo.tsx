@@ -72,12 +72,12 @@ export function AcePoolBackendInfo({
               textAlign={"center"}
               color={
                 !acePoolData.ace_version ||
-                acePoolData.ace_version === "unknown"
+                acePoolData.ace_version.version === "unknown"
                   ? "fg.error"
                   : undefined
               }
             >
-              {acePoolData.ace_version || "N/A"}
+              {acePoolData.ace_version?.version || "N/A"}
             </TableCell>
             <TableCell textAlign={"center"}>
               {acePoolData.ace_instances.length}/{acePoolData.max_size ?? "N/A"}

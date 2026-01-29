@@ -7,7 +7,6 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import HttpUrl
 
-from acere.database.handlers.category_xc import CategoryXCCategoryIDDatabaseHandler
 from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.config import settings
 from acere.services.xc.helpers import (
@@ -28,7 +27,6 @@ from acere.utils.logger import get_logger
 logger = get_logger(__name__)
 
 router = APIRouter(tags=["Xtream Codes"])
-category_xc_category_id_mapping = CategoryXCCategoryIDDatabaseHandler()
 
 
 def _populate_xc_api_response(
@@ -77,7 +75,7 @@ def xc_iptv_router(
 
     Actions: get_live_categories, get_live_streams, get_vod_categories, get_vod_streams, get_series_categories, get_series.
     """  # noqa: E501
-    stream_token = check_xc_auth(username=username, stream_token=password)
+    check_xc_auth(username=username, stream_token=password)
 
     if action == "get_live_categories":
         return _get_live_categories()
@@ -99,34 +97,20 @@ def xc_iptv_router(
             status_code=HTTPStatus.BAD_REQUEST,
             detail=f"Unknown action '{action}'",
         )
-    return _populate_xc_api_response(username=username, password=stream_token)
+    return _populate_xc_api_response(username=username, password=password)
 
 
 def _get_live_categories() -> list[XCCategory]:
     """Get live TV categories."""
     # Get all the categories that are actually in use
-    handler = get_ace_streams_db_handler()
-    categories_in_use = {stream.category_id for stream in handler.get_streams_as_iptv_xc(None)}
-    # Convert them to integers because the XC 'spec' says they should be strings, despite being numeric
-    categories_in_use_int = {int(cat_id) for cat_id in categories_in_use if cat_id.isdigit()}
-    # Get a list of XCCategory objects
-    return category_xc_category_id_mapping.get_all_categories_api(categories_in_use_int)
+    return get_ace_streams_db_handler().get_xc_categories()
 
 
 def _get_live_streams(category_id: str, token: str) -> list[XCStream]:
     """Get live TV streams."""
     handler = get_ace_streams_db_handler()
-    xc_category = int(category_id) if category_id.isdigit() else None
+    xc_category = int(category_id) if category_id and category_id.isdigit() else None
     return handler.get_streams_as_iptv_xc(xc_category, token=token)
-
-
-def _get_unknown_action(action: str) -> MessageResponseModel:
-    """Handle unknown actions."""
-    logger.warning("Unknown action '%s' in /player_api.php", action)
-    return MessageResponseModel(message="Unknown action")
-
-
-# endregion /player_api.php
 
 
 # region /status.php

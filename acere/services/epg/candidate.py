@@ -1,14 +1,14 @@
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
+from lxml import etree
+
 from acere.utils.logger import get_logger
 
 if TYPE_CHECKING:
-    from lxml import etree
     from pydantic import HttpUrl
 else:
     HttpUrl = object
-    etree = object
 
 logger = get_logger(__name__)
 
@@ -69,23 +69,28 @@ class EPGCandidate:
     def __init__(self, tvg_id: str, epg_url: HttpUrl) -> None:
         self.tvg_id = tvg_id
         self.epg_url = epg_url
-        self._programs: list[etree._Element] = []
-        self._channels: list[etree._Element] = []
+        self._programs_bytes: list[bytes] = []
+        self._channels_bytes: list[bytes] = []
         self._score: int | None = None  # Cache
 
     def add_program(self, program: etree._Element) -> None:
         """Add a program to the candidate."""
-        self._programs.append(program)
+        # Serialize to bytes immediately to reduce memory
+        self._programs_bytes.append(etree.tostring(program))
         self._score = None
 
     def add_channel(self, channel: etree._Element) -> None:
         """Add a channel to the candidate."""
-        self._channels.append(channel)
+        # Serialize to bytes immediately to reduce memory
+        self._channels_bytes.append(etree.tostring(channel))
         self._score = None
 
     def get_channels_programs(self) -> list[etree._Element]:
         """Get all channels and programs for the candidate."""
-        return self._channels + self._programs
+        # Deserialize only when needed
+        channels = [etree.fromstring(b) for b in self._channels_bytes]
+        programs = [etree.fromstring(b) for b in self._programs_bytes]
+        return channels + programs
 
     def get_epg_score(self) -> int:
         """Get the EPG score for the candidate."""
@@ -98,7 +103,9 @@ class EPGCandidate:
         n_programs_with_images = 0
         current_time = datetime.now(tz=UTC)
 
-        for program in self._programs:
+        # Deserialize programs only for scoring
+        for program_bytes in self._programs_bytes:
+            program = etree.fromstring(program_bytes)
             start_time_str = program.get("start")
             if start_time_str:
                 try:

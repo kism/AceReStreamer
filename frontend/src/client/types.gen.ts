@@ -26,7 +26,7 @@ export type AcePoolEntryForAPI = {
  * Model for the AcePool API response.
  */
 export type AcePoolForApi = {
-    ace_version: string;
+    ace_version: (AceVersionResult | null);
     ace_address: (string | null);
     max_size: number;
     healthy: boolean;
@@ -143,6 +143,14 @@ export type AceScraperSourceApi = {
 
 export type type = 'html' | 'iptv' | 'api';
 
+export type AceVersionResult = {
+    code: number;
+    version: string;
+    platform: 'win32' | 'linux' | 'android';
+};
+
+export type platform = 'win32' | 'linux' | 'android';
+
 export type Body_Login_login_access_token = {
     grant_type?: (string | null);
     username: string;
@@ -168,17 +176,15 @@ export type ConfigExport_Output = {
 export type EPGApiHandlerHealthResponse = {
     time_until_next_update: number;
     tvg_ids: Array<(string)>;
-    epgs: Array<EPGApiHealthResponse>;
+    epgs: {
+        [key: string]: EPGApiHealthResponse;
+    };
 };
 
 /**
  * Model for EPG API response.
  */
 export type EPGApiHealthResponse = {
-    url: string;
-    overrides: {
-        [key: string]: (string);
-    };
     time_since_last_updated: number;
     time_until_next_update: number;
 };
@@ -294,16 +300,6 @@ export type PrivateUserCreate = {
     password: string;
     full_name: string;
     is_verified?: boolean;
-};
-
-/**
- * Model for tracking quality of a stream.
- */
-export type Quality = {
-    quality?: number;
-    has_ever_worked?: boolean;
-    m3u_failures?: number;
-    last_message?: string;
 };
 
 export type RemoteSettingsURLGetModel = {
@@ -628,10 +624,6 @@ export type StreamsAddStreamData = {
 };
 
 export type StreamsAddStreamResponse = (MessageResponseModel);
-
-export type StreamsHealthResponse = ({
-    [key: string]: Quality;
-});
 
 export type StreamsCheckResponse = (MessageResponseModel);
 

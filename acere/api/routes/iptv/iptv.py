@@ -13,7 +13,6 @@ logger = get_logger(__name__)
 router = APIRouter(tags=["Media/IPTV"])
 
 
-# region /iptv
 @router.get("/iptv", name="iptv_m3u8_1")
 @router.get("/iptv.m3u", name="iptv_m3u_2")
 @router.get("/iptv.m3u8", name="iptv_m3u8_3")

@@ -8,6 +8,7 @@ import pytest
 from pydantic import HttpUrl
 
 from acere.services.ace_pool.entry import AcePoolEntry
+from acere.services.ace_pool.models import AceVersionResponse, AceVersionResult
 from acere.services.ace_pool.pool import AcePool
 from acere.utils.ace import get_middleware_url
 from tests.test_utils.ace import (
@@ -25,9 +26,9 @@ else:
 
 def fill_pool(pool: AcePool) -> None:
     """Fill the AcePool to its maximum size for testing."""
-    ace_address = pool.ace_address
-    for i in range(1, pool.max_size + 1):
-        pool.ace_instances[str(i)] = AcePoolEntry(
+    ace_address = pool._ace_address
+    for i in range(1, pool._max_size + 1):
+        pool._ace_instances[str(i)] = AcePoolEntry(
             ace_pid=i,
             ace_address=ace_address,
             content_id=get_random_content_id(),
@@ -52,10 +53,10 @@ async def test_ace_pool_initialization(mocker: MockerFixture) -> None:
 
     # Verify the pool is initialized with correct attributes
     assert pool._instance_id == "test"
-    assert pool.ace_instances == {}
-    assert pool.healthy is False
-    assert pool.ace_version == "unknown"
-    assert pool.max_size == 4  # Default from settings
+    assert pool._ace_instances == {}
+    assert pool._healthy is False
+    assert pool._ace_version is None
+    assert pool._max_size == 4  # Default from settings
 
     # Verify the poolboy thread was started
     mock_thread.assert_called_once()
@@ -65,7 +66,9 @@ async def test_ace_pool_initialization(mocker: MockerFixture) -> None:
 async def test_check_ace_running_healthy(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test check_ace_running when AceStream is healthy."""
     # Create mock response data
-    mock_response_data = {"result": {"version": "3.1.49"}}
+    mock_response_data = AceVersionResponse(
+        result=AceVersionResult(version="3.1.1", platform="linux", code=0)
+    ).model_dump()
 
     # Create fake session with the expected URL
     # Note: URL has double slash because ace_address has trailing slash
@@ -86,8 +89,9 @@ async def test_check_ace_running_healthy(monkeypatch: pytest.MonkeyPatch) -> Non
 
     # Verify the result
     assert result is True
-    assert pool.healthy is True
-    assert pool.ace_version == "3.1.49"
+    assert pool._healthy is True
+    assert pool._ace_version is not None
+    assert pool._ace_version.version == "3.1.1"
 
 
 @pytest.mark.asyncio
@@ -103,8 +107,8 @@ async def test_check_ace_running_unhealthy(monkeypatch: pytest.MonkeyPatch) -> N
 
     # Verify the result
     assert result is False
-    assert pool.healthy is False
-    assert pool.ace_version == "unknown"
+    assert pool._healthy is False
+    assert pool._ace_version is None
 
 
 @pytest.mark.asyncio
@@ -120,7 +124,7 @@ async def test_get_available_instance_number() -> None:
 async def test_get_available_instance_number_full_pool_no_locked_in() -> None:
     """Test getting an available instance number when pool is full, no instance locked in."""
     pool = AcePool(instance_id="test")
-    pool.max_size = 2  # Set max size to 2 for testing
+    pool._max_size = 2  # Set max size to 2 for testing
 
     fill_pool(pool)
 
@@ -137,7 +141,7 @@ async def test_get_available_instance_number_full_pool() -> None:
 
     datetime_now = datetime.now(UTC)
 
-    for instance in pool.ace_instances.values():
+    for instance in pool._ace_instances.values():
         instance.date_started = datetime_now - timedelta(minutes=60)
         instance.date_last_used = datetime_now - timedelta(minutes=1)
 
@@ -167,10 +171,10 @@ async def test_get_set_valid(monkeypatch: pytest.MonkeyPatch) -> None:
     pool = AcePool(instance_id="test")
 
     middleware_url = get_middleware_url(
-        ace_url=pool.ace_address,
+        ace_url=pool._ace_address,
         content_id=content_id,
         ace_pid=1,
-        transcode_audio=pool.transcode_audio,
+        transcode_audio=pool._transcode_audio,
     )
 
     fake_session = FakeSession(
@@ -198,17 +202,17 @@ async def test_get_set_valid(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("acere.services.ace_pool.entry.aiohttp.ClientSession", lambda **kwargs: fake_session)
 
     # Mark pool as healthy so stats queries work
-    pool.healthy = True
+    pool._healthy = True
 
     url_1 = await pool.get_instance_hls_url_by_content_id(content_id)
     url_2 = await pool.get_instance_hls_url_by_content_id(content_id)
 
     assert url_1 == url_2
 
-    assert len(pool.ace_instances) == 1
+    assert len(pool._ace_instances) == 1
 
     # Always gets the first instance in the dict
-    instance = pool.ace_instances.values().__iter__().__next__()
+    instance = pool._ace_instances.values().__iter__().__next__()
 
     instance_by_pid = pool.get_instance_by_pid(instance.ace_pid)
     assert instance_by_pid is not None
@@ -232,7 +236,7 @@ async def test_get_set_valid(monkeypatch: pytest.MonkeyPatch) -> None:
 
     # Stats
     stats = await pool.get_all_stats()
-    assert len(stats) == pool.max_size  # Returns stats for all pool slots
+    assert len(stats) == pool._max_size  # Returns stats for all pool slots
 
     stats_by_pid = await pool.get_stats_by_pid(instance.ace_pid)
     assert stats_by_pid is not None
@@ -248,7 +252,7 @@ async def test_get_set_valid(monkeypatch: pytest.MonkeyPatch) -> None:
 async def test_when_not_healthy() -> None:
     pool = AcePool(instance_id="test")
     fill_pool(pool)
-    pool.healthy = False
+    pool._healthy = False
 
     assert await pool.get_stats_by_pid(1) is None
     assert await pool.get_stats_by_content_id(get_random_content_id()) is None

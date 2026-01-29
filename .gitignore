@@ -8,6 +8,8 @@ test.py
 _garbo
 docker-compose_prod.yml
 /docs_out
+memray.bin
+memray*
 
 # Tanstack
 .tanstack

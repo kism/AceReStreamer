@@ -77,8 +77,14 @@ export const AcePoolEntryForAPISchema = {
 export const AcePoolForApiSchema = {
     properties: {
         ace_version: {
-            type: 'string',
-            title: 'Ace Version'
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/AceVersionResult'
+                },
+                {
+                    type: 'null'
+                }
+            ]
         },
         ace_address: {
             anyOf: [
@@ -533,6 +539,27 @@ export const AceScraperSourceApiSchema = {
     description: 'Represent a scraper instance, generic for HTML and IPTV sources.'
 } as const;
 
+export const AceVersionResultSchema = {
+    properties: {
+        code: {
+            type: 'integer',
+            title: 'Code'
+        },
+        version: {
+            type: 'string',
+            title: 'Version'
+        },
+        platform: {
+            type: 'string',
+            enum: ['win32', 'linux', 'android'],
+            title: 'Platform'
+        }
+    },
+    type: 'object',
+    required: ['code', 'version', 'platform'],
+    title: 'AceVersionResult'
+} as const;
+
 export const Body_Login_login_access_tokenSchema = {
     properties: {
         grant_type: {
@@ -640,10 +667,10 @@ export const EPGApiHandlerHealthResponseSchema = {
             title: 'Tvg Ids'
         },
         epgs: {
-            items: {
+            additionalProperties: {
                 '$ref': '#/components/schemas/EPGApiHealthResponse'
             },
-            type: 'array',
+            type: 'object',
             title: 'Epgs'
         }
     },
@@ -655,20 +682,6 @@ export const EPGApiHandlerHealthResponseSchema = {
 
 export const EPGApiHealthResponseSchema = {
     properties: {
-        url: {
-            type: 'string',
-            maxLength: 2083,
-            minLength: 1,
-            format: 'uri',
-            title: 'Url'
-        },
-        overrides: {
-            additionalProperties: {
-                type: 'string'
-            },
-            type: 'object',
-            title: 'Overrides'
-        },
         time_since_last_updated: {
             type: 'integer',
             title: 'Time Since Last Updated'
@@ -679,7 +692,7 @@ export const EPGApiHealthResponseSchema = {
         }
     },
     type: 'object',
-    required: ['url', 'overrides', 'time_since_last_updated', 'time_until_next_update'],
+    required: ['time_since_last_updated', 'time_until_next_update'],
     title: 'EPGApiHealthResponse',
     description: 'Model for EPG API response.'
 } as const;
@@ -1034,34 +1047,6 @@ export const PrivateUserCreateSchema = {
     type: 'object',
     required: ['username', 'password', 'full_name'],
     title: 'PrivateUserCreate'
-} as const;
-
-export const QualitySchema = {
-    properties: {
-        quality: {
-            type: 'integer',
-            title: 'Quality',
-            default: -1
-        },
-        has_ever_worked: {
-            type: 'boolean',
-            title: 'Has Ever Worked',
-            default: false
-        },
-        m3u_failures: {
-            type: 'integer',
-            title: 'M3U Failures',
-            default: 0
-        },
-        last_message: {
-            type: 'string',
-            title: 'Last Message',
-            default: ''
-        }
-    },
-    type: 'object',
-    title: 'Quality',
-    description: 'Model for tracking quality of a stream.'
 } as const;
 
 export const RemoteSettingsURLGetModelSchema = {

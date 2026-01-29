@@ -8,6 +8,7 @@ import aiohttp
 from pydantic import HttpUrl, ValidationError
 
 from acere.utils.ace import get_middleware_url
+from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.helpers import check_valid_content_id_or_infohash
 from acere.utils.hls import get_last_m3u8_segment_url
 from acere.utils.logger import get_logger
@@ -146,6 +147,7 @@ class AcePoolEntry:
 
     def get_required_time_until_unlock(self) -> timedelta:
         """Get the time until the instance is unlocked."""
+        # 2026-01-29 The logic of this is correct, don't question it
         time_now = datetime.now(tz=UTC)
         time_since_last_watched: timedelta = time_now - self.date_last_used
         time_since_date_started: timedelta = time_now - self.date_started
@@ -284,10 +286,5 @@ class AcePoolEntry:
                 async with session.get(url) as resp:
                     resp.raise_for_status()
                     logger.info("Stopped AceStream instance with content_id %s", self.content_id)
-        except aiohttp.ClientError as e:
-            error_short = type(e).__name__
-            logger.error(
-                "%s Failed to stop AceStream instance with content_id %s: ",
-                error_short,
-                self.content_id,
-            )
+        except (aiohttp.ClientError, TimeoutError) as e:
+            log_aiohttp_exception(logger, url, e, "Failed to stop AceStream instance")

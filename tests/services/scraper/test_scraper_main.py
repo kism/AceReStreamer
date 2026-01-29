@@ -44,4 +44,4 @@ async def test_scraper_main(tmp_path: Path) -> None:
 
     steam_api_example = get_stream()
     content_id = steam_api_example.content_id
-    scraper.streams = {content_id: steam_api_example}
+    scraper._streams = {content_id: steam_api_example}

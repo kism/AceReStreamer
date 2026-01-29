@@ -201,7 +201,7 @@ def test_epg_candidate_add_program(
     program = xml_good_quality.findall("programme")[0]
 
     candidate.add_program(program)
-    assert len(candidate._programs) == 1
+    assert len(candidate._programs_bytes) == 1
 
 
 def test_epg_candidate_add_channel(
@@ -213,7 +213,7 @@ def test_epg_candidate_add_channel(
     channel = xml_good_quality.findall("channel")[0]
 
     candidate.add_channel(channel)
-    assert len(candidate._channels) == 1
+    assert len(candidate._channels_bytes) == 1
 
 
 def test_epg_candidate_get_channels_programs(

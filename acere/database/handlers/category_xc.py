@@ -37,12 +37,12 @@ class CategoryXCCategoryIDDatabaseHandler(BaseDatabaseHandler):
             ).first()
             return result.category if result else None
 
-    def get_all_categories_api(self, categories_in_use: set[int] | None) -> list[XCCategory]:
+    def get_all_categories_api(self, categories_in_use: set[int]) -> list[XCCategory]:
         """Get all categories as a list of XCCategory objects."""
         with self._get_session() as session:
             categories = session.exec(select(CategoryXCCategoryID)).all()
             return [
                 XCCategory(category_id=str(cat.xc_category_id), category_name=cat.category)
                 for cat in categories
-                if not categories_in_use or cat.xc_category_id in categories_in_use
+                if cat.xc_category_id in categories_in_use
             ]

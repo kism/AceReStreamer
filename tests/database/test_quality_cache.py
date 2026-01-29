@@ -25,8 +25,6 @@ def test_init(quality_cache_handler: AceQualityCacheHandler) -> None:
 
     content_id = get_random_content_id()
 
-    assert handler.get_all() == {}
-
     quality = handler.get_quality(content_id)
     assert quality is not None  # Returns a new Quality object
     assert quality.quality == -1

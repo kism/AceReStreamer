@@ -120,7 +120,7 @@ class AceScraperSourceApi(BaseModel):
 
         return self
 
-    @field_serializer("url")
+    @field_serializer("url", mode="plain")
     def serialize_url(self, value: HttpUrl) -> str:
         """Serialize URL to string."""
         return value.encoded_string()

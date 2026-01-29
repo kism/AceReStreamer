@@ -47,7 +47,7 @@ def add_source(  # noqa: C901 Revisit once I have some tests
     if not body_json:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
-            detail=MessageResponseModel(message="json is empty"),
+            detail="json is empty",
         )
 
     if not isinstance(body_json, (list)):
@@ -79,7 +79,7 @@ def add_source(  # noqa: C901 Revisit once I have some tests
             msg = "Error adding source"
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
-            detail=MessageResponseModel(message=msg, errors=errors).model_dump_json(),
+            detail=msg,
         )
 
     msg = "Sources added successfully"
@@ -99,7 +99,7 @@ def remove_source(slug: str) -> MessageResponseModel:
     if not success:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
-            detail=MessageResponseModel(message="Unable to delete", errors=[msg]).model_dump_json(),
+            detail=msg,
         )
 
     settings.write_config()
@@ -121,7 +121,7 @@ def delete_name_override(content_id: str) -> MessageResponseModel:
     if not success:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail=MessageResponseModel(message="Content ID name override not found").model_dump_json(),
+            detail="Content ID name override not found",
         )
 
     settings.write_config()

@@ -2,11 +2,14 @@
 
 import asyncio
 import threading
+import urllib.parse
 from datetime import UTC, datetime, timedelta
+from io import BytesIO
 from typing import TYPE_CHECKING
 
 from lxml import etree
 
+from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger
 from acere.version import PROGRAM_NAME, URL
 
@@ -57,19 +60,41 @@ class EPGHandler:
         candidate_handler = EPGCandidateHandler()
 
         for epg in self._epgs:
-            epg_etree = epg.get_epg_etree_normalised()
-            if epg_etree is None:
-                continue  # Error message is elsewhere
+            # Use streaming parser to avoid loading entire tree into memory
+            epg_data = epg.get_data()
+            if epg_data is None:
+                continue
 
-            for channel in epg_etree.findall("channel"):
-                tvg_id = channel.get("id")
-                if tvg_id in self._set_of_tvg_ids:
-                    candidate_handler.add_channel(tvg_id, epg.url, channel)
+            try:
+                # Parse incrementally, only keeping elements we need
+                context = etree.iterparse(
+                    BytesIO(epg_data),
+                    events=("end",),
+                    tag=("channel", "programme"),
+                )
 
-            for programme in epg_etree.findall("programme"):
-                tvg_id = programme.get("channel")
-                if tvg_id in self._set_of_tvg_ids:
-                    candidate_handler.add_program(tvg_id, epg.url, programme)
+                for _event, elem in context:
+                    if elem.tag == "channel":
+                        tvg_id = epg.normalize_tvg_id(elem.get("id"))
+                        if tvg_id and tvg_id in self._set_of_tvg_ids:
+                            elem.set("id", tvg_id)
+                            candidate_handler.add_channel(tvg_id, epg.url, elem)
+                    elif elem.tag == "programme":
+                        tvg_id = epg.normalize_tvg_id(elem.get("channel"))
+                        if tvg_id and tvg_id in self._set_of_tvg_ids:
+                            elem.set("channel", tvg_id)
+                            candidate_handler.add_program(tvg_id, epg.url, elem)
+
+                    # Clear element after processing to free memory
+                    elem.clear()
+                    # Also clear preceding siblings
+                    while elem.getprevious() is not None:
+                        del elem.getparent()[0]
+
+                del context
+            except etree.XMLSyntaxError:
+                logger.error("Failed to parse EPG XML data for %s", epg.url)
+                continue
 
         return candidate_handler
 
@@ -108,7 +133,7 @@ class EPGHandler:
 
         # Check bytes, local vs self.
         if new_condensed_epg_bytes == self._condensed_epg_bytes:
-            logger.warning("Condensed EPG data is the same as before")
+            logger.debug("Condensed EPG data is the same as before")
 
         # Update the condensed EPG bytes
         self._condensed_epg_bytes = new_condensed_epg_bytes
@@ -142,15 +167,13 @@ class EPGHandler:
     # region API
     def get_epgs_api(self) -> EPGApiHandlerHealthResponse:
         """Get the names of all EPGs."""
-        epgs = [
-            EPGApiHealthResponse(
-                url=epg.url,
-                overrides=epg.overrides,
+        epgs: dict[str, EPGApiHealthResponse] = {
+            slugify(urllib.parse.unquote(epg.url.encoded_string())): EPGApiHealthResponse(
                 time_since_last_updated=epg.get_time_since_last_update(),
                 time_until_next_update=epg.get_time_until_next_update(),
             )
             for epg in self._epgs
-        ]
+        }
 
         time_until_next_update = self._next_update_time - datetime.now(tz=UTC)
         return EPGApiHandlerHealthResponse(
@@ -248,8 +271,12 @@ class EPGHandler:
 
         logger.info("Stopping all %s threads [%s]", self.__class__.__name__, self._instance_id)
         self._stop_event.set()
-        for thread in self._threads:
+        for thread in self._threads.copy():
             if thread.is_alive():
                 thread.join(timeout=60)
+                if not thread.is_alive():
+                    self._threads.remove(thread)
+                else:
+                    logger.warning("Thread %s did not stop in time.", thread.name)
 
         self._stop_event.clear()

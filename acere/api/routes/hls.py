@@ -16,6 +16,7 @@ from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.config import settings
 from acere.services.xc.helpers import check_xc_auth
 from acere.utils.api_models import MessageResponseModel
+from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.helpers import check_valid_content_id_or_infohash
 from acere.utils.hls import (
     replace_hls_m3u_sources,
@@ -37,7 +38,7 @@ REVERSE_PROXY_TIMEOUT = 10  # Very high but alas
 
 # region /hls/
 @router.get("/hls/{path}", response_class=Response)
-async def hls(  # noqa: PLR0915 This is hell
+async def hls(
     path: str,
     token: str = "",
     *,
@@ -78,31 +79,20 @@ async def hls(  # noqa: PLR0915 This is hell
                 status_code = ace_resp.status
                 headers = ace_resp.headers
     except (aiohttp.ClientError, TimeoutError) as e:
-        error_short = type(e).__name__
-
-        # Get the HTTP status code from ace if available
-        if isinstance(e, aiohttp.ClientResponseError):
-            status_info = f" (ace status: {e.status} {e.message})"
-        elif isinstance(e, TimeoutError):
-            status_info = f" (timeout: {REVERSE_PROXY_TIMEOUT}s)"
-        else:
-            status_info = " (???)"
+        log_aiohttp_exception(logger, f"[ace hls {path}]", e)
 
         # Determine error type and response
-        if isinstance(e, (aiohttp.ServerTimeoutError, TimeoutError)):
-            logger.error("reverse proxy timeout /hls/%s %s%s", path, error_short, status_info)
+        if isinstance(e, (TimeoutError)):
             error_msg, status = "HLS stream timeout", HTTPStatus.REQUEST_TIMEOUT
             get_quality_handler().increment_quality(path, "")
-        elif isinstance(e, aiohttp.ClientConnectionError):
-            logger.error("%s reverse proxy cannot connect to Ace%s", error_short, status_info)
+        elif isinstance(e, aiohttp.ClientError):
             error_msg, status = (
                 "Cannot connect to Ace",
                 HTTPStatus.INTERNAL_SERVER_ERROR,
             )
         else:
-            logger.error("reverse proxy failure /hls/ %s%s", error_short, status_info)
             error_msg, status = (
-                f"Failed to fetch HLS stream{status_info}",
+                "Failed to fetch HLS stream",
                 HTTPStatus.INTERNAL_SERVER_ERROR,
             )
             get_quality_handler().increment_quality(path, "")
@@ -159,9 +149,8 @@ async def hls_multi(path: str, token: str = "") -> Response:
                 content_bytes = await ace_resp.read()
                 status_code = ace_resp.status
     except (aiohttp.ClientError, TimeoutError) as e:
-        error_short = type(e).__name__
-        logger.error("reverse proxy failure /hls/m/ %s", error_short)
         error_msg = "Failed to fetch HLS multistream"
+        log_aiohttp_exception(logger, url, e, error_msg)
 
         raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=error_msg) from e
 
@@ -259,10 +248,8 @@ async def ace_content(path: str, request: Request, token: str = "") -> Response:
     # Determine the correct URL based on the request path
     if "/hls/c/" in request.url.path:
         url = HttpUrl(f"{settings.app.ace_address}hls/c/{path}").encoded_string()
-        route_prefix = "/hls/c/"
     else:
         url = HttpUrl(f"{settings.app.ace_address}ace/c/{path}").encoded_string()
-        route_prefix = "/ace/c/"
 
     logger.trace("Ace content requested for url: %s", url)
 
@@ -274,23 +261,16 @@ async def ace_content(path: str, request: Request, token: str = "") -> Response:
                 content = await resp.read()
                 status_code = resp.status
                 response_headers = resp.headers
-    except (aiohttp.ServerTimeoutError, TimeoutError) as e:
-        error_short = type(e).__name__
-        logger.error(
-            "%s reverse proxy timeout %s",
-            route_prefix,
-            error_short,
-        )
+    except (aiohttp.ClientError, TimeoutError) as e:
+        log_aiohttp_exception(logger, url, e)
         response_body = MessageResponseModel(message="Ace content timeout").model_dump_json()
-        return Response(
-            content=response_body,
-            media_type="application/json",
-            status_code=HTTPStatus.REQUEST_TIMEOUT,
-        )
-    except aiohttp.ClientError as e:
-        error_short = type(e).__name__
-        logger.error("%s reverse proxy failure %s", route_prefix, error_short)
-        response_body = MessageResponseModel(message="Failed to fetch HLS stream").model_dump_json()
+
+        if isinstance(e, TimeoutError):
+            return Response(
+                content=response_body,
+                media_type="application/json",
+                status_code=HTTPStatus.REQUEST_TIMEOUT,
+            )
         return Response(
             content=response_body,
             media_type="application/json",

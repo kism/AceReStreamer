@@ -50,12 +50,10 @@ class AceScraper:
         self._threads: list[threading.Thread] = []
         self._stop_event = threading.Event()
         self._instance_id = instance_id
-        logger.debug("Initializing AceScraper (%s)", self._instance_id)
-        self.streams: dict[str, FoundAceStream] = {}
-        self.html_scraper: HTMLStreamScraper = HTMLStreamScraper()
-        self.iptv_scraper: IPTVStreamScraper = IPTVStreamScraper()
-        self.api_scraper: APIStreamScraper = APIStreamScraper()
-        self.currently_checking_quality: bool = False
+        self._streams: dict[str, FoundAceStream] = {}
+        self._html_scraper: HTMLStreamScraper = HTMLStreamScraper()
+        self._iptv_scraper: IPTVStreamScraper = IPTVStreamScraper()
+        self._api_scraper: APIStreamScraper = APIStreamScraper()
 
     # region GET API Scraper
     def get_scraper_sources_flat_api(self) -> list[AceScraperSourceApi]:
@@ -103,13 +101,41 @@ class AceScraper:
     # region Helpers
     def _print_streams(self) -> None:
         """Print the found streams."""
-        if not self.streams:
+        if not self._streams:
             logger.warning("Scraper found no AceStreams.")
             return
 
-        n = len(self.streams)
-        msg = f"Found AceStreams: {n} unique streams across {len(self.streams)} site definitions."
+        n = len(self._streams)
+        msg = f"Found AceStreams: {n} unique streams across {len(self._streams)} site definitions."
         logger.info(msg)
+
+    def _print_warnings(self) -> None:
+        """Print warnings for the state of self._streams, specifically for duplicates."""
+        unique_tvg_ids = set()
+        unique_infohashes = set()
+        unique_names = set()
+        for stream in self._streams.values():
+            if (
+                stream.tvg_id and stream.tvg_id in unique_tvg_ids and (not _REGEX_STREAM_NUMBER.search(stream.title))
+            ):  # If it's not marked as an alternate stream
+                logger.debug("Duplicate TVG ID found: %s", stream.tvg_id)
+
+            unique_tvg_ids.add(stream.tvg_id)
+
+            if stream.infohash and stream.infohash in unique_infohashes:
+                logger.warning("Duplicate infohash found: %s", stream.infohash)
+            unique_infohashes.add(stream.infohash)
+
+            if stream.title and stream.title in unique_names:
+                logger.debug("Duplicate name found: %s", stream.title)
+            unique_names.add(stream.title)
+
+        logger.debug(
+            "Scraper has %d unique TVG IDs, %d unique infohashes, and %d unique names.",
+            len(unique_tvg_ids),
+            len(unique_infohashes),
+            len(unique_names),
+        )
 
     async def _populate_missing_content_ids(self, streams: list[FoundAceStream]) -> list[FoundAceStream]:
         """Populate missing content IDs for streams that have an infohash."""
@@ -132,38 +158,10 @@ class AceScraper:
 
         return populated_streams
 
-    def _print_warnings(self) -> None:
-        """Print warnings for the state of self.streams, specifically for duplicates."""
-        unique_tvg_ids = set()
-        unique_infohashes = set()
-        unique_names = set()
-        for stream in self.streams.values():
-            if (
-                stream.tvg_id and stream.tvg_id in unique_tvg_ids and (not _REGEX_STREAM_NUMBER.search(stream.title))
-            ):  # If it's not marked as an alternate stream
-                logger.warning("Duplicate TVG ID found: %s", stream.tvg_id)
-
-            unique_tvg_ids.add(stream.tvg_id)
-
-            if stream.infohash and stream.infohash in unique_infohashes:
-                logger.warning("Duplicate infohash found: %s", stream.infohash)
-            unique_infohashes.add(stream.infohash)
-
-            if stream.title and stream.title in unique_names:
-                logger.warning("Duplicate name found: %s", stream.title)
-            unique_names.add(stream.title)
-
-        logger.info(
-            "Scraper has %d unique TVG IDs, %d unique infohashes, and %d unique names.",
-            len(unique_tvg_ids),
-            len(unique_infohashes),
-            len(unique_names),
-        )
-
     def _write_streams_to_database(self) -> None:
         """Write the found streams to the database."""
         handler = get_ace_streams_db_handler()
-        for stream in self.streams.values():
+        for stream in self._streams.values():
             handler.update_stream(stream=stream)
 
     # region Thread
@@ -180,9 +178,9 @@ class AceScraper:
 
                 async def find_streams() -> list[FoundAceStream]:
                     tasks = [
-                        self.html_scraper.scrape_sites(sites=settings.scraper.html),
-                        self.iptv_scraper.scrape_iptv_playlists(sites=settings.scraper.iptv_m3u8),
-                        self.api_scraper.scrape_api_endpoints(sites=settings.scraper.api),
+                        self._html_scraper.scrape_sites(sites=settings.scraper.html),
+                        self._iptv_scraper.scrape_iptv_playlists(sites=settings.scraper.iptv_m3u8),
+                        self._api_scraper.scrape_api_endpoints(sites=settings.scraper.api),
                     ]
 
                     all_results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -198,13 +196,13 @@ class AceScraper:
 
                 found_streams = async_loop.run_until_complete(find_streams())
 
-                self.streams = create_unique_stream_list(found_streams)
+                self._streams = create_unique_stream_list(found_streams)
 
                 # Populate ourself
                 self._print_streams()
 
                 # EPGs
-                tvg_id_list = [stream.tvg_id for stream in self.streams.values()]
+                tvg_id_list = [stream.tvg_id for stream in self._streams.values()]
                 get_epg_handler().add_tvg_ids(tvg_ids=tvg_id_list)
 
                 # For streams with only an infohash, populate the content_id using the api
@@ -220,7 +218,7 @@ class AceScraper:
                     async_loop.run_until_complete(self._populate_missing_content_ids(missing_content_id_streams))
 
                     # Re-create unique stream list after modification
-                    self.streams = create_unique_stream_list(missing_content_id_streams + list(self.streams.values()))
+                    self._streams = create_unique_stream_list(missing_content_id_streams + list(self._streams.values()))
 
                     # Check if there are still missing content_ids after population attempt
                     still_missing = [stream for stream in found_streams if not stream.content_id and stream.infohash]
@@ -254,8 +252,12 @@ class AceScraper:
 
         logger.info("Stopping all %s threads [%s]", self.__class__.__name__, self._instance_id)
         self._stop_event.set()
-        for thread in self._threads:
+        for thread in self._threads.copy():
             if thread.is_alive():
                 thread.join(timeout=60)
+                if not thread.is_alive():
+                    self._threads.remove(thread)
+                else:
+                    logger.warning("Thread %s did not stop in time.", thread.name)
 
         self._stop_event.clear()

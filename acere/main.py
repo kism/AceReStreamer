@@ -78,6 +78,10 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
     instance_id = str(random.randbytes(4).hex())  # noqa: S311 Not crypto related
 
+    # EPG Handler, needs to be before the scraper
+    epg_handler = EPGHandler(instance_id=instance_id)
+    set_epg_handler(epg_handler)
+
     # Pool
     ace_pool = AcePool(instance_id=instance_id)
     set_ace_pool(ace_pool)
@@ -90,10 +94,6 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     remote_settings_fetcher = RemoteSettingsFetcher(instance_id=instance_id)
     set_remote_settings_fetcher(remote_settings_fetcher)
 
-    # EPG Handler
-    epg_handler = EPGHandler(instance_id=instance_id)
-    set_epg_handler(epg_handler)
-
     yield
 
     handlers: list[AceScraper | AcePool | RemoteSettingsFetcher | EPGHandler] = [
@@ -101,11 +101,11 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         ace_scraper,
         remote_settings_fetcher,
         epg_handler,
-    ]
+    ]  # Can't do a sneaky one-liner due to type checking
     for handler in handlers:
         handler.stop_all_threads()
 
-    logger.info("End of application lifespan? [%s]", instance_id)
+    logger.info("End of application lifespan [%s]", instance_id)
 
 
 app = FastAPI(
@@ -120,6 +120,7 @@ app.include_router(api_router_xc)
 app.include_router(frontend_router)
 app.include_router(iptv_router)
 
+# No compression middleware for HLS
 hls_app = FastAPI()
 hls_app.include_router(hls_router)
 app.mount("/", hls_app)

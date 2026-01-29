@@ -59,7 +59,7 @@ class EPG:
         return False
 
     # region Getters
-    def _get_data(self) -> bytes | None:
+    def get_data(self) -> bytes | None:
         """Get the EPG data as bytes."""
         # I used to have this in RAM, but it got very large with multiple EPGs
         if self.saved_file_path.is_file():
@@ -80,13 +80,14 @@ class EPG:
                 )
                 return None
         else:
-            logger.warning("No saved file path defined or file does not exist for EPG %s ", self.url)
+            logger.debug("File does not exist for EPG %s ", self.url)  # Download failure is the real warning
             return None
 
     def get_epg_etree_normalised(self) -> etree._Element | None:
-        epg_data = self._get_data()
+        epg_data = self.get_data()
         if epg_data is None:
-            logger.warning("EPG data for %s is None, skipping", self.url)
+            # Log real error messages in _get_data
+            logger.debug("EPG data for %s is None, skipping", self.url)
             return None
 
         try:
@@ -106,6 +107,10 @@ class EPG:
                 programme.set("channel", tvg_id)
 
         return wip_etree
+
+    def normalize_tvg_id(self, tvg_id: str | None) -> str | None:
+        """Normalize a TVG ID using the configured overrides."""
+        return normalise_epg_tvg_id(tvg_id, self.overrides)
 
     def get_time_since_last_update(self) -> timedelta:
         """Get the time since the EPG was last updated."""
@@ -163,7 +168,7 @@ class EPG:
 
             self.last_updated = datetime.now(tz=UTC)
 
-        except aiohttp.ClientError as e:
+        except (aiohttp.ClientError, TimeoutError) as e:
             log_aiohttp_exception(logger, self.url, e)
 
         return data
