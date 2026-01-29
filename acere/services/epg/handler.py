@@ -108,7 +108,7 @@ class EPGHandler:
 
         # Check bytes, local vs self.
         if new_condensed_epg_bytes == self._condensed_epg_bytes:
-            logger.warning("Condensed EPG data is the same as before")
+            logger.debug("Condensed EPG data is the same as before")
 
         # Update the condensed EPG bytes
         self._condensed_epg_bytes = new_condensed_epg_bytes
