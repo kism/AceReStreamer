@@ -17,7 +17,7 @@ const exampleIPTV: AceScraperSourceApi = {
 const exampleAPI: AceScraperSourceApi = {
   type: "api",
   name: "example-scraper",
-  url: "https://api.example.com/list?api_key=test_api_key",
+  url: "https://api.example.com/list?api_key=my_api_key",
   title_filter: {
     always_exclude_words: [],
     always_include_words: [],

@@ -55,42 +55,6 @@
 
 `player_api.php?action=get_live_streams&username=a&password=b`
 
-````json
-[
-  {
-    "num": 1,
-    "name": "My Sports Channel",
-    "stream_type": "live",
-    "stream_id": 4,
-    "stream_icon": "",
-    "epg_channel_id": "",
-    "added": "1500000000",
-    "is_adult": 0,
-    "category_id": "22",
-    "category_ids": [22],
-    "custom_sid": null,
-    "tv_archive": 0,
-    "direct_source": "",
-    "tv_archive_duration": 0
-  },
-  {
-    "num": 2,
-    "name": "My News Channel",
-    "stream_type": "live",
-    "stream_id": 7,
-    "stream_icon": "",
-    "epg_channel_id": "",
-    "added": "1500000000",
-    "is_adult": 0,
-    "category_id": "4",
-    "category_ids": [4],
-    "custom_sid": null,
-    "tv_archive": 0,
-    "direct_source": "",
-    "tv_archive_duration": 0
-  }
-]
-
 ```json
 [
   {
@@ -126,4 +90,4 @@
     "tv_archive_duration": 0
   }
 ]
-````
+```

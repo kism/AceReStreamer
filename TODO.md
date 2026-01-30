@@ -1,4 +1,6 @@
 # TODO
 
-fun paths instance
-remove instance path errywhere
+- Document scraper mode
+- Document reset password tool
+- Document epg tool
+- Better TOC
