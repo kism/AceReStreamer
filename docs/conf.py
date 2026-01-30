@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 extensions = [
     "myst_parser",
     "generate_json_examples",
+    "generate_txt_examples",
 ]
 
 
