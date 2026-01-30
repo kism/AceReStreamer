@@ -26,10 +26,10 @@ acestream://4000000000000000000000000000000000000003
 acestream://1000000000000000000000000000000000000004
 ```
 
-Other URI schemes will also work.
+Other URI schemes will also work
 
 ```text
-acestream://",
+acestream://
 http://127.0.0.1:6878/ace/getstream?id=
 http://127.0.0.1:6878/ace/getstream?content_id=
 http://127.0.0.1:6878/ace/manifest.m3u8?id=
