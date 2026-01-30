@@ -122,7 +122,7 @@ def setup_logger(
         in_logger = logging.getLogger(in_logger)
 
     loggers = list(logging.Logger.manager.loggerDict.keys())
-    logger.debug("Existing loggers: %s", ", ".join(loggers) if loggers else "None")
+    logger.trace("Existing loggers: %s", ", ".join(loggers) if loggers else "None")
 
     if not in_logger:  # in_logger should only exist when testing with PyTest.
         in_logger = logging.getLogger()  # Get the root logger

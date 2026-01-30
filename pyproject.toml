@@ -150,7 +150,6 @@ addopts = [
     "--asyncio-mode=auto",
 ]
 
-
 [tool.mypy]
 strict = true
 files = ["acere", "tests"]

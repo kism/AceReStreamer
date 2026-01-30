@@ -19,4 +19,4 @@ class ScraperCommon:
         """Initialize the IPTVStreamScraper with the instance path."""
         self._instance_path: Path = instance_path or INSTANCE_DIR
         self._tvg_logos_path: Path = self._instance_path / TVG_LOGOS_DIR.name
-        self.scraper_cache: ScraperCache = ScraperCache()
+        self.scraper_cache: ScraperCache = ScraperCache(instance_path=self._instance_path)

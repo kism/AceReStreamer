@@ -105,7 +105,7 @@ async def test_get_site_content(
 
     # Create a mock aiohttp session that returns our test content
     fake_responses: dict[str, FakeResponseDef] = {
-        "http://example.com/test.m3u8": {
+        "http://ace.pytest.internal/test.m3u8": {
             "status": 200,
             "data": test_content,
         }
@@ -121,7 +121,7 @@ async def test_get_site_content(
     site_config = ScrapeSiteIPTV(
         type="iptv",
         name="Test Site",
-        url=HttpUrl("http://example.com/test.m3u8"),
+        url=HttpUrl("http://ace.pytest.internal/test.m3u8"),
     )
 
     result = await scraper._get_site_content(site_config)
@@ -131,7 +131,7 @@ async def test_get_site_content(
     site_config_404 = ScrapeSiteIPTV(
         type="iptv",
         name="Not Found Site",
-        url=HttpUrl("http://example.com/nonexistent.m3u8"),
+        url=HttpUrl("http://ace.pytest.internal/nonexistent.m3u8"),
     )
 
     result_404 = await scraper._get_site_content(site_config_404)
@@ -150,11 +150,11 @@ async def test_download_tvg_logo(
 
     # Create mock aiohttp session
     fake_responses: dict[str, FakeResponseDef] = {
-        "http://example.com/logos/test.png": {
+        "http://ace.pytest.internal/logos/test.png": {
             "status": 200,
             "data": fake_logo_data,
         },
-        "http://example.com/logos/error.png": {
+        "http://ace.pytest.internal/logos/error.png": {
             "status": 404,
             "data": b"",
         },
@@ -166,7 +166,7 @@ async def test_download_tvg_logo(
     monkeypatch.setattr("aiohttp.ClientSession", fake_client_session)
 
     # Test successful download
-    line = '#EXTINF:-1 tvg-logo="http://example.com/logos/test.png",Test Stream'
+    line = '#EXTINF:-1 tvg-logo="http://ace.pytest.internal/logos/test.png",Test Stream'
     title = "Test Stream"
 
     await scraper._download_tvg_logo(line, title)
@@ -197,7 +197,7 @@ async def test_download_tvg_logo(
     assert not logo_path_no_logo.exists()
 
     # Test with download error (404)
-    line_error = '#EXTINF:-1 tvg-logo="http://example.com/logos/error.png",Error Stream'
+    line_error = '#EXTINF:-1 tvg-logo="http://ace.pytest.internal/logos/error.png",Error Stream'
     title_error = "Error Stream"
 
     await scraper._download_tvg_logo(line_error, title_error)
@@ -207,7 +207,7 @@ async def test_download_tvg_logo(
     assert not logo_path_error.exists()
 
     # Test with unsupported file extension
-    line_unsupported = '#EXTINF:-1 tvg-logo="http://example.com/logos/test.gif",Unsupported Stream'
+    line_unsupported = '#EXTINF:-1 tvg-logo="http://ace.pytest.internal/logos/test.gif",Unsupported Stream'
     title_unsupported = "Unsupported Stream"
 
     await scraper._download_tvg_logo(line_unsupported, title_unsupported)

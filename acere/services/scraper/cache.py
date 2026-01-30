@@ -23,6 +23,14 @@ DEFAULT_CACHE_MAX_AGE = timedelta(hours=2)
 class ScraperCache:
     """Cache management for the AceReStreamer scraper."""
 
+    def __init__(self, instance_path: Path | None = None) -> None:  # Instance path needs to be specified in CLI mode
+        """Initialize the ScraperCache with an optional instance path."""
+        if instance_path is not None:
+            self._cache_dir = instance_path / SCRAPER_CACHE_DIR.name
+            self._cache_dir.mkdir(parents=True, exist_ok=True)
+        else:
+            self._cache_dir = SCRAPER_CACHE_DIR
+
     def load_from_cache(self, url: HttpUrl) -> str:
         """Load the content from cache if available."""
         load_path = self._get_cache_file_path(url)
@@ -58,4 +66,4 @@ class ScraperCache:
 
     def _get_cache_file_path(self, url: HttpUrl) -> Path:
         """Get the cache file path for a given URL."""
-        return SCRAPER_CACHE_DIR / f"{slugify(url.encoded_string())}.txt"
+        return self._cache_dir / f"{slugify(url.encoded_string())}.txt"

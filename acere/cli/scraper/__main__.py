@@ -1,13 +1,13 @@
 """CLI for scrape mode."""
 
 import argparse
-import asyncio
 import sys
 from pathlib import Path
 
 import uvloop
 
 from acere.core.config import AceReStreamerConf
+from acere.instances.config import settings
 from acere.utils.logger import get_logger, setup_logger
 from acere.version import __version__
 
@@ -16,8 +16,6 @@ from .readme import generate_readme
 from .repo import generate_misc
 
 logger = get_logger(__name__)
-
-uvloop.install()
 
 
 async def async_main() -> None:
@@ -53,20 +51,22 @@ async def async_main() -> None:
     setup_logger()
 
     logger.info(msg)
-    conf = AceReStreamerConf.force_load_config_file(config_path=args.app_config)
-    conf.write_config(config_path=args.app_config)
+    cli_conf = AceReStreamerConf.force_load_config_file(config_path=args.app_config)
+    cli_conf.write_config(config_path=args.app_config)
+    settings.update_from(cli_conf)
+    del cli_conf  # Ensure we don't use the old one
+
     pl_cr = PlaylistCreator(instance_path=instance_path)
-    if len(conf.scraper.html) == 0 and len(conf.scraper.iptv_m3u8) == 0:
+    if len(settings.scraper.html) == 0 and len(settings.scraper.iptv_m3u8) == 0:
         logger.error("No scraper sites defined, cannot continue.")
         return
 
-    if conf.scraper.tvg_logo_external_url is None:
+    if settings.scraper.tvg_logo_external_url is None:
         logger.error("No TVG logo external URL defined, cannot continue.")
         return
 
-    conf.logging.setup_verbosity_cli(args.verbose)
-
-    setup_logger(settings=conf.logging)
+    settings.logging.setup_verbosity_cli(args.verbose)
+    setup_logger(settings=settings.logging)
 
     logger.info("Starting scrape...")
     await pl_cr.scrape()
@@ -75,14 +75,14 @@ async def async_main() -> None:
 
     generate_readme(
         instance_path=instance_path,
-        external_base_url=conf.scraper.adhoc_playlist_external_url,
+        external_base_url=settings.scraper.adhoc_playlist_external_url,
     )
     generate_misc(instance_path=instance_path)
 
 
 def main() -> None:
     """Main entry point for scrape CLI."""
-    asyncio.run(async_main())
+    uvloop.run(async_main())
 
 
 if __name__ == "__main__":

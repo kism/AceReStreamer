@@ -3,7 +3,7 @@ from pydantic import HttpUrl
 from acere.utils.hls import replace_hls_m3u_sources
 
 _LOCAL_ACE_ADDRESS: HttpUrl = HttpUrl("http://localhost:6878/")
-_EXTERNAL_ADDRESS: HttpUrl = HttpUrl("http://example.com/")
+_EXTERNAL_ADDRESS: HttpUrl = HttpUrl("http://ace.pytest.internal/")
 
 _SAMPLE_INPUT_M3U = f"""#EXTM3U
 #EXTM3U

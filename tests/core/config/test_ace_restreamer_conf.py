@@ -22,7 +22,7 @@ def test_add_epg() -> None:
     config = AceReStreamerConf.force_load_defaults()
     initial_count = len(config.epgs)
 
-    new_epg = EPGInstanceConf(format="xml.gz", url=HttpUrl("http://example.com/epg.xml.gz"))
+    new_epg = EPGInstanceConf(format="xml.gz", url=HttpUrl("http://ace.pytest.internal/epg.xml.gz"))
     config.add_epg(new_epg)
 
     assert len(config.epgs) == initial_count + 1
@@ -33,12 +33,12 @@ def test_add_duplicate_epg_updates() -> None:
     """Test that adding a duplicate EPG updates the existing one."""
     config = AceReStreamerConf.force_load_defaults()
 
-    new_epg = EPGInstanceConf(format="xml.gz", url=HttpUrl("http://example.com/duplicate.xml.gz"))
+    new_epg = EPGInstanceConf(format="xml.gz", url=HttpUrl("http://ace.pytest.internal/duplicate.xml.gz"))
     config.add_epg(new_epg)
     initial_count = len(config.epgs)
 
     # Try to add the same EPG again (same URL)
-    duplicate_epg = EPGInstanceConf(format="xml", url=HttpUrl("http://example.com/duplicate.xml.gz"))
+    duplicate_epg = EPGInstanceConf(format="xml", url=HttpUrl("http://ace.pytest.internal/duplicate.xml.gz"))
     config.add_epg(duplicate_epg)
 
     # Should not add a new EPG, count should remain the same
@@ -49,7 +49,7 @@ def test_remove_epg() -> None:
     """Test removing an EPG source."""
     config = AceReStreamerConf.force_load_defaults()
 
-    new_epg = EPGInstanceConf(format="xml.gz", url=HttpUrl("http://example.com/remove.xml.gz"))
+    new_epg = EPGInstanceConf(format="xml.gz", url=HttpUrl("http://ace.pytest.internal/remove.xml.gz"))
     config.add_epg(new_epg)
     initial_count = len(config.epgs)
 

@@ -213,6 +213,14 @@ class AceReStreamerConf(BaseSettings):
         logger.info("Loading default config")
         return cls()
 
+    def update_from(self, other: Self) -> None:
+        """Update this instance in-place with values from another instance.
+
+        This is useful for updating a global settings object without replacing
+        the reference, so all modules that imported it will see the changes.
+        """
+        self.__dict__.update(other.__dict__)
+
 
 class ConfigExport(BaseModel):
     model_config = ConfigDict(extra="ignore")

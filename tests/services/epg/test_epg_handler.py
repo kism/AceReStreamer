@@ -25,7 +25,7 @@ else:
 def epg_conf() -> EPGInstanceConf:
     """Fixture for EPGInstanceConf."""
     return EPGInstanceConf(
-        url="http://example.com/epg.xml",  # type: ignore[arg-type]
+        url="http://ace.pytest.internal/epg.xml",  # type: ignore[arg-type]
         format="xml",
         tvg_id_overrides={},
     )
@@ -101,7 +101,7 @@ async def test_epg_update(
     # Create a mock aiohttp session
     fake_session = FakeSession(
         responses={
-            "http://example.com/epg.xml": {
+            "http://ace.pytest.internal/epg.xml": {
                 "status": 200,
                 "data": test_xml_data,
             }

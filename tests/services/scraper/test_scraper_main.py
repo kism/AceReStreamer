@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 else:
     Path = object
 
-_EXTERNAL_URL = "http://example.com/"
+_EXTERNAL_URL = "http://ace.pytest.internal/"
 _ACE_URL: HttpUrl = HttpUrl("http://localhost:6878/")
 
 
