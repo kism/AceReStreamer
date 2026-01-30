@@ -64,10 +64,14 @@ God I hate this.
 
 ### Live Stream URLs
 
-`/username/password/{stream_number}`
-`/username/password/{stream_number}.m3u8`
-`/username/password/{stream_number}.ts`
-`/live/username/password/{stream_number}.m3u8`
+```text
+/username/password/{stream_number}
+/username/password/{stream_number}.m3u8
+/username/password/{stream_number}.ts
+/live/username/password/{stream_number}.m3u8
+```
+
+Depending on the IPTV client, any of these will be hit when requesting a stream.
 
 ### XC Listings
 
