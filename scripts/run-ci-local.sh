@@ -23,6 +23,9 @@ ruff check --fix
 print_heading "PyTest"
 pytest -q --tb=short
 
+print_heading "docs"
+sphinx-build -M html docs docs_out
+
 cd frontend
 
 export BUN_INSTALL="$HOME/.bun"
