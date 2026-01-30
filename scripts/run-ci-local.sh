@@ -24,7 +24,7 @@ print_heading "PyTest"
 pytest -q --tb=short
 
 print_heading "docs"
-sphinx-build -M html docs docs_out
+sphinx-build --fail-on-warning -b html docs docs_out
 
 cd frontend
 

@@ -185,7 +185,7 @@ async def hls_multi(path: str, token: str = "") -> Response:
 # /live/u/p/<xc_id>.m3u8  | UHF, M3UAndroid, IPTV Smarters Pro
 # /u/p/<xc_id>            | Smarters Player Lite (iOS), iMPlayer Android
 # /u/p/<xc_id>.ts         | iMPlayer iOS, TiViMate, Purple Simple (okay that m3u8 is the response)
-# /u/p/<tvg_id>.m3u8      | SparkleTV
+# /u/p/<xc_id>.m3u8      | SparkleTV
 @router.get("/{_path_username}/{_path_password}/{xc_stream}", response_class=Response)
 @router.get("/live/{_path_username}/{_path_password}/{xc_stream}", response_class=Response)
 async def xc_m3u8(

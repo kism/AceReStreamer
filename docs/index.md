@@ -10,5 +10,4 @@ running
 configuration
 tools
 development
-materials/xc_api
 ```
