@@ -29,7 +29,7 @@ jobs:
         uses: astral-sh/setup-uv@v6
 
       - name: Install the project
-        run: uv sync --extra type --extra test
+        run: uv sync --extra type --extra test --extra docs
 
       - name: Check types with mypy
         run: uv run mypy
@@ -49,7 +49,7 @@ jobs:
         uses: astral-sh/setup-uv@v6
 
       - name: Install the project
-        run: uv sync --extra type --extra test
+        run: uv sync --extra type --extra test --extra docs
 
       - name: Check types with mypy
         run: uv run ty check .

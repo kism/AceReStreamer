@@ -153,7 +153,7 @@ addopts = [
 
 [tool.mypy]
 strict = true
-files = ["acere", "tests"]
+files = ["acere", "tests", "docs"]
 exclude = ["venv", ".venv"]
 show_error_codes = true
 enable_error_code = [

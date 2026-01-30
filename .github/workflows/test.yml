@@ -63,4 +63,4 @@ jobs:
 
       - name: Build Sphinx documentation
         run: |
-          uv run sphinx-build --fail-on-warning -b html docs/source docs/build/html
+          uv run sphinx-build --fail-on-warning -b html docs docs_out
