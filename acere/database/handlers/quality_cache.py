@@ -8,7 +8,6 @@ import aiohttp
 import fastapi
 from pydantic import HttpUrl
 from sqlmodel import select
-from acere.utils.ace import ace_id_short
 
 from acere.database.models import AceQualityCache
 from acere.database.models.acestream import AceStreamDBEntry
