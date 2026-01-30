@@ -33,14 +33,16 @@ uvicorn --workers 1 acere.main:app --host 0.0.0.0 --port 5100
 Run per the instructions on their [website](https://docs.acestream.net/products/#linux). I prefer to use docker for this.
 
 ```bash
-docker run -d -t -p 127.0.0.1:6878:6878 ghcr.io/martinbjeldbak/acestream-http-proxy
+docker run --name acestream-http-proxy -d -t -p 127.0.0.1:6878:6878 ghcr.io/martinbjeldbak/acestream-http-proxy
 ```
 
 Or if you are in a network without UPnP, you will need to port forward 8621
 
 ```bash
-docker run -d -t -p 127.0.0.1:6878:6878 -p 8621:8621 ghcr.io/martinbjeldbak/acestream-http-proxy
+docker run --name acestream-http-proxy -d -t -p 127.0.0.1:6878:6878 -p 8621:8621 ghcr.io/martinbjeldbak/acestream-http-proxy
 ```
+
+Add `--restart unless-stopped` to the docker run command to have it restart on reboots.
 
 ## Deployment
 
