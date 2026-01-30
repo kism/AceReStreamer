@@ -70,14 +70,18 @@ class RemoteSettingsFetcher:
             existing_data=json.loads(settings.model_dump_json()),
             reason="Configuration updated via API",
         )
-        settings.write_config()
-        get_ace_scraper().start_scrape_thread()
-        get_epg_handler().update_epgs(settings.epgs)
+        self.reload_config()
 
         return ConfigExport(
             scraper=settings.scraper,
             epgs=settings.epgs,
         )
+
+    def reload_config(self) -> None:
+        """Reload the current configuration."""
+        settings.write_config()
+        get_ace_scraper().start_scrape_thread()
+        get_epg_handler().update_epgs(settings.epgs)
 
     # region Fetch http
     async def fetch_settings(self) -> None:

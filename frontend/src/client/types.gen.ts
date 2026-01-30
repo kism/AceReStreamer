@@ -487,6 +487,8 @@ export type ConfigTriggerFetchRemoteSettingsData = {
 
 export type ConfigTriggerFetchRemoteSettingsResponse = (MessageResponseModel);
 
+export type ConfigReloadConfigResponse = (MessageResponseModel);
+
 export type EpgEpgHealthResponse = (EPGApiHandlerHealthResponse);
 
 export type EpgGetEpgsResponse = (Array<EPGInstanceConf_Output>);

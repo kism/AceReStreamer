@@ -95,7 +95,7 @@ class PlaylistCreator:
         ace_playlist_content_id = self._playlists_dir / f"{settings.scraper.playlist_name}-content-id-main.m3u"
         site = ScrapeSiteIPTV(
             name=ace_playlist_content_id.stem,
-            url=HttpUrl(f"https://localhost/{ace_playlist_content_id.name}"),
+            url=HttpUrl(f"https://localhost/{ace_playlist_content_id.name}"),  # This is just to satify pydantic
         )
         if ace_playlist_content_id.exists():
             with ace_playlist_content_id.open("r", encoding="utf-8") as m3u_file:
@@ -107,7 +107,7 @@ class PlaylistCreator:
         ace_playlist_infohash = self._playlists_dir / f"{settings.scraper.playlist_name}-infohash-main.m3u"
         site = ScrapeSiteIPTV(
             name=ace_playlist_infohash.stem,
-            url=HttpUrl(f"https://localhost/{ace_playlist_infohash.name}"),
+            url=HttpUrl(f"https://localhost/{ace_playlist_infohash.name}"),  # This is just to satify pydantic
         )
         if ace_playlist_infohash.exists():
             with ace_playlist_infohash.open("r", encoding="utf-8") as m3u_file:

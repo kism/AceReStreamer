@@ -1,14 +1,31 @@
-import { Box, Collapsible, Flex, Heading, VStack } from "@chakra-ui/react"
+import {
+  Box,
+  Collapsible,
+  Flex,
+  Heading,
+  HStack,
+  VStack,
+} from "@chakra-ui/react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useCallback, useMemo, useState } from "react"
 import { FaAngleDown, FaAngleUp } from "react-icons/fa"
-import { AcePoolService, EpgService, HealthService } from "@/client"
+import {
+  AcePoolService,
+  ConfigService,
+  EpgService,
+  HealthService,
+  StreamsService,
+} from "@/client"
 import { Button } from "@/components/ui/button"
 import { CodeBlock } from "@/components/ui/code"
 
 function HealthManagement() {
   const queryClient = useQueryClient()
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({})
+  const [configRefreshResult, setConfigRefreshResult] = useState<unknown>(null)
+  const [streamCheckResult, setStreamCheckResult] = useState<unknown>(null)
+  const [isRefreshingConfig, setIsRefreshingConfig] = useState(false)
+  const [isCheckingStreams, setIsCheckingStreams] = useState(false)
 
   const { data: generalHealth, isLoading: isLoadingGeneral } = useQuery({
     queryKey: ["health", "general"],
@@ -89,15 +106,73 @@ function HealthManagement() {
     [queryClient],
   )
 
+  const handleConfigRefresh = useCallback(async () => {
+    setIsRefreshingConfig(true)
+    try {
+      const data = await ConfigService.reloadConfig()
+      setConfigRefreshResult(data)
+    } catch (error) {
+      setConfigRefreshResult({ error: String(error) })
+    } finally {
+      setIsRefreshingConfig(false)
+    }
+  }, [])
+
+  const handleStreamCheck = useCallback(async () => {
+    setIsCheckingStreams(true)
+    try {
+      const data = await StreamsService.check()
+      setStreamCheckResult(data)
+    } catch (error) {
+      setStreamCheckResult({ error: String(error) })
+    } finally {
+      setIsCheckingStreams(false)
+    }
+  }, [])
+
   if (isLoading) {
     return <Box>Loading...</Box>
   }
 
   return (
-    <VStack align="start" gap={6} width="100%">
+    <VStack align="start" width="100%">
       <Box>
         <Heading size="md">Health Status</Heading>
       </Box>
+
+      <Flex gap={4}>
+        <VStack align="start" gap={2}>
+          <HStack>
+            <Button
+              size="xs"
+              onClick={handleConfigRefresh}
+              loading={isRefreshingConfig}
+            >
+              Reload Config
+            </Button>
+
+            {configRefreshResult !== null && (
+              <CodeBlock fontSize="2xs" whiteSpace="pre" flex={1}>
+                {JSON.stringify(configRefreshResult, null)}
+              </CodeBlock>
+            )}
+          </HStack>
+          <HStack>
+            <Button
+              size="xs"
+              onClick={handleStreamCheck}
+              loading={isCheckingStreams}
+            >
+              Check Streams
+            </Button>
+            {streamCheckResult !== null && (
+              <CodeBlock fontSize="2xs" whiteSpace="pre" flex={1}>
+                {JSON.stringify(streamCheckResult, null)}
+              </CodeBlock>
+            )}{" "}
+          </HStack>
+        </VStack>
+      </Flex>
 
       <VStack align="start" gap={4} width="100%">
         {healthSections.map((section) => (

@@ -37,3 +37,10 @@ def trigger_fetch_remote_settings(url_model: RemoteSettingsURLSetModel) -> Messa
     """API endpoint to set the remote settings URL."""
     get_remote_settings_fetcher().set_remote_settings_url(url_model.url)
     return MessageResponseModel(message="Remote settings URL updated and fetching started.")
+
+
+@router.post("/reload", dependencies=[Depends(get_current_active_superuser)])
+def reload_config() -> MessageResponseModel:
+    """API endpoint to refresh the configuration."""
+    get_remote_settings_fetcher().reload_config()
+    return MessageResponseModel(message="Configuration refresh triggered.")
