@@ -40,3 +40,27 @@ jobs:
         uses: codecov/codecov-action@v4.0.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+
+
+  sphinx-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: pytest
+    strategy:
+      matrix:
+        python-version: ["3.14"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install the project
+        run: uv sync --extra docs
+
+      - name: Build Sphinx documentation
+        run: |
+          uv run sphinx-build --fail-on-warning -b html docs/source docs/build/html

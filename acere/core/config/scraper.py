@@ -109,8 +109,10 @@ class ScrapeSiteAPI(ScrapeSiteGeneric):
 
     @field_validator("url", mode="before")
     @classmethod
-    def ensure_api_url_endswith(cls, value: str) -> str:
+    def ensure_api_url_endswith(cls, value: str | HttpUrl) -> str:
         """Ensure the API URL ends with a slash."""
+        if isinstance(value, HttpUrl):
+            value = value.encoded_string()
         return value.removesuffix("/")
 
 
@@ -171,18 +173,24 @@ class AceScrapeConf(BaseModel):
 
     @field_validator("adhoc_playlist_external_url", mode="before")
     @classmethod
-    def ensure_adhoc_playlist_url_endswith(cls, value: str | None) -> str | None:
+    def ensure_adhoc_playlist_url_endswith(cls, value: str | HttpUrl | None) -> str | None:
         """Ensure the Adhoc playlist URL ends with a slash."""
         if value is None:
             return value
+
+        if isinstance(value, HttpUrl):
+            value = value.encoded_string()
         return value.removesuffix("/")
 
     @field_validator("tvg_logo_external_url", mode="before")
     @classmethod
-    def ensure_tvg_logo_url_endswith(cls, value: str | None) -> str | None:
+    def ensure_tvg_logo_url_endswith(cls, value: str | HttpUrl | None) -> str | None:
         """Ensure the TVG logo URL ends with a slash."""
         if value is None:
             return value
+
+        if isinstance(value, HttpUrl):
+            value = value.encoded_string()
         return value.removesuffix("/")
 
     @model_validator(mode="after")

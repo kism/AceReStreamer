@@ -8,6 +8,7 @@ test.py
 _garbo
 docker-compose_prod.yml
 /docs_out
+/docs/generated
 memray.bin
 memray*
 

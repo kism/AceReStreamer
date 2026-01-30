@@ -14,10 +14,9 @@ from .common import ScraperCommon
 from .models import FoundAceStream
 
 if TYPE_CHECKING:
-    from acere.core.config.scraper import ScrapeSiteAPI, TitleFilter
+    from acere.core.config.scraper import ScrapeSiteAPI
 else:
     ScrapeSiteAPI = object
-    TitleFilter = object
 
 
 logger = get_logger(__name__)
