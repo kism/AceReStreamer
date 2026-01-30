@@ -11,6 +11,7 @@ docker-compose_prod.yml
 /docs/generated
 memray.bin
 memray*
+junit.xml
 
 # Tanstack
 .tanstack

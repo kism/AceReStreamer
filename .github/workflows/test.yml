@@ -34,13 +34,13 @@ jobs:
         run: uv sync --extra test
 
       - name: Test with pytest
-        run: uv run pytest --cov=acere --cov-report=xml # xml report needed for codecov, other settings from pyproject.toml
+        run: uv run pytest --cov=acere --junitxml=junit.xml -o junit_family=legacy
 
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4.0.1
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-
 
   sphinx-build:
     runs-on: ubuntu-latest
