@@ -9,6 +9,7 @@ from pydantic import HttpUrl
 
 from acere.constants import SUPPORTED_TVG_LOGO_EXTENSIONS
 from acere.instances.config import settings
+from acere.instances.paths import get_app_path_handler
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger
@@ -208,10 +209,12 @@ class IPTVStreamScraper(ScraperCommon):
 
     async def _download_tvg_logo(self, line: str, title: str) -> None:
         """Download the TVG logo and the URL it got it from."""
+        tvg_logos_path = get_app_path_handler().tvg_logos_dir
+
         title_slug = slugify(title)
 
         for extension in SUPPORTED_TVG_LOGO_EXTENSIONS:
-            logo_path = self._tvg_logos_path / f"{title_slug}.{extension}"
+            logo_path = tvg_logos_path / f"{title_slug}.{extension}"
             if logo_path.is_file():
                 return
 
@@ -224,7 +227,7 @@ class IPTVStreamScraper(ScraperCommon):
                     title,
                 )
                 if logo is not None:
-                    logo_path = self._tvg_logos_path / file_name
+                    logo_path = tvg_logos_path / file_name
                     logo_path.parent.mkdir(parents=True, exist_ok=True)
                     with logo_path.open("wb") as file:
                         file.write(logo)
@@ -250,7 +253,7 @@ class IPTVStreamScraper(ScraperCommon):
         if content is None:
             return
 
-        tvg_logo_path = self._tvg_logos_path / f"{title_slug}.{url_file_extension}"
+        tvg_logo_path = tvg_logos_path / f"{title_slug}.{url_file_extension}"
         tvg_logo_path.parent.mkdir(parents=True, exist_ok=True)
         with tvg_logo_path.open("wb") as file:
             file.write(content)

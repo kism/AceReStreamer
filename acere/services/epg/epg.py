@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING, Literal
 import aiohttp
 from lxml import etree
 
-from acere.constants import EPG_XML_DIR
 from acere.core.config import EPGInstanceConf
+from acere.instances.paths import get_app_path_handler
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger
@@ -42,7 +42,7 @@ class EPG:
         self.last_updated: datetime | None = None
 
         file_name = f"{slugify(self.url.host) + '-' + slugify(self.url.path)}.{self._extracted_format}"
-        self.saved_file_path: Path = EPG_XML_DIR / file_name
+        self.saved_file_path: Path = get_app_path_handler().epg_data_dir / file_name
 
     async def update(self) -> bool:
         """Update the EPG data from the configured URL, returns true if updated with new data."""

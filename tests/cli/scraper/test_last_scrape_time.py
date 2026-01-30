@@ -8,6 +8,7 @@ from pydantic import HttpUrl
 
 from acere.cli.scraper.playlist import PlaylistCreator
 from acere.core.config.scraper import ScrapeSiteIPTV
+from acere.instances.paths import setup_app_path_handler
 from acere.services.scraper import IPTVStreamScraper
 
 _M3U_TEST_DATA_DIR = Path(__file__).parent / "m3u8"
@@ -15,7 +16,8 @@ _M3U_TEST_DATA_DIR = Path(__file__).parent / "m3u8"
 
 @pytest.fixture
 def playlist_creator(tmp_path: Path) -> PlaylistCreator:
-    return PlaylistCreator(instance_path=tmp_path)
+    setup_app_path_handler(instance_path=tmp_path)
+    return PlaylistCreator()
 
 
 def get_playlist_content(function_name: str, number: int) -> str:
@@ -33,7 +35,7 @@ async def test_infohash_last_scraped_time(
     function_name = frame.f_code.co_name if frame else "unknown_function"
     infohash_playlist_path = tmp_path / "playlists" / "acerestreamer-infohash-main.m3u"
 
-    iptv_scraper = IPTVStreamScraper(instance_path=tmp_path)
+    iptv_scraper = IPTVStreamScraper()
 
     scrape_site = ScrapeSiteIPTV(
         name="Test IPTV Site",

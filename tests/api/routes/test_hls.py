@@ -6,9 +6,10 @@ from typing import TYPE_CHECKING, Any
 import pytest
 from pydantic import HttpUrl
 
-from acere.constants import STATIC_DIR, TVG_LOGOS_DIR
+from acere.constants import STATIC_DIR
 from acere.instances import epg as epg_instance_module
 from acere.instances.config import settings
+from acere.instances.paths import get_app_path_handler
 from acere.services.epg.handler import EPGHandler
 from acere.services.scraper import main as scraper_main_module
 from tests.test_utils.ace import get_random_content_id
@@ -293,7 +294,7 @@ def test_tvg_logo_with_existing_file(
     """Test TVG logo endpoint with existing logo file."""
     # Create a test logo file
     logo_filename = "test_logo.png"
-    logo_path = TVG_LOGOS_DIR / logo_filename
+    logo_path = get_app_path_handler().tvg_logos_dir / logo_filename
     logo_path.parent.mkdir(parents=True, exist_ok=True)
     logo_path.write_bytes(b"FAKE PNG DATA")
 

@@ -4,9 +4,10 @@ from pathlib import Path
 from lxml import etree
 from pydantic import HttpUrl
 
-from acere.constants import EPG_XML_DIR as DEFAULT_EPG_XML_DIR
+from acere.constants import DEFAULT_INSTANCE_PATH
 from acere.core.config import EPGInstanceConf
 from acere.instances.config import settings
+from acere.instances.paths import get_app_path_handler, setup_app_path_handler
 from acere.services.epg.epg import EPG
 from acere.services.epg.helpers import find_current_program_xml, normalise_epg_tvg_id
 from acere.utils.cli import console, prompt
@@ -51,18 +52,24 @@ def find_now_playing(tvg_id: str, epgs: dict[str, EPG]) -> None:
 
 
 def main() -> None:
+    setup_app_path_handler(DEFAULT_INSTANCE_PATH)
+    path_handler = get_app_path_handler()
+
     parser = argparse.ArgumentParser(description="Tool to check what every epg thinks is playing for a given tvg_id")
     parser.add_argument(
         "--dir",
         "--epg-dir",
         type=Path,
-        default=DEFAULT_EPG_XML_DIR,
+        default=path_handler.epg_data_dir,
         help="Path to the EPG XML directory",
     )
     parser.add_argument("--tvg-id", type=str, default=None)
     args = parser.parse_args()
 
     epg_dir = args.dir
+    if not isinstance(epg_dir, Path):
+        console.print(f"[red]Invalid EPG directory path: {epg_dir}[/red]")
+        return
     if not epg_dir.is_dir():
         console.print(f"[red]EPG directory not found at: {epg_dir}[/red]")
         return

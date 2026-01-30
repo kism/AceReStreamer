@@ -4,14 +4,14 @@ from sqlalchemy import text
 from sqlmodel import Session, SQLModel, create_engine, select
 
 from acere import crud
-from acere.constants import DATABASE_FILE
 from acere.database.models.user import User, UserCreate
 from acere.instances.config import settings
+from acere.instances.paths import get_app_path_handler
 from acere.utils.logger import get_logger
 
 logger = get_logger(__name__)
 engine = create_engine(
-    f"sqlite:///{DATABASE_FILE}",
+    f"sqlite:///{get_app_path_handler().database_file}",
     echo=False,
 )
 

@@ -5,8 +5,9 @@ from typing import TYPE_CHECKING
 
 from pydantic import AnyUrl, ValidationError
 
-from acere.constants import SUPPORTED_TVG_LOGO_EXTENSIONS, TVG_LOGOS_DIR
+from acere.constants import SUPPORTED_TVG_LOGO_EXTENSIONS
 from acere.instances.config import settings
+from acere.instances.paths import get_app_path_handler
 from acere.utils.helpers import check_valid_content_id_or_infohash, slugify
 from acere.utils.logger import get_logger
 
@@ -159,10 +160,11 @@ def trim_title(title: str) -> str:
 
 def find_tvg_logo_image(title: str) -> str:
     """Find the TVG logo image for a given title."""
+    tvg_logos_dir = get_app_path_handler().tvg_logos_dir
     title_slug = slugify(title)
 
     for extension in SUPPORTED_TVG_LOGO_EXTENSIONS:
-        logo_path = TVG_LOGOS_DIR / f"{title_slug}.{extension}"
+        logo_path = tvg_logos_dir / f"{title_slug}.{extension}"
         if logo_path.is_file():
             return f"{title_slug}.{extension}"
 

@@ -8,12 +8,13 @@ from fastapi import APIRouter, HTTPException, Query, Request, Response
 from fastapi.responses import FileResponse
 from pydantic import HttpUrl
 
-from acere.constants import STATIC_DIR, TVG_LOGOS_DIR
+from acere.constants import STATIC_DIR
 from acere.core.stream_token import verify_stream_token
 from acere.instances.ace_pool import get_ace_pool
 from acere.instances.ace_quality import get_quality_handler
 from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.config import settings
+from acere.instances.paths import get_app_path_handler
 from acere.services.xc.helpers import check_xc_auth
 from acere.utils.api_models import MessageResponseModel
 from acere.utils.exception_handling import log_aiohttp_exception
@@ -305,7 +306,7 @@ def tvg_logo(path: str, token: str = "") -> FileResponse:
             detail="Static folder not configured",
         )
 
-    logo_path = TVG_LOGOS_DIR / path
+    logo_path = get_app_path_handler().tvg_logos_dir / path
 
     if not logo_path.is_file():
         default_logo = STATIC_DIR / "default_tvg_logo.png"

@@ -9,18 +9,7 @@ import pytz
 # Directories
 ## Directories Instance
 _env_instance_dir = os.getenv("INSTANCE_DIR")
-INSTANCE_DIR = Path(_env_instance_dir) if _env_instance_dir else Path(__file__).parent.parent / "instance"
-
-SETTINGS_FILE = INSTANCE_DIR / "config.json"
-DATABASE_FILE = INSTANCE_DIR / "acerestreamer.db"
-TVG_LOGOS_DIR = INSTANCE_DIR / "tvg_logos"
-TVG_LOGOS_DIR.mkdir(parents=True, exist_ok=True)
-EPG_XML_DIR = INSTANCE_DIR / "epg"
-EPG_XML_DIR.mkdir(parents=True, exist_ok=True)
-SCRAPER_CACHE_DIR = INSTANCE_DIR / "scraper_cache"
-SCRAPER_CACHE_DIR.mkdir(parents=True, exist_ok=True)
-PLAYLISTS_DIR = INSTANCE_DIR / "playlists"
-PLAYLISTS_DIR.mkdir(parents=True, exist_ok=True)
+DEFAULT_INSTANCE_PATH = Path(_env_instance_dir) if _env_instance_dir else Path(__file__).parent.parent / "instance"
 
 ## Directories Internal
 DEV_FRONTEND_DIR = Path(__file__).parent.parent / "frontend"

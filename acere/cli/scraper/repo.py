@@ -2,6 +2,8 @@
 
 from typing import TYPE_CHECKING
 
+from acere.instances.paths import get_app_path_handler
+
 if TYPE_CHECKING:
     from pathlib import Path
 else:
@@ -23,7 +25,8 @@ config_backups
 """
 
 
-def generate_misc(instance_path: Path) -> None:
+def generate_misc() -> None:
     """Generate misc files for the repo."""
+    instance_path = get_app_path_handler().instance_path
     (instance_path / ".gitattributes").write_text(GIT_ATTRIBUTES, encoding="utf-8")
     (instance_path / ".gitignore").write_text(GIT_IGNORE, encoding="utf-8")

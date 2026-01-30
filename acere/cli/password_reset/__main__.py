@@ -1,9 +1,10 @@
 from sqlmodel import Session, select
 
-from acere.constants import DATABASE_FILE
+from acere.constants import DEFAULT_INSTANCE_PATH
 from acere.crud import get_user_by_username, update_user
 from acere.database.init import engine
 from acere.database.models.user import User, UserUpdate
+from acere.instances.paths import get_app_path_handler, setup_app_path_handler
 from acere.utils.cli import console, prompt
 from acere.version import PROGRAM_NAME, __version__
 
@@ -11,11 +12,13 @@ from acere.version import PROGRAM_NAME, __version__
 def main() -> None:
     """CLI for password reset."""
     console.print(f"{PROGRAM_NAME} Password Reset Tool v{__version__}")
+    setup_app_path_handler(DEFAULT_INSTANCE_PATH)
+    path_handler = get_app_path_handler()
 
-    if DATABASE_FILE.exists():
-        console.print(f"Using database file at: {DATABASE_FILE}\n")
+    if path_handler.database_file.exists():
+        console.print(f"Using database file at: {path_handler.database_file}\n")
     else:
-        console.print(f"Database file not found at: {DATABASE_FILE}\n")
+        console.print(f"Database file not found at: {path_handler.database_file}\n")
         return
 
     # Note: db_path argument is currently not used, using the default engine

@@ -10,11 +10,12 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette_compress import CompressMiddleware
 
 from acere.api.main import api_router, api_router_xc, frontend_router, hls_router, iptv_router
-from acere.constants import API_V1_STR, SETTINGS_FILE
+from acere.constants import API_V1_STR, DEFAULT_INSTANCE_PATH
 from acere.database.init import engine, init_db
 from acere.instances.ace_pool import set_ace_pool
 from acere.instances.config import settings
 from acere.instances.epg import set_epg_handler
+from acere.instances.paths import get_app_path_handler, setup_app_path_handler
 from acere.instances.remote_settings import set_remote_settings_fetcher
 from acere.instances.scraper import set_ace_scraper
 from acere.services.ace_pool.pool import AcePool
@@ -40,7 +41,10 @@ IN_OPEN_API_MODE: bool = os.getenv("IN_OPEN_API_MODE", "false").lower() == "true
 if not IN_OPEN_API_MODE:
     traceback.install()
 
-    settings.write_config(SETTINGS_FILE)
+    setup_app_path_handler(DEFAULT_INSTANCE_PATH)
+    path_handler = get_app_path_handler()
+
+    settings.write_config(path_handler.settings_file)
     setup_logger(settings=settings.logging)
     setup_logger(settings=settings.logging, in_logger="uvicorn.error")
 
@@ -54,7 +58,7 @@ if not IN_OPEN_API_MODE:
 -------------------------------------------------------------------------------
 {PROGRAM_NAME}
 Version: {__version__}
-Config file: {SETTINGS_FILE.absolute()}
+Config file: {path_handler.settings_file.absolute()}
 Environment: {settings.ENVIRONMENT.capitalize()}
 Frontend: {FRONTEND_INFO}
 External URL: {settings.EXTERNAL_URL}

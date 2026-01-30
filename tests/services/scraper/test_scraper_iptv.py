@@ -4,6 +4,7 @@ import pytest
 from pydantic import HttpUrl
 
 from acere.core.config.scraper import ScrapeSiteIPTV
+from acere.instances.paths import setup_app_path_handler
 from acere.services.scraper.iptv import IPTVStreamScraper
 from tests.test_utils.aiohttp import FakeResponseDef, FakeSession
 
@@ -143,7 +144,9 @@ async def test_download_tvg_logo(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test _download_tvg_logo method with aiohttp mocks."""
-    scraper = IPTVStreamScraper(instance_path=tmp_path)
+    setup_app_path_handler(instance_path=tmp_path)
+
+    scraper = IPTVStreamScraper()
 
     # Create fake logo content
     fake_logo_data = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01"

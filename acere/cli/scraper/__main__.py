@@ -8,6 +8,7 @@ import uvloop
 
 from acere.core.config import AceReStreamerConf
 from acere.instances.config import settings
+from acere.instances.paths import setup_app_path_handler
 from acere.utils.logger import get_logger, setup_logger
 from acere.version import __version__
 
@@ -47,6 +48,7 @@ async def async_main() -> None:
 
     # Here in CLI land, everything we touch will need the instance path to be set
     instance_path = args.app_config.parent
+    setup_app_path_handler(instance_path=instance_path)
 
     setup_logger()
 
@@ -56,7 +58,7 @@ async def async_main() -> None:
     settings.update_from(cli_conf)
     del cli_conf  # Ensure we don't use the old one
 
-    pl_cr = PlaylistCreator(instance_path=instance_path)
+    pl_cr = PlaylistCreator()
     if len(settings.scraper.html) == 0 and len(settings.scraper.iptv_m3u8) == 0:
         logger.error("No scraper sites defined, cannot continue.")
         return
@@ -74,10 +76,9 @@ async def async_main() -> None:
     logger.info("Generating README.md")
 
     generate_readme(
-        instance_path=instance_path,
         external_base_url=settings.scraper.adhoc_playlist_external_url,
     )
-    generate_misc(instance_path=instance_path)
+    generate_misc()
 
 
 def main() -> None:

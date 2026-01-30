@@ -5,11 +5,12 @@ This module MUST set up the test environment before any application imports.
 
 import os
 import shutil
-import sys
 import tempfile
 from pathlib import Path
 
 from sqlmodel import create_engine
+
+from acere.instances.paths import get_app_path_handler, setup_app_path_handler
 
 # CRITICAL: Set environment variables BEFORE any acere imports
 # This must happen at module level, before pytest fixtures
@@ -19,19 +20,15 @@ os.environ["ACERE_TESTING"] = "1"
 _test_instance_dir = Path(tempfile.mkdtemp(prefix="acere_test_"))
 os.environ["INSTANCE_DIR"] = str(_test_instance_dir)
 
-# Create necessary subdirectories
-(_test_instance_dir / "tvg_logos").mkdir(exist_ok=True)
-(_test_instance_dir / "epg").mkdir(exist_ok=True)
-(_test_instance_dir / "playlists").mkdir(exist_ok=True)
-(_test_instance_dir / "scraper_cache").mkdir(exist_ok=True)
+setup_app_path_handler(instance_path=_test_instance_dir)
+path_handler = get_app_path_handler()
 
 # Create a minimal test config with test superuser password
-config_file = _test_instance_dir / "config.json"
+config_file = path_handler.settings_file
 shutil.copyfile(
     Path(__file__).parent / "configs" / "test_valid.json",
     config_file,
 )
-assert "acere" not in sys.modules, "acere module was imported too early!"
 
 # NOW we can import the application modules
 from typing import TYPE_CHECKING

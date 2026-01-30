@@ -23,7 +23,8 @@ from pydantic_settings import (
     SettingsConfigDict,
 )
 
-from acere.constants import ENV_PREFIX, SETTINGS_FILE
+from acere.constants import DEFAULT_INSTANCE_PATH, ENV_PREFIX
+from acere.instances.paths import get_app_path_handler, setup_app_path_handler
 from acere.utils.logger import LoggingConf, get_logger
 
 from .app import AppConf
@@ -44,6 +45,8 @@ __all__ = [
     "EPGInstanceConf",
 ]
 
+setup_app_path_handler(DEFAULT_INSTANCE_PATH)
+
 
 def parse_cors(v: Any) -> list[str] | str:  # noqa: ANN401 JSON things
     if isinstance(v, str) and not v.startswith("["):
@@ -63,7 +66,7 @@ class AceReStreamerConf(BaseSettings):
         case_sensitive=False,
         env_file_encoding="utf-8",
         env_nested_delimiter="__",
-        json_file=SETTINGS_FILE,
+        json_file=get_app_path_handler().settings_file,
     )
 
     # Default values for our settings
@@ -147,7 +150,7 @@ class AceReStreamerConf(BaseSettings):
         reason: str = "Validation has changed the config file",
     ) -> None:
         if config_path is None:
-            config_path = SETTINGS_FILE
+            config_path = get_app_path_handler().settings_file
 
         time_str = datetime.now(tz=UTC).strftime("%Y-%m-%d_%H%M%S")
         config_backup_dir = config_path.parent / "config_backups"
@@ -164,7 +167,7 @@ class AceReStreamerConf(BaseSettings):
     def write_config(self, config_path: Path | None = None) -> None:
         """Write the current settings to a JSON file."""
         if config_path is None:
-            config_path = SETTINGS_FILE
+            config_path = get_app_path_handler().settings_file
 
         config_path.parent.mkdir(parents=True, exist_ok=True)
 

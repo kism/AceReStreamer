@@ -1,3 +1,4 @@
 # TODO
 
-fix playlist_name?
+fun paths instance
+remove instance path errywhere

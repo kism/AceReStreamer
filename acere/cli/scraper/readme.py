@@ -6,7 +6,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel, HttpUrl
 
-from acere.constants import PLAYLISTS_DIR
+from acere.instances.paths import get_app_path_handler
 from acere.version import PROGRAM_NAME, __version__
 
 from .constants import M3U_URI_SCHEMES
@@ -20,11 +20,12 @@ class AdhocPlaylist(BaseModel):
     uri: str
 
 
-def generate_readme(instance_path: Path, external_base_url: HttpUrl | None) -> None:
+def generate_readme(external_base_url: HttpUrl | None) -> None:
     """Generate README.md for adhoc mode."""
+    path_handler = get_app_path_handler()
     result_playlists: dict[str, list[AdhocPlaylist]] = {}
 
-    found_playlists = list((instance_path / PLAYLISTS_DIR.name).glob("*.m3u"))
+    found_playlists = list((path_handler.playlists_dir).glob("*.m3u"))
 
     for found_playlist in found_playlists:
         playlist_type = next(
@@ -54,5 +55,5 @@ def generate_readme(instance_path: Path, external_base_url: HttpUrl | None) -> N
         time_generated=datetime.now(tz=UTC),
     )
     readme_content += "\n"
-    with (instance_path / "README.md").open("w", encoding="utf-8") as readme_file:
+    with (path_handler.instance_path / "README.md").open("w", encoding="utf-8") as readme_file:
         readme_file.write(readme_content)

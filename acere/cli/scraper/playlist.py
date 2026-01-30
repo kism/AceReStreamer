@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING, cast
 
 from pydantic import HttpUrl
 
-from acere.constants import PLAYLISTS_DIR
 from acere.core.config.scraper import ScrapeSiteIPTV
 from acere.instances.config import settings
+from acere.instances.paths import get_app_path_handler
 from acere.services.scraper import (
     APIStreamScraper,
     FoundAceStream,
@@ -35,14 +35,11 @@ _TIMEDELTA_INVALIDATE_FRESH = _TIMEDELTA_FRESH + timedelta(seconds=1)
 class PlaylistCreator:
     """Class to generate playlists."""
 
-    def __init__(self, instance_path: Path) -> None:
+    def __init__(self) -> None:
         """Initialize the PlaylistCreator."""
-        self._instance_path: Path = instance_path
-        self._playlists_dir = self._instance_path / PLAYLISTS_DIR.name
-        self._playlists_dir.mkdir(parents=True, exist_ok=True)
-        self._html_scraper = HTMLStreamScraper(instance_path=instance_path)
-        self._iptv_scraper = IPTVStreamScraper(instance_path=instance_path)
-        self._api_scraper = APIStreamScraper(instance_path=instance_path)
+        self._html_scraper = HTMLStreamScraper()
+        self._iptv_scraper = IPTVStreamScraper()
+        self._api_scraper = APIStreamScraper()
 
     async def scrape(self) -> None:
         """Scrape the streams."""
@@ -89,10 +86,11 @@ class PlaylistCreator:
         return found_streams_unique + found_streams_infohash_only
 
     async def _scrape_existing(self) -> list[FoundAceStream]:
+        playlists_dir = get_app_path_handler().playlists_dir
         content_id_results = []
         infohash_results = []
 
-        ace_playlist_content_id = self._playlists_dir / f"{settings.scraper.playlist_name}-content-id-main.m3u"
+        ace_playlist_content_id = playlists_dir / f"{settings.scraper.playlist_name}-content-id-main.m3u"
         site = ScrapeSiteIPTV(
             name=ace_playlist_content_id.stem,
             url=HttpUrl(f"https://localhost/{ace_playlist_content_id.name}"),  # This is just to satify pydantic
@@ -104,7 +102,7 @@ class PlaylistCreator:
         else:
             logger.debug("Existing ACE playlist not found at %s", ace_playlist_content_id)
 
-        ace_playlist_infohash = self._playlists_dir / f"{settings.scraper.playlist_name}-infohash-main.m3u"
+        ace_playlist_infohash = playlists_dir / f"{settings.scraper.playlist_name}-infohash-main.m3u"
         site = ScrapeSiteIPTV(
             name=ace_playlist_infohash.stem,
             url=HttpUrl(f"https://localhost/{ace_playlist_infohash.name}"),  # This is just to satify pydantic
@@ -125,6 +123,8 @@ class PlaylistCreator:
         return content_id_results + infohash_results
 
     async def _create_playlists(self, new_streams: list[FoundAceStream]) -> None:
+        playlists_dir = get_app_path_handler().playlists_dir
+
         existing_streams = await self._scrape_existing()
         fetched_content_id: list[str] = [stream.content_id for stream in new_streams if stream.content_id != ""]
         fetched_infohash: list[str] = [stream.infohash for stream in new_streams if stream.infohash is not None]
@@ -158,7 +158,7 @@ class PlaylistCreator:
         )
 
         for uri_scheme, prefix in M3U_URI_SCHEMES.items():
-            playlist_path = self._playlists_dir / f"{settings.scraper.playlist_name}-{uri_scheme}.m3u"
+            playlist_path = playlists_dir / f"{settings.scraper.playlist_name}-{uri_scheme}.m3u"
             with playlist_path.open("w", encoding="utf-8") as m3u_file:
                 epg_urls = [epg.url for epg in settings.epgs]
                 epg_str = ""
