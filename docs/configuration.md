@@ -14,16 +14,8 @@ For an IPTV source, you will need to provide a URL to an m3u or m3u8 playlist. T
 
 A playlist that is scrapable will look something like this:
 
-```text
-#EXTM3U
-#EXTINF:-1 group-title="General", IPTV1
-acestream://1000000000000000000000000000000000000001
-#EXTINF:-1 group-title="General", IPTV2
-acestream://1000000000000000000000000000000000000002
-#EXTINF:-1 group-title="General", IPTV3
-acestream://4000000000000000000000000000000000000003
-#EXTINF:-1 group-title="General", IPTV4
-acestream://1000000000000000000000000000000000000004
+```{literalinclude} ../tests/services/scraper/test_sites/playlist1.m3u8
+:language: text
 ```
 
 Other URI schemes will also work
