@@ -5,10 +5,13 @@ import contextlib
 from typing import ClassVar
 
 import aiohttp
+import fastapi
 from pydantic import HttpUrl
 from sqlmodel import select
+from acere.utils.ace import ace_id_short
 
 from acere.database.models import AceQualityCache
+from acere.database.models.acestream import AceStreamDBEntry
 from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.config import settings
 from acere.services.ace_quality import Quality
@@ -112,12 +115,13 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
                     self._currently_checking_quality = False
                     return
 
-                with self._get_session() as session:
-                    all_quality = list(session.exec(select(AceQualityCache)).all())
+                def need_to_check_quality(stream: AceStreamDBEntry) -> bool:
+                    quality = self.get_quality(stream.content_id)
+                    return not quality.has_ever_worked or quality.quality == 0
 
                 ace_streams_never_worked = len(
                     [  # We also check if the quality is zero, since maybe it worked but is now dead
-                        stream for stream in all_quality if not stream.has_ever_worked or stream.quality == 0
+                        stream for stream in streams_valid_content_id if need_to_check_quality(stream)
                     ]
                 )
 
@@ -126,10 +130,9 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
                 # Don't enumerate here, and don't bother with list comprehension tbh
                 n = 0
                 for stream in streams_valid_content_id:
-                    stream_quality = self.get_quality(stream.content_id)
-                    if not stream_quality.has_ever_worked or stream_quality.quality == 0:
+                    if need_to_check_quality(stream):
                         n += 1
-                        stream_url = f"{base_url}/{stream.content_id}"
+                        stream_url = f"{base_url}/{ace_id_short(stream.content_id)} {stream.title}"
                         logger.info(
                             "Checking Ace Stream %s (%d/%d)",
                             stream_url,
@@ -141,18 +144,20 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
                             with contextlib.suppress(
                                 aiohttp.ClientError,
                                 asyncio.TimeoutError,
+                                fastapi.exceptions.HTTPException,
                             ):
                                 await hls(path=stream.content_id, authentication_override=True)
                             await asyncio.sleep(attempt_delay)
 
                         await asyncio.sleep(stream_delay)
-            except Exception:  # This is a background task so it won't crash the app  # noqa: BLE001
-                exception_name = Exception.__name__
-                logger.warning("Exception occurred during quality check: %s", exception_name)
+            except Exception as e:  # This is a background task so it won't crash the app
+                exception_name = e.__class__.__name__
+                logger.exception("")
+                logger.error("Unhandled exception occurred during quality check: %s", exception_name)
 
             self._currently_checking_quality = False
 
-        url = f"{settings.EXTERNAL_URL}hls"
+        url = f"{settings.EXTERNAL_URL}/hls"
 
         task = asyncio.create_task(check_missing_quality_thread(base_url=HttpUrl(url)))
         _async_background_tasks.add(task)

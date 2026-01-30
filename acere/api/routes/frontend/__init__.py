@@ -83,10 +83,6 @@ if settings.FRONTEND_HOST == "":
         requested_path = DIST_DIR / full_path
         relative_path = requested_path.relative_to(DIST_DIR)
 
-        # Security: Ensure the path doesn't escape DIST_DIR TODO: TEST
-        if not str(relative_path.resolve()).startswith(str(DIST_DIR.resolve())):
-            raise HTTPException(status_code=404, detail="File not found")
-
         if relative_path in ALL_VITE_STATIC:
             content, mime_type = ALL_VITE_STATIC[relative_path]
             return Response(content=content, media_type=mime_type)

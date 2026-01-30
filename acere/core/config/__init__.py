@@ -108,6 +108,12 @@ class AceReStreamerConf(BaseSettings):
             JsonConfigSettingsSource(settings_cls),
         )
 
+    @field_validator("EXTERNAL_URL", mode="after")
+    @classmethod
+    def validate_external_url(cls, value: str) -> str:
+        """Ensure EXTERNAL_URL does not end with a slash."""
+        return value.rstrip("/")
+
     @field_validator("SECRET_KEY", mode="before")
     @classmethod
     def validate_secret_key(cls, value: str) -> str:

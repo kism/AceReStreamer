@@ -181,7 +181,7 @@ class AceStreamDBHandler(BaseDatabaseHandler):
                         num=current_stream_number,
                         name=stream.title,
                         stream_id=xc_id,
-                        stream_icon=f"{settings.EXTERNAL_URL}tvg-logo/{stream.tvg_logo}{token_str}"
+                        stream_icon=f"{settings.EXTERNAL_URL}/tvg-logo/{stream.tvg_logo}{token_str}"
                         if stream.tvg_logo
                         else "",
                         epg_channel_id=stream.tvg_id,
