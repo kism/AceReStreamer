@@ -20,15 +20,8 @@ A playlist that is scrapable will look something like this:
 
 Other URI schemes will also work
 
-```text
-acestream://
-http://127.0.0.1:6878/ace/getstream?id=
-http://127.0.0.1:6878/ace/getstream?content_id=
-http://127.0.0.1:6878/ace/manifest.m3u8?id=
-http://127.0.0.1:6878/ace/manifest.m3u8?content_id=
-plugin://script.module.horus?action=play&id=
-http://127.0.0.1:6878/ace/getstream?infohash=
-http://127.0.0.1:6878/ace/manifest.m3u8?infohash=
+```{literalinclude} generated/acestream_url_prefixes.txt
+:language: text
 ```
 
 The config will look something like this:
