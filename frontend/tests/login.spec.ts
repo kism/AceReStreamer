@@ -9,7 +9,7 @@ type OptionsType = {
 }
 
 const fillForm = async (page: Page, email: string, password: string) => {
-  await page.getByPlaceholder("Email").fill(email)
+  await page.getByPlaceholder("Username").fill(email)
   await page.getByPlaceholder("Password", { exact: true }).fill(password)
 }
 

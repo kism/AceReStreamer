@@ -25,7 +25,7 @@ services:
     image: acerestreamer-frontend:latest
     container_name: acerestreamer-frontend-playwright
     environment:
-      VITE_API_URL: "http://acerestreamer-backend-playwright:5100"
+      VITE_API_URL: "${VITE_API_URL}"
     depends_on:
       acerestreamer-backend:
         condition: service_healthy
@@ -44,7 +44,7 @@ services:
     command: ["npx", "playwright", "test", "--reporter=html"]
     environment:
       CI: "true"
-      VITE_API_URL: "http://acerestreamer-backend-playwright:5100"
+      VITE_API_URL: "${VITE_API_URL}"
       FIRST_SUPERUSER: "${ACERE_FIRST_SUPERUSER_USERNAME}"
       FIRST_SUPERUSER_PASSWORD: "${ACERE_FIRST_SUPERUSER_PASSWORD}"
     depends_on:
