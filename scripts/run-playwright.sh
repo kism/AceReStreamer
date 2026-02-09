@@ -15,6 +15,7 @@ echo "VITE_API_URL=${VITE_API_URL}" >>"${DOTENV_FILE}"
 docker buildx build --file docker/Dockerfile.backend . -t acerestreamer-backend:latest
 docker buildx build --file docker/Dockerfile.frontend --build-arg VITE_API_URL=${VITE_API_URL} . -t acerestreamer-frontend:latest
 
+docker compose -f frontend/docker-compose.playwright.yml down --volumes --remove-orphans
 docker compose -f frontend/docker-compose.playwright.yml --env-file "${DOTENV_FILE}" up --build --abort-on-container-exit
 
 docker logs acerestreamer-playwright-tests
