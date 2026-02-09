@@ -1,0 +1,35 @@
+---
+services:
+  acerestreamer-backend:
+    image: acerestreamer:latest # docker buildx build --network=host --file docker/Dockerfile.combined . -t acerestreamer
+    # image: ghcr.io/kism/acerestreamer:latest # From GitHub Container Registry
+    container_name: acerestreamer-backend-playwright
+
+    environment:
+      ACERE_EXTERNAL_URL: "http://localhost:5100"
+      ACERE_FIRST_SUPERUSER_USERNAME: "admin"
+      ACERE_FIRST_SUPERUSER_PASSWORD: ""
+      ACERE_APP__ACE_ADDRESS: "http://acestream-http-proxy:6878" # Leave this as is
+    ports:
+      - "5100"
+    volumes: # This is where the database and config is stored
+      - instance:/app/instance
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--spider", "http://127.0.0.1:5100/api/v1/health"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  acestream-frontend:
+    image: acerestreamer-frontend:latest
+    container_name: acerestreamer-frontend-playwright
+    environment:
+      VITE_API_URL: "http://acerestreamer-backend-playwright:5101"
+    depends_on:
+      - acerestreamer-backend
+    restart: unless-stopped
+
+volumes:
+  instance:

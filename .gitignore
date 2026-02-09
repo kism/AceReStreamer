@@ -12,6 +12,7 @@ docker-compose_prod.yml
 memray.bin
 memray*
 junit.xml
+.env*
 
 # Tanstack
 .tanstack
@@ -96,7 +97,6 @@ db.sqlite3-journal
 
 # Flask stuff:
 instance/
-instance_test/
 .webassets-cache
 
 # Scrapy stuff:
