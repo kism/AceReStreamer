@@ -5,7 +5,7 @@ set -e
 ACERE_FIRST_SUPERUSER_USERNAME="admin"
 ACERE_FIRST_SUPERUSER_PASSWORD="$(openssl rand -base64 16)"
 DOTENV_FILE="$(pwd)/frontend/.env_playwright"
-VITE_API_URL="http://acerestreamer-backend-playwright:5101"
+VITE_API_URL="http://acerestreamer-backend-playwright:5100"
 
 echo "ACERE_FIRST_SUPERUSER_USERNAME=${ACERE_FIRST_SUPERUSER_USERNAME}" >"${DOTENV_FILE}"
 echo "ACERE_FIRST_SUPERUSER_PASSWORD=${ACERE_FIRST_SUPERUSER_PASSWORD}" >>"${DOTENV_FILE}"
