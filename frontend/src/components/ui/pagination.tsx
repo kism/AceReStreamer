@@ -55,7 +55,11 @@ export const PaginationRoot = React.forwardRef<
   const { size = "sm", variant = "outline", getHref, ...rest } = props
   return (
     <RootPropsProvider
-      value={{ size, variantMap: variantMap[variant], getHref }}
+      value={
+        getHref
+          ? { size, variantMap: variantMap[variant], getHref }
+          : { size, variantMap: variantMap[variant] }
+      }
     >
       <ChakraPagination.Root
         ref={ref}

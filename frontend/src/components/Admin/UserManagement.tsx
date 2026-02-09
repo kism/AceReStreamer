@@ -20,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-const PER_PAGE = 20
+const PER_PAGE = 5
 
 function getUsersQueryOptions({ page }: { page: number }) {
   return {
