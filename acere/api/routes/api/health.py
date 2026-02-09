@@ -18,7 +18,7 @@ router = APIRouter(prefix="/health", tags=["Health"])
 PROCESS = Process()
 
 
-@router.get("/")
+@router.get("")
 def health() -> HealthResponseModel:
     """API endpoint to check the health of the service."""
     threads_enumerated = threading.enumerate()
