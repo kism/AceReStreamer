@@ -43,7 +43,7 @@ class UserUpdate(UserBase):
 
     @field_validator("username", mode="before")
     @classmethod
-    def username_to_lowercase(cls, v: str | None) -> str | None:
+    def username_to_lowercase(cls, v: str | None) -> str | None:  # ty:ignore[invalid-method-override]
         return v.lower() if isinstance(v, str) else v
 
 
