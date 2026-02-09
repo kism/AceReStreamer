@@ -38,7 +38,7 @@ services:
       start_period: 10s
 
   playwright:
-    image: mcr.microsoft.com/playwright:v1.55.0-noble
+    image: mcr.microsoft.com/playwright:v1.57.0-noble
     container_name: acerestreamer-playwright-tests
     working_dir: /tests
     command: ["npx", "playwright", "test", "--reporter=html"]
