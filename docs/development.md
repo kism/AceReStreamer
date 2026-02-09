@@ -1,5 +1,7 @@
 # Development
 
+This repo is based on the FastAPI fullstack template at [this commit](https://github.com/fastapi/full-stack-fastapi-template/tree/46e86d4d4d4a35363e018db5306c80d758c59e1d). In the time since then they have changed a bunch of the libraries.
+
 ## Backend (FastAPI)
 
 ### Generate SDK and clinent
