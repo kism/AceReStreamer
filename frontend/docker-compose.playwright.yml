@@ -15,11 +15,11 @@ services:
       - instance:/app/instance
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "--spider", "http://localhost:5100/api/v1/health"]
-      interval: 3s
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:5100/api/v1/health"]
+      interval: 5s
       timeout: 3s
-      retries: 50
-      start_period: 3s
+      retries: 30
+      start_period: 10s
 
   acestream-frontend:
     image: acerestreamer-frontend:latest
@@ -31,11 +31,11 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://acerestreamer-frontend-playwright:5173"]
-      interval: 3s
+      test: ["CMD", "curl", "-f", "http://127.0.0.1/"]
+      interval: 5s
       timeout: 3s
-      retries: 50
-      start_period: 3s
+      retries: 30
+      start_period: 10s
 
   playwright:
     image: mcr.microsoft.com/playwright:v1.55.0-noble
