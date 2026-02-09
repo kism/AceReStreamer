@@ -5,7 +5,7 @@ services:
     container_name: acerestreamer-backend-playwright
 
     environment:
-      ACERE_EXTERNAL_URL: "http://localhost:5100"
+      ACERE_EXTERNAL_URL: "http://acerestreamer-backend-playwright:5100"
       ACERE_FIRST_SUPERUSER_USERNAME: "admin"
       ACERE_FIRST_SUPERUSER_PASSWORD: ""
       ACERE_APP__ACE_ADDRESS: "http://acestream-http-proxy:6878" # Leave this as is
@@ -15,11 +15,11 @@ services:
       - instance:/app/instance
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "--spider", "http://127.0.0.1:5100/api/v1/health"]
-      interval: 60s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
+      test: ["CMD", "curl", "--spider", "http://acerestreamer-backend-playwright:5100/api/v1/health"]
+      interval: 3s
+      timeout: 3s
+      retries: 50
+      start_period: 3s
 
   acestream-frontend:
     image: acerestreamer-frontend:latest
@@ -31,11 +31,11 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+      test: ["CMD", "curl", "-f", "http://acerestreamer-frontend-playwright:5173"]
+      interval: 3s
+      timeout: 3s
+      retries: 50
+      start_period: 3s
 
   playwright:
     image: mcr.microsoft.com/playwright:v1.55.0-noble
