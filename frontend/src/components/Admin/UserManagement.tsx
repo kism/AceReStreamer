@@ -97,7 +97,6 @@ function UsersTable() {
         <PaginationRoot
           count={count}
           pageSize={PER_PAGE}
-          page={page}
           onPageChange={({ page }) => setPage(page)}
         >
           <Flex>

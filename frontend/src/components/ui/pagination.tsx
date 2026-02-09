@@ -2,10 +2,11 @@
 
 import type { ButtonProps, TextProps } from "@chakra-ui/react"
 import {
+  Button,
   Pagination as ChakraPagination,
-  createContext,
   IconButton,
   Text,
+  createContext,
   usePaginationContext,
 } from "@chakra-ui/react"
 import * as React from "react"
@@ -14,7 +15,6 @@ import {
   HiChevronRight,
   HiMiniEllipsisHorizontal,
 } from "react-icons/hi2"
-import { Button } from "@/components/ui/button"
 import { LinkButton } from "./link-button"
 
 interface ButtonVariantMap {
@@ -55,11 +55,7 @@ export const PaginationRoot = React.forwardRef<
   const { size = "sm", variant = "outline", getHref, ...rest } = props
   return (
     <RootPropsProvider
-      value={{
-        size,
-        variantMap: variantMap[variant],
-        getHref: getHref ?? (() => ""),
-      }}
+      value={{ size, variantMap: variantMap[variant], getHref }}
     >
       <ChakraPagination.Root
         ref={ref}
