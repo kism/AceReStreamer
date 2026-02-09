@@ -1,8 +1,7 @@
 ---
 services:
   acerestreamer-backend:
-    image: acerestreamer:latest # docker buildx build --network=host --file docker/Dockerfile.combined . -t acerestreamer
-    # image: ghcr.io/kism/acerestreamer:latest # From GitHub Container Registry
+    image: acerestreamer-backend:latest
     container_name: acerestreamer-backend-playwright
 
     environment:
@@ -26,10 +25,17 @@ services:
     image: acerestreamer-frontend:latest
     container_name: acerestreamer-frontend-playwright
     environment:
-      VITE_API_URL: "http://acerestreamer-backend-playwright:5101"
+      VITE_API_URL: "http://acerestreamer-backend-playwright:5100"
     depends_on:
-      - acerestreamer-backend
+      acerestreamer-backend:
+        condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   playwright:
     image: mcr.microsoft.com/playwright:v1.55.0-noble
@@ -37,10 +43,15 @@ services:
     working_dir: /tests
     command: ["npx", "playwright", "test", "--reporter=html"]
     environment:
-      VITE_API_URL: "http://acerestreamer-backend-playwright:5101"
+      CI: "true"
+      VITE_API_URL: "http://acerestreamer-backend-playwright:5100"
+      FIRST_SUPERUSER: "${ACERE_FIRST_SUPERUSER_USERNAME}"
+      FIRST_SUPERUSER_PASSWORD: "${ACERE_FIRST_SUPERUSER_PASSWORD}"
     depends_on:
-      - acerestreamer-backend
-      - acestream-frontend
+      acerestreamer-backend:
+        condition: service_healthy
+      acestream-frontend:
+        condition: service_healthy
     volumes:
       - .:/tests
 
