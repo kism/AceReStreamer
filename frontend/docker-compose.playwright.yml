@@ -31,5 +31,18 @@ services:
       - acerestreamer-backend
     restart: unless-stopped
 
+  playwright:
+    image: mcr.microsoft.com/playwright:v1.55.0-noble
+    container_name: acerestreamer-playwright-tests
+    working_dir: /tests
+    command: ["npx", "playwright", "test", "--reporter=html"]
+    environment:
+      VITE_API_URL: "http://acerestreamer-backend-playwright:5101"
+    depends_on:
+      - acerestreamer-backend
+      - acestream-frontend
+    volumes:
+      - .:/tests
+
 volumes:
   instance:

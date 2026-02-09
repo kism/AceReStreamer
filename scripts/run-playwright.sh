@@ -17,4 +17,4 @@ docker buildx build --file docker/Dockerfile.frontend --build-arg VITE_API_URL=$
 
 docker compose -f frontend/docker-compose.playwright.yml --env-file "${DOTENV_FILE}" up --build --abort-on-container-exit
 
-docker logs acerestreamer-backend-playwright
+docker logs acerestreamer-playwright-tests
