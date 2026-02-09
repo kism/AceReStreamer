@@ -6,8 +6,8 @@ services:
 
     environment:
       ACERE_EXTERNAL_URL: "http://acerestreamer-backend-playwright:5100"
-      ACERE_FIRST_SUPERUSER_USERNAME: "admin"
-      ACERE_FIRST_SUPERUSER_PASSWORD: ""
+      ACERE_FIRST_SUPERUSER_USERNAME: "${ACERE_FIRST_SUPERUSER_USERNAME}"
+      ACERE_FIRST_SUPERUSER_PASSWORD: "${ACERE_FIRST_SUPERUSER_PASSWORD}"
       ACERE_APP__ACE_ADDRESS: "http://acestream-http-proxy:6878" # Leave this as is
     ports:
       - "5100"
