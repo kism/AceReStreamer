@@ -121,7 +121,7 @@ async def test_hls_success(
 
     monkeypatch.setattr(
         "acere.api.routes.hls.get_ace_pool",
-        lambda: type("MockPool", (), {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url})(),
+        type("MockPool", (), {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url}),
     )
 
     response = client.get(f"/hls/{valid_content_id}?token={normal_user_stream_token}")
@@ -147,7 +147,7 @@ async def test_hls_pool_full(
 
     monkeypatch.setattr(
         "acere.api.routes.hls.get_ace_pool",
-        lambda: type("MockPool", (), {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url_none})(),
+        type("MockPool", (), {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url_none}),
     )
 
     response = client.get(f"/hls/{valid_content_id}?token={normal_user_stream_token}")
@@ -183,7 +183,7 @@ async def test_hls_invalid_response_from_ace(
 
     monkeypatch.setattr(
         "acere.api.routes.hls.get_ace_pool",
-        lambda: type("MockPool", (), {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url})(),
+        type("MockPool", (), {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url}),
     )
 
     response = client.get(f"/hls/{valid_content_id}?token={normal_user_stream_token}")
@@ -218,7 +218,7 @@ async def test_hls_multi_success(
     # Mock ace pool
     monkeypatch.setattr(
         "acere.api.routes.hls.get_ace_pool",
-        lambda: type("MockPool", (), {"get_instance_by_multistream_path": lambda self, path: mock_content_id})(),
+        type("MockPool", (), {"get_instance_by_multistream_path": lambda self, path: mock_content_id}),
     )
 
     response = client.get(f"/hls/m/{multistream_path}?token={normal_user_stream_token}")
@@ -345,7 +345,7 @@ async def test_xc_m3u8_success(
     # Mock the database handler to return our content_id
     monkeypatch.setattr(
         "acere.api.routes.hls.get_ace_streams_db_handler",
-        lambda: type("MockHandler", (), {"get_content_id_by_xc_id": lambda self, xc_id: mock_content_id})(),
+        type("MockHandler", (), {"get_content_id_by_xc_id": lambda self, xc_id: mock_content_id}),
     )
 
     # Mock the HLS URL retrieval
@@ -366,7 +366,7 @@ async def test_xc_m3u8_success(
 
     monkeypatch.setattr(
         "acere.api.routes.hls.get_ace_pool",
-        lambda: type("MockPool", (), {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url})(),
+        type("MockPool", (), {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url}),
     )
 
     # Test with path parameters

@@ -206,4 +206,4 @@ def populate_group_title(group_title: str, title: str) -> str:
 
     group_title = group_title.strip().capitalize()
 
-    return group_title if group_title else "General"
+    return group_title or "General"

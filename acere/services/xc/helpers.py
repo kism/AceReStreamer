@@ -30,9 +30,9 @@ def get_port_and_protocol_from_external_url(
     protocol = external_url.scheme
 
     if protocol == "https":
-        https_port = external_url.port if external_url.port else 443
+        https_port = external_url.port or 443
     elif protocol == "http":
-        http_port = external_url.port if external_url.port else 80
+        http_port = external_url.port or 80
 
     return http_port, https_port, protocol
 

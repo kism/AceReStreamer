@@ -161,7 +161,7 @@ class AcePool:
 
     def get_instance_by_multistream_path(self, ace_multistream_path: str) -> str:
         """Find the AceStream instance content_id for a given multistream path."""
-        ace_multistream_path = ace_multistream_path.split("/")[0]
+        ace_multistream_path = ace_multistream_path.split("/", maxsplit=1)[0]
         if not ace_multistream_path:
             logger.warning("No multistream path provided, cannot get AceStream instance.")
             return ""
@@ -217,7 +217,7 @@ class AcePool:
             max_size=self._max_size,
             ace_instances=instances,
             healthy=self._healthy,
-            ace_version=self._ace_version if self._ace_version else None,
+            ace_version=self._ace_version or None,
             transcode_audio=self._transcode_audio,
             external_url=settings.EXTERNAL_URL,
         )
