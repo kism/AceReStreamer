@@ -19,7 +19,7 @@ class BaseDatabaseHandler:
 
     def __init__(self, test_engine: Engine | None = None) -> None:
         """Initialize the database handler."""
-        self._engine = test_engine if test_engine else engine
+        self._engine = test_engine or engine
         SQLModel.metadata.create_all(self._engine)
 
     @contextmanager

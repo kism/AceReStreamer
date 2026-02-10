@@ -360,7 +360,7 @@ export class HealthService {
     public static health(): CancelablePromise<HealthHealthResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/health/'
+            url: '/api/v1/health'
         });
     }
 }

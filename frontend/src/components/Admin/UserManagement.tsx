@@ -20,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-const PER_PAGE = 5
+const PER_PAGE = 20
 
 function getUsersQueryOptions({ page }: { page: number }) {
   return {
@@ -97,7 +97,6 @@ function UsersTable() {
         <PaginationRoot
           count={count}
           pageSize={PER_PAGE}
-          page={page}
           onPageChange={({ page }) => setPage(page)}
         >
           <Flex>

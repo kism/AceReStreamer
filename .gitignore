@@ -12,6 +12,7 @@ docker-compose_prod.yml
 memray.bin
 memray*
 junit.xml
+.env*
 
 # Tanstack
 .tanstack
