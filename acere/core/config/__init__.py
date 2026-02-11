@@ -122,6 +122,14 @@ class AceReStreamerConf(BaseSettings):
             value = secrets.token_urlsafe(32)
         return value
 
+    @field_validator("REMOTE_SETTINGS_URL", mode="before")
+    @classmethod
+    def validate_remote_settings_url(cls, value: str | None) -> str | None:
+        """Validate the remote settings URL, generate one if not set."""
+        if value == "" or value is None:
+            return None
+        return value
+
     @computed_field
     @property
     def all_cors_origins(self) -> list[str]:

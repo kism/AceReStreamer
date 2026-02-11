@@ -29,7 +29,9 @@ ACE_URL_PREFIXES_CONTENT_ID = [
 ]
 ACE_URL_PREFIXES_INFOHASH = [
     "http://127.0.0.1:6878/ace/getstream?infohash=",
+    "http://acestream:6878/ace/getstream?infohash=",
     "http://127.0.0.1:6878/ace/manifest.m3u8?infohash=",
+    "http://acestream:6878/ace/manifest.m3u8?infohash=",
 ]
 
 # Compiled regex patterns
