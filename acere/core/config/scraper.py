@@ -175,8 +175,8 @@ class AceScrapeConf(BaseModel):
     @classmethod
     def ensure_adhoc_playlist_url_endswith(cls, value: str | HttpUrl | None) -> str | None:
         """Ensure the Adhoc playlist URL ends with a slash."""
-        if value is None:
-            return value
+        if value == "" or value is None:
+            return None
 
         if isinstance(value, HttpUrl):
             value = value.encoded_string()
@@ -186,8 +186,8 @@ class AceScrapeConf(BaseModel):
     @classmethod
     def ensure_tvg_logo_url_endswith(cls, value: str | HttpUrl | None) -> str | None:
         """Ensure the TVG logo URL ends with a slash."""
-        if value is None:
-            return value
+        if value == "" or value is None:
+            return None
 
         if isinstance(value, HttpUrl):
             value = value.encoded_string()
