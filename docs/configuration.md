@@ -8,6 +8,8 @@ Scrapers are what look for AceStream links, they can scrape web pages, IPTV play
 
 Scrapers right now are configured via json, even in the frontend. Each scraper has a name filter option so you can filter the results.
 
+The first scrape might take some time, especially if there are many TVG logos to download.
+
 ### IPTV Scraper
 
 For an IPTV source, you will need to provide a URL to an m3u or m3u8 playlist. The scraper will then look for AceStream links in the playlist.
