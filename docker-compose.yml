@@ -13,6 +13,8 @@ services:
           "CMD",
           "curl",
           "--fail",
+          "--silent",
+          "--show-error",
           "http://127.0.0.1:6878/webui/api/service?method=get_version",
         ]
       interval: 60s
@@ -21,8 +23,8 @@ services:
       start_period: 60s
 
   acerestreamer:
-    image: acerestreamer:latest # docker buildx build --network=host --file docker/Dockerfile.combined . -t acerestreamer
-    # image: ghcr.io/kism/acerestreamer:latest # From GitHub Container Registry
+    # image: acerestreamer:latest # docker buildx build --network=host --file docker/Dockerfile.combined . -t acerestreamer
+    image: ghcr.io/kism/acerestreamer:latest # From GitHub Container Registry
     container_name: acerestreamer
 
     environment:
@@ -36,7 +38,7 @@ services:
       - ./instance:/app/instance
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://127.0.0.1:5100/api/v1/health"]
+      test: ["CMD", "curl", "--fail", "--silent", "--show-error", "http://127.0.0.1:5100/api/v1/health"]
       interval: 60s
       timeout: 10s
       retries: 3
