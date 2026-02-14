@@ -10,13 +10,12 @@ from pydantic import HttpUrl
 from acere.constants import SUPPORTED_TVG_LOGO_EXTENSIONS
 from acere.instances.config import settings
 from acere.instances.paths import get_app_path_handler
+from acere.services.scraper import name_processor
+from acere.services.scraper.common import ScraperCommon
+from acere.services.scraper.models import FoundAceStream
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger
-
-from . import name_processor
-from .common import ScraperCommon
-from .models import FoundAceStream
 
 if TYPE_CHECKING:
     from acere.core.config.scraper import ScrapeSiteIPTV, TitleFilter
@@ -55,6 +54,7 @@ class IPTVStreamScraper(ScraperCommon):
     async def _scrape_iptv_playlist(self, site: ScrapeSiteIPTV) -> list[FoundAceStream]:
         """Scrape the streams from the configured IPTV sites."""
         content = await self._get_site_content(site)
+        logger.trace("Scraping content for IPTV site %s: len=%d", site.name, len(content) if content else 0)
         if not content:
             return []
 

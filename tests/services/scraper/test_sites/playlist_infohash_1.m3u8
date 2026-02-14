@@ -1,5 +1,5 @@
 #EXTM3U
-#EXTINF:-1 tvg-logo="https://pytest.internal/channel1.png" tvg-id="Channel1.au" group-title="General" x-last-found="0", Channel 1 [AU]
+#EXTINF:-1 tvg-logo="https://pytest.internal/channelinfo1.png" tvg-id="ChannelInfo1.au" group-title="General" x-last-found="0", ChannelInfo 1 [AU]
 http://127.0.0.1:6878/ace/manifest.m3u8?infohash=1000000000000000000000000000000000000001
-#EXTINF:-1 tvg-logo="https://pytest.internal/channel1.png" tvg-id="Channel2.au" group-title="General" x-last-found="0", Channel 2 [AU]
+#EXTINF:-1 tvg-logo="https://pytest.internal/channelinfo1.png" tvg-id="ChannelInfo2.au" group-title="General" x-last-found="0", ChannelInfo 2 [AU]
 http://127.0.0.1:6878/ace/manifest.m3u8?infohash=1000000000000000000000000000000000000002
