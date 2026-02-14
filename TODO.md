@@ -8,3 +8,4 @@
 - fixture, picture
   @pytest.fixture
   async def scraper(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> IPTVStreamScraper:
+- odball casts

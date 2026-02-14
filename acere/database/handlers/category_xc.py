@@ -23,7 +23,7 @@ class CategoryXCCategoryIDDatabaseHandler(BaseDatabaseHandler):
             if isinstance(result, CategoryXCCategoryID):
                 return result.xc_category_id
 
-            new_mapping = CategoryXCCategoryID(category=category_name)
+            new_mapping = CategoryXCCategoryID(category=category_name) # type: ignore[missing-arg]
             session.add(new_mapping)
             session.commit()
             logger.trace("Created new XC category ID mapping: %s -> %d", category_name, new_mapping.xc_category_id)
