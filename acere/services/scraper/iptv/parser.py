@@ -19,6 +19,12 @@ else:
 
 logger = get_logger(__name__)
 
+_COUNTRY_CODE_ALT_REGEX: list[re.Pattern] = [
+    re.compile(r"\.(\w{2})\s*$"),  # Matches .uk
+    re.compile(r"^(\w{2})[ :]"),  # Matches "UK " or "UK: "
+]
+TVG_LOGO_REGEX = re.compile(r'tvg-logo="([^"]+)"')
+
 
 class M3UParser:
     """Parser for M3U playlist content to extract AceStream entries.
@@ -31,10 +37,6 @@ class M3UParser:
     GROUP_TITLE_REGEX = re.compile(r'group-title="([^"]+)"')
     LAST_FOUND_REGEX = re.compile(r'x-last-found="(\d+)"')
     COUNTRY_CODE_REGEX = re.compile(r"\s*\[\w{2}\]\s*$")
-    COUNTRY_CODE_ALT_REGEX = [
-        re.compile(r"\.(\w{2})\s*$"),  # Matches .uk
-        re.compile(r"^(\w{2})[ :]"),  # Matches "UK " or "UK: "
-    ]
 
     async def parse_m3u_content(self, content: str, site: ScrapeSiteIPTV) -> list[FoundAceStream]:
         """Parse M3U content and extract AceStream entries."""
@@ -138,7 +140,7 @@ class M3UParser:
 
     def _extract_logo_url(self, line: str) -> HttpUrl | None:
         """Extract the TVG logo URL from an EXTINF line."""
-        match = re.search(r'tvg-logo="([^"]+)"', line)
+        match = TVG_LOGO_REGEX.search(line)
         if match:
             return HttpUrl(match.group(1))
         return None
@@ -159,7 +161,7 @@ class M3UParser:
         if self.COUNTRY_CODE_REGEX.match(title):
             return wip_tvg_id, title
 
-        for regex in self.COUNTRY_CODE_ALT_REGEX:
+        for regex in _COUNTRY_CODE_ALT_REGEX:
             matches = regex.findall(wip_tvg_id)
             if matches:
                 country_code = matches[0].upper()
