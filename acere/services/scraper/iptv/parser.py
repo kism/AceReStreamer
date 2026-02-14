@@ -4,7 +4,7 @@ import re
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-from pydantic import HttpUrl
+from pydantic import HttpUrl, ValidationError
 
 from acere.services.scraper import name_processor
 from acere.services.scraper.iptv import tvg_logo
@@ -183,19 +183,22 @@ class M3UParser:
         if metadata and "extlogo" in metadata:
             try:
                 return HttpUrl(metadata["extlogo"])
-            except Exception as e:
+            except ValidationError as e:
                 logger.debug("Failed to parse EXTLOGO URL: %s", e)
 
         # Fall back to tvg-logo attribute
         match = TVG_LOGO_REGEX.search(line)
         if match:
-            return HttpUrl(match.group(1))
+            try:
+                return HttpUrl(match.group(1))
+            except ValidationError as e:
+                logger.debug("Failed to parse TVG logo URL: %s", e)
         return None
 
     def _extract_tvg_id_from_exttv(self, exttv_line: str) -> str | None:
         """Extract TVG ID from EXTTV line."""
         parts = exttv_line.split(";")
-        if len(parts) >= 3:
+        if len(parts) >= 3:  # noqa: PLR2004 #EXTTV has three parts, the third part is the TVG ID
             tvg_id = parts[2].strip()
             return tvg_id or None
         return None
@@ -203,7 +206,7 @@ class M3UParser:
     def _extract_country_from_exttv(self, exttv_line: str) -> str | None:
         """Extract country code from EXTTV line."""
         parts = exttv_line.split(";")
-        if len(parts) >= 2:
+        if len(parts) >= 2:  # noqa: PLR2004 #EXTTV has three parts, the second part is the country code
             country = parts[1].strip()
             if country:
                 return country.upper()
