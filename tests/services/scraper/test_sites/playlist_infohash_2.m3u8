@@ -1,0 +1,9 @@
+#EXTM3U
+#EXTINF:-1,Channel 1
+#EXTTV:;au;Channel 1.au
+#EXTLOGO:https://pytest.internal/channel1.png
+http://acestream:6878/ace/manifest.m3u8?infohash=1000000000000000000000000000000000000001
+#EXTINF:-1,Channel 2
+#EXTTV:;au;Channel 2.au
+#EXTLOGO:https://pytest.internal/channel2.png
+http://acestream:6878/ace/manifest.m3u8?infohash=1000000000000000000000000000000000000002
