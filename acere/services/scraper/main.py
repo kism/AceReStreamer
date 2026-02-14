@@ -102,8 +102,6 @@ class AceScraper:
     def _print_streams(self, all_found_streams: list[FoundAceStream]) -> None:
         """Print the found streams."""
         # All found streams includes infohash
-        n_sites = len(self._streams)
-
         if len(self._streams) == 0:
             if len(all_found_streams) == 0:
                 logger.warning("Scraper found no AceStreams.")
@@ -116,7 +114,7 @@ class AceScraper:
         n_unique_content_ids = len({stream.content_id for stream in self._streams.values() if stream.content_id})
         n_unique_infohashes = len({stream.infohash for stream in self._streams.values() if stream.infohash})
 
-        msg = f"Found AceStreams: {n_unique_content_ids} unique content IDs, {n_unique_infohashes} unique infohashes across {n_sites} site definitions."
+        msg = f"Found AceStreams: {n_unique_content_ids} unique content IDs, {n_unique_infohashes}."
         logger.info(msg)
 
     def _print_warnings(self) -> None:

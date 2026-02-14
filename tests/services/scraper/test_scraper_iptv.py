@@ -146,8 +146,6 @@ async def test_download_tvg_logo(
     """Test _download_tvg_logo method with aiohttp mocks."""
     setup_app_path_handler(instance_path=tmp_path)
 
-    scraper = IPTVStreamScraper()
-
     # Create fake logo content
     fake_logo_data = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01"
 
