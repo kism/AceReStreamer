@@ -1,6 +1,5 @@
 """TVG logo downloading utilities for IPTV scrapers."""
 
-import re
 from pathlib import Path
 
 import aiohttp

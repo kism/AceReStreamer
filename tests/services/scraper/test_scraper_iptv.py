@@ -5,8 +5,7 @@ from pydantic import HttpUrl
 
 from acere.core.config.scraper import ScrapeSiteIPTV
 from acere.instances.paths import setup_app_path_handler
-from acere.services.scraper.iptv import IPTVStreamScraper
-from acere.services.scraper.iptv import tvg_logo
+from acere.services.scraper.iptv import IPTVStreamScraper, tvg_logo
 from tests.test_utils.aiohttp import FakeResponseDef, FakeSession
 
 from . import SCRAPER_TEST_SITES
