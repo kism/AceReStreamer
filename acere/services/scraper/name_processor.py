@@ -189,6 +189,7 @@ def get_tvg_id_from_title(title: str) -> str:
         country_code = country_code_match.group(1)
         title_no_cc = title.replace(f"[{country_code}]", "").strip()
         return f"{title_no_cc}.{country_code.lower()}"
+
     return ""
 
 
