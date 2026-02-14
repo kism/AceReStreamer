@@ -12,6 +12,7 @@ from lxml import etree
 from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger
 from acere.version import PROGRAM_NAME, URL
+from acere.instances.ace_streams import get_ace_streams_db_handler
 
 from .candidate import EPGCandidateHandler
 from .epg import EPG, EPG_LIFESPAN
@@ -146,8 +147,6 @@ class EPGHandler:
             if tvg_id != "":
                 self._set_of_tvg_ids.add(tvg_id)
 
-        logger.critical("Adding TVG IDs: %s", tvg_ids)
-
         # This needs to be forced, otherwise the list might be empty on startup
         self._condense_epgs()
 
@@ -273,6 +272,10 @@ class EPGHandler:
         self._epgs.clear()
         for epg_conf in epg_conf_list:
             self._epgs.append(EPG(epg_conf=epg_conf))
+
+        database_tvg_ids = get_ace_streams_db_handler().get_all_distinct_tvg_ids()
+        for tvg_id in database_tvg_ids:
+            self._set_of_tvg_ids.add(tvg_id)
 
         thread = threading.Thread(target=_start_epg_update_thread, name="EPGHandler: update_epgs", daemon=True)
         thread.start()
