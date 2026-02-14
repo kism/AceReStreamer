@@ -234,6 +234,8 @@ class AceScraper:
                     # Check if there are still missing content_ids after population attempt
                     still_missing = [stream for stream in found_streams if not stream.content_id and stream.infohash]
 
+                    self._write_streams_to_database()
+
                     if len(still_missing) == 0:
                         break
 
@@ -244,7 +246,6 @@ class AceScraper:
                         )
                         time.sleep(60)
 
-                self._write_streams_to_database()
                 self._update_epg_with_streams()
 
                 self._print_warnings()
