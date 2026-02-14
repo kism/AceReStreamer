@@ -42,7 +42,8 @@ def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> UsersPub
     statement = select(User).offset(skip).limit(limit)
     users = session.exec(statement).all()
 
-    return UsersPublic(data=users, count=count)
+    # Oddball return to make ty not complain # return UsersPublic(data=users, count=count)
+    return UsersPublic(data=[UserPublic.model_validate(user) for user in users], count=count)
 
 
 @router.post("/", dependencies=[Depends(get_current_active_superuser)], response_model=UserPublic)
