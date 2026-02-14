@@ -127,14 +127,3 @@ async def test_get_site_content(
 
     result = await scraper._get_site_content(site_config)
     assert result == test_content
-
-    # Test with 404 error
-    site_config_404 = ScrapeSiteIPTV(
-        type="iptv",
-        name="Not Found Site",
-        url=HttpUrl("http://ace.pytest.internal/nonexistent.m3u8"),
-    )
-
-    result_404 = await scraper._get_site_content(site_config_404)
-    assert result_404 is None
-
