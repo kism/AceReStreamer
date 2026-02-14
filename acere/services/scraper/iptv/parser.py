@@ -197,7 +197,7 @@ class M3UParser:
         parts = exttv_line.split(";")
         if len(parts) >= 3:
             tvg_id = parts[2].strip()
-            return tvg_id if tvg_id else None
+            return tvg_id or None
         return None
 
     def _extract_country_from_exttv(self, exttv_line: str) -> str | None:

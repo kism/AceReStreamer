@@ -50,7 +50,7 @@ def test_check_if_user_is_active(db: Session) -> None:
 def test_check_if_user_is_active_inactive(db: Session) -> None:
     username = random_lower_string()
     password = random_lower_string()
-    user_in = UserCreate(username=username, password=password, disabled=True)
+    user_in = UserCreate(username=username, password=password, is_active=False)
     user = crud.create_user(session=db, user_create=user_in)
     assert user.is_active is False
 

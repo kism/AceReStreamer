@@ -1,6 +1,6 @@
 """TVG logo downloading utilities for IPTV scrapers."""
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import aiohttp
 from pydantic import HttpUrl
@@ -10,6 +10,11 @@ from acere.instances.config import settings
 from acere.instances.paths import get_app_path_handler
 from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger
+
+if TYPE_CHECKING:
+    from pathlib import Path
+else:
+    Path = object
 
 logger = get_logger(__name__)
 
@@ -27,9 +32,7 @@ async def fetch_logo_content(logo_url: HttpUrl, title: str) -> bytes | None:
     output_logo = None
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(
-                logo_url.encoded_string(), timeout=aiohttp.ClientTimeout(total=5)
-            ) as response:
+            async with session.get(logo_url.encoded_string(), timeout=aiohttp.ClientTimeout(total=5)) as response:
                 response.raise_for_status()
                 output_logo = await response.read()
     except (aiohttp.ClientError, TimeoutError) as e:

@@ -9,10 +9,10 @@ from typing import TYPE_CHECKING
 
 from lxml import etree
 
+from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger
 from acere.version import PROGRAM_NAME, URL
-from acere.instances.ace_streams import get_ace_streams_db_handler
 
 from .candidate import EPGCandidateHandler
 from .epg import EPG, EPG_LIFESPAN

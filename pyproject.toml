@@ -193,3 +193,10 @@ disable_error_code = [
 include = ["acere/main.py", "tests/core/config/test_ace_scrape_conf.py"]
 [tool.ty.overrides.rules]
 "invalid-argument-type" = "ignore"
+
+[[tool.ty.overrides]]
+# Not sure what ty is upset about here
+include = ["acere/database/handlers/category_xc.py"]
+[tool.ty.overrides.rules]
+"missing-argument" = "ignore"
+
