@@ -49,12 +49,12 @@ def _get_test_sites() -> dict[str, ScrapeSiteIPTV]:
         "playlist_infohash_1.m3u8": ScrapeSiteIPTV(
             type="iptv",
             name="Test Site 1",
-            url=HttpUrl("http://pytest.internal/playlist1.m3u8"),
+            url=HttpUrl("http://pytest.internal/playlist_infohash_1.m3u8"),
         ),
         "playlist_infohash_2.m3u8": ScrapeSiteIPTV(
             type="iptv",
             name="Test Site 2",
-            url=HttpUrl("http://pytest.internal/playlist2.m3u8"),
+            url=HttpUrl("http://pytest.internal/playlist_infohash_1.m3u8"),
         ),
     }
 
