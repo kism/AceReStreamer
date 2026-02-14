@@ -45,6 +45,7 @@ class EPGHandler:
         self._next_update_time: datetime = datetime.now(tz=UTC)
         self._threads: list[threading.Thread] = []
         self._stop_event = threading.Event()
+        self._last_warned_current_program: datetime = datetime.min.replace(tzinfo=UTC)
 
     # region Helpers
     def _create_tv_element(self) -> etree._Element:
@@ -156,10 +157,21 @@ class EPGHandler:
     def get_current_program(self, tvg_id: str) -> tuple[str, str]:
         """Get the current program for a given TVG ID."""
         if len(self._epgs) == 0:
-            logger.error("No EPGs loaded to get current program, either none are configured or they haven't loaded yet")
+            if datetime.now(tz=UTC) - self._last_warned_current_program > EPG_CHECK_INTERVAL_MINIMUM:
+                logger.warning(
+                    "No EPGs loaded, cannot get program for TVG_ID %s",
+                    tvg_id,
+                )
+                self._last_warned_current_program = datetime.now(tz=UTC)
             return "", ""
         if self._condensed_epg is None:
-            logger.error("No condensed EPG data available to get current program")
+            if datetime.now(tz=UTC) - self._last_warned_current_program > EPG_CHECK_INTERVAL_MINIMUM:
+                logger.warning(
+                    "No condensed EPG data loaded, cannot get program for TVG_ID %s",
+                    tvg_id,
+                )
+                self._last_warned_current_program = datetime.now(tz=UTC)
+
             return "", ""
 
         return find_current_program_xml(tvg_id, self._condensed_epg)

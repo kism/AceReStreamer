@@ -61,6 +61,8 @@ def add_epg(body_json: EPGInstanceConf | list[EPGInstanceConf]) -> None:
     for epg_instance in body_json:
         settings.add_epg(epg_instance)
 
+    settings.write_config()
+
     epg_handler.update_epgs(settings.epgs)
 
 
