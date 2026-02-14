@@ -146,6 +146,8 @@ class EPGHandler:
             if tvg_id != "":
                 self._set_of_tvg_ids.add(tvg_id)
 
+        logger.critical("Adding TVG IDs: %s", tvg_ids)
+
         # This needs to be forced, otherwise the list might be empty on startup
         self._condense_epgs()
 

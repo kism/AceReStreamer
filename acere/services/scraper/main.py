@@ -99,14 +99,24 @@ class AceScraper:
         return sources
 
     # region Helpers
-    def _print_streams(self) -> None:
+    def _print_streams(self, all_found_streams: list[FoundAceStream]) -> None:
         """Print the found streams."""
-        if not self._streams:
-            logger.warning("Scraper found no AceStreams.")
-            return
+        # All found streams includes infohash
+        n_sites = len(self._streams)
 
-        n = len(self._streams)
-        msg = f"Found AceStreams: {n} unique streams across {len(self._streams)} site definitions."
+        if len(self._streams) == 0:
+            if len(all_found_streams) == 0:
+                logger.warning("Scraper found no AceStreams.")
+            else:
+                logger.warning(
+                    "Scraper found %d AceStreams, all infohash.",
+                    len(all_found_streams),
+                )
+
+        n_unique_content_ids = len({stream.content_id for stream in self._streams.values() if stream.content_id})
+        n_unique_infohashes = len({stream.infohash for stream in self._streams.values() if stream.infohash})
+
+        msg = f"Found AceStreams: {n_unique_content_ids} unique content IDs, {n_unique_infohashes} unique infohashes across {n_sites} site definitions."
         logger.info(msg)
 
     def _print_warnings(self) -> None:
@@ -164,6 +174,11 @@ class AceScraper:
         for stream in self._streams.values():
             handler.update_stream(stream=stream)
 
+    def _update_epg_with_streams(self) -> None:
+        """Update the EPG with the found streams."""
+        tvg_id_list = [stream.tvg_id for stream in self._streams.values()]
+        get_epg_handler().add_tvg_ids(tvg_ids=tvg_id_list)
+
     # region Thread
     def start_scrape_thread(self) -> None:  # noqa: C901
         """Run the scraper to find AceStreams."""
@@ -186,6 +201,7 @@ class AceScraper:
                     all_results = await asyncio.gather(*tasks, return_exceptions=True)
 
                     found_streams: list[FoundAceStream] = []
+
                     for result in all_results:
                         if isinstance(result, list):
                             found_streams.extend(result)
@@ -199,11 +215,8 @@ class AceScraper:
                 self._streams = create_unique_stream_list(found_streams)
 
                 # Populate ourself
-                self._print_streams()
-
-                # EPGs
-                tvg_id_list = [stream.tvg_id for stream in self._streams.values()]
-                get_epg_handler().add_tvg_ids(tvg_ids=tvg_id_list)
+                self._print_streams(found_streams)
+                self._update_epg_with_streams()
 
                 # For streams with only an infohash, populate the content_id using the api
                 for attempt in range(2):
@@ -234,6 +247,7 @@ class AceScraper:
                         time.sleep(60)
 
                 self._write_streams_to_database()
+                self._update_epg_with_streams()
 
                 self._print_warnings()
                 if self._stop_event.wait(SCRAPE_INTERVAL):
