@@ -19,7 +19,7 @@ else:
 
 logger = get_logger(__name__)
 
-_COUNTRY_CODE_ALT_REGEX: list[re.Pattern] = [
+_COUNTRY_CODE_ALT_REGEX: list[re.Pattern[str]] = [
     re.compile(r"\.(\w{2})\s*$"),  # Matches .uk
     re.compile(r"^(\w{2})[ :]"),  # Matches "UK " or "UK: "
 ]
