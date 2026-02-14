@@ -4,15 +4,11 @@ import re
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-import aiohttp
 from pydantic import HttpUrl
 
-from acere.constants import SUPPORTED_TVG_LOGO_EXTENSIONS
-from acere.instances.config import settings
-from acere.instances.paths import get_app_path_handler
 from acere.services.scraper import name_processor
+from acere.services.scraper.iptv import tvg_logo
 from acere.services.scraper.models import FoundAceStream
-from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger
 
 if TYPE_CHECKING:
@@ -31,7 +27,6 @@ class M3UParser:
     All parsing logic for M3U8 files is encapsulated here.
     """
 
-    TVG_LOGO_REGEX = re.compile(r'tvg-logo="([^"]+)"')
     TVG_ID_REGEX = re.compile(r'tvg-id="([^"]+)"')
     GROUP_TITLE_REGEX = re.compile(r'group-title="([^"]+)"')
     LAST_FOUND_REGEX = re.compile(r'x-last-found="(\d+)"')
@@ -109,8 +104,9 @@ class M3UParser:
         group_title = self._extract_group_title(line)
         group_title = name_processor.populate_group_title(group_title, title)
 
-        await self._download_tvg_logo(parts[0], title)
-        tvg_logo = name_processor.find_tvg_logo_image(title)
+        logo_url = self._extract_logo_url(parts[0])
+        await tvg_logo.download_and_save_logo(logo_url, title)
+        tvg_logo_path = name_processor.find_tvg_logo_image(title)
 
         _get_last_found_time_epoch = self._get_last_found_time(line)
         _get_last_found_time = datetime.fromtimestamp(_get_last_found_time_epoch, tz=UTC)
@@ -120,7 +116,7 @@ class M3UParser:
             content_id=content_id,
             infohash=infohash,
             tvg_id=tvg_id,
-            tvg_logo=tvg_logo,
+            tvg_logo=tvg_logo_path,
             group_title=group_title,
             sites_found_on=[site_name],
             last_scraped_time=_get_last_found_time,
@@ -133,89 +129,19 @@ class M3UParser:
             return int(match.group(1))
         return int(datetime.now(tz=UTC).timestamp())  # Could break adhoc?
 
-    def _get_tvg_url(self, line: str) -> HttpUrl | None:
-        """Extract the TVG logo URL from the line."""
-        match = self.TVG_LOGO_REGEX.search(line)
-        if match:
-            return HttpUrl(match.group(1))
-        return None
-
-    async def _actually_download_tvg_logo(self, tvg_logo_url: HttpUrl, title: str) -> bytes | None:
-        output_logo = None
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(
-                    tvg_logo_url.encoded_string(), timeout=aiohttp.ClientTimeout(total=5)
-                ) as response:
-                    response.raise_for_status()
-                    output_logo = await response.read()
-        except (aiohttp.ClientError, TimeoutError) as e:
-            error_short = type(e).__name__
-            logger.debug("Error downloading TVG logo for %s [%s], %s", title, tvg_logo_url, error_short)
-
-        if "git-lfs" in (output_logo or b"").decode(errors="ignore"):
-            logger.warning("TVG logo for %s appears to be a Git LFS placeholder, skipping", title)
-            return None
-
-        return output_logo
-
-    async def _download_tvg_logo(self, line: str, title: str) -> None:
-        """Download the TVG logo and the URL it got it from."""
-        tvg_logos_path = get_app_path_handler().tvg_logos_dir
-
-        title_slug = slugify(title)
-
-        for extension in SUPPORTED_TVG_LOGO_EXTENSIONS:
-            logo_path = tvg_logos_path / f"{title_slug}.{extension}"
-            if logo_path.is_file():
-                return
-
-        # This logic is for if we have imported settings from a github scraper and want to fetch their images.
-        if settings.scraper.tvg_logo_external_url is not None:
-            for extension in SUPPORTED_TVG_LOGO_EXTENSIONS:
-                file_name = f"{title_slug}.{extension}"
-                logo = await self._actually_download_tvg_logo(
-                    HttpUrl(f"{settings.scraper.tvg_logo_external_url}/{file_name}"),
-                    title,
-                )
-                if logo is not None:
-                    logo_path = tvg_logos_path / file_name
-                    logo_path.parent.mkdir(parents=True, exist_ok=True)
-                    with logo_path.open("wb") as file:
-                        file.write(logo)
-                    return
-
-        tvg_logo_url = self._get_tvg_url(line)
-        if tvg_logo_url is None:
-            logger.debug("No TVG logo URL found for %s", title)
-            return
-
-        url_file_extension = tvg_logo_url.encoded_string().split(".")[-1]
-        url_file_extension = url_file_extension.split("?")[0]
-        if url_file_extension.lower() not in SUPPORTED_TVG_LOGO_EXTENSIONS:
-            logger.warning(
-                "Unsupported TVG logo file extension for %s: %s",
-                title,
-                url_file_extension,
-            )
-            return
-
-        logger.info("Downloading TVG logo for %s from m3u8 %s", title, tvg_logo_url)
-        content = await self._actually_download_tvg_logo(tvg_logo_url, title)
-        if content is None:
-            return
-
-        tvg_logo_path = tvg_logos_path / f"{title_slug}.{url_file_extension}"
-        tvg_logo_path.parent.mkdir(parents=True, exist_ok=True)
-        with tvg_logo_path.open("wb") as file:
-            file.write(content)
-
     def _extract_group_title(self, line: str) -> str:
         """Extract the group title from the line if it exists."""
         match = self.GROUP_TITLE_REGEX.search(line)
         if match:
             return match.group(1).strip()
         return ""
+
+    def _extract_logo_url(self, line: str) -> HttpUrl | None:
+        """Extract the TVG logo URL from an EXTINF line."""
+        match = re.search(r'tvg-logo="([^"]+)"', line)
+        if match:
+            return HttpUrl(match.group(1))
+        return None
 
     def _extract_tvg_id(self, line: str, title: str) -> tuple[str, str]:
         """Extract the TVG ID from the line if it exists, otherwise fallback to name processor.
