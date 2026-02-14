@@ -157,6 +157,13 @@ class AceStreamDBHandler(BaseDatabaseHandler):
 
         return m3u8_content + "\n".join(sorted(iptv_set))
 
+    def get_all_distinct_tvg_ids(self) -> set[str]:
+        """Get all distinct TVG IDs from the database."""
+        with self._get_session() as session:
+            statement = select(AceStreamDBEntry.tvg_id).distinct()
+            results = session.exec(statement).all()
+            return set(results)
+
     # region GET IPTV XC
     def get_streams_as_iptv_xc(
         self,

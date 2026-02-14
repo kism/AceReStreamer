@@ -5,7 +5,7 @@ from pydantic import HttpUrl
 
 from acere.core.config.scraper import ScrapeSiteIPTV
 from acere.instances.paths import setup_app_path_handler
-from acere.services.scraper.iptv import IPTVStreamScraper
+from acere.services.scraper.iptv import IPTVStreamScraper, tvg_logo
 from tests.test_utils.aiohttp import FakeResponseDef, FakeSession
 
 from . import SCRAPER_TEST_SITES
@@ -34,7 +34,7 @@ async def scraper(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> IPTVStream
     async def _mock_download_tvg_logo(*args: Any, **kwargs: Any) -> None:
         return
 
-    monkeypatch.setattr(scraper, "_download_tvg_logo", _mock_download_tvg_logo)
+    monkeypatch.setattr("acere.services.scraper.iptv.tvg_logo.download_and_save_logo", _mock_download_tvg_logo)
 
     def _mock_find_tvg_logo_image(title: str) -> str:
         return f"http://pytest.internal/logos/{title.replace(' ', '_')}.png"
@@ -146,8 +146,6 @@ async def test_download_tvg_logo(
     """Test _download_tvg_logo method with aiohttp mocks."""
     setup_app_path_handler(instance_path=tmp_path)
 
-    scraper = IPTVStreamScraper()
-
     # Create fake logo content
     fake_logo_data = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01"
 
@@ -169,10 +167,10 @@ async def test_download_tvg_logo(
     monkeypatch.setattr("aiohttp.ClientSession", fake_client_session)
 
     # Test successful download
-    line = '#EXTINF:-1 tvg-logo="http://ace.pytest.internal/logos/test.png",Test Stream'
+    logo_url = HttpUrl("http://ace.pytest.internal/logos/test.png")
     title = "Test Stream"
 
-    await scraper._download_tvg_logo(line, title)
+    await tvg_logo.download_and_save_logo(logo_url, title)
 
     # Check that the file was created
     logo_path = tmp_path / "tvg_logos" / "test-stream.png"
@@ -184,36 +182,35 @@ async def test_download_tvg_logo(
     modified_content = b"modified"
     logo_path.write_bytes(modified_content)
 
-    await scraper._download_tvg_logo(line, title)
+    await tvg_logo.download_and_save_logo(logo_url, title)
 
     # File should still have modified content (wasn't re-downloaded)
     assert logo_path.read_bytes() == modified_content
 
     # Test with no TVG logo URL in line
-    line_no_logo = "#EXTINF:-1,No Logo Stream"
     title_no_logo = "No Logo Stream"
 
-    await scraper._download_tvg_logo(line_no_logo, title_no_logo)
+    await tvg_logo.download_and_save_logo(None, title_no_logo)
 
     # Check that no file was created
     logo_path_no_logo = tmp_path / "tvg_logos" / "no-logo-stream.png"
     assert not logo_path_no_logo.exists()
 
     # Test with download error (404)
-    line_error = '#EXTINF:-1 tvg-logo="http://ace.pytest.internal/logos/error.png",Error Stream'
+    logo_url_error = HttpUrl("http://ace.pytest.internal/logos/error.png")
     title_error = "Error Stream"
 
-    await scraper._download_tvg_logo(line_error, title_error)
+    await tvg_logo.download_and_save_logo(logo_url_error, title_error)
 
     # Check that no file was created due to error
     logo_path_error = tmp_path / "tvg_logos" / "error-stream.png"
     assert not logo_path_error.exists()
 
     # Test with unsupported file extension
-    line_unsupported = '#EXTINF:-1 tvg-logo="http://ace.pytest.internal/logos/test.gif",Unsupported Stream'
+    logo_url_unsupported = HttpUrl("http://ace.pytest.internal/logos/test.gif")
     title_unsupported = "Unsupported Stream"
 
-    await scraper._download_tvg_logo(line_unsupported, title_unsupported)
+    await tvg_logo.download_and_save_logo(logo_url_unsupported, title_unsupported)
 
     # Check that no file was created due to unsupported extension
     logo_path_unsupported = tmp_path / "tvg_logos" / "unsupported-stream.gif"

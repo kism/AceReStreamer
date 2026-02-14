@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 from lxml import etree
 
+from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger
 from acere.version import PROGRAM_NAME, URL
@@ -45,6 +46,7 @@ class EPGHandler:
         self._next_update_time: datetime = datetime.now(tz=UTC)
         self._threads: list[threading.Thread] = []
         self._stop_event = threading.Event()
+        self._last_warned_current_program: datetime = datetime.min.replace(tzinfo=UTC)
 
     # region Helpers
     def _create_tv_element(self) -> etree._Element:
@@ -156,10 +158,21 @@ class EPGHandler:
     def get_current_program(self, tvg_id: str) -> tuple[str, str]:
         """Get the current program for a given TVG ID."""
         if len(self._epgs) == 0:
-            logger.error("No EPGs loaded to get current program, either none are configured or they haven't loaded yet")
+            if datetime.now(tz=UTC) - self._last_warned_current_program > EPG_CHECK_INTERVAL_MINIMUM:
+                logger.warning(
+                    "No EPGs loaded, cannot get program for TVG_ID %s",
+                    tvg_id,
+                )
+                self._last_warned_current_program = datetime.now(tz=UTC)
             return "", ""
         if self._condensed_epg is None:
-            logger.error("No condensed EPG data available to get current program")
+            if datetime.now(tz=UTC) - self._last_warned_current_program > EPG_CHECK_INTERVAL_MINIMUM:
+                logger.warning(
+                    "No condensed EPG data loaded, cannot get program for TVG_ID %s",
+                    tvg_id,
+                )
+                self._last_warned_current_program = datetime.now(tz=UTC)
+
             return "", ""
 
         return find_current_program_xml(tvg_id, self._condensed_epg)
@@ -259,6 +272,10 @@ class EPGHandler:
         self._epgs.clear()
         for epg_conf in epg_conf_list:
             self._epgs.append(EPG(epg_conf=epg_conf))
+
+        database_tvg_ids = get_ace_streams_db_handler().get_all_distinct_tvg_ids()
+        for tvg_id in database_tvg_ids:
+            self._set_of_tvg_ids.add(tvg_id)
 
         thread = threading.Thread(target=_start_epg_update_thread, name="EPGHandler: update_epgs", daemon=True)
         thread.start()
