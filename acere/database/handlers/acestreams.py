@@ -146,7 +146,8 @@ class AceStreamDBHandler(BaseDatabaseHandler):
             line_one = create_extinf_line(
                 stream, tvg_url_base=external_url_tvg, token=token, last_found=int(stream.last_scraped_time.timestamp())
             )
-            line_two = f"{external_url}/hls/{stream.content_id}"
+            line_two_url = HttpUrl(f"{external_url}/hls/{stream.content_id}")
+            line_two = str(line_two_url)
             if token:
                 line_two += f"?token={token}"
 

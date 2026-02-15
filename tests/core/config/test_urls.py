@@ -18,3 +18,4 @@ def test_external_url_as_string() -> None:
 
     assert isinstance(external_url_str, str)
     assert not external_url_str.endswith("/")
+
