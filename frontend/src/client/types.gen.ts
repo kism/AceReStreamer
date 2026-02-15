@@ -519,7 +519,27 @@ export type EpgTvgEpgMappingsResponse = (TVGEPGMappingsResponse);
 
 export type FrontendFrontendIndexHtmlResponse = (string);
 
-export type FrontendFrontendIndexResponse = (string);
+export type FrontendFrontendResponse = (string);
+
+export type FrontendFrontendAdminResponse = (string);
+
+export type FrontendFrontendEpgResponse = (string);
+
+export type FrontendFrontendInfoResponse = (string);
+
+export type FrontendFrontendInfoIptvResponse = (string);
+
+export type FrontendFrontendInfoPlaybackResponse = (string);
+
+export type FrontendFrontendLoginResponse = (string);
+
+export type FrontendFrontendSettingsResponse = (string);
+
+export type FrontendFrontendCatchAllData = {
+    fullPath: string;
+};
+
+export type FrontendFrontendCatchAllResponse = (unknown);
 
 export type HealthHealthResponse = (HealthResponseModel);
 

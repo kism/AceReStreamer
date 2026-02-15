@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
 import pytest
+from pydantic import HttpUrl
 from sqlmodel import create_engine
 
 from acere.database.handlers.acestreams import AceStreamDBHandler
@@ -115,3 +116,78 @@ def test_mark_alternate_streams(acestream_db_handler: AceStreamDBHandler) -> Non
     assert "Duplicate Stream #1" in titles
     assert "Duplicate Stream #2" in titles
     assert "Unique Stream" in titles
+
+
+def test_get_streams_as_iptv_url_validation(
+    acestream_db_handler: AceStreamDBHandler,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test that get_streams_as_iptv generates valid URLs that can be validated with HttpUrl."""
+    handler = acestream_db_handler
+
+    # Test with URL that has a port (the original bug case)
+    monkeypatch.setattr("acere.instances.config.settings.EXTERNAL_URL", "http://192.168.100.130:5100")
+
+    # Add test streams
+    content_id_1 = get_random_content_id()
+    stream_1 = FoundAceStream(
+        content_id=content_id_1,
+        title="Test Stream 1",
+        tvg_id="test.stream.1",
+        sites_found_on=["TestSite"],
+    )
+    handler.update_stream(stream_1)
+
+    content_id_2 = get_random_content_id()
+    stream_2 = FoundAceStream(
+        content_id=content_id_2,
+        title="Test Stream 2",
+        tvg_id="test.stream.2",
+        sites_found_on=["TestSite"],
+    )
+    handler.update_stream(stream_2)
+
+    # Get IPTV without token
+    m3u8_content = handler.get_streams_as_iptv(token="")
+
+    # Verify M3U8 header exists
+    assert m3u8_content.startswith("#EXTM3U")
+
+    # Verify EPG URL is valid and in the header
+    assert "x-tvg-url=" in m3u8_content
+    assert "http://192.168.100.130:5100/epg" in m3u8_content
+
+    # Extract and validate EPG URL from header
+    epg_url_start = m3u8_content.find('x-tvg-url="') + len('x-tvg-url="')
+    epg_url_end = m3u8_content.find('"', epg_url_start)
+    epg_url_str = m3u8_content[epg_url_start:epg_url_end]
+    epg_url = HttpUrl(epg_url_str)  # Should not raise ValidationError
+    assert str(epg_url) == "http://192.168.100.130:5100/epg"
+
+    # Verify HLS stream URLs are valid
+    assert f"http://192.168.100.130:5100/hls/{content_id_1}" in m3u8_content
+    assert f"http://192.168.100.130:5100/hls/{content_id_2}" in m3u8_content
+
+    # Validate each HLS URL can be parsed as HttpUrl
+    hls_url_1 = HttpUrl(f"http://192.168.100.130:5100/hls/{content_id_1}")
+    hls_url_2 = HttpUrl(f"http://192.168.100.130:5100/hls/{content_id_2}")
+    assert str(hls_url_1) == f"http://192.168.100.130:5100/hls/{content_id_1}"
+    assert str(hls_url_2) == f"http://192.168.100.130:5100/hls/{content_id_2}"
+
+    # Test with token
+    m3u8_with_token = handler.get_streams_as_iptv(token="test_token")
+    assert f"http://192.168.100.130:5100/hls/{content_id_1}?token=test_token" in m3u8_with_token
+    assert f"http://192.168.100.130:5100/hls/{content_id_2}?token=test_token" in m3u8_with_token
+
+    # Test with different EXTERNAL_URL formats
+    # URL without port
+    monkeypatch.setattr("acere.instances.config.settings.EXTERNAL_URL", "http://ace.pytest.internal")
+    m3u8_no_port = handler.get_streams_as_iptv(token="")
+    assert "http://ace.pytest.internal/epg" in m3u8_no_port
+    assert f"http://ace.pytest.internal/hls/{content_id_1}" in m3u8_no_port
+
+    # HTTPS URL with port
+    monkeypatch.setattr("acere.instances.config.settings.EXTERNAL_URL", "https://secure.ace.pytest.internal:8443")
+    m3u8_https = handler.get_streams_as_iptv(token="")
+    assert "https://secure.ace.pytest.internal:8443/epg" in m3u8_https
+    assert f"https://secure.ace.pytest.internal:8443/hls/{content_id_1}" in m3u8_https
