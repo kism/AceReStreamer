@@ -11,3 +11,4 @@
 - def \_extract_logo_url logic
 - bump uv to 0.10.0
 - url tests
+- tests/core/config/test_urls.py
