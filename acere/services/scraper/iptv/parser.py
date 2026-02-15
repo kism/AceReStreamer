@@ -195,34 +195,40 @@ class M3UParser:
                 logger.debug("Failed to parse TVG logo URL: %s", e)
         return None
 
-    def _extract_tvg_id_from_exttv(self, exttv_line: str) -> str | None:
-        """Extract TVG ID from EXTTV line."""
-        parts = exttv_line.split(";")
-        if len(parts) >= 3:  # noqa: PLR2004 #EXTTV has three parts, the third part is the TVG ID
-            tvg_id = parts[2].strip()
-            return tvg_id or None
-        return None
-
-    def _extract_country_from_exttv(self, exttv_line: str) -> str | None:
-        """Extract country code from EXTTV line."""
-        parts = exttv_line.split(";")
-        if len(parts) >= 2:  # noqa: PLR2004 #EXTTV has three parts, the second part is the country code
-            country = parts[1].strip()
-            if country:
-                return country.upper()
-        return None
-
-    def _extract_tvg_id(self, line: str, title: str, metadata: dict[str, str] | None = None) -> tuple[str, str]:
+    def _extract_tvg_id( # noqa: C901 Don't care since I put the functions in the function
+        self,
+        line: str,
+        title: str,
+        metadata: dict[str, str] | None = None,
+    ) -> tuple[str, str]:
         """Extract the TVG ID from the line or metadata.
 
         Try put the country code in the title if we can.
         """
+
+        def _extract_tvg_id_from_exttv(exttv_line: str) -> str | None:
+            """Extract TVG ID from EXTTV line."""
+            parts = exttv_line.split(";")
+            if len(parts) >= 3:  # noqa: PLR2004 #EXTTV has three parts, the third part is the TVG ID
+                tvg_id = parts[2].strip()
+                return tvg_id or None
+            return None
+
+        def _extract_country_from_exttv(exttv_line: str) -> str | None:
+            """Extract country code from EXTTV line."""
+            parts = exttv_line.split(";")
+            if len(parts) >= 2:  # noqa: PLR2004 #EXTTV has three parts, the second part is the country code
+                country = parts[1].strip()
+                if country:
+                    return country.upper()
+            return None
+
         original_title = title
 
         # Check if we have EXTTV metadata first
         if metadata and "exttv" in metadata:
-            tvg_id = self._extract_tvg_id_from_exttv(metadata["exttv"])
-            country = self._extract_country_from_exttv(metadata["exttv"])
+            tvg_id = _extract_tvg_id_from_exttv(metadata["exttv"])
+            country = _extract_country_from_exttv(metadata["exttv"])
 
             if tvg_id:
                 # Add country code to title if present

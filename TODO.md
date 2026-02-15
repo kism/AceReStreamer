@@ -7,8 +7,6 @@
 - fixture, picture
   @pytest.fixture
   async def scraper(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> IPTVStreamScraper:
-- odball casts
-- def \_extract_logo_url logic
-- bump uv to 0.10.0
-- url tests
+- oddball casts
 - tests/core/config/test_urls.py
+- generated_frontend_paths only works if VITE_API_URL is set
