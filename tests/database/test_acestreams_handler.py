@@ -178,14 +178,14 @@ def test_get_streams_as_iptv_url_validation(acestream_db_handler: AceStreamDBHan
 
     # Test with different EXTERNAL_URL formats
     # URL without port
-    monkeypatch.setattr("acere.instances.config.settings.EXTERNAL_URL", "http://example.com")
+    monkeypatch.setattr("acere.instances.config.settings.EXTERNAL_URL", "http://ace.pytest.internal")
     m3u8_no_port = handler.get_streams_as_iptv(token="")
-    assert "http://example.com/epg" in m3u8_no_port
-    assert f"http://example.com/hls/{content_id_1}" in m3u8_no_port
+    assert "http://ace.pytest.internal/epg" in m3u8_no_port
+    assert f"http://ace.pytest.internal/hls/{content_id_1}" in m3u8_no_port
 
     # HTTPS URL with port
-    monkeypatch.setattr("acere.instances.config.settings.EXTERNAL_URL", "https://secure.example.com:8443")
+    monkeypatch.setattr("acere.instances.config.settings.EXTERNAL_URL", "https://secure.ace.pytest.internal:8443")
     m3u8_https = handler.get_streams_as_iptv(token="")
-    assert "https://secure.example.com:8443/epg" in m3u8_https
-    assert f"https://secure.example.com:8443/hls/{content_id_1}" in m3u8_https
+    assert "https://secure.ace.pytest.internal:8443/epg" in m3u8_https
+    assert f"https://secure.ace.pytest.internal:8443/hls/{content_id_1}" in m3u8_https
 
