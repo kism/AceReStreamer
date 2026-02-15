@@ -118,7 +118,10 @@ def test_mark_alternate_streams(acestream_db_handler: AceStreamDBHandler) -> Non
     assert "Unique Stream" in titles
 
 
-def test_get_streams_as_iptv_url_validation(acestream_db_handler: AceStreamDBHandler, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_get_streams_as_iptv_url_validation(
+    acestream_db_handler: AceStreamDBHandler,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """Test that get_streams_as_iptv generates valid URLs that can be validated with HttpUrl."""
     handler = acestream_db_handler
 
@@ -188,4 +191,3 @@ def test_get_streams_as_iptv_url_validation(acestream_db_handler: AceStreamDBHan
     m3u8_https = handler.get_streams_as_iptv(token="")
     assert "https://secure.ace.pytest.internal:8443/epg" in m3u8_https
     assert f"https://secure.ace.pytest.internal:8443/hls/{content_id_1}" in m3u8_https
-
