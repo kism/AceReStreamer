@@ -55,6 +55,8 @@ ENV PYTHONPATH=/app
 
 COPY ./pyproject.toml /app/
 COPY ./uv.lock /app/
+COPY ./README.md /app/
+COPY ./LICENSE.md /app/
 
 # For versioning metadata
 COPY .git/HEAD /app/.git/HEAD
