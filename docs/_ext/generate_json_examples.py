@@ -26,7 +26,7 @@ def generate_json_examples(app: Sphinx) -> None:
     iptv_example = ScrapeSiteIPTV(
         type="iptv",
         name="english-iptv",
-        url=HttpUrl("https://example.com/playlist.m3u8"),
+        url=HttpUrl("https://ace.pytest.internal/playlist.m3u8"),
         title_filter=TitleFilter(
             always_exclude_words=[],
             always_include_words=[],
@@ -39,7 +39,7 @@ def generate_json_examples(app: Sphinx) -> None:
     iptv_example_titlefilter = ScrapeSiteIPTV(
         type="iptv",
         name="english-iptv",
-        url=HttpUrl("https://example.com/playlist.m3u8"),
+        url=HttpUrl("https://ace.pytest.internal/playlist.m3u8"),
         title_filter=TitleFilter(
             always_exclude_words=["Adult"],
             always_include_words=[],
@@ -53,7 +53,7 @@ def generate_json_examples(app: Sphinx) -> None:
     html_example = ScrapeSiteHTML(
         type="html",
         name="example-site",
-        url=HttpUrl("https://example.com/acestreams"),
+        url=HttpUrl("https://ace.pytest.internal/acestreams"),
         title_filter=TitleFilter(
             always_exclude_words=[],
             always_include_words=[],
@@ -85,7 +85,7 @@ def generate_json_examples(app: Sphinx) -> None:
     api_example = ScrapeSiteAPI(
         type="api",
         name="my-cool-api-site",
-        url=HttpUrl("https://api.example.com/all_ace_streams"),
+        url=HttpUrl("https://api.ace.pytest.internal/all_ace_streams"),
         title_filter=TitleFilter(
             always_exclude_words=[],
             always_include_words=[],
