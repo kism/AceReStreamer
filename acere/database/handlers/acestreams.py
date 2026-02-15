@@ -129,12 +129,9 @@ class AceStreamDBHandler(BaseDatabaseHandler):
     def get_streams_as_iptv(self, token: str) -> str:
         """Get the found streams as an IPTV M3U8 string."""
         external_url = settings.EXTERNAL_URL
-        if not external_url:
-            logger.error("External URL is not set, cannot generate IPTV streams.")
-            return ""
 
         # There are a few standards for the tag for the tvg url, most to least common x-tvg-url, url-tvg, tvg-url
-        epg_url = HttpUrl(f"{external_url}epg")
+        epg_url = f"{external_url}/epg"
         m3u8_content = f'#EXTM3U x-tvg-url="{epg_url}" url-tvg="{epg_url}" refresh="3600"\n'
 
         iptv_set = set()
@@ -144,12 +141,12 @@ class AceStreamDBHandler(BaseDatabaseHandler):
         for stream in self.get_streams_cached():
             logger.debug(stream)
 
-            external_url_tvg = HttpUrl(f"{external_url}tvg-logo/")
+            external_url_tvg = HttpUrl(f"{external_url}/tvg-logo/")
 
             line_one = create_extinf_line(
                 stream, tvg_url_base=external_url_tvg, token=token, last_found=int(stream.last_scraped_time.timestamp())
             )
-            line_two = f"{external_url}hls/{stream.content_id}"
+            line_two = f"{external_url}/hls/{stream.content_id}"
             if token:
                 line_two += f"?token={token}"
 
