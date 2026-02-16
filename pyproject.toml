@@ -1,6 +1,6 @@
 [project]
 name = "acere"
-version = "1.2.4"
+version = "1.2.5"
 description = ""
 requires-python = ">=3.14,<4.0"
 readme = "README.md"

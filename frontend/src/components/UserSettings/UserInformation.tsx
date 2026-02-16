@@ -29,8 +29,8 @@ const UserInformation = () => {
     mode: "onBlur",
     criteriaMode: "all",
     defaultValues: {
-      full_name: currentUser?.full_name ?? null,
-      username: currentUser?.username ?? "",
+      full_name: currentUser?.full_name,
+      username: currentUser?.username,
     },
   })
 

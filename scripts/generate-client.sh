@@ -25,4 +25,4 @@ bun run generate-client
 
 # Generate frontend paths to help fastapi serve them when in all-in-one mode
 cd "$ORIGINAL_PWD/frontend"
-bunx vite-node scripts/generate_frontend_route_list.ts "$ORIGINAL_PWD/acere/api/routes/frontend/generated_frontend_paths.json"
+bun run generate-frontend-paths "$ORIGINAL_PWD/acere/api/routes/frontend/generated_frontend_paths.json"
