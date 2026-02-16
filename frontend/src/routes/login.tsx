@@ -27,20 +27,6 @@ export const Route = createFileRoute("/login")({
   },
 })
 
-function getHealth() {
-  const { data: _healthData, error } = useQuery({
-    queryKey: ["health"],
-    queryFn: HealthService.health,
-  })
-
-  const { showErrorToast } = useCustomToast()
-
-  if (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error)
-    showErrorToast(`Cannot reach backend: ${errorMessage}`)
-  }
-}
-
 function Login() {
   const { loginMutation, error, resetError } = useAuth()
   const {
@@ -56,6 +42,19 @@ function Login() {
     },
   })
 
+  const { data: _healthData, error: healthError } = useQuery({
+    queryKey: ["health"],
+    queryFn: HealthService.health,
+  })
+
+  const { showErrorToast } = useCustomToast()
+
+  if (healthError) {
+    const errorMessage =
+      healthError instanceof Error ? healthError.message : String(healthError)
+    showErrorToast(`Cannot reach backend: ${errorMessage}`)
+  }
+
   const onSubmit: SubmitHandler<AccessToken> = async (data) => {
     if (isSubmitting) return
 
@@ -67,7 +66,6 @@ function Login() {
       // error is handled by useAuth hook
     }
   }
-  getHealth()
 
   return (
     <Container
