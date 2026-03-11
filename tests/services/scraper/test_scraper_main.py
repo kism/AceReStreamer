@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 import pytest
@@ -30,6 +31,7 @@ def get_stream() -> FoundAceStream:
         title="Test Stream",
         infohash=get_random_content_id(),
         tvg_id="test_tvg_id",
+        last_scraped_time=datetime.now(tz=UTC),
     )
 
 

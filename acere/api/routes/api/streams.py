@@ -1,5 +1,7 @@
 """Main Stream Site Blueprint."""
 
+from datetime import UTC, datetime
+
 from fastapi import APIRouter, Depends, HTTPException
 
 from acere.api.deps import (
@@ -110,6 +112,7 @@ def add_stream(
             tvg_logo=f"{slugify(stream.title)}.png",  # find_tvg_logo_image does this
             group_title=populate_group_title("", stream.title),
             sites_found_on=[],
+            last_scraped_time=datetime.now(tz=UTC),
         )
     )
 

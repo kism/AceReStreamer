@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 import pytest
@@ -57,6 +58,7 @@ def test_add_and_delete(acestream_db_handler: AceStreamDBHandler) -> None:
         title="Test Stream",
         tvg_id="test.tvg.id",
         sites_found_on=["TestSite"],
+        last_scraped_time=datetime.now(tz=UTC),
     )
 
     handler.update_stream(stream)
@@ -135,6 +137,7 @@ def test_get_streams_as_iptv_url_validation(
         title="Test Stream 1",
         tvg_id="test.stream.1",
         sites_found_on=["TestSite"],
+        last_scraped_time=datetime.now(tz=UTC),
     )
     handler.update_stream(stream_1)
 
@@ -144,6 +147,7 @@ def test_get_streams_as_iptv_url_validation(
         title="Test Stream 2",
         tvg_id="test.stream.2",
         sites_found_on=["TestSite"],
+        last_scraped_time=datetime.now(tz=UTC),
     )
     handler.update_stream(stream_2)
 
