@@ -1,3 +1,3 @@
-from .version import __version__
+from .version import __author__, __version__
 
-__all__ = ["__version__"]
+__all__ = ["__author__", "__version__"]

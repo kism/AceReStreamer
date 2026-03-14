@@ -1,7 +1,7 @@
 """Helper functions and functions for searching in beautiful soup tags."""
 
 from collections import Counter
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
 import aiohttp
@@ -22,7 +22,7 @@ else:
 
 logger = get_logger(__name__)
 
-HTML_CACHE_MAX_AGE = timedelta(hours=1)  # HTML Sources we need to scrape more often
+_HTML_CACHE_MAX_AGE = timedelta(hours=1)  # HTML Sources we need to scrape more often
 
 
 class HTMLStreamScraper(ScraperCommon):
@@ -42,7 +42,7 @@ class HTMLStreamScraper(ScraperCommon):
     async def _scrape_site(self, site: ScrapeSiteHTML) -> list[FoundAceStream]:
         """Scrape the streams from the configured sites."""
         streams_candidates: list[CandidateAceStream] = []
-        cache_max_age = HTML_CACHE_MAX_AGE
+        cache_max_age = _HTML_CACHE_MAX_AGE
 
         scraped_site_str = self.scraper_cache.load_from_cache(site.url)
 
@@ -212,6 +212,7 @@ class HTMLStreamScraper(ScraperCommon):
                     tvg_logo=tvg_logo,
                     group_title=group_title,
                     sites_found_on=[site.name],
+                    last_scraped_time=datetime.now(tz=UTC),
                 )
             )
 

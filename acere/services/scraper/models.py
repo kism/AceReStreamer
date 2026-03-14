@@ -1,6 +1,6 @@
 """Custom Pydantic models (objects) for scraping."""
 
-from datetime import UTC, datetime
+from datetime import datetime
 from typing import TYPE_CHECKING, Literal, Self
 
 from pydantic import AnyUrl, BaseModel, HttpUrl, field_serializer, model_validator
@@ -37,7 +37,7 @@ class FoundAceStream(BaseModel):
     tvg_logo: str | None = None
     group_title: str = ""
     sites_found_on: list[str]
-    last_scraped_time: datetime = datetime.now(tz=UTC)
+    last_scraped_time: datetime # Don't set a default, it will not evaluate each time an object is created.
 
     @model_validator(mode="after")
     def manual_validate(self) -> Self:
