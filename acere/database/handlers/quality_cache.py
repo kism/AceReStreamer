@@ -2,6 +2,7 @@
 
 import asyncio
 import contextlib
+import threading
 from datetime import UTC, datetime, timedelta
 from typing import ClassVar
 
@@ -19,11 +20,34 @@ from acere.utils.ace import ace_id_short
 from acere.utils.helpers import check_valid_content_id_or_infohash
 from acere.utils.logger import get_logger
 
+from acere.constants import OUR_TIMEZONE
+
 from .base import BaseDatabaseHandler
 
 _CHECK_LAST_SCRAPE_THRESHOLD = timedelta(days=1)
+_CHECK_LAST_WORKED_THRESHOLD = timedelta(days=1)
+
+_DAILY_CHECK_HOUR = 3
+_DAILY_CHECK_MINUTE = 33
+
 _async_background_tasks: set[asyncio.Task[None]] = set()
 logger = get_logger(__name__)
+
+
+def _seconds_until_daily_check() -> float:
+    """Return seconds until the next 3:33 AM in the local timezone."""
+    now = datetime.now(tz=OUR_TIMEZONE)
+    target = now.replace(hour=_DAILY_CHECK_HOUR, minute=_DAILY_CHECK_MINUTE, second=0, microsecond=0)
+    if now >= target:
+        target += timedelta(days=1)
+    return (target - now).total_seconds()
+
+
+def _has_not_worked_in_one_day(quality_cache: AceQualityCache) -> bool:
+    """Return True if the stream has not had a successful quality check in the past day."""
+    if quality_cache.last_quality_success_time is None:
+        return True
+    return datetime.now(tz=UTC) - quality_cache.last_quality_success_time >= _CHECK_LAST_WORKED_THRESHOLD
 
 
 class AceQualityCacheHandler(BaseDatabaseHandler):
@@ -31,6 +55,11 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
 
     _cache: ClassVar[dict[str, Quality]] = {}
     _currently_checking_quality = False
+
+    def __init__(self, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
+        super().__init__(*args, **kwargs)
+        self._threads: list[threading.Thread] = []
+        self._stop_event = threading.Event()
 
     def get_quality(self, content_id: str) -> Quality:
         """Get the quality for a given content_id."""
@@ -66,8 +95,10 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
                 session.add(result)
 
             result.quality = quality.quality
-            result.has_ever_worked = quality.has_ever_worked
             result.m3u_failures = quality.m3u_failures
+
+            if quality.quality > 0:
+                result.last_quality_success_time = datetime.now(tz=UTC)
 
             session.commit()
 
@@ -155,6 +186,9 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
                             await asyncio.sleep(attempt_delay)
 
                         await asyncio.sleep(stream_delay)
+
+                self.cull_stale_streams()
+
             except Exception as e:  # This is a background task so it won't crash the app
                 exception_name = e.__class__.__name__
                 logger.exception("")
@@ -169,6 +203,82 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
         task.add_done_callback(_async_background_tasks.discard)
 
         return True
+
+    # region Culling
+    def _get_quality_cache_entry(self, content_id: str) -> AceQualityCache | None:
+        """Get the DB record for a content_id's quality cache."""
+        with self._get_session() as session:
+            return session.exec(select(AceQualityCache).where(AceQualityCache.content_id == content_id)).first()
+
+    def cull_stale_streams(self) -> None:
+        """Remove streams that have not worked or been scraped in the past day."""
+        handler = get_ace_streams_db_handler()
+        streams = handler.get_streams()
+        now = datetime.now(tz=UTC)
+
+        for stream in streams:
+            if now - stream.last_scraped_time >= _CHECK_LAST_SCRAPE_THRESHOLD:
+                logger.info(
+                    "Culling stream %s (%s): not scraped in 1 day",
+                    ace_id_short(stream.content_id),
+                    stream.title,
+                )
+                handler.delete_by_content_id(stream.content_id)
+                continue
+
+            quality_entry = self._get_quality_cache_entry(stream.content_id)
+            if quality_entry is None or _has_not_worked_in_one_day(quality_entry):
+                logger.info(
+                    "Culling stream %s (%s): not worked in 1 day",
+                    ace_id_short(stream.content_id),
+                    stream.title,
+                )
+                handler.delete_by_content_id(stream.content_id)
+
+    # region Daily Schedule
+    def start_daily_check_thread(self) -> None:
+        """Start a thread that triggers the quality check at 3:33 AM each day."""
+        loop = asyncio.get_running_loop()
+
+        def _run() -> None:
+            while not self._stop_event.is_set():
+                seconds = _seconds_until_daily_check()
+                logger.info(
+                    "Next scheduled quality check in %.0f seconds (at %02d:%02d local time)",
+                    seconds,
+                    _DAILY_CHECK_HOUR,
+                    _DAILY_CHECK_MINUTE,
+                )
+                if self._stop_event.wait(seconds):
+                    break
+
+                logger.info("Starting daily scheduled quality check and stream culling")
+                asyncio.run_coroutine_threadsafe(self.check_missing_quality(), loop)
+
+                # Wait briefly to avoid re-triggering within the same minute
+                if self._stop_event.wait(120):
+                    break
+
+        thread = threading.Thread(target=_run, name="AceQualityCache: daily_check", daemon=True)
+        thread.start()
+        self._threads.append(thread)
+
+    def stop_all_threads(self) -> None:
+        """Stop all threads managed by this handler."""
+        if not self._threads:
+            return
+
+        logger.info("Stopping all %s threads", self.__class__.__name__)
+        self._stop_event.set()
+        for thread in self._threads.copy():
+            if thread.is_alive():
+                thread.join(timeout=60)
+                if not thread.is_alive():
+                    self._threads.remove(thread)
+                else:
+                    logger.warning("Thread %s did not stop in time.", thread.name)
+
+        self._stop_event.clear()
 
     # region Helpers
     def clean_table(self) -> None:

@@ -27,6 +27,7 @@ dependencies = [
     "uvloop>=0.22.1",
     "starlette-compress>=1.6.1",
     "anyio>=4.12.1",
+    "alembic>=1.18.0",
 ]
 
 [project.optional-dependencies]
