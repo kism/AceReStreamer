@@ -6,15 +6,21 @@ Create Date: 2026-03-14
 
 """
 
-from typing import Sequence, Union
+
+from typing import TYPE_CHECKING
 
 import sqlalchemy as sa
 from alembic import op
 
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+else:
+    Sequence = object
+
 revision: str = "0001"
-down_revision: Union[str, Sequence[str], None] = None
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | Sequence[str] | None = None
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 _LEGACY_TABLES = ["acequalitycache", "contentidinfohash", "content_id_infohash", "content_id_xc_id"]
 

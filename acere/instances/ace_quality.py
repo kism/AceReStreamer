@@ -17,4 +17,3 @@ def set_quality_handler(handler: AceQualityCacheHandler) -> None:
     """Set the global AceQualityCacheHandler instance."""
     global _quality_handler  # noqa: PLW0603
     _quality_handler = handler
-    handler.start_daily_check_thread()

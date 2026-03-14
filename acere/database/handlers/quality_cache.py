@@ -11,6 +11,7 @@ import fastapi
 from pydantic import HttpUrl
 from sqlmodel import select
 
+from acere.constants import OUR_TIMEZONE
 from acere.database.models import AceQualityCache
 from acere.database.models.acestream import AceStreamDBEntry
 from acere.instances.ace_streams import get_ace_streams_db_handler
@@ -19,8 +20,6 @@ from acere.services.ace_quality import Quality
 from acere.utils.ace import ace_id_short
 from acere.utils.helpers import check_valid_content_id_or_infohash
 from acere.utils.logger import get_logger
-
-from acere.constants import OUR_TIMEZONE
 
 from .base import BaseDatabaseHandler
 
@@ -54,12 +53,9 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
     """Database handler for the Ace Quality Cache."""
 
     _cache: ClassVar[dict[str, Quality]] = {}
+    _threads: ClassVar[list[threading.Thread]] = []
+    _stop_event: ClassVar[threading.Event] = threading.Event()
     _currently_checking_quality = False
-
-    def __init__(self, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
-        super().__init__(*args, **kwargs)
-        self._threads: list[threading.Thread] = []
-        self._stop_event = threading.Event()
 
     def get_quality(self, content_id: str) -> Quality:
         """Get the quality for a given content_id."""

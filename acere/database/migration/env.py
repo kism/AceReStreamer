@@ -6,7 +6,7 @@ from alembic import context
 from sqlmodel import SQLModel
 
 # Import all models so SQLModel.metadata is fully populated
-import acere.database.models  # noqa: F401
+import acere.database.models
 import acere.database.models.user  # noqa: F401
 
 config = context.config

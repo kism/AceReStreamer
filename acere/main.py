@@ -103,6 +103,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     # Daily quality check + stream culling at 3:33 AM
     quality_handler = AceQualityCacheHandler()
     set_quality_handler(quality_handler)
+    quality_handler.start_daily_check_thread()
 
     yield
 
