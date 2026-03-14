@@ -3,7 +3,7 @@
 import asyncio
 import contextlib
 from typing import ClassVar
-
+from datetime import timedelta, datetime, UTC
 import aiohttp
 import fastapi
 from pydantic import HttpUrl
@@ -20,6 +20,8 @@ from acere.utils.logger import get_logger
 
 from .base import BaseDatabaseHandler
 
+
+_CHECK_LAST_SCRAPE_THRESHOLD = timedelta(days=1)
 _async_background_tasks: set[asyncio.Task[None]] = set()
 logger = get_logger(__name__)
 
@@ -116,7 +118,11 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
 
                 def need_to_check_quality(stream: AceStreamDBEntry) -> bool:
                     quality = self.get_quality(stream.content_id)
-                    return not quality.has_ever_worked or quality.quality == 0
+                    return (
+                        not quality.has_ever_worked
+                        or quality.quality == 0
+                        or (datetime.now(tz=UTC) - stream.last_scraped_time) >= _CHECK_LAST_SCRAPE_THRESHOLD
+                    )
 
                 ace_streams_never_worked = len(
                     [  # We also check if the quality is zero, since maybe it worked but is now dead
