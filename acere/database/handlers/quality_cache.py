@@ -2,8 +2,9 @@
 
 import asyncio
 import contextlib
+from datetime import UTC, datetime, timedelta
 from typing import ClassVar
-from datetime import timedelta, datetime, UTC
+
 import aiohttp
 import fastapi
 from pydantic import HttpUrl
@@ -19,7 +20,6 @@ from acere.utils.helpers import check_valid_content_id_or_infohash
 from acere.utils.logger import get_logger
 
 from .base import BaseDatabaseHandler
-
 
 _CHECK_LAST_SCRAPE_THRESHOLD = timedelta(days=1)
 _async_background_tasks: set[asyncio.Task[None]] = set()
