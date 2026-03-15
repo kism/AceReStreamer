@@ -28,6 +28,18 @@ _OLD_QUALITY_CACHE_DDL = (
     ")"
 )
 
+_OLD_USER_DDL = (
+    "CREATE TABLE user ("
+    "  id TEXT PRIMARY KEY NOT NULL,"
+    "  username TEXT NOT NULL UNIQUE,"
+    "  is_active BOOLEAN NOT NULL DEFAULT 1,"
+    "  is_superuser BOOLEAN NOT NULL DEFAULT 0,"
+    "  stream_token TEXT NOT NULL,"
+    "  full_name TEXT,"
+    "  hashed_password TEXT NOT NULL"
+    ")"
+)
+
 
 @pytest.fixture
 def engine(tmp_path: Path) -> Generator[Engine, None, None]:
@@ -40,6 +52,7 @@ def test_0002_upgrade_from_old_schema(engine: Engine, get_columns: Callable[[Eng
     """Migration 0002 adds last_quality_success_time and drops has_ever_worked from old schema."""
     with engine.connect() as conn:
         conn.execute(sa.text(_OLD_QUALITY_CACHE_DDL))
+        conn.execute(sa.text(_OLD_USER_DDL))
         conn.commit()
 
     columns_before = get_columns(engine, "ace_quality_cache")
@@ -51,6 +64,9 @@ def test_0002_upgrade_from_old_schema(engine: Engine, get_columns: Callable[[Eng
     columns_after = get_columns(engine, "ace_quality_cache")
     assert "last_quality_success_time" in columns_after
     assert "has_ever_worked" not in columns_after
+
+    user_columns_after = get_columns(engine, "user")
+    assert "password_changed_at" in user_columns_after
 
 
 def test_0002_upgrade_idempotent(engine: Engine, get_columns: Callable[[Engine, str], set[str]]) -> None:

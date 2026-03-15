@@ -83,7 +83,7 @@ def update_password_me(*, session: SessionDep, body: UpdatePassword, current_use
         raise HTTPException(status_code=400, detail="New password cannot be the same as the current one")
     hashed_password = get_password_hash(body.new_password)
     current_user.hashed_password = hashed_password
-    current_user.password_changed_at = datetime.now(UTC)
+    current_user.password_changed_at = datetime.now(UTC).replace(microsecond=0)
     session.add(current_user)
     session.commit()
     return Message(message="Password updated successfully")

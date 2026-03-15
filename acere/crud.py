@@ -26,7 +26,7 @@ def update_user(*, session: Session, db_user: User, user_in: UserUpdate) -> User
         password = user_data["password"]
         hashed_password = get_password_hash(password)
         extra_data["hashed_password"] = hashed_password
-        extra_data["password_changed_at"] = datetime.now(UTC)
+        extra_data["password_changed_at"] = datetime.now(UTC).replace(microsecond=0)
     db_user.sqlmodel_update(user_data, update=extra_data)
     session.add(db_user)
     session.commit()
