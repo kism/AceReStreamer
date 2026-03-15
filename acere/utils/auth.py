@@ -13,12 +13,6 @@ from acere.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
-@dataclass
-class EmailData:
-    html_content: str
-    subject: str
-
-
 def verify_password_reset_token(token: str) -> str | None:
     try:
         decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=[security.ALGORITHM])

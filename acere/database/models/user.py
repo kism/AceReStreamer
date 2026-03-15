@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 from pydantic import field_validator
 from sqlmodel import Field, SQLModel
@@ -66,6 +67,7 @@ class UpdatePassword(SQLModel):
 class User(UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
+    password_changed_at: datetime | None = None
 
 
 # Properties to return via API, id is always required
@@ -96,6 +98,7 @@ class Token(SQLModel):
 # Contents of JWT token
 class TokenPayload(SQLModel):
     sub: str | None = None
+    iat: int | None = None
 
 
 class NewPassword(SQLModel):
