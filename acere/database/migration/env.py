@@ -26,7 +26,7 @@ def _get_url() -> str:
 
 
 def run_migrations_offline() -> None:
-    """Run migrations in 'offline' mode (no live DB connection)."""
+    """Run migrations in 'offline' mode (generates SQL, no live DB connection)."""
     context.configure(
         url=_get_url(),
         target_metadata=target_metadata,
@@ -38,21 +38,4 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
-def run_migrations_online() -> None:
-    """Run migrations in 'online' mode (live DB connection)."""
-    from acere.database.init import engine  # noqa: PLC0415
-
-    with engine.connect() as connection:
-        context.configure(
-            connection=connection,
-            target_metadata=target_metadata,
-            render_as_batch=True,
-        )
-        with context.begin_transaction():
-            context.run_migrations()
-
-
-if context.is_offline_mode():
-    run_migrations_offline()
-else:
-    run_migrations_online()
+run_migrations_offline()

@@ -1,8 +1,5 @@
 import secrets
-from pathlib import Path
 
-from alembic import command
-from alembic.config import Config
 from sqlmodel import Session, SQLModel, create_engine, select
 
 from acere import crud
@@ -50,14 +47,6 @@ Password: {password_clear}
         user = crud.create_user(session=session, user_create=user_in)
 
 
-def _run_migrations() -> None:
-    alembic_cfg = Config()
-    alembic_cfg.set_main_option("script_location", str(Path(__file__).parent / "migration"))
-    alembic_cfg.set_main_option("sqlalchemy.url", str(engine.url))
-    command.upgrade(alembic_cfg, "head")
-
-
 def init_db(session: Session) -> None:
     SQLModel.metadata.create_all(engine)
-    _run_migrations()
     _create_first_superuser(session=session)
