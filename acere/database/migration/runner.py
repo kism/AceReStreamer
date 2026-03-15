@@ -1,7 +1,7 @@
 """Programmatic Alembic migration runner, bypassing env.py."""
 
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from alembic.config import Config
 from alembic.runtime.environment import EnvironmentContext
@@ -10,7 +10,7 @@ from alembic.script import ScriptDirectory
 from sqlmodel import SQLModel
 
 # Import all models so SQLModel.metadata is fully populated
-import acere.database.models  # noqa: F401
+import acere.database.models
 import acere.database.models.user  # noqa: F401
 
 if TYPE_CHECKING:
@@ -38,8 +38,8 @@ def upgrade(engine: Engine, target: str = "head") -> None:
     cfg = _make_config()
     script = ScriptDirectory.from_config(cfg)
 
-    def fn(rev: tuple[str, ...], context: MigrationContext) -> list:
-        return script._upgrade_revs(target, rev)  # noqa: SLF001
+    def fn(rev: tuple[str, ...], _context: MigrationContext) -> list[Any]:
+        return script._upgrade_revs(target, rev)  # type: ignore[arg-type]  # noqa: SLF001
 
     with EnvironmentContext(cfg, script, fn=fn, destination_rev=target) as env:
         with engine.connect() as conn:
@@ -57,8 +57,8 @@ def downgrade(engine: Engine, target: str) -> None:
     cfg = _make_config()
     script = ScriptDirectory.from_config(cfg)
 
-    def fn(rev: tuple[str, ...], context: MigrationContext) -> list:
-        return script._downgrade_revs(target, rev)  # noqa: SLF001
+    def fn(rev: tuple[str, ...], _context: MigrationContext) -> list[Any]:
+        return script._downgrade_revs(target, rev)  # type: ignore[arg-type]  # noqa: SLF001
 
     with EnvironmentContext(cfg, script, fn=fn, destination_rev=target) as env:
         with engine.connect() as conn:

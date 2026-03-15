@@ -14,11 +14,13 @@ from acere.version import PROGRAM_NAME, __version__
 
 if TYPE_CHECKING:
     from alembic.script import Script
+    from sqlalchemy import Engine
 else:
     Script = object
+    Engine = object
 
 
-def _setup_engine():
+def _setup_engine() -> Engine:
     setup_app_path_handler(DEFAULT_INSTANCE_PATH)
     path_handler = get_app_path_handler()
     if not path_handler.database_file.exists():
