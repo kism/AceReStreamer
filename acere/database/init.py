@@ -49,6 +49,6 @@ Password: {password_clear}
 
 
 def init_db(session: Session) -> None:
-    runner.upgrade(engine)
     SQLModel.metadata.create_all(engine)
+    runner.upgrade(engine)
     _create_first_superuser(session=session)
