@@ -56,7 +56,7 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
     _cache: ClassVar[dict[str, Quality]] = {}
     _threads: ClassVar[list[threading.Thread]] = []
     _stop_event: ClassVar[threading.Event] = threading.Event()
-    _currently_checking_quality: ClassVar[bool] = False
+    _currently_checking_quality: ClassVar[threading.Event] = threading.Event()
 
     def get_quality(self, content_id: str) -> Quality:
         """Get the quality for a given content_id."""
@@ -129,19 +129,19 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
 
         handler = get_ace_streams_db_handler()
 
-        if self._currently_checking_quality:
+        if self._currently_checking_quality.is_set():
             return False
 
         async def check_missing_quality_thread(base_url: HttpUrl) -> None:
             try:
-                AceQualityCacheHandler._currently_checking_quality = True
+                AceQualityCacheHandler._currently_checking_quality.set()
                 await asyncio.sleep(0)  # This await means the task returns faster I think
 
                 streams_valid_content_id = handler.get_streams()
 
                 if not streams_valid_content_id:
                     logger.warning("No streams found to check quality.")
-                    AceQualityCacheHandler._currently_checking_quality = False
+                    AceQualityCacheHandler._currently_checking_quality.clear()
                     return
 
                 def need_to_check_quality(stream: AceStreamDBEntry) -> bool:
@@ -187,7 +187,7 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
                 logger.exception("")
                 logger.error("Unhandled exception occurred during quality check: %s", exception_name)
 
-            AceQualityCacheHandler._currently_checking_quality = False
+            AceQualityCacheHandler._currently_checking_quality.clear()
 
         url = f"{settings.EXTERNAL_URL}/hls"
 
