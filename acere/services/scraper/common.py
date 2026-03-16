@@ -14,5 +14,5 @@ class ScraperCommon:
     """Common setupmethods for scrapers."""
 
     def __init__(self) -> None:
-        """Initialize the IPTVStreamScraper with the instance path."""
+        """Initialize the ScraperCommon with a scraper cache."""
         self.scraper_cache: ScraperCache = ScraperCache()

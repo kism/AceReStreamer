@@ -27,7 +27,7 @@ def epg_url() -> HttpUrl:
 
 @pytest.fixture
 def xml_good_quality() -> etree._Element:
-    """Load test.xml as an etree."""
+    """Generate good quality EPG XML as an etree."""
     return generate_future_program_xml(
         channels=2,
         programs=6,
@@ -38,7 +38,7 @@ def xml_good_quality() -> etree._Element:
 
 @pytest.fixture
 def xml_poor_quality() -> etree._Element:
-    """Load test2.xml as an etree."""
+    """Generate poor quality EPG XML as an etree."""
     return generate_future_program_xml(
         channels=2,
         programs=6,

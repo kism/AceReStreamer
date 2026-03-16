@@ -49,7 +49,7 @@ async def test_site1(scraper: IPTVStreamScraper) -> None:
 
 
 async def test_site2(scraper: IPTVStreamScraper, caplog: pytest.LogCaptureFixture) -> None:
-    """Test scraping from site2.html."""
+    """Test scraping from playlist_infohash_2.m3u8."""
     playlist_name = "playlist_infohash_2.m3u8"
     site_config = _get_test_sites()[playlist_name]
 

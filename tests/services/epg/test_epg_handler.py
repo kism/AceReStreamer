@@ -149,7 +149,7 @@ async def test_epg_update_and_get(
     epg_handler: EPGHandler,
     mocker: MockerFixture,
 ) -> None:
-    """Test EPGHandler update_all_epgs and get_combined_epg."""
+    """Test EPGHandler getter methods."""
     # Mock the update method of EPG to always return True
     mocker.patch.object(EPG, "update", return_value=True)
 

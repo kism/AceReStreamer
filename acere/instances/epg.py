@@ -5,7 +5,7 @@ _epg_handler: EPGHandler | None = None
 
 
 def get_epg_handler() -> EPGHandler:
-    """Get the global AceStreamsDBHandler instance."""
+    """Get the global EPGHandler instance."""
     if _epg_handler is None:
         msg = "EPGHandler instance is not set."
         raise ValueError(msg)

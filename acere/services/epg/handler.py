@@ -36,7 +36,7 @@ class EPGHandler:
     """Handler for EPG (Electronic Program Guide) data."""
 
     def __init__(self, instance_id: str) -> None:
-        """Initialize the EPGHandler with a list of URLs."""
+        """Initialize the EPGHandler with an instance ID."""
         self._instance_id = instance_id
         self._epgs: list[EPG] = []
         self._condensed_epg: etree._Element | None = None
@@ -179,7 +179,7 @@ class EPGHandler:
 
     # region API
     def get_epgs_api(self) -> EPGApiHandlerHealthResponse:
-        """Get the names of all EPGs."""
+        """Get the health status of all EPGs."""
         epgs: dict[str, EPGApiHealthResponse] = {
             slugify(urllib.parse.unquote(epg.url.encoded_string())): EPGApiHealthResponse(
                 time_since_last_updated=epg.get_time_since_last_update(),
@@ -282,7 +282,7 @@ class EPGHandler:
         self._threads.append(thread)
 
     def stop_all_threads(self) -> None:
-        """Stop all threads in the AcePool."""
+        """Stop all threads in the EPGHandler."""
         if len(self._threads) == 0:
             return
 

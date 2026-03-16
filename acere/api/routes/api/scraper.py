@@ -94,7 +94,7 @@ def add_source(  # noqa: C901 Revisit once I have some tests
 
 @router.delete("/source/{slug}", dependencies=[Depends(get_current_active_superuser)])
 def remove_source(slug: str) -> MessageResponseModel:
-    """API endpoint to remove an IPTV source."""
+    """API endpoint to remove a scraper source."""
     success, msg = settings.scraper.remove_source(slug)
     if not success:
         raise HTTPException(

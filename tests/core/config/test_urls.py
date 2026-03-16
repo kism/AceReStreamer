@@ -22,7 +22,7 @@ def test_default_urls_as_strings() -> None:
     ],
 )
 def test_strip_trailing_slash(url: str, expected: str) -> None:
-    """Test that the strip_trailing_slash function correctly removes trailing slashes."""
+    """Test that ace_address always has a trailing slash."""
     app_config = AppConf(
         ace_address=url,  # type: ignore[arg-type]
     )
