@@ -47,10 +47,7 @@ def _has_not_worked_in_one_day(quality_cache: AceQualityCache) -> bool:
     if quality_cache.last_quality_success_time is None:
         return True
 
-    return (
-        datetime.now(tz=UTC) - quality_cache.last_quality_success_time.replace(tzinfo=UTC)
-        >= _CHECK_LAST_WORKED_THRESHOLD
-    )
+    return datetime.now(tz=UTC) - quality_cache.last_quality_success_time >= _CHECK_LAST_WORKED_THRESHOLD
 
 
 class AceQualityCacheHandler(BaseDatabaseHandler):
@@ -205,16 +202,18 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
         return True
 
     # region Culling
-    def _get_quality_cache_entry(self, content_id: str) -> AceQualityCache | None:
-        """Get the DB record for a content_id's quality cache."""
-        with self._get_session() as session:
-            return session.exec(select(AceQualityCache).where(AceQualityCache.content_id == content_id)).first()
-
     def cull_stale_streams(self) -> None:
         """Remove streams that have not worked or been scraped in the past day."""
         handler = get_ace_streams_db_handler()
         streams = handler.get_streams()
         now = datetime.now(tz=UTC)
+
+        content_ids = [s.content_id for s in streams]
+        with self._get_session() as session:
+            quality_entries = session.exec(
+                select(AceQualityCache).where(AceQualityCache.content_id.in_(content_ids))
+            ).all()
+            quality_map = {entry.content_id: entry for entry in quality_entries}
 
         for stream in streams:
             if now - stream.last_scraped_time >= _CHECK_LAST_SCRAPE_THRESHOLD:
@@ -226,7 +225,7 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
                 handler.delete_by_content_id(stream.content_id)
                 continue
 
-            quality_entry = self._get_quality_cache_entry(stream.content_id)
+            quality_entry = quality_map.get(stream.content_id)
             if quality_entry is None or _has_not_worked_in_one_day(quality_entry):
                 logger.info(
                     "Culling stream %s (%s): not worked in 1 day",

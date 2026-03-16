@@ -2,6 +2,7 @@
 
 from datetime import UTC, datetime
 
+from pydantic import field_validator
 from sqlmodel import Field, SQLModel
 
 
@@ -17,3 +18,11 @@ class AceStreamDBEntry(SQLModel, table=True):
     tvg_logo: str | None = Field(default=None, max_length=255)
     group_title: str = Field(default="", max_length=100)
     last_scraped_time: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
+
+    @field_validator("last_scraped_time", mode="before")
+    @classmethod
+    def ensure_timezone_aware(cls, v: datetime) -> datetime:
+        """Ensure last_scraped_time is timezone-aware (SQLite strips tzinfo)."""
+        if isinstance(v, datetime) and v.tzinfo is None:  # type: ignore[redundant-expr] # ty: ignore[unused-ignore-comment]
+            return v.replace(tzinfo=UTC)
+        return v

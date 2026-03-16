@@ -10,6 +10,12 @@ from acere.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
+def set_user_password(user: User, plain_password: str) -> None:
+    """Hash and set a user's password, updating password_changed_at."""
+    user.hashed_password = get_password_hash(plain_password)
+    user.password_changed_at = datetime.now(UTC).replace(microsecond=0, second=0)
+
+
 def create_user(*, session: Session, user_create: UserCreate) -> User:
     db_obj = User.model_validate(user_create, update={"hashed_password": get_password_hash(user_create.password)})
     session.add(db_obj)
@@ -22,8 +28,7 @@ def create_user(*, session: Session, user_create: UserCreate) -> User:
 def update_user(*, session: Session, db_user: User, user_in: UserUpdate) -> User:
     db_user.sqlmodel_update(user_in.model_dump(exclude_unset=True))
     if user_in.password is not None:
-        db_user.hashed_password = get_password_hash(user_in.password)
-        db_user.password_changed_at = datetime.now(UTC).replace(microsecond=0)
+        set_user_password(db_user, user_in.password)
     session.add(db_user)
     session.commit()
     session.refresh(db_user)
