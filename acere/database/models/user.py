@@ -1,8 +1,10 @@
 import uuid
-from datetime import UTC, datetime
+from datetime import datetime
 
 from pydantic import field_validator
 from sqlmodel import Field, SQLModel
+
+from acere.database.types import TZDateTime
 
 from acere.utils.auth import generate_stream_token
 
@@ -67,15 +69,7 @@ class UpdatePassword(SQLModel):
 class User(UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
-    password_changed_at: datetime | None = None
-
-    @field_validator("password_changed_at", mode="before")
-    @classmethod
-    def ensure_timezone_aware(cls, v: datetime | None) -> datetime | None:
-        """Ensure password_changed_at is timezone-aware (SQLite strips tzinfo)."""
-        if isinstance(v, datetime) and v.tzinfo is None:
-            return v.replace(tzinfo=UTC)
-        return v
+    password_changed_at: datetime | None = Field(default=None, sa_type=TZDateTime)
 
 
 # Properties to return via API, id is always required

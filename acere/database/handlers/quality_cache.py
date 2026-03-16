@@ -47,11 +47,7 @@ def _has_not_worked_in_one_day(quality_cache: AceQualityCache) -> bool:
     if quality_cache.last_quality_success_time is None:
         return True
 
-    # SQLite returns naive datetimes; field_validator doesn't run on ORM-loaded objects
-    last_worked = quality_cache.last_quality_success_time
-    if last_worked.tzinfo is None:
-        last_worked = last_worked.replace(tzinfo=UTC)
-    return datetime.now(tz=UTC) - last_worked >= _CHECK_LAST_WORKED_THRESHOLD
+    return datetime.now(tz=UTC) - quality_cache.last_quality_success_time >= _CHECK_LAST_WORKED_THRESHOLD
 
 
 class AceQualityCacheHandler(BaseDatabaseHandler):
@@ -213,11 +209,7 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
             quality_map = {entry.content_id: entry for entry in quality_entries}
 
         for stream in streams:
-            # SQLite returns naive datetimes; field_validator doesn't run on ORM-loaded objects
-            last_scraped = stream.last_scraped_time
-            if last_scraped.tzinfo is None:
-                last_scraped = last_scraped.replace(tzinfo=UTC)
-            if now - last_scraped >= _CHECK_LAST_SCRAPE_THRESHOLD:
+            if now - stream.last_scraped_time >= _CHECK_LAST_SCRAPE_THRESHOLD:
                 logger.info(
                     "Culling stream %s (%s): not scraped in 1 day",
                     ace_id_short(stream.content_id),
