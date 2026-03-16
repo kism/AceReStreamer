@@ -55,9 +55,10 @@ async def test_check_missing_quality_no_streams(
 @pytest.mark.asyncio
 async def test_check_missing_quality_already_checking(
     quality_cache_handler: AceQualityCacheHandler,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test check_missing_quality when already checking."""
-    AceQualityCacheHandler._currently_checking_quality = True
+    monkeypatch.setattr(AceQualityCacheHandler, "_currently_checking_quality", True)
     assert await quality_cache_handler.check_missing_quality(stream_delay=0, attempt_delay=0) is False
 
 
