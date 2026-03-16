@@ -93,7 +93,7 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
             result.quality = quality.quality
             result.m3u_failures = quality.m3u_failures
 
-            if quality.quality > 0:
+            if quality.quality_increased:
                 result.last_quality_success_time = datetime.now(tz=UTC)
 
             session.commit()

@@ -34,6 +34,7 @@ class Quality(BaseModel):
     _last_db_write: datetime = datetime.min.replace(tzinfo=UTC)
     _next_segment_expected: timedelta = DEFAULT_NEXT_SEGMENT_EXPECTED
     last_message: str = ""
+    quality_increased: bool = False
 
     def update_quality(self, m3u_playlist: str) -> None:
         """Update the quality based on the m3u playlist."""
@@ -100,6 +101,7 @@ class Quality(BaseModel):
         self.quality += rating
         self.quality = max(self.quality, MIN_QUALITY)
         self.quality = min(self.quality, MAX_QUALITY)
+        self.quality_increased = rating > 0
         logger.trace("New quality %s %s", self.quality, f"(rating: {rating})")
 
     def time_to_write_to_db(self) -> bool:
