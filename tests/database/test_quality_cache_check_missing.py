@@ -57,7 +57,7 @@ async def test_check_missing_quality_already_checking(
     quality_cache_handler: AceQualityCacheHandler,
 ) -> None:
     """Test check_missing_quality when already checking."""
-    quality_cache_handler._currently_checking_quality = True
+    AceQualityCacheHandler._currently_checking_quality = True
     assert await quality_cache_handler.check_missing_quality(stream_delay=0, attempt_delay=0) is False
 
 

@@ -56,7 +56,7 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
     _cache: ClassVar[dict[str, Quality]] = {}
     _threads: ClassVar[list[threading.Thread]] = []
     _stop_event: ClassVar[threading.Event] = threading.Event()
-    _currently_checking_quality = False
+    _currently_checking_quality: ClassVar[bool] = False
 
     def get_quality(self, content_id: str) -> Quality:
         """Get the quality for a given content_id."""
@@ -134,23 +134,19 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
 
         async def check_missing_quality_thread(base_url: HttpUrl) -> None:
             try:
-                self._currently_checking_quality = True
+                AceQualityCacheHandler._currently_checking_quality = True
                 await asyncio.sleep(0)  # This await means the task returns faster I think
 
                 streams_valid_content_id = handler.get_streams()
 
                 if not streams_valid_content_id:
                     logger.warning("No streams found to check quality.")
-                    self._currently_checking_quality = False
+                    AceQualityCacheHandler._currently_checking_quality = False
                     return
 
                 def need_to_check_quality(stream: AceStreamDBEntry) -> bool:
                     quality = self.get_quality(stream.content_id)
-                    return (
-                        not quality.has_ever_worked
-                        or quality.quality == 0
-                        or (datetime.now(tz=UTC) - stream.last_scraped_time) >= _CHECK_LAST_SCRAPE_THRESHOLD
-                    )
+                    return not quality.has_ever_worked or quality.quality == 0
 
                 ace_streams_never_worked = len(
                     [  # We also check if the quality is zero, since maybe it worked but is now dead
@@ -191,7 +187,7 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
                 logger.exception("")
                 logger.error("Unhandled exception occurred during quality check: %s", exception_name)
 
-            self._currently_checking_quality = False
+            AceQualityCacheHandler._currently_checking_quality = False
 
         url = f"{settings.EXTERNAL_URL}/hls"
 

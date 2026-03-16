@@ -50,6 +50,7 @@ def get_current_user(session: SessionDep, token: TokenDep) -> User:
         raise HTTPException(status_code=400, detail="Inactive user")
     if token_data.iat is not None and user.password_changed_at is not None:
         token_issued_at = datetime.fromtimestamp(token_data.iat, tz=UTC)
+        # SQLite returns naive datetimes; field_validator doesn't run on ORM-loaded objects
         pwd_changed_at = user.password_changed_at
         if pwd_changed_at.tzinfo is None:
             pwd_changed_at = pwd_changed_at.replace(tzinfo=UTC)
