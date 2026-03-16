@@ -20,7 +20,7 @@ class AceQualityCache(SQLModel, table=True):
     @field_validator("last_quality_success_time", mode="before")
     @classmethod
     def ensure_timezone_aware(cls, v: datetime | None) -> datetime | None:
-        """Ensure last_quality_success_time is timezone-aware (SQLite strips tzinfo)."""
+        """Ensure last_quality_success_time is timezone-aware (SQLite strips tzinfo). NOTE: does not run for ORM loads."""
         if isinstance(v, datetime) and v.tzinfo is None:
             return v.replace(tzinfo=UTC)
         return v

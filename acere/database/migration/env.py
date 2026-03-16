@@ -35,7 +35,7 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode with a live database connection."""
-    connectable = config.attributes.get("connection")
+    connectable = config.attributes.get("engine")
     if connectable is None:
         from acere.database.init import engine  # noqa: PLC0415
 

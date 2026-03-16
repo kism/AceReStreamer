@@ -18,7 +18,7 @@ MIGRATION_DIR = Path(__file__).parent
 def _make_config(engine: Engine) -> Config:
     cfg = Config()
     cfg.set_main_option("script_location", str(MIGRATION_DIR))
-    cfg.attributes["connection"] = engine
+    cfg.attributes["engine"] = engine
     return cfg
 
 
