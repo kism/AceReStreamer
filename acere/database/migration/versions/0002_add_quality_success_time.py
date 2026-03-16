@@ -31,14 +31,14 @@ def upgrade() -> None:
     if needs_add or needs_drop:
         with op.batch_alter_table("ace_quality_cache") as batch_op:
             if needs_add:
-                batch_op.add_column(sa.Column("last_quality_success_time", sa.DateTime(timezone=True), nullable=True))
+                batch_op.add_column(sa.Column("last_quality_success_time", sa.DateTime(), nullable=True))
             if needs_drop:
                 batch_op.drop_column("has_ever_worked")
 
     user_columns = {row[1] for row in bind.execute(sa.text("PRAGMA table_info(user)")).fetchall()}
     if "password_changed_at" not in user_columns:
         with op.batch_alter_table("user") as batch_op:
-            batch_op.add_column(sa.Column("password_changed_at", sa.DateTime(timezone=True), nullable=True))
+            batch_op.add_column(sa.Column("password_changed_at", sa.DateTime(), nullable=True))
 
 
 def downgrade() -> None:
