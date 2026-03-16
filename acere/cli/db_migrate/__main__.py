@@ -40,8 +40,10 @@ def _get_all_revisions() -> list[Script]:
 
 def cmd_current(args: argparse.Namespace) -> None:  # noqa: ARG001
     engine = _setup_engine()
-    current = runner.get_current_revision(engine)
-    engine.dispose()
+    try:
+        current = runner.get_current_revision(engine)
+    finally:
+        engine.dispose()
 
     all_revisions = _get_all_revisions()
     head = all_revisions[0].revision if all_revisions else None
@@ -62,20 +64,24 @@ def cmd_current(args: argparse.Namespace) -> None:  # noqa: ARG001
 
 def cmd_upgrade(args: argparse.Namespace) -> None:
     engine = _setup_engine()
-    console.print(f"Upgrading to: [bold]{args.revision}[/bold]")
-    runner.upgrade(engine, args.revision)
-    engine.dispose()
-    current = runner.get_current_revision(engine)
-    console.print(f"Done. Current revision: [green]{current}[/green]")
+    try:
+        console.print(f"Upgrading to: [bold]{args.revision}[/bold]")
+        runner.upgrade(engine, args.revision)
+        current = runner.get_current_revision(engine)
+        console.print(f"Done. Current revision: [green]{current}[/green]")
+    finally:
+        engine.dispose()
 
 
 def cmd_downgrade(args: argparse.Namespace) -> None:
     engine = _setup_engine()
-    console.print(f"Downgrading to: [bold]{args.revision}[/bold]")
-    runner.downgrade(engine, args.revision)
-    engine.dispose()
-    current = runner.get_current_revision(engine)
-    console.print(f"Done. Current revision: [yellow]{current or 'None'}[/yellow]")
+    try:
+        console.print(f"Downgrading to: [bold]{args.revision}[/bold]")
+        runner.downgrade(engine, args.revision)
+        current = runner.get_current_revision(engine)
+        console.print(f"Done. Current revision: [yellow]{current or 'None'}[/yellow]")
+    finally:
+        engine.dispose()
 
 
 def main() -> None:
