@@ -208,11 +208,8 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
         streams = handler.get_streams()
         now = datetime.now(tz=UTC)
 
-        content_ids = [s.content_id for s in streams]
         with self._get_session() as session:
-            quality_entries = session.exec(
-                select(AceQualityCache).where(AceQualityCache.content_id.in_(content_ids))
-            ).all()
+            quality_entries = session.exec(select(AceQualityCache)).all()
             quality_map = {entry.content_id: entry for entry in quality_entries}
 
         for stream in streams:
