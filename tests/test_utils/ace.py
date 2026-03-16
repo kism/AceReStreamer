@@ -24,7 +24,7 @@ def create_mock_middleware_response(
     infohash: str | None = None,
     playback_session_id: str = "session123",
 ) -> AceMiddlewareResponseFull:
-    """Create a mock AceMiddlewareResponse for testing."""
+    """Create a mock AceMiddlewareResponseFull for testing."""
     if playback_url is None:
         playback_url = HttpUrl("http://localhost:6878/ace/m/whatever.m3u8")
     if stat_url is None:

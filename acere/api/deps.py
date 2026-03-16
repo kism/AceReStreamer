@@ -1,5 +1,6 @@
 import uuid
 from collections.abc import Generator  # noqa: TC003 Will break everything otherwise
+from datetime import UTC, datetime
 from typing import Annotated
 
 import jwt
@@ -47,6 +48,10 @@ def get_current_user(session: SessionDep, token: TokenDep) -> User:
         raise HTTPException(status_code=404, detail="User not found")
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
+    if token_data.iat is not None and user.password_changed_at is not None:
+        token_issued_at = datetime.fromtimestamp(token_data.iat, tz=UTC)
+        if token_issued_at < user.password_changed_at:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Could not validate credentials")
     return user
 
 

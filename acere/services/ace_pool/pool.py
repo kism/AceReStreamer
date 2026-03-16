@@ -107,7 +107,7 @@ class AcePool:
 
     # region Getters
     async def get_available_instance_number(self) -> int | None:
-        """Get the next available AceStream instance URL."""
+        """Get the next available AceStream instance number."""
         instance_numbers = [instance.ace_pid for instance in self._ace_instances.values()]
 
         for n in range(1, self._max_size + 1):  # Minimum instance number is 1, per the API

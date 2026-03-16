@@ -1,6 +1,5 @@
 """Utility functions and helpers."""
 
-from dataclasses import dataclass
 from secrets import token_hex
 
 import jwt
@@ -11,12 +10,6 @@ from acere.instances.config import settings
 from acere.utils.logger import get_logger
 
 logger = get_logger(__name__)
-
-
-@dataclass
-class EmailData:
-    html_content: str
-    subject: str
 
 
 def verify_password_reset_token(token: str) -> str | None:

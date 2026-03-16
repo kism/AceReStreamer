@@ -49,7 +49,7 @@ async def test_check_missing_quality_no_streams(
     result = await handler.check_missing_quality(stream_delay=0, attempt_delay=0)
     assert result is True
     await asyncio.sleep(0.01)  # Bit sketchy
-    assert handler._currently_checking_quality is False
+    assert handler._currently_checking_quality.is_set() is False
 
 
 @pytest.mark.asyncio
@@ -57,8 +57,11 @@ async def test_check_missing_quality_already_checking(
     quality_cache_handler: AceQualityCacheHandler,
 ) -> None:
     """Test check_missing_quality when already checking."""
-    quality_cache_handler._currently_checking_quality = True
-    assert await quality_cache_handler.check_missing_quality(stream_delay=0, attempt_delay=0) is False
+    AceQualityCacheHandler._currently_checking_quality.set()
+    try:
+        assert await quality_cache_handler.check_missing_quality(stream_delay=0, attempt_delay=0) is False
+    finally:
+        AceQualityCacheHandler._currently_checking_quality.clear()
 
 
 @pytest.mark.asyncio
@@ -116,7 +119,7 @@ async def test_check_missing_quality_with_streams(
     # Wait for quality to be checked
     for _ in range(50):
         await asyncio.sleep(0.01)
-        if not handler._currently_checking_quality:
+        if not handler._currently_checking_quality.is_set():
             break
 
     assert len(hls_calls) >= 1  # hls() was called at least once
@@ -175,7 +178,7 @@ async def test_check_missing_quality_with_exception(
 
     for _ in range(50):
         await asyncio.sleep(0.01)
-        if not handler._currently_checking_quality:
+        if not handler._currently_checking_quality.is_set():
             break
 
-    assert handler._currently_checking_quality is False
+    assert handler._currently_checking_quality.is_set() is False

@@ -171,6 +171,11 @@ def test_update_password_me(client: TestClient, superuser_token_headers: dict[st
     assert user_db.username == settings.FIRST_SUPERUSER
     assert verify_password(new_password, user_db.hashed_password)
 
+    # Re-login with new password since old token is now invalid
+    login_data = {"username": settings.FIRST_SUPERUSER, "password": new_password}
+    r = client.post(f"{API_V1_STR}/login/access-token", data=login_data)
+    new_headers = {"Authorization": f"Bearer {r.json()['access_token']}"}
+
     # Revert to the old password to keep consistency in test
     old_data = {
         "current_password": new_password,
@@ -178,7 +183,7 @@ def test_update_password_me(client: TestClient, superuser_token_headers: dict[st
     }
     r = client.patch(
         f"{API_V1_STR}/users/me/password",
-        headers=superuser_token_headers,
+        headers=new_headers,
         json=old_data,
     )
     db.refresh(user_db)

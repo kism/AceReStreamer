@@ -143,7 +143,7 @@ class RemoteSettingsFetcher:
         thread.start()
 
     def stop_all_threads(self) -> None:
-        """Stop all threads in the AcePool."""
+        """Stop all threads in the RemoteSettingsFetcher."""
         if len(self._threads) == 0:
             return
 

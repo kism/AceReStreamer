@@ -9,7 +9,8 @@ from acere.api.deps import (
     SessionDep,
     get_current_active_superuser,
 )
-from acere.core.security import get_password_hash, verify_password
+from acere.core.security import verify_password
+from acere.crud import set_user_password
 from acere.database.models.user import (
     Message,
     StreamToken,
@@ -80,8 +81,7 @@ def update_password_me(*, session: SessionDep, body: UpdatePassword, current_use
         raise HTTPException(status_code=400, detail="Incorrect password")
     if body.current_password == body.new_password:
         raise HTTPException(status_code=400, detail="New password cannot be the same as the current one")
-    hashed_password = get_password_hash(body.new_password)
-    current_user.hashed_password = hashed_password
+    set_user_password(current_user, body.new_password)
     session.add(current_user)
     session.commit()
     return Message(message="Password updated successfully")

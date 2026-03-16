@@ -20,5 +20,5 @@ def get_app_path_handler() -> AppPathsHelper:
 
 def setup_app_path_handler(instance_path: Path) -> None:
     """Set up the instance path for the application."""
-    global _instance_paths  # noqa: PLW0603
+    global _instance_paths
     _instance_paths = AppPathsHelper(instance_path=instance_path)

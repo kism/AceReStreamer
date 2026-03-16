@@ -1,4 +1,5 @@
 import secrets
+from datetime import UTC, datetime
 
 from sqlmodel import Session, select
 
@@ -7,6 +8,12 @@ from acere.database.models.user import User, UserCreate, UserUpdate
 from acere.utils.logger import get_logger
 
 logger = get_logger(__name__)
+
+
+def set_user_password(user: User, plain_password: str) -> None:
+    """Hash and set a user's password, updating password_changed_at."""
+    user.hashed_password = get_password_hash(plain_password)
+    user.password_changed_at = datetime.now(UTC).replace(microsecond=0)
 
 
 def create_user(*, session: Session, user_create: UserCreate) -> User:
@@ -19,13 +26,9 @@ def create_user(*, session: Session, user_create: UserCreate) -> User:
 
 
 def update_user(*, session: Session, db_user: User, user_in: UserUpdate) -> User:
-    user_data = user_in.model_dump(exclude_unset=True)
-    extra_data = {}
-    if "password" in user_data:
-        password = user_data["password"]
-        hashed_password = get_password_hash(password)
-        extra_data["hashed_password"] = hashed_password
-    db_user.sqlmodel_update(user_data, update=extra_data)
+    db_user.sqlmodel_update(user_in.model_dump(exclude_unset=True))
+    if user_in.password is not None:
+        set_user_password(db_user, user_in.password)
     session.add(db_user)
     session.commit()
     session.refresh(db_user)

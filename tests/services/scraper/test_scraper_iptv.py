@@ -51,7 +51,7 @@ async def test_site1(scraper: IPTVStreamScraper) -> None:
 
 
 async def test_site2(scraper: IPTVStreamScraper) -> None:
-    """Test scraping from site2.html."""
+    """Test scraping from playlist2.m3u8."""
     playlist_name = "playlist2.m3u8"
     site_config = _get_test_sites()[playlist_name]
 
@@ -118,7 +118,7 @@ async def test_download_tvg_logo(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Test _download_tvg_logo method with aiohttp mocks."""
+    """Test download_and_save_logo with aiohttp mocks."""
     setup_app_path_handler(instance_path=tmp_path)
 
     # Create fake logo content
