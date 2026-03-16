@@ -1,6 +1,5 @@
 """Utility functions and helpers."""
 
-from dataclasses import dataclass
 from secrets import token_hex
 
 import jwt

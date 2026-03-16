@@ -4,6 +4,8 @@ import argparse
 import sys
 from typing import TYPE_CHECKING
 
+from alembic.config import Config
+from alembic.script import ScriptDirectory
 from sqlmodel import create_engine
 
 from acere.constants import DEFAULT_INSTANCE_PATH
@@ -30,8 +32,6 @@ def _setup_engine() -> Engine:
 
 
 def _get_all_revisions() -> list[Script]:
-    from alembic.config import Config  # noqa: PLC0415
-    from alembic.script import ScriptDirectory  # noqa: PLC0415
 
     cfg = Config()
     cfg.set_main_option("script_location", str(runner._MIGRATION_DIR))  # noqa: SLF001

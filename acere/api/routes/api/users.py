@@ -1,5 +1,5 @@
-from uuid import UUID  # noqa: TC003 Will break everything otherwise
 from datetime import UTC, datetime
+from uuid import UUID  # noqa: TC003 Will break everything otherwise
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import func, select

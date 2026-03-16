@@ -8,6 +8,7 @@ from sqlmodel import SQLModel
 # Import all models so SQLModel.metadata is fully populated
 import acere.database.models
 import acere.database.models.user  # noqa: F401
+from acere.database.init import engine
 
 config = context.config
 
@@ -21,7 +22,6 @@ def _get_url() -> str:
     url = config.get_main_option("sqlalchemy.url")
     if url:
         return url
-    from acere.database.init import engine  # noqa: PLC0415
     return str(engine.url)
 
 

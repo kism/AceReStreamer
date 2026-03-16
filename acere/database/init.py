@@ -3,6 +3,7 @@ import secrets
 from sqlmodel import Session, SQLModel, create_engine, select
 
 from acere import crud
+from acere.database.migration import runner
 from acere.database.models.user import User, UserCreate
 from acere.instances.config import settings
 from acere.instances.paths import get_app_path_handler
@@ -48,5 +49,6 @@ Password: {password_clear}
 
 
 def init_db(session: Session) -> None:
+    runner.upgrade(engine)
     SQLModel.metadata.create_all(engine)
     _create_first_superuser(session=session)
