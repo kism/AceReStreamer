@@ -1,4 +1,4 @@
-"""Handler for content_id to xc_id mapping."""
+"""Handler for quality cache."""
 
 import asyncio
 import contextlib
