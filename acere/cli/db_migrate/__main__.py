@@ -34,7 +34,7 @@ def _setup_engine() -> Engine:
 def _get_all_revisions() -> list[Script]:
 
     cfg = Config()
-    cfg.set_main_option("script_location", str(runner._MIGRATION_DIR))  # noqa: SLF001
+    cfg.set_main_option("script_location", str(runner.MIGRATION_DIR))
     return list(ScriptDirectory.from_config(cfg).walk_revisions())
 
 

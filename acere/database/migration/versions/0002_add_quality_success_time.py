@@ -6,7 +6,6 @@ Create Date: 2026-03-14
 
 """
 
-
 from typing import TYPE_CHECKING
 
 import sqlalchemy as sa
@@ -26,9 +25,7 @@ depends_on: str | Sequence[str] | None = None
 def upgrade() -> None:
     bind = op.get_bind()
 
-    existing_columns = {
-        row[1] for row in bind.execute(sa.text("PRAGMA table_info(ace_quality_cache)")).fetchall()
-    }
+    existing_columns = {row[1] for row in bind.execute(sa.text("PRAGMA table_info(ace_quality_cache)")).fetchall()}
     needs_add = "last_quality_success_time" not in existing_columns
     needs_drop = "has_ever_worked" in existing_columns
     if needs_add or needs_drop:
@@ -47,9 +44,7 @@ def upgrade() -> None:
 def downgrade() -> None:
     bind = op.get_bind()
 
-    existing_columns = {
-        row[1] for row in bind.execute(sa.text("PRAGMA table_info(ace_quality_cache)")).fetchall()
-    }
+    existing_columns = {row[1] for row in bind.execute(sa.text("PRAGMA table_info(ace_quality_cache)")).fetchall()}
     needs_add = "has_ever_worked" not in existing_columns
     needs_drop = "last_quality_success_time" in existing_columns
     if needs_add or needs_drop:

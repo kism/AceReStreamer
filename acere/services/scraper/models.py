@@ -37,7 +37,7 @@ class FoundAceStream(BaseModel):
     tvg_logo: str | None = None
     group_title: str = ""
     sites_found_on: list[str]
-    last_scraped_time: datetime # Don't set a default, it will not evaluate each time an object is created.
+    last_scraped_time: datetime  # Don't set a default, it will not evaluate each time an object is created.
 
     @model_validator(mode="after")
     def manual_validate(self) -> Self:

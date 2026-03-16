@@ -15,5 +15,5 @@ def get_quality_handler() -> AceQualityCacheHandler:
 
 def set_quality_handler(handler: AceQualityCacheHandler) -> None:
     """Set the global AceQualityCacheHandler instance."""
-    global _quality_handler  # noqa: PLW0603
+    global _quality_handler
     _quality_handler = handler

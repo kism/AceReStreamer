@@ -15,6 +15,6 @@ def get_epg_handler() -> EPGHandler:
 
 def set_epg_handler(handler: EPGHandler) -> None:
     """Set the global EPGHandler instance."""
-    global _epg_handler  # noqa: PLW0603
+    global _epg_handler
     _epg_handler = handler
     _epg_handler.update_epgs(settings.epgs)

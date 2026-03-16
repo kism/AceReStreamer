@@ -114,6 +114,9 @@ ignore = [
     "D",
     "A",
 ]
+"acere/instances/*.py" = [
+    "PLW0603", # Allow globals here, this is the place
+]
 
 [tool.ruff.lint.flake8-type-checking]
 runtime-evaluated-base-classes = [

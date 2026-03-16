@@ -8,7 +8,6 @@ from sqlmodel import SQLModel
 # Import all models so SQLModel.metadata is fully populated
 import acere.database.models
 import acere.database.models.user  # noqa: F401
-from acere.database.init import engine
 
 config = context.config
 
@@ -18,17 +17,13 @@ if config.config_file_name is not None:
 target_metadata = SQLModel.metadata
 
 
-def _get_url() -> str:
-    url = config.get_main_option("sqlalchemy.url")
-    if url:
-        return url
-    return str(engine.url)
-
-
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode (generates SQL, no live DB connection)."""
+    from acere.database.init import engine  # noqa: PLC0415
+
+    url = config.get_main_option("sqlalchemy.url") or str(engine.url)
     context.configure(
-        url=_get_url(),
+        url=url,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -38,4 +33,25 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
-run_migrations_offline()
+def run_migrations_online() -> None:
+    """Run migrations in 'online' mode with a live database connection."""
+    connectable = config.attributes.get("connection")
+    if connectable is None:
+        from acere.database.init import engine  # noqa: PLC0415
+
+        connectable = engine
+
+    with connectable.connect() as conn:
+        context.configure(
+            connection=conn,
+            target_metadata=target_metadata,
+            render_as_batch=True,
+        )
+        with context.begin_transaction():
+            context.run_migrations()
+
+
+if context.is_offline_mode():
+    run_migrations_offline()
+else:
+    run_migrations_online()
