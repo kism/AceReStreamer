@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -8,6 +9,7 @@ from acere.api.deps import CurrentUser, SessionDep
 from acere.core import security
 from acere.crud import set_user_password
 from acere.database.models.user import Message, NewPassword, Token, UserPublic
+from acere.instances.config import settings
 from acere.utils.auth import (
     verify_password_reset_token,
 )
@@ -26,7 +28,8 @@ def login_access_token(session: SessionDep, form_data: Annotated[OAuth2PasswordR
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     logger.info("User logged in: %s", user.username)
-    return Token(access_token=security.create_access_token(user.id))
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    return Token(access_token=security.create_access_token(user.id, expires_delta=access_token_expires))
 
 
 @router.post("/login/test-token", response_model=UserPublic)
