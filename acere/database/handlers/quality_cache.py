@@ -46,7 +46,11 @@ def _has_not_worked_in_one_day(quality_cache: AceQualityCache) -> bool:
     """Return True if the stream has not had a successful quality check in the past day."""
     if quality_cache.last_quality_success_time is None:
         return True
-    return datetime.now(tz=UTC) - quality_cache.last_quality_success_time >= _CHECK_LAST_WORKED_THRESHOLD
+
+    return (
+        datetime.now(tz=UTC) - quality_cache.last_quality_success_time.replace(tzinfo=UTC)
+        >= _CHECK_LAST_WORKED_THRESHOLD
+    )
 
 
 class AceQualityCacheHandler(BaseDatabaseHandler):
