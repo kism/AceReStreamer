@@ -13,7 +13,7 @@ ph = PasswordHasher()
 ALGORITHM = "HS256"
 
 
-def create_access_token(subject: str | Any, expires_delta: timedelta | None = None) -> str:  # noqa: ANN401 We stringify subject
+def create_access_token(subject: str | Any, expires_delta: timedelta) -> str:  # noqa: ANN401 We stringify subject
     now = datetime.now(UTC)
     to_encode: dict[str, Any] = {"sub": str(subject), "iat": now}
     if expires_delta:

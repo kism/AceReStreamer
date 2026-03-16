@@ -13,7 +13,7 @@ logger = get_logger(__name__)
 def set_user_password(user: User, plain_password: str) -> None:
     """Hash and set a user's password, updating password_changed_at."""
     user.hashed_password = get_password_hash(plain_password)
-    user.password_changed_at = datetime.now(UTC).replace(microsecond=0, second=0)
+    user.password_changed_at = datetime.now(UTC).replace(microsecond=0)
 
 
 def create_user(*, session: Session, user_create: UserCreate) -> User:
