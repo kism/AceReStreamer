@@ -12,7 +12,7 @@ from acere.services.scraper.models import FoundAceStream
 from acere.utils.logger import get_logger
 
 if TYPE_CHECKING:
-    from acere.core.config.scraper import ScrapeSiteIPTV, TitleFilter
+    from acere.core.config.ace.scraper import ScrapeSiteIPTV, TitleFilter
 else:
     ScrapeSiteIPTV = object
     TitleFilter = object

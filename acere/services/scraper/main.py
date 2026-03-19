@@ -6,7 +6,7 @@ import threading
 import time
 from typing import TYPE_CHECKING
 
-from acere.core.config.scraper import HTMLScraperFilter
+from acere.core.config.ace.scraper import HTMLScraperFilter
 from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.config import settings
 from acere.instances.epg import get_epg_handler
@@ -19,12 +19,12 @@ from .iptv import IPTVStreamScraper
 from .models import AceScraperSourceApi, FoundAceStream
 
 if TYPE_CHECKING:
-    from acere.core.config.epg import EPGInstanceConf
-    from acere.core.config.scraper import (
+    from acere.core.config.ace.scraper import (
         AceScrapeConf,
         ScrapeSiteHTML,
         ScrapeSiteIPTV,
     )
+    from acere.core.config.epg import EPGInstanceConf
     from acere.services.ace.quality import Quality
 else:
     ScrapeSiteHTML = object

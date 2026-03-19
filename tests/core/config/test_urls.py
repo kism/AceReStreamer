@@ -1,7 +1,7 @@
 import pytest
 
 from acere.core.config import AceReStreamerConf
-from acere.core.config.app import AceConf
+from acere.core.config.ace import AceConf
 
 
 def test_default_urls_as_strings() -> None:

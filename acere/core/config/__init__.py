@@ -27,9 +27,9 @@ from acere.constants import DEFAULT_INSTANCE_PATH, ENV_PREFIX
 from acere.instances.paths import get_app_path_handler, setup_app_path_handler
 from acere.utils.logger import LoggingConf, get_logger
 
-from .app import AceConf
+from .ace import AceConf
+from .ace.scraper import AceScrapeConf
 from .epg import EPGInstanceConf
-from .scraper import AceScrapeConf
 
 if TYPE_CHECKING:
     from pathlib import Path

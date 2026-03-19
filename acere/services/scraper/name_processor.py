@@ -12,7 +12,7 @@ from acere.utils.helpers import check_valid_content_id_or_infohash, slugify
 from acere.utils.logger import get_logger
 
 if TYPE_CHECKING:
-    from acere.core.config.scraper import TitleFilter
+    from acere.core.config.ace.scraper import TitleFilter
 else:
     TitleFilter = object
 

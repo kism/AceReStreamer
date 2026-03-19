@@ -1,6 +1,6 @@
 from pydantic import HttpUrl
 
-from acere.core.config.scraper import ScrapeSiteGeneric
+from acere.core.config.ace.scraper import ScrapeSiteGeneric
 
 
 def test_slugify() -> None:

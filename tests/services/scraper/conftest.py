@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 
-from acere.core.config.scraper import ScrapeSiteIPTV
+from acere.core.config.ace.scraper import ScrapeSiteIPTV
 from acere.services.scraper.iptv import IPTVStreamScraper
 
 from . import SCRAPER_TEST_SITES

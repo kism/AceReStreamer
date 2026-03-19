@@ -5,13 +5,13 @@ from typing import TYPE_CHECKING, Literal, Self
 
 from pydantic import AnyUrl, BaseModel, HttpUrl, field_serializer, model_validator
 
-from acere.core.config.scraper import HTMLScraperFilter, TitleFilter
+from acere.core.config.ace.scraper import HTMLScraperFilter, TitleFilter
 from acere.utils.helpers import check_valid_content_id_or_infohash
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from acere.core.config.scraper import ScrapeSiteHTML, ScrapeSiteIPTV
+    from acere.core.config.ace.scraper import ScrapeSiteHTML, ScrapeSiteIPTV
 
 else:
     ScrapeSiteHTML = object

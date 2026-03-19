@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, cast
 
 from pydantic import HttpUrl
 
-from acere.core.config.scraper import ScrapeSiteIPTV
+from acere.core.config.ace.scraper import ScrapeSiteIPTV
 from acere.instances.config import settings
 from acere.instances.paths import get_app_path_handler
 from acere.services.scraper import (
