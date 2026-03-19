@@ -7,7 +7,7 @@ import { updateStreamStatus } from "./useStreamStatus"
 
 const VITE_API_URL = baseURL()
 
-const baseHLSURL = `${VITE_API_URL}/hls`
+const baseHLSURL = `${VITE_API_URL}/hls/ace`
 let hls: Hls | null = null
 
 async function getAuthToken() {

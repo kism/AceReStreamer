@@ -11,7 +11,7 @@ else:
 
 logger = get_logger(__name__)
 
-CONTENT_PATHS = ["/ace/c/", "/hls/c/", "/hls/m/"]
+_CONTENT_PATHS = ["/ace/c/", "/hls/c/", "/hls/m/"]
 
 
 def replace_hls_m3u_sources(
@@ -31,7 +31,7 @@ def replace_hls_m3u_sources(
         if "#EXT-X-MEDIA:URI=" in line_stripped:  # Avoid whatever this is, seems to bork VLC
             return ""
 
-        if any(path in line_stripped for path in CONTENT_PATHS):
+        if any(path in line_stripped for path in _CONTENT_PATHS):
             # Replace the Ace Stream address with the server name
             wip_line = line_stripped.replace(ace_address.encoded_string(), server_name.encoded_string())
             if token != "":

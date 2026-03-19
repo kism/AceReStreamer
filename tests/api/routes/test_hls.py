@@ -65,7 +65,7 @@ def normal_user_stream_token(client: TestClient, db: Session) -> str:
 
 def test_hls_without_token(client: TestClient, valid_content_id: str) -> None:
     """Test HLS endpoint without authentication token."""
-    response = client.get(f"/hls/{valid_content_id}")
+    response = client.get(f"/hls/ace/{valid_content_id}")
 
     assert response.status_code == HTTPStatus.FORBIDDEN
     assert "Invalid or missing stream token" in response.json()["detail"]
@@ -73,7 +73,7 @@ def test_hls_without_token(client: TestClient, valid_content_id: str) -> None:
 
 def test_hls_with_invalid_token(client: TestClient, valid_content_id: str) -> None:
     """Test HLS endpoint with invalid authentication token."""
-    response = client.get(f"/hls/{valid_content_id}?token=invalid_token")
+    response = client.get(f"/hls/ace/{valid_content_id}?token=invalid_token")
 
     assert response.status_code == HTTPStatus.FORBIDDEN
     assert "Invalid or missing stream token" in response.json()["detail"]
@@ -85,7 +85,7 @@ def test_hls_with_invalid_content_id(
 ) -> None:
     """Test HLS endpoint with invalid content ID format."""
     invalid_content_id = "invalid_id"
-    response = client.get(f"/hls/{invalid_content_id}?token={normal_user_stream_token}")
+    response = client.get(f"/hls/ace/{invalid_content_id}?token={normal_user_stream_token}")
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert "Invalid content ID or infohash" in response.json()["detail"]
@@ -124,7 +124,7 @@ async def test_hls_success(
         type("MockPool", (), {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url}),
     )
 
-    response = client.get(f"/hls/{valid_content_id}?token={normal_user_stream_token}")
+    response = client.get(f"/hls/ace/{valid_content_id}?token={normal_user_stream_token}")
 
     assert response.status_code == HTTPStatus.OK
     assert "#EXTM3U" in response.text
@@ -150,7 +150,7 @@ async def test_hls_pool_full(
         type("MockPool", (), {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url_none}),
     )
 
-    response = client.get(f"/hls/{valid_content_id}?token={normal_user_stream_token}")
+    response = client.get(f"/hls/ace/{valid_content_id}?token={normal_user_stream_token}")
 
     assert response.status_code == HTTPStatus.SERVICE_UNAVAILABLE
     assert "Ace pool is full" in response.json()["detail"]
@@ -186,7 +186,7 @@ async def test_hls_invalid_response_from_ace(
         type("MockPool", (), {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url}),
     )
 
-    response = client.get(f"/hls/{valid_content_id}?token={normal_user_stream_token}")
+    response = client.get(f"/hls/ace/{valid_content_id}?token={normal_user_stream_token}")
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert "Invalid HLS stream" in response.json()["detail"]
@@ -201,7 +201,7 @@ async def test_hls_multi_success(
     """Test HLS multistream endpoint."""
     multistream_path = "test/multistream/path.m3u8"
     mock_content_id = get_random_content_id()
-    mock_url = f"http://localhost:6878/hls/m/{multistream_path}"
+    mock_url = f"http://localhost:6878/hls/ace/m/{multistream_path}"
 
     # Create fake session
     fake_session = FakeSession(
@@ -221,7 +221,7 @@ async def test_hls_multi_success(
         type("MockPool", (), {"get_instance_by_multistream_path": lambda self, path: mock_content_id}),
     )
 
-    response = client.get(f"/hls/m/{multistream_path}?token={normal_user_stream_token}")
+    response = client.get(f"/hls/ace/m/{multistream_path}?token={normal_user_stream_token}")
 
     assert response.status_code == HTTPStatus.OK
     assert "#EXTM3U" in response.text

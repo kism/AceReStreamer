@@ -38,7 +38,7 @@ REVERSE_PROXY_TIMEOUT = 10  # Very high but alas
 
 
 # region /hls/
-@router.get("/hls/{path}", response_class=Response)
+@router.get("/hls/ace/{path}", response_class=Response)
 async def hls(
     path: str,
     token: str = "",
@@ -129,7 +129,7 @@ async def hls(
 
 # region /hls/m/
 # Taking the easy route and capturing the full following path
-@router.get("/hls/m/{path:path}", response_class=Response)
+@router.get("/hls/ace/m/{path:path}", response_class=Response)
 async def hls_multi(path: str, token: str = "") -> Response:
     """Reverse proxy the HLS multistream from Ace."""
     verify_stream_token(token)
@@ -139,7 +139,7 @@ async def hls_multi(path: str, token: str = "") -> Response:
     content_id = ace_pool.get_instance_by_multistream_path(path)
 
     url = HttpUrl(
-        f"{settings.ace.ace_address.encoded_string()}hls/m/{path}"
+        f"{settings.ace.ace_address.encoded_string()}hls/ace/m/{path}"
     ).encoded_string()  # This will deduplicate slashes
 
     try:
