@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Literal
 import aiohttp
 from lxml import etree
 
-from acere.core.config import EPGInstanceConf
+from acere.config import EPGInstanceConf
 from acere.instances.paths import get_app_path_handler
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.helpers import slugify
@@ -19,7 +19,7 @@ from .helpers import normalise_epg_tvg_id
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from acere.core.config import EPGInstanceConf
+    from acere.config import EPGInstanceConf
 else:
     Path = object
     EPGInstanceConf = object

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import uvloop
 
-from acere.core.config import AceReStreamerConf
+from acere.config import AceReStreamerConf
 from acere.instances.config import settings
 from acere.instances.paths import setup_app_path_handler
 from acere.utils.logger import get_logger, setup_logger

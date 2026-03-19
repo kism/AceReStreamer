@@ -1,7 +1,7 @@
 import logging
 from typing import TYPE_CHECKING
 
-from acere.core.config import AceConf
+from acere.config import AceConf
 
 if TYPE_CHECKING:
     import pytest

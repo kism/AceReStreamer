@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Literal
 import pytest
 from lxml import etree
 
-from acere.core.config import EPGInstanceConf
+from acere.config import EPGInstanceConf
 from acere.services.epg.epg import EPG, ONE_WEEK
 from acere.services.epg.handler import EPGHandler
 from tests.test_utils.aiohttp import FakeSession

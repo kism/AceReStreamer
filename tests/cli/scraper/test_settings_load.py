@@ -10,8 +10,8 @@ import pytest
 from pydantic import HttpUrl
 
 from acere.cli.scraper.__main__ import async_main
-from acere.core.config import AceReStreamerConf
-from acere.core.config.ace.scraper import ScrapeSiteIPTV
+from acere.config import AceReStreamerConf
+from acere.config.ace.scraper import ScrapeSiteIPTV
 from tests.test_utils.aiohttp import FakeSession
 
 

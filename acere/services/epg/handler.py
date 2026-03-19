@@ -22,7 +22,7 @@ from .models import EPGApiHandlerHealthResponse, EPGApiHealthResponse, TVGEPGMap
 if TYPE_CHECKING:
     from pydantic import HttpUrl
 
-    from acere.core.config import EPGInstanceConf
+    from acere.config import EPGInstanceConf
 else:
     EPGInstanceConf = object
     HttpUrl = object

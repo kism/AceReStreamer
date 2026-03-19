@@ -28,7 +28,7 @@ from .models import (
 logger = get_logger(__name__)
 
 if TYPE_CHECKING:
-    from acere.core.config import AceConf
+    from acere.config import AceConf
 else:
     AceConf = object
 

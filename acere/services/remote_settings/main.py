@@ -6,7 +6,7 @@ from datetime import UTC, datetime, timedelta
 import aiohttp
 from pydantic import HttpUrl, ValidationError
 
-from acere.core.config import AceReStreamerConf, ConfigExport
+from acere.config import AceReStreamerConf, ConfigExport
 from acere.instances.config import settings
 from acere.instances.epg import get_epg_handler
 from acere.instances.scraper import get_ace_scraper

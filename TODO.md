@@ -10,11 +10,19 @@
 - mpegts proxy?
 - proxy XC/m3u8 feature
   - change how xc id is mapped
+    - ace stream and proxied hls stream are different
   - config
+    - xc
+      - username
+      - password
+      - url
+    - m3u8
+      - url
   - filtering
     - by name, or group
   - epg
     - Fetch from XC
+    - Kinda fuzzy matching
   - pooling,
     - Each playlist should have an optional maximum number of streams active
   - cache, redis

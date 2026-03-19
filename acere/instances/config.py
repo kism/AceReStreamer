@@ -1,3 +1,3 @@
-from acere.core.config import AceReStreamerConf
+from acere.config import AceReStreamerConf
 
 settings: AceReStreamerConf = AceReStreamerConf()

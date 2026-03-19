@@ -5,7 +5,7 @@ from lxml import etree
 from pydantic import HttpUrl
 
 from acere.constants import DEFAULT_INSTANCE_PATH
-from acere.core.config import EPGInstanceConf
+from acere.config import EPGInstanceConf
 from acere.instances.config import settings
 from acere.instances.paths import get_app_path_handler, setup_app_path_handler
 from acere.services.epg.epg import EPG

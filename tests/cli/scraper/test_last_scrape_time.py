@@ -7,7 +7,7 @@ import pytest
 from pydantic import HttpUrl
 
 from acere.cli.scraper.playlist import PlaylistCreator
-from acere.core.config.ace.scraper import ScrapeSiteIPTV
+from acere.config.ace.scraper import ScrapeSiteIPTV
 from acere.instances.paths import setup_app_path_handler
 from acere.services.scraper import IPTVStreamScraper
 

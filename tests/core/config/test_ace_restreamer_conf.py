@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from pydantic import HttpUrl
 
-from acere.core.config import (
+from acere.config import (
     AceReStreamerConf,
     EPGInstanceConf,
 )

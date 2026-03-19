@@ -12,7 +12,7 @@ from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.logger import get_logger
 
 if TYPE_CHECKING:
-    from acere.core.config.ace.scraper import ScrapeSiteIPTV
+    from acere.config.ace.scraper import ScrapeSiteIPTV
 else:
     ScrapeSiteIPTV = object
 

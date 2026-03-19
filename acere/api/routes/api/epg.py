@@ -8,7 +8,7 @@ from acere.api.deps import (
     get_current_active_superuser,
     get_current_user,
 )
-from acere.core.config import EPGInstanceConf
+from acere.config import EPGInstanceConf
 from acere.instances.config import settings
 from acere.instances.epg import get_epg_handler
 from acere.services.epg.models import EPGApiHandlerHealthResponse, TVGEPGMappingsResponse

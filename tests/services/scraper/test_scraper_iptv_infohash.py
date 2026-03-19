@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from pydantic import HttpUrl
 
-from acere.core.config.ace.scraper import ScrapeSiteIPTV
+from acere.config.ace.scraper import ScrapeSiteIPTV
 from acere.services.scraper.iptv import IPTVStreamScraper
 
 from .utils import common_title_check

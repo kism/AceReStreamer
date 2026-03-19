@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from acere.api.deps import (
     get_current_active_superuser,
 )
-from acere.core.config import ConfigExport
+from acere.config import ConfigExport
 from acere.instances.remote_settings import get_remote_settings_fetcher
 from acere.services.remote_settings.models import RemoteSettingsURLGetModel, RemoteSettingsURLSetModel
 from acere.utils.api_models import MessageResponseModel

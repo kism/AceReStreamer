@@ -14,7 +14,7 @@ from .common import ScraperCommon
 from .models import FoundAceStream
 
 if TYPE_CHECKING:
-    from acere.core.config.ace.scraper import ScrapeSiteAPI
+    from acere.config.ace.scraper import ScrapeSiteAPI
 else:
     ScrapeSiteAPI = object
 
