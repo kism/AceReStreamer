@@ -113,7 +113,7 @@ async def hls(
 
     content_str = replace_hls_m3u_sources(
         m3u_content=content_str,
-        ace_address=settings.app.ace_address,
+        ace_address=settings.ace.ace_address,
         server_name=HttpUrl(settings.EXTERNAL_URL),
         token=token,
     )
@@ -139,7 +139,7 @@ async def hls_multi(path: str, token: str = "") -> Response:
     content_id = ace_pool.get_instance_by_multistream_path(path)
 
     url = HttpUrl(
-        f"{settings.app.ace_address.encoded_string()}hls/m/{path}"
+        f"{settings.ace.ace_address.encoded_string()}hls/m/{path}"
     ).encoded_string()  # This will deduplicate slashes
 
     try:
@@ -170,7 +170,7 @@ async def hls_multi(path: str, token: str = "") -> Response:
 
     content_str = replace_hls_m3u_sources(
         m3u_content=content_str,
-        ace_address=settings.app.ace_address,
+        ace_address=settings.ace.ace_address,
         server_name=HttpUrl(settings.EXTERNAL_URL),
         token=token,
     )
@@ -248,9 +248,9 @@ async def ace_content(path: str, request: Request, token: str = "") -> Response:
 
     # Determine the correct URL based on the request path
     if "/hls/c/" in request.url.path:
-        url = HttpUrl(f"{settings.app.ace_address}hls/c/{path}").encoded_string()
+        url = HttpUrl(f"{settings.ace.ace_address}hls/c/{path}").encoded_string()
     else:
-        url = HttpUrl(f"{settings.app.ace_address}ace/c/{path}").encoded_string()
+        url = HttpUrl(f"{settings.ace.ace_address}ace/c/{path}").encoded_string()
 
     logger.trace("Ace content requested for url: %s", url)
 

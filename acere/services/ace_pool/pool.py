@@ -28,9 +28,9 @@ from .models import (
 logger = get_logger(__name__)
 
 if TYPE_CHECKING:
-    from acere.core.config import AppConf
+    from acere.core.config import AceConf
 else:
-    AppConf = object
+    AceConf = object
 
 
 class AcePool:
@@ -46,9 +46,9 @@ class AcePool:
         self._ace_version: AceVersionResult | None = None
 
         # These are mostly to make testing easier
-        self._ace_address = settings.app.ace_address
-        self._max_size = settings.app.ace_max_streams
-        self._transcode_audio = settings.app.transcode_audio
+        self._ace_address = settings.ace.ace_address
+        self._max_size = settings.ace.ace_max_streams
+        self._transcode_audio = settings.ace.transcode_audio
 
         self._ace_poolboy_running = False
         self.ace_poolboy()

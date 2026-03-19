@@ -1,7 +1,7 @@
 import logging
 from typing import TYPE_CHECKING
 
-from acere.core.config import AppConf
+from acere.core.config import AceConf
 
 if TYPE_CHECKING:
     import pytest
@@ -10,9 +10,9 @@ else:
 
 
 def test_app_conf_loads_default_config(caplog: pytest.LogCaptureFixture) -> None:
-    """Test that AppConf loads the default configuration correctly."""
+    """Test that AceConf loads the default configuration correctly."""
     with caplog.at_level(logging.WARNING):
-        AppConf()
+        AceConf()
 
     assert caplog.records == []  # No warnings should be logged during default load
 
@@ -23,7 +23,7 @@ def test_max_streams_values(caplog: pytest.LogCaptureFixture) -> None:
 
     n_streams = 0
     with caplog.at_level(logging.WARNING):
-        conf = AppConf(ace_max_streams=n_streams)
+        conf = AceConf(ace_max_streams=n_streams)
     assert len(caplog.records) == 1
     assert conf.ace_max_streams == 4  # Default should be applied
     warnings_so_far.append(caplog.records[0].message)
@@ -32,7 +32,7 @@ def test_max_streams_values(caplog: pytest.LogCaptureFixture) -> None:
 
     n_streams = 11
     with caplog.at_level(logging.WARNING):
-        AppConf(ace_max_streams=n_streams)
+        AceConf(ace_max_streams=n_streams)
     assert len(caplog.records) == 1
     warnings_so_far.append(caplog.records[0].message.replace(str(n_streams), "X"))
 
@@ -40,7 +40,7 @@ def test_max_streams_values(caplog: pytest.LogCaptureFixture) -> None:
 
     n_streams = 21
     with caplog.at_level(logging.WARNING):
-        AppConf(ace_max_streams=n_streams)
+        AceConf(ace_max_streams=n_streams)
     assert len(caplog.records) == 1
     warnings_so_far.append(caplog.records[0].message.replace(str(n_streams), "X"))
 

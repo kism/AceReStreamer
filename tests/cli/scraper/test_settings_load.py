@@ -32,10 +32,10 @@ async def test_async_main_with_app_config(tmp_path: Path) -> None:
 
     # Generate config
     config = AceReStreamerConf.force_load_defaults()
-    config.scraper.playlist_name = f"test-playlist-{random_playlist_str}"
-    config.scraper.tvg_logo_external_url = HttpUrl("http://ace.pytest.internal/logos/")
-    config.scraper.adhoc_playlist_external_url = HttpUrl("http://ace.pytest.internal/playlists/")
-    config.scraper.iptv_m3u8.append(
+    config.ace.scraper.playlist_name = f"test-playlist-{random_playlist_str}"
+    config.ace.scraper.tvg_logo_external_url = HttpUrl("http://ace.pytest.internal/logos/")
+    config.ace.scraper.adhoc_playlist_external_url = HttpUrl("http://ace.pytest.internal/playlists/")
+    config.ace.scraper.iptv_m3u8.append(
         ScrapeSiteIPTV(name="Test Site", url=HttpUrl("http://ace.pytest.internal/test.m3u"))
     )
 
@@ -68,7 +68,7 @@ async def test_async_main_with_app_config(tmp_path: Path) -> None:
         assert playlists_dir.exists()
 
         # Check that the infohash playlist was created with content
-        infohash_playlist = playlists_dir / f"{config.scraper.playlist_name}-infohash-main.m3u"
+        infohash_playlist = playlists_dir / f"{config.ace.scraper.playlist_name}-infohash-main.m3u"
         assert infohash_playlist.exists()
         playlist_content = infohash_playlist.read_text()
         assert "0000000000000000000000000000000000000001" in playlist_content

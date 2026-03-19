@@ -59,11 +59,11 @@ async def async_main() -> None:
     del cli_conf  # Ensure we don't use the old one
 
     pl_cr = PlaylistCreator()
-    if len(settings.scraper.html) == 0 and len(settings.scraper.iptv_m3u8) == 0:
+    if len(settings.ace.scraper.html) == 0 and len(settings.ace.scraper.iptv_m3u8) == 0:
         logger.error("No scraper sites defined, cannot continue.")
         return
 
-    if settings.scraper.tvg_logo_external_url is None:
+    if settings.ace.scraper.tvg_logo_external_url is None:
         logger.error("No TVG logo external URL defined, cannot continue.")
         return
 
@@ -76,7 +76,7 @@ async def async_main() -> None:
     logger.info("Generating README.md")
 
     generate_readme(
-        external_base_url=settings.scraper.adhoc_playlist_external_url,
+        external_base_url=settings.ace.scraper.adhoc_playlist_external_url,
     )
     generate_misc()
 

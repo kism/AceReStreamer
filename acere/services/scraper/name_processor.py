@@ -179,7 +179,7 @@ def get_title_override_from_content_id(content_id: str | None) -> str | None:
     """Get a title override from the content ID if it exists."""
     if content_id is None:
         return None
-    return settings.scraper.content_id_infohash_name_overrides.get(content_id)
+    return settings.ace.scraper.content_id_infohash_name_overrides.get(content_id)
 
 
 def get_tvg_id_from_title(title: str) -> str:
@@ -196,7 +196,7 @@ def get_tvg_id_from_title(title: str) -> str:
 def populate_group_title(group_title: str, title: str) -> str:
     """Cleanup the group title."""
     # Put into sentence case
-    for category, keywords in settings.scraper.category_mapping.items():
+    for category, keywords in settings.ace.scraper.category_mapping.items():
         # For example, if the catetory is Sports but the group title is sport
         if any(keyword in group_title.lower() for keyword in keywords):
             group_title = category

@@ -27,7 +27,7 @@ from acere.constants import DEFAULT_INSTANCE_PATH, ENV_PREFIX
 from acere.instances.paths import get_app_path_handler, setup_app_path_handler
 from acere.utils.logger import LoggingConf, get_logger
 
-from .app import AppConf
+from .app import AceConf
 from .epg import EPGInstanceConf
 from .scraper import AceScrapeConf
 
@@ -39,9 +39,9 @@ logger = get_logger(__name__)
 
 
 __all__ = [
+    "AceConf",
     "AceReStreamerConf",
     "AceScrapeConf",
-    "AppConf",
     "EPGInstanceConf",
 ]
 
@@ -54,6 +54,24 @@ def parse_cors(v: Any) -> list[str] | str:  # noqa: ANN401 JSON things
     if isinstance(v, list | str):
         return v
     raise ValueError(v)
+
+
+def _migrate_config_data(data: dict[str, Any]) -> dict[str, Any]:
+    """Migrate old config format: top-level 'app' and 'scraper' keys into 'ace'."""
+    if "app" in data and "ace" not in data:
+        logger.warning("Migrating old config format: 'app' and 'scraper' -> 'ace'")
+        ace = dict(data.pop("app", {}))
+        ace["scraper"] = data.pop("scraper", {})
+        data["ace"] = ace
+    return data
+
+
+class MigratingJsonConfigSettingsSource(JsonConfigSettingsSource):
+    """JSON config source that applies config migration before loading."""
+
+    def _read_files(self, files: typing.Any, deep_merge: bool = False) -> dict[str, Any]:  # noqa: ANN401, FBT001, FBT002
+        data = super()._read_files(files, deep_merge=deep_merge)
+        return _migrate_config_data(data)
 
 
 class AceReStreamerConf(BaseSettings):
@@ -70,9 +88,8 @@ class AceReStreamerConf(BaseSettings):
     )
 
     # Default values for our settings
-    app: AppConf = AppConf()
+    ace: AceConf = AceConf()
     logging: LoggingConf = LoggingConf()
-    scraper: AceScrapeConf = AceScrapeConf()
     epgs: list[EPGInstanceConf] = []
     REMOTE_SETTINGS_URL: HttpUrl | None = None
     FRONTEND_HOST: str = ""  # Set to http://localhost:5173 for local dev
@@ -99,13 +116,13 @@ class AceReStreamerConf(BaseSettings):
             return (
                 init_settings,
                 env_settings,
-                JsonConfigSettingsSource(settings_cls),
+                MigratingJsonConfigSettingsSource(settings_cls),
             )
         return (  # pragma: no cover
             init_settings,
             dotenv_settings,
             env_settings,
-            JsonConfigSettingsSource(settings_cls),
+            MigratingJsonConfigSettingsSource(settings_cls),
         )
 
     @field_validator("EXTERNAL_URL", mode="after")
@@ -222,6 +239,8 @@ class AceReStreamerConf(BaseSettings):
         with config_path.open("r") as f:
             config = json.load(f)
 
+        config = _migrate_config_data(config)
+
         return cls(**config)
 
     @classmethod
@@ -242,5 +261,5 @@ class AceReStreamerConf(BaseSettings):
 class ConfigExport(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
-    scraper: AceScrapeConf
+    ace: AceConf
     epgs: list[EPGInstanceConf]

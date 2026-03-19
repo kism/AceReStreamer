@@ -48,9 +48,9 @@ class PlaylistCreator:
 
     async def _scrape_remote(self) -> list[FoundAceStream]:
         tasks = [
-            self._html_scraper.scrape_sites(sites=settings.scraper.html),
-            self._iptv_scraper.scrape_iptv_playlists(sites=settings.scraper.iptv_m3u8),
-            self._api_scraper.scrape_api_endpoints(sites=settings.scraper.api),
+            self._html_scraper.scrape_sites(sites=settings.ace.scraper.html),
+            self._iptv_scraper.scrape_iptv_playlists(sites=settings.ace.scraper.iptv_m3u8),
+            self._api_scraper.scrape_api_endpoints(sites=settings.ace.scraper.api),
         ]
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -90,7 +90,7 @@ class PlaylistCreator:
         content_id_results = []
         infohash_results = []
 
-        ace_playlist_content_id = playlists_dir / f"{settings.scraper.playlist_name}-content-id-main.m3u"
+        ace_playlist_content_id = playlists_dir / f"{settings.ace.scraper.playlist_name}-content-id-main.m3u"
         site = ScrapeSiteIPTV(
             name=ace_playlist_content_id.stem,
             url=HttpUrl(f"https://localhost/{ace_playlist_content_id.name}"),  # This is just to satify pydantic
@@ -102,7 +102,7 @@ class PlaylistCreator:
         else:
             logger.debug("Existing ACE playlist not found at %s", ace_playlist_content_id)
 
-        ace_playlist_infohash = playlists_dir / f"{settings.scraper.playlist_name}-infohash-main.m3u"
+        ace_playlist_infohash = playlists_dir / f"{settings.ace.scraper.playlist_name}-infohash-main.m3u"
         site = ScrapeSiteIPTV(
             name=ace_playlist_infohash.stem,
             url=HttpUrl(f"https://localhost/{ace_playlist_infohash.name}"),  # This is just to satify pydantic
@@ -158,7 +158,7 @@ class PlaylistCreator:
         )
 
         for uri_scheme, prefix in M3U_URI_SCHEMES.items():
-            playlist_path = playlists_dir / f"{settings.scraper.playlist_name}-{uri_scheme}.m3u"
+            playlist_path = playlists_dir / f"{settings.ace.scraper.playlist_name}-{uri_scheme}.m3u"
             with playlist_path.open("w", encoding="utf-8") as m3u_file:
                 epg_urls = [epg.url for epg in settings.epgs]
                 epg_str = ""
@@ -173,7 +173,7 @@ class PlaylistCreator:
                     last_scraped_time = 0 if scraped_within_minute else int(stream.last_scraped_time.timestamp())
 
                     top_line = create_extinf_line(
-                        stream, tvg_url_base=settings.scraper.tvg_logo_external_url, last_found=last_scraped_time
+                        stream, tvg_url_base=settings.ace.scraper.tvg_logo_external_url, last_found=last_scraped_time
                     )
                     if uri_scheme == infohash_scheme and stream.infohash is not None:
                         m3u_file.write(top_line)

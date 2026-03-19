@@ -69,7 +69,7 @@ class AceScraper:
                     target_class=site.html_filter.target_class,
                 ),
             )
-            for site in settings.scraper.html
+            for site in settings.ace.scraper.html
         ]
 
         sources.extend(
@@ -80,7 +80,7 @@ class AceScraper:
                     title_filter=site.title_filter,
                     type="iptv",
                 )
-                for site in settings.scraper.iptv_m3u8
+                for site in settings.ace.scraper.iptv_m3u8
             ]
         )
 
@@ -92,7 +92,7 @@ class AceScraper:
                     title_filter=site.title_filter,
                     type="api",
                 )
-                for site in settings.scraper.api
+                for site in settings.ace.scraper.api
             ]
         )
 
@@ -191,9 +191,9 @@ class AceScraper:
 
                 async def find_streams() -> list[FoundAceStream]:
                     tasks = [
-                        self._html_scraper.scrape_sites(sites=settings.scraper.html),
-                        self._iptv_scraper.scrape_iptv_playlists(sites=settings.scraper.iptv_m3u8),
-                        self._api_scraper.scrape_api_endpoints(sites=settings.scraper.api),
+                        self._html_scraper.scrape_sites(sites=settings.ace.scraper.html),
+                        self._iptv_scraper.scrape_iptv_playlists(sites=settings.ace.scraper.iptv_m3u8),
+                        self._api_scraper.scrape_api_endpoints(sites=settings.ace.scraper.api),
                     ]
 
                     all_results = await asyncio.gather(*tasks, return_exceptions=True)

@@ -85,11 +85,11 @@ async def download_and_save_logo(logo_url: HttpUrl | None, title: str) -> None:
             return
 
     # Try external URL source if configured
-    if settings.scraper.tvg_logo_external_url is not None:
+    if settings.ace.scraper.tvg_logo_external_url is not None:
         title_slug = slugify(title)
         for extension in SUPPORTED_TVG_LOGO_EXTENSIONS:
             file_name = f"{title_slug}.{extension}"
-            external_url = HttpUrl(f"{settings.scraper.tvg_logo_external_url}/{file_name}")
+            external_url = HttpUrl(f"{settings.ace.scraper.tvg_logo_external_url}/{file_name}")
 
             logo_content = await fetch_logo_content(external_url, title)
             if logo_content is not None:

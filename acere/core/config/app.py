@@ -9,6 +9,8 @@ from pydantic import (
 
 from acere.utils.logger import get_logger
 
+from .scraper import AceScrapeConf
+
 if TYPE_CHECKING:
     from pathlib import Path
 else:
@@ -16,14 +18,15 @@ else:
 logger = get_logger(__name__)
 
 
-class AppConf(BaseModel):
-    """Application configuration definition."""
+class AceConf(BaseModel):
+    """Ace-specific configuration definition."""
 
     model_config = ConfigDict(extra="ignore")  # Ignore extras for config related things
 
     ace_address: HttpUrl = HttpUrl("http://localhost:6878")
     transcode_audio: bool = True
     ace_max_streams: int = 4
+    scraper: AceScrapeConf = AceScrapeConf()
 
     @field_validator("ace_max_streams", mode="after")
     @classmethod

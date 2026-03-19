@@ -59,7 +59,7 @@ async def get_content_id_from_infohash_acestream_api(infohash: str) -> str:
     """Populate the mapping from th Ace API from infohash, returning the content ID."""
     logger.info("Populating missing content ID for infohash %s", infohash)
     content_id = ""
-    url = f"{settings.app.ace_address}server/api?api_version=3&method=get_content_id&infohash={infohash}"
+    url = f"{settings.ace.ace_address}server/api?api_version=3&method=get_content_id&infohash={infohash}"
 
     try:
         async with aiohttp.ClientSession() as session:

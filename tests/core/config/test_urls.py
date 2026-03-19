@@ -1,14 +1,14 @@
 import pytest
 
 from acere.core.config import AceReStreamerConf
-from acere.core.config.app import AppConf
+from acere.core.config.app import AceConf
 
 
 def test_default_urls_as_strings() -> None:
     """Test that URL configurations are properly converted to strings."""
     settings = AceReStreamerConf()
 
-    ace_address_str = settings.app.ace_address.encoded_string()
+    ace_address_str = settings.ace.ace_address.encoded_string()
 
     assert isinstance(ace_address_str, str)
     assert ace_address_str.endswith("/")
@@ -23,7 +23,7 @@ def test_default_urls_as_strings() -> None:
 )
 def test_strip_trailing_slash(url: str, expected: str) -> None:
     """Test that ace_address always has a trailing slash."""
-    app_config = AppConf(
+    app_config = AceConf(
         ace_address=url,  # type: ignore[arg-type]
     )
 

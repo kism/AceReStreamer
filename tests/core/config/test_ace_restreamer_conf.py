@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import TYPE_CHECKING
 
@@ -74,8 +75,8 @@ def test_force_load_config_file_existing(tmp_path: Path, caplog: pytest.LogCaptu
     """Test loading a config file that exists."""
     # Create a temporary config file
     generated_config = AceReStreamerConf.force_load_defaults()
-    generated_config.app.ace_max_streams = 8
-    generated_config.scraper.playlist_name = "pytest"
+    generated_config.ace.ace_max_streams = 8
+    generated_config.ace.scraper.playlist_name = "pytest"
     config_path = tmp_path / "test_config.json"
 
     config_path.write_text(generated_config.model_dump_json(indent=4))
@@ -83,8 +84,8 @@ def test_force_load_config_file_existing(tmp_path: Path, caplog: pytest.LogCaptu
     config = AceReStreamerConf.force_load_config_file(config_path)
 
     # Verify the loaded values match what we put in the file
-    assert config.app.ace_max_streams == 8
-    assert config.scraper.playlist_name == "pytest"
+    assert config.ace.ace_max_streams == 8
+    assert config.ace.scraper.playlist_name == "pytest"
 
     config_path.unlink()
     with caplog.at_level(logging.WARNING):
@@ -103,7 +104,31 @@ def test_force_load_config_file_nonexistent(tmp_path: Path) -> None:
     config = AceReStreamerConf.force_load_config_file(nonexistent_path)
 
     # Should return default config
-    assert config.app.ace_max_streams == 4
-    assert config.scraper.playlist_name == "acerestreamer"
+    assert config.ace.ace_max_streams == 4
+    assert config.ace.scraper.playlist_name == "acerestreamer"
     assert len(config.epgs) == 0
     assert config.ENVIRONMENT == "local"
+
+
+def test_migrate_old_config_format(tmp_path: Path) -> None:
+    """Test that old config format with top-level 'app' and 'scraper' is migrated to 'ace'."""
+    old_config = {
+        "app": {
+            "ace_address": "http://localhost:9999/",
+            "transcode_audio": False,
+            "ace_max_streams": 6,
+        },
+        "scraper": {
+            "playlist_name": "migrated-playlist",
+        },
+    }
+
+    config_path = tmp_path / "old_config.json"
+    config_path.write_text(json.dumps(old_config))
+
+    config = AceReStreamerConf.force_load_config_file(config_path)
+
+    assert config.ace.ace_address.encoded_string() == "http://localhost:9999/"
+    assert config.ace.transcode_audio is False
+    assert config.ace.ace_max_streams == 6
+    assert config.ace.scraper.playlist_name == "migrated-playlist"

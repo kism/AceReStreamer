@@ -59,13 +59,13 @@ def add_source(  # noqa: C901 Revisit once I have some tests
 
         if item.type == "iptv":
             iptv = ScrapeSiteIPTV(**item.model_dump())
-            item_success, item_msg = settings.scraper.add_iptv_source(iptv)
+            item_success, item_msg = settings.ace.scraper.add_iptv_source(iptv)
         elif item.type == "api":
             api = ScrapeSiteAPI(**item.model_dump())
-            item_success, item_msg = settings.scraper.add_api_source(api)
+            item_success, item_msg = settings.ace.scraper.add_api_source(api)
         elif item.type == "html":
             html = ScrapeSiteHTML(**item.model_dump())
-            item_success, item_msg = settings.scraper.add_html_source(html)
+            item_success, item_msg = settings.ace.scraper.add_html_source(html)
         else:
             item_success = False
             item_msg = "Invalid source type"
@@ -95,7 +95,7 @@ def add_source(  # noqa: C901 Revisit once I have some tests
 @router.delete("/source/{slug}", dependencies=[Depends(get_current_active_superuser)])
 def remove_source(slug: str) -> MessageResponseModel:
     """API endpoint to remove a scraper source."""
-    success, msg = settings.scraper.remove_source(slug)
+    success, msg = settings.ace.scraper.remove_source(slug)
     if not success:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
@@ -111,13 +111,13 @@ def remove_source(slug: str) -> MessageResponseModel:
 @router.get("/name-override", dependencies=[Depends(get_current_active_superuser)])
 def get_name_overrides() -> dict[str, str]:
     """API endpoint to get the scraper name overrides."""
-    return settings.scraper.content_id_infohash_name_overrides
+    return settings.ace.scraper.content_id_infohash_name_overrides
 
 
 @router.delete("/name-override/{content_id}", dependencies=[Depends(get_current_active_superuser)])
 def delete_name_override(content_id: str) -> MessageResponseModel:
     """API endpoint to delete a scraper name override."""
-    success = settings.scraper.delete_content_id_name_override(content_id)
+    success = settings.ace.scraper.delete_content_id_name_override(content_id)
     if not success:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
@@ -132,7 +132,7 @@ def delete_name_override(content_id: str) -> MessageResponseModel:
 @router.post("/name-override/{content_id}", dependencies=[Depends(get_current_active_superuser)])
 def add_name_override(content_id: str, name: str) -> MessageResponseModel:
     """API endpoint to add a scraper name override."""
-    settings.scraper.add_content_id_name_override(content_id, name)
+    settings.ace.scraper.add_content_id_name_override(content_id, name)
 
     settings.write_config()
     get_ace_scraper().start_scrape_thread()
