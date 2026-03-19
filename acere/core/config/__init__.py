@@ -47,7 +47,7 @@ __all__ = [
 
 setup_app_path_handler(DEFAULT_INSTANCE_PATH)
 
-
+# region CORS
 def parse_cors(v: Any) -> list[str] | str:  # noqa: ANN401 JSON things
     if isinstance(v, str) and not v.startswith("["):
         return [i.strip() for i in v.split(",")]
@@ -55,7 +55,7 @@ def parse_cors(v: Any) -> list[str] | str:  # noqa: ANN401 JSON things
         return v
     raise ValueError(v)
 
-
+# region Migration
 def _migrate_config_data(data: dict[str, Any]) -> dict[str, Any]:
     """Migrate old config format: top-level 'app' and 'scraper' keys into 'ace'."""
     if "app" in data and "ace" not in data:
@@ -74,6 +74,7 @@ class MigratingJsonConfigSettingsSource(JsonConfigSettingsSource):
         return _migrate_config_data(data)
 
 
+# region AceReStreamerConf
 class AceReStreamerConf(BaseSettings):
     """Settings Definition."""
 
