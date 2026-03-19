@@ -14,8 +14,8 @@ ALGORITHM = "HS256"
 
 
 def create_access_token(subject: str | Any, expires_delta: timedelta) -> str:  # noqa: ANN401 We stringify subject
-    expire = datetime.now(UTC) + expires_delta
-    to_encode = {"exp": expire, "sub": str(subject)}
+    now = datetime.now(UTC)
+    to_encode: dict[str, Any] = {"sub": str(subject), "iat": now, "exp": now + expires_delta}
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
 
 

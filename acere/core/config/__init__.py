@@ -78,7 +78,7 @@ class AceReStreamerConf(BaseSettings):
     FRONTEND_HOST: str = ""  # Set to http://localhost:5173 for local dev
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
     EXTERNAL_URL: str = "http://localhost:5100"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 90  # 90 days, this is not a high security app.
     SECRET_KEY: str = ""
     FIRST_SUPERUSER: str = "admin"
     FIRST_SUPERUSER_PASSWORD: str = ""

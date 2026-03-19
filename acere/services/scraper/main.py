@@ -259,7 +259,7 @@ class AceScraper:
         self._threads.append(thread)
 
     def stop_all_threads(self) -> None:
-        """Stop all threads in the AcePool."""
+        """Stop all threads in the AceScraper."""
         if len(self._threads) == 0:
             return
 

@@ -4,6 +4,8 @@ from datetime import UTC, datetime
 
 from sqlmodel import Field, SQLModel
 
+from acere.database.types import TZDateTime
+
 
 class AceStreamDBEntry(SQLModel, table=True):
     """Database model for ace streams."""
@@ -16,4 +18,4 @@ class AceStreamDBEntry(SQLModel, table=True):
     tvg_id: str = Field(default=None, max_length=100)
     tvg_logo: str | None = Field(default=None, max_length=255)
     group_title: str = Field(default="", max_length=100)
-    last_scraped_time: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
+    last_scraped_time: datetime = Field(default_factory=lambda: datetime.now(tz=UTC), sa_type=TZDateTime)

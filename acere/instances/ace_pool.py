@@ -10,7 +10,7 @@ _ace_pool: AcePool | None = None
 
 def set_ace_pool(pool: AcePool) -> None:
     """Set the global AcePool instance."""
-    global _ace_pool  # noqa: PLW0603 Lazy Loading
+    global _ace_pool
     _ace_pool = pool
 
 

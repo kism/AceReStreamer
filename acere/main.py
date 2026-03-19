@@ -11,8 +11,10 @@ from starlette_compress import CompressMiddleware
 
 from acere.api.main import api_router, api_router_xc, frontend_router, hls_router, iptv_router
 from acere.constants import API_V1_STR, DEFAULT_INSTANCE_PATH
+from acere.database.handlers.quality_cache import AceQualityCacheHandler
 from acere.database.init import engine, init_db
 from acere.instances.ace_pool import set_ace_pool
+from acere.instances.ace_quality import set_quality_handler
 from acere.instances.config import settings
 from acere.instances.epg import set_epg_handler
 from acere.instances.paths import get_app_path_handler, setup_app_path_handler
@@ -98,13 +100,19 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     remote_settings_fetcher = RemoteSettingsFetcher(instance_id=instance_id)
     set_remote_settings_fetcher(remote_settings_fetcher)
 
+    # Daily quality check + stream culling at 3:33 AM
+    quality_handler = AceQualityCacheHandler()
+    set_quality_handler(quality_handler)
+    quality_handler.start_daily_check_thread()
+
     yield
 
-    handlers: list[AceScraper | AcePool | RemoteSettingsFetcher | EPGHandler] = [
+    handlers: list[AceScraper | AcePool | RemoteSettingsFetcher | EPGHandler | AceQualityCacheHandler] = [
         ace_pool,
         ace_scraper,
         remote_settings_fetcher,
         epg_handler,
+        quality_handler,
     ]  # Can't do a sneaky one-liner due to type checking
     for handler in handlers:
         handler.stop_all_threads()

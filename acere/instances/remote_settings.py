@@ -7,7 +7,7 @@ _remote_settings_fetcher: RemoteSettingsFetcher | None = None
 
 def set_remote_settings_fetcher(fetcher: RemoteSettingsFetcher) -> None:
     """Set the global RemoteSettingsFetcher instance."""
-    global _remote_settings_fetcher  # noqa: PLW0603
+    global _remote_settings_fetcher
     _remote_settings_fetcher = fetcher
 
 

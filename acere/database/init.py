@@ -1,9 +1,9 @@
 import secrets
 
-from sqlalchemy import text
 from sqlmodel import Session, SQLModel, create_engine, select
 
 from acere import crud
+from acere.database.migration import runner
 from acere.database.models.user import User, UserCreate
 from acere.instances.config import settings
 from acere.instances.paths import get_app_path_handler
@@ -48,19 +48,7 @@ Password: {password_clear}
         user = crud.create_user(session=session, user_create=user_in)
 
 
-def _migrate_db(session: Session) -> None:
-    old_tables = ["acequalitycache", "contentidinfohash", "content_id_infohash", "content_id_xc_id"]
-    for table_name in old_tables:
-        session.connection().execute(text(f"DROP TABLE IF EXISTS {table_name}"))
-    session.commit()
-
-
 def init_db(session: Session) -> None:
-    # Tables should be created with Alembic migrations
-    # But if you don't want to use migrations, create
-    # the tables un-commenting the next lines
-
     SQLModel.metadata.create_all(engine)
-
-    _migrate_db(session=session)
+    runner.upgrade(engine)
     _create_first_superuser(session=session)

@@ -1,6 +1,6 @@
 [project]
 name = "acere"
-version = "1.2.6"
+version = "1.2.7.dev1"
 description = ""
 requires-python = ">=3.14,<4.0"
 readme = "README.md"
@@ -27,6 +27,7 @@ dependencies = [
     "uvloop>=0.22.1",
     "starlette-compress>=1.6.1",
     "anyio>=4.12.1",
+    "alembic>=1.18.0",
 ]
 
 [project.optional-dependencies]
@@ -67,6 +68,7 @@ module-root = ""
 acerestreamer-scrape = "acere.cli.scraper:__main__.main"
 acerestreamer-password-reset = "acere.cli.password_reset:__main__.main"
 acerestreamer-get-xc-server-response = "acere.cli.get_xc_server_response:__main__.main"
+acerestreamer-migrate = "acere.cli.db_migrate:__main__.main"
 
 [tool.ruff]
 target-version = "py314"
@@ -111,6 +113,12 @@ ignore = [
     "INP",
     "D",
     "A",
+]
+"acere/instances/*.py" = [
+    "PLW0603", # Allow globals here, this is the place
+]
+"acere/database/types.py" = [
+    "ARG002", # Empty args since we are just defining types here, no logic
 ]
 
 [tool.ruff.lint.flake8-type-checking]

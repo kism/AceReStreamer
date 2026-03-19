@@ -12,7 +12,7 @@ _ace_scraper: AceScraper | None = None
 
 def set_ace_scraper(scraper: AceScraper) -> None:
     """Set the global AceScraper instance."""
-    global _ace_scraper  # noqa: PLW0603 Lazy Loading
+    global _ace_scraper
     _ace_scraper = scraper
     _ace_scraper.start_scrape_thread()
 
