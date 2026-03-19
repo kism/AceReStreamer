@@ -23,8 +23,8 @@ from acere.utils.logger import get_logger
 
 from .base import BaseDatabaseHandler
 
-_CHECK_LAST_SCRAPE_THRESHOLD = timedelta(days=1)
-_CHECK_LAST_WORKED_THRESHOLD = timedelta(days=1)
+_CHECK_LAST_SCRAPE_THRESHOLD = timedelta(days=3)
+_CHECK_LAST_WORKED_THRESHOLD = timedelta(days=3)
 
 _DAILY_CHECK_HOUR = 3
 _DAILY_CHECK_MINUTE = 33
@@ -42,8 +42,8 @@ def _seconds_until_daily_check() -> float:
     return (target - now).total_seconds()
 
 
-def _has_not_worked_in_one_day(quality_cache: AceQualityCache) -> bool:
-    """Return True if the stream has not had a successful quality check in the past day."""
+def _has_not_worked_recently(quality_cache: AceQualityCache) -> bool:
+    """Return True if the stream has not had a successful quality check in the past threshold."""
     if quality_cache.last_quality_success_time is None:
         return True
 
@@ -219,9 +219,9 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
                 continue
 
             quality_entry = quality_map.get(stream.content_id)
-            if quality_entry is None or _has_not_worked_in_one_day(quality_entry):
+            if quality_entry is None or _has_not_worked_recently(quality_entry):
                 logger.info(
-                    "Culling stream %s (%s): not worked in 1 day",
+                    "Culling stream %s (%s): not worked within threshold",
                     ace_id_short(stream.content_id),
                     stream.title,
                 )
