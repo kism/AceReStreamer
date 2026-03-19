@@ -19,3 +19,5 @@
     - Each playlist should have an optional maximum number of streams active
   - cache, redis
   - /hls/web/<whatever>
+  - xc scraper
+  - m3u8 scraper that is shared with ace
