@@ -6,10 +6,16 @@
 - separate ace settings menu in frontend
 - streaming response for hls
 - no multiple gets for token in webui
-- proxy XC feature
+- check for typing.Any
+- mpegts proxy?
+- proxy XC/m3u8 feature
+  - change how xc id is mapped
   - config
   - filtering
+    - by name, or group
   - epg
-  - pooling?
+    - Fetch from XC
+  - pooling,
+    - Each playlist should have an optional maximum number of streams active
   - cache, redis
-- check for typing.Any
+  - /hls/web/<whatever>
