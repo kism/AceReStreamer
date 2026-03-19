@@ -2,7 +2,7 @@ import random
 
 from pydantic import HttpUrl
 
-from acere.services.ace_pool.models import (
+from acere.services.ace.pool.models import (
     AceMiddlewareResponse,
     AceMiddlewareResponseFull,
     AcePoolStatResponse,

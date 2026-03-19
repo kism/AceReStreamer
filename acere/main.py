@@ -20,7 +20,7 @@ from acere.instances.epg import set_epg_handler
 from acere.instances.paths import get_app_path_handler, setup_app_path_handler
 from acere.instances.remote_settings import set_remote_settings_fetcher
 from acere.instances.scraper import set_ace_scraper
-from acere.services.ace_pool.pool import AcePool
+from acere.services.ace.pool import AcePool
 from acere.services.epg import EPGHandler
 from acere.services.remote_settings import RemoteSettingsFetcher
 from acere.services.scraper import AceScraper

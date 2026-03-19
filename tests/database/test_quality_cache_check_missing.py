@@ -7,7 +7,7 @@ import pytest
 
 from acere.database.handlers.quality_cache import AceQualityCacheHandler
 from acere.database.models import AceStreamDBEntry
-from acere.services.ace_quality import Quality
+from acere.services.ace.quality import Quality
 from tests.test_utils.ace import get_random_content_id
 
 if TYPE_CHECKING:

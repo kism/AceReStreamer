@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from acere.services.ace_pool.pool import AcePool
+    from acere.services.ace.pool import AcePool
 else:
     AcePool = object
 

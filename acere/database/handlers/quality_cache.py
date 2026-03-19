@@ -16,7 +16,7 @@ from acere.database.models import AceQualityCache
 from acere.database.models.acestream import AceStreamDBEntry
 from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.config import settings
-from acere.services.ace_quality import Quality
+from acere.services.ace.quality import Quality
 from acere.utils.ace import ace_id_short
 from acere.utils.helpers import check_valid_content_id_or_infohash
 from acere.utils.logger import get_logger

@@ -2,7 +2,7 @@ from datetime import UTC, datetime, timedelta
 
 from pydantic import HttpUrl
 
-from acere.services.ace_pool.entry import AcePoolEntry
+from acere.services.ace.pool.entry import AcePoolEntry
 from tests.test_utils.ace import (
     get_random_content_id,
 )

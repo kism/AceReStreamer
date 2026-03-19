@@ -128,7 +128,7 @@ runtime-evaluated-base-classes = [
     "sqlmodel.SQLModel",
     "uuid.UUID",
     "acere.api.deps.SessionDep",
-    "acere.services.ace_quality.Quality",
+    "acere.services.ace.quality.Quality",
     "acere.services.scraper.models.FoundAceStreamAPI",
     "acere.services.scraper.models.AceScraperSourceApi",
     "acere.services.epg.models.EPGApiHandlerHealthResponse",

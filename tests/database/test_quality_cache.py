@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from acere.database.handlers.quality_cache import AceQualityCacheHandler
-from acere.services.ace_quality import Quality
+from acere.services.ace.quality import Quality
 from tests.test_utils.ace import get_random_content_id
 from tests.test_utils.hls import generate_hls_m3u8
 

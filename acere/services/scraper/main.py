@@ -25,7 +25,7 @@ if TYPE_CHECKING:
         ScrapeSiteHTML,
         ScrapeSiteIPTV,
     )
-    from acere.services.ace_quality import Quality
+    from acere.services.ace.quality import Quality
 else:
     ScrapeSiteHTML = object
     ScrapeSiteIPTV = object

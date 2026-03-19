@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from acere.api.deps import get_current_user
 from acere.instances.ace_pool import get_ace_pool
-from acere.services.ace_pool.models import (
+from acere.services.ace.pool.models import (
     AcePoolAllStatsApi,
     AcePoolEntryForAPI,
     AcePoolForApi,

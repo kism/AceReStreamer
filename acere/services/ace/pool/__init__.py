@@ -1,3 +1,4 @@
+"""Ace Pool service."""
 """AceStream pool management module."""
 
 import asyncio

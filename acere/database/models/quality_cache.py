@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlmodel import Field, SQLModel
 
 from acere.database.types import TZDateTime
-from acere.services.ace_quality import QUALITY_ON_FIRST_SUCCESS
+from acere.services.ace.quality import QUALITY_ON_FIRST_SUCCESS
 
 
 class AceQualityCache(SQLModel, table=True):

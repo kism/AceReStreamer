@@ -7,9 +7,9 @@ from typing import TYPE_CHECKING
 import pytest
 from pydantic import HttpUrl
 
-from acere.services.ace_pool.entry import AcePoolEntry
-from acere.services.ace_pool.models import AceVersionResponse, AceVersionResult
-from acere.services.ace_pool.pool import AcePool
+from acere.services.ace.pool.entry import AcePoolEntry
+from acere.services.ace.pool.models import AceVersionResponse, AceVersionResult
+from acere.services.ace.pool import AcePool
 from acere.utils.ace import get_middleware_url
 from tests.test_utils.ace import (
     create_mock_middleware_response,
@@ -39,14 +39,14 @@ def fill_pool(pool: AcePool) -> None:
 @pytest.fixture(autouse=True)
 def mock_no_poolboy_thread(mocker: MockerFixture) -> None:
     """Mock the ace_poolboy thread to avoid starting background threads in tests."""
-    mocker.patch("acere.services.ace_pool.pool.threading.Thread")
+    mocker.patch("acere.services.ace.pool.threading.Thread")
 
 
 @pytest.mark.asyncio
 async def test_ace_pool_initialization(mocker: MockerFixture) -> None:
     """Test that AcePool initializes correctly."""
     # Mock the ace_poolboy thread to avoid starting background threads in tests
-    mock_thread = mocker.patch("acere.services.ace_pool.pool.threading.Thread")
+    mock_thread = mocker.patch("acere.services.ace.pool.threading.Thread")
 
     # Create an AcePool instance
     pool = AcePool(instance_id="test")
@@ -82,7 +82,7 @@ async def test_check_ace_running_healthy(monkeypatch: pytest.MonkeyPatch) -> Non
     )
 
     # Mock aiohttp.ClientSession in the pool module
-    monkeypatch.setattr("acere.services.ace_pool.pool.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr("acere.services.ace.pool.aiohttp.ClientSession", lambda **kwargs: fake_session)
 
     pool = AcePool(instance_id="test")
     result = await pool.check_ace_running()
@@ -100,7 +100,7 @@ async def test_check_ace_running_unhealthy(monkeypatch: pytest.MonkeyPatch) -> N
     fake_session = FakeSession({})  # Empty dict means all URLs return 404
 
     # Mock aiohttp.ClientSession
-    monkeypatch.setattr("acere.services.ace_pool.pool.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr("acere.services.ace.pool.aiohttp.ClientSession", lambda **kwargs: fake_session)
 
     pool = AcePool(instance_id="test")
     result = await pool.check_ace_running()
@@ -198,8 +198,8 @@ async def test_get_set_valid(monkeypatch: pytest.MonkeyPatch) -> None:
         }
     )
 
-    monkeypatch.setattr("acere.services.ace_pool.pool.aiohttp.ClientSession", lambda **kwargs: fake_session)
-    monkeypatch.setattr("acere.services.ace_pool.entry.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr("acere.services.ace.pool.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr("acere.services.ace.pool.entry.aiohttp.ClientSession", lambda **kwargs: fake_session)
 
     # Mark pool as healthy so stats queries work
     pool._healthy = True
