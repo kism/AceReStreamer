@@ -1,8 +1,7 @@
 """Stream Handling Blueprint."""
 
 from http import HTTPStatus
-from collections.abc import AsyncGenerator
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 
 import aiohttp
 from fastapi import APIRouter, HTTPException, Query, Request, Response
@@ -24,6 +23,11 @@ from acere.utils.hls import (
     replace_hls_m3u_sources,
 )
 from acere.utils.logger import get_logger
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+else:
+    AsyncGenerator = object
 
 logger = get_logger(__name__)
 router = APIRouter(tags=["Media/Stream"])
