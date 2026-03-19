@@ -1,11 +1,12 @@
 """Stream Handling Blueprint."""
 
 from http import HTTPStatus
+from collections.abc import AsyncGenerator
 from typing import Annotated
 
 import aiohttp
 from fastapi import APIRouter, HTTPException, Query, Request, Response
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import HttpUrl
 
 from acere.constants import STATIC_DIR
@@ -254,15 +255,13 @@ async def ace_content(path: str, request: Request, token: str = "") -> Response:
 
     logger.trace("Ace content requested for url: %s", url)
 
+    timeout = aiohttp.ClientTimeout(total=REVERSE_PROXY_TIMEOUT)
+    session = aiohttp.ClientSession(timeout=timeout)
     try:
-        timeout = aiohttp.ClientTimeout(total=REVERSE_PROXY_TIMEOUT)
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            async with session.get(url) as resp:
-                resp.raise_for_status()
-                content = await resp.read()
-                status_code = resp.status
-                response_headers = resp.headers
+        resp = await session.get(url)
+        resp.raise_for_status()
     except (aiohttp.ClientError, TimeoutError) as e:
+        await session.close()
         log_aiohttp_exception(logger, url, e)
         response_body = MessageResponseModel(message="Ace content timeout").model_dump_json()
 
@@ -279,16 +278,18 @@ async def ace_content(path: str, request: Request, token: str = "") -> Response:
         )
 
     headers = [
-        (name, value)
-        for (name, value) in response_headers.items()
-        if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS
+        (name, value) for (name, value) in resp.headers.items() if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS
     ]
 
-    response = Response(content=content, status_code=status_code, headers=dict(headers))
+    async def generate() -> AsyncGenerator[bytes, None]:
+        try:
+            async for chunk in resp.content.iter_chunked(65536):
+                yield chunk
+        finally:
+            resp.close()
+            await session.close()
 
-    response.headers["Content-Type"] = "video/MP2T"
-
-    return response
+    return StreamingResponse(generate(), status_code=resp.status, headers=dict(headers), media_type="video/MP2T")
 
 
 # region /tvg-logo/

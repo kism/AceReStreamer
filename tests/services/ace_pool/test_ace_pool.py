@@ -7,9 +7,9 @@ from typing import TYPE_CHECKING
 import pytest
 from pydantic import HttpUrl
 
+from acere.services.ace.pool import AcePool
 from acere.services.ace.pool.entry import AcePoolEntry
 from acere.services.ace.pool.models import AceVersionResponse, AceVersionResult
-from acere.services.ace.pool import AcePool
 from acere.utils.ace import get_middleware_url
 from tests.test_utils.ace import (
     create_mock_middleware_response,
