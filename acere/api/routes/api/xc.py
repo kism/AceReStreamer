@@ -9,6 +9,7 @@ from pydantic import HttpUrl
 
 from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.config import settings
+from acere.instances.iptv_streams import get_iptv_streams_db_handler
 from acere.services.xc.helpers import (
     check_xc_auth,
     get_expiry_date,
@@ -101,16 +102,33 @@ def xc_iptv_router(
 
 
 def _get_live_categories() -> list[XCCategory]:
-    """Get live TV categories."""
-    # Get all the categories that are actually in use
-    return get_ace_streams_db_handler().get_xc_categories()
+    """Get live TV categories from both ace and IPTV proxy streams."""
+    ace_categories = get_ace_streams_db_handler().get_xc_categories()
+    iptv_categories = get_iptv_streams_db_handler().get_xc_categories()
+
+    # Merge, deduplicating by category_id
+    seen: set[str] = set()
+    merged: list[XCCategory] = []
+    for cat in ace_categories + iptv_categories:
+        if cat.category_id not in seen:
+            seen.add(cat.category_id)
+            merged.append(cat)
+    return merged
 
 
 def _get_live_streams(category_id: str, token: str) -> list[XCStream]:
-    """Get live TV streams."""
-    handler = get_ace_streams_db_handler()
+    """Get live TV streams from both ace and IPTV proxy."""
     xc_category = int(category_id) if category_id and category_id.isdigit() else None
-    return handler.get_streams_as_iptv_xc(xc_category, token=token)
+
+    ace_streams = get_ace_streams_db_handler().get_streams_as_iptv_xc(xc_category, token=token)
+    iptv_streams = get_iptv_streams_db_handler().get_streams_as_iptv_xc(xc_category, token=token)
+
+    # Re-number sequentially across both lists
+    combined = ace_streams + iptv_streams
+    for i, stream in enumerate(combined, start=1):
+        stream.num = i
+
+    return combined
 
 
 # region /status.php
@@ -130,9 +148,20 @@ def xc_get(
 
 
 def _get_m3u_plus(token: str) -> Response:
-    """Get M3U playlist."""
-    handler = get_ace_streams_db_handler()
-    m3u8 = handler.get_streams_as_iptv(token=token)
+    """Get combined M3U playlist (ace + IPTV proxy)."""
+    external_url = settings.EXTERNAL_URL
+    epg_url_str = f"{external_url}/epg.xml"
+    if token:
+        epg_url_str += f"?token={token}"
+    epg_url = HttpUrl(epg_url_str)
+    m3u8_header = f'#EXTM3U x-tvg-url="{epg_url}" url-tvg="{epg_url}" refresh="3600"\n'
+
+    ace_lines = get_ace_streams_db_handler().get_iptv_lines(token=token)
+    iptv_lines = get_iptv_streams_db_handler().get_iptv_lines(token=token)
+
+    all_lines = sorted(set(ace_lines + iptv_lines))
+    m3u8 = m3u8_header + "\n".join(all_lines)
+
     return Response(
         content=m3u8,
         status_code=HTTPStatus.OK,

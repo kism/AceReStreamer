@@ -38,6 +38,7 @@ def test_fresh_install(
     tables = get_tables(engine)
     assert "ace_quality_cache" in tables
     assert "alembic_version" in tables
+    assert "xc_stream_map" in tables
 
     columns = get_columns(engine, "ace_quality_cache")
     assert "last_quality_success_time" in columns
@@ -55,7 +56,7 @@ def test_get_current_revision(engine: Engine) -> None:
     assert runner.get_current_revision(engine) == "0001"
 
     runner.upgrade(engine)
-    assert runner.get_current_revision(engine) == "0003"
+    assert runner.get_current_revision(engine) == "0004"
 
     runner.downgrade(engine, "0001")
     assert runner.get_current_revision(engine) == "0001"

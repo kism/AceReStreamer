@@ -3,6 +3,7 @@
 from typing import TYPE_CHECKING
 
 from acere.database.models.acestream import AceStreamDBEntry
+from acere.database.models.iptv_stream import IPTVStreamDBEntry
 from acere.utils.logger import get_logger
 
 if TYPE_CHECKING:
@@ -17,12 +18,12 @@ logger = get_logger(__name__)
 
 
 def create_extinf_line(
-    stream: FoundAceStream | AceStreamDBEntry,
+    stream: FoundAceStream | AceStreamDBEntry | IPTVStreamDBEntry,
     tvg_url_base: HttpUrl | None,
     last_found: int,
     token: str = "",
 ) -> str:
-    """Create an M3U EXTINF line for a given FoundAceStream object."""
+    """Create an M3U EXTINF line for a given stream object."""
     token_str = "" if token == "" else f"?token={token}"
 
     final_url_base = None

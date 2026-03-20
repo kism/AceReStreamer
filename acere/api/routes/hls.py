@@ -12,10 +12,10 @@ from acere.constants import STATIC_DIR
 from acere.core.stream_token import verify_stream_token
 from acere.instances.ace_pool import get_ace_pool
 from acere.instances.ace_quality import get_quality_handler
-from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.config import settings
 from acere.instances.iptv_proxy import get_iptv_proxy_manager
 from acere.instances.paths import get_app_path_handler
+from acere.instances.xc_stream_map import get_xc_stream_map_handler
 from acere.services.xc.helpers import check_xc_auth
 from acere.utils.api_models import MessageResponseModel
 from acere.utils.exception_handling import log_aiohttp_exception
@@ -203,7 +203,7 @@ async def xc_m3u8(
     password: Annotated[str, Query(alias="password")] = "",
     username: Annotated[str, Query(alias="username")] = "",
 ) -> Response:
-    """Serve the XC m3u8 file for Ace content."""
+    """Serve the XC m3u8 file for any stream type."""
     # Who knows if it makes it more efficent
     # the non-path query params do show up sometimes
     # maybe i'll need them in the future
@@ -211,8 +211,6 @@ async def xc_m3u8(
     password = _path_password or password
 
     stream_token = check_xc_auth(username=username, stream_token=password)
-
-    content_id: str | None = None
 
     logger.trace(
         "XC HLS: path='%s' args='%s' ua='%s'",
@@ -231,18 +229,25 @@ async def xc_m3u8(
             detail=f"Client requested invalid XC ID: {xc_stream} -> {xc_id_clean}",
         ) from None
 
-    content_id = get_ace_streams_db_handler().get_content_id_by_xc_id(xc_id_int)
+    stream_info = get_xc_stream_map_handler().get_stream_info_by_xc_id(xc_id_int)
 
-    if content_id is None:
-        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="Invalid XC ID format")
-
-    if not content_id:
+    if stream_info is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="Content ID not found for the given XC ID",
+            detail="XC ID not found in stream map",
         )
 
-    return await hls(content_id, stream_token)
+    stream_type, stream_key = stream_info
+
+    if stream_type == "ace":
+        return await hls(stream_key, stream_token)
+    if stream_type == "iptv":
+        return await hls_web(stream_key, stream_token)
+
+    raise HTTPException(
+        status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+        detail=f"Unknown stream type in xc_stream_map: {stream_type}",
+    )
 
 
 # region /ace/c/ and /hls/c/ Content paths for regular and multistream

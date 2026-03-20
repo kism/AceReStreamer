@@ -126,6 +126,24 @@ class AceStreamDBHandler(BaseDatabaseHandler):
             return None
 
     # region GET IPTV
+    def get_iptv_lines(self, token: str) -> list[str]:
+        """Return IPTV EXTINF+URL pairs for all ace streams, without M3U header."""
+        external_url = settings.EXTERNAL_URL
+        iptv_entries: set[str] = set()
+
+        for stream in self.get_streams_cached():
+            external_url_tvg = HttpUrl(f"{external_url}/tvg-logo/")
+            line_one = create_extinf_line(
+                stream, tvg_url_base=external_url_tvg, token=token, last_found=int(stream.last_scraped_time.timestamp())
+            )
+            line_two_url = HttpUrl(f"{external_url}/hls/ace/{stream.content_id}")
+            line_two = str(line_two_url)
+            if token:
+                line_two += f"?token={token}"
+            iptv_entries.add(line_one + line_two)
+
+        return sorted(iptv_entries)
+
     def get_streams_as_iptv(self, token: str) -> str:
         """Get the found streams as an IPTV M3U8 string."""
         external_url = settings.EXTERNAL_URL
@@ -137,26 +155,7 @@ class AceStreamDBHandler(BaseDatabaseHandler):
         epg_url = HttpUrl(epg_url_str)
         m3u8_content = f'#EXTM3U x-tvg-url="{epg_url}" url-tvg="{epg_url}" refresh="3600"\n'
 
-        iptv_set = set()
-
-        # I used to filter this for whether the stream has ever worked,
-        # but sometimes sites change the id of their stream often...
-        for stream in self.get_streams_cached():
-            logger.debug(stream)
-
-            external_url_tvg = HttpUrl(f"{external_url}/tvg-logo/")
-
-            line_one = create_extinf_line(
-                stream, tvg_url_base=external_url_tvg, token=token, last_found=int(stream.last_scraped_time.timestamp())
-            )
-            line_two_url = HttpUrl(f"{external_url}/hls/ace/{stream.content_id}")
-            line_two = str(line_two_url)
-            if token:
-                line_two += f"?token={token}"
-
-            iptv_set.add(line_one + line_two)
-
-        return m3u8_content + "\n".join(sorted(iptv_set))
+        return m3u8_content + "\n".join(self.get_iptv_lines(token))
 
     def get_all_distinct_tvg_ids(self) -> set[str]:
         """Get all distinct TVG IDs from the database."""
@@ -172,7 +171,10 @@ class AceStreamDBHandler(BaseDatabaseHandler):
         token: str = "",
     ) -> list[XCStream]:
         """Get the found streams as a list of XCStream objects."""
+        from acere.instances.xc_stream_map import get_xc_stream_map_handler  # noqa: PLC0415
+
         handler = get_xc_category_db_handler()
+        xc_map = get_xc_stream_map_handler()
         result_streams: list[XCStream] = []
 
         token_str = "" if token == "" else f"?token={token}"
@@ -181,7 +183,7 @@ class AceStreamDBHandler(BaseDatabaseHandler):
 
         current_stream_number = 1
         for stream in streams:
-            xc_id = stream.id
+            xc_id = xc_map.get_or_create_xc_id("ace", stream.content_id)
             xc_category_id = handler.get_xc_category_id(stream.group_title)
             if xc_category_filter is None or xc_category_id == xc_category_filter:
                 result_streams.append(

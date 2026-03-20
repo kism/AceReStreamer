@@ -10,6 +10,7 @@ from acere.config.ace.scraper import HTMLScraperFilter
 from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.config import settings
 from acere.instances.epg import get_epg_handler
+from acere.instances.xc_stream_map import get_xc_stream_map_handler
 from acere.utils.logger import get_logger
 
 from .api import APIStreamScraper
@@ -177,6 +178,11 @@ class AceScraper:
         tvg_id_list = [stream.tvg_id for stream in self._streams.values()]
         get_epg_handler().add_tvg_ids(tvg_ids=tvg_id_list)
 
+    def _register_xc_mappings(self) -> None:
+        """Register all current ace streams in the XC stream map."""
+        content_ids = {stream.content_id for stream in self._streams.values() if stream.content_id}
+        get_xc_stream_map_handler().register_keys("ace", content_ids)
+
     # region Thread
     def start_scrape_thread(self) -> None:  # noqa: C901
         """Run the scraper to find AceStreams."""
@@ -235,6 +241,7 @@ class AceScraper:
                     still_missing = [stream for stream in found_streams if not stream.content_id and stream.infohash]
 
                     self._write_streams_to_database()
+                    self._register_xc_mappings()
 
                     if len(still_missing) == 0:
                         break

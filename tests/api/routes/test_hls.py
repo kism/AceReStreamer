@@ -342,10 +342,11 @@ async def test_xc_m3u8_success(
     xc_id = 12345
     mock_content_id = get_random_content_id()
 
-    # Mock the database handler to return our content_id
+    # Mock the XC stream map handler to return ace stream info
+    mock_xc_map = type("MockHandler", (), {"get_stream_info_by_xc_id": lambda self, xc_id: ("ace", mock_content_id)})()
     monkeypatch.setattr(
-        "acere.api.routes.hls.get_ace_streams_db_handler",
-        type("MockHandler", (), {"get_content_id_by_xc_id": lambda self, xc_id: mock_content_id}),
+        "acere.api.routes.hls.get_xc_stream_map_handler",
+        lambda: mock_xc_map,
     )
 
     # Mock the HLS URL retrieval

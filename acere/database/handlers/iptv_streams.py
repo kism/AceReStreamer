@@ -7,7 +7,10 @@ from sqlmodel import select
 
 from acere.database.models.iptv_stream import IPTVStreamDBEntry
 from acere.instances.config import settings
+from acere.instances.xc_category import get_xc_category_db_handler
+from acere.services.xc.models import XCCategory, XCStream
 from acere.utils.logger import get_logger
+from acere.utils.m3u8 import create_extinf_line
 
 from .base import BaseDatabaseHandler
 
@@ -87,6 +90,23 @@ class IPTVStreamDBHandler(BaseDatabaseHandler):
             logger.info("Deleted %d IPTV streams from source '%s'", count, source_name)
             return count
 
+    def get_iptv_lines(self, token: str) -> list[str]:
+        """Return IPTV EXTINF+URL pairs for all IPTV proxy streams, without M3U header."""
+        external_url = settings.EXTERNAL_URL
+        iptv_entries: list[str] = []
+
+        for stream in self.get_streams_cached():
+            external_url_tvg = HttpUrl(f"{external_url}/tvg-logo/")
+            line_one = create_extinf_line(
+                stream, tvg_url_base=external_url_tvg, token=token, last_found=int(stream.last_scraped_time.timestamp())
+            )
+            stream_url = f"{external_url}/hls/web/{stream.slug}"
+            if token:
+                stream_url += f"?token={token}"
+            iptv_entries.append(line_one + stream_url)
+
+        return sorted(iptv_entries)
+
     def get_streams_as_iptv(self, token: str) -> str:
         """Get the IPTV proxy streams as an M3U8 string."""
         external_url = settings.EXTERNAL_URL
@@ -97,27 +117,47 @@ class IPTVStreamDBHandler(BaseDatabaseHandler):
         epg_url = HttpUrl(epg_url_str)
         m3u8_content = f'#EXTM3U x-tvg-url="{epg_url}" url-tvg="{epg_url}" refresh="3600"\n'
 
-        iptv_lines: list[str] = []
+        return m3u8_content + "\n".join(self.get_iptv_lines(token))
 
-        for stream in self.get_streams_cached():
-            extinf_parts = [
-                "#EXTINF:-1",
-            ]
-            if stream.tvg_logo:
-                logo_url = f"{external_url}/tvg-logo/{stream.tvg_logo}"
-                if token:
-                    logo_url += f"?token={token}"
-                extinf_parts.append(f'tvg-logo="{logo_url}"')
-            if stream.tvg_id:
-                extinf_parts.append(f'tvg-id="{stream.tvg_id}"')
-            if stream.group_title:
-                extinf_parts.append(f'group-title="{stream.group_title}"')
+    # region GET IPTV XC
+    def get_streams_as_iptv_xc(
+        self,
+        xc_category_filter: int | None,
+        token: str = "",
+    ) -> list[XCStream]:
+        """Get IPTV proxy streams as XCStream objects."""
+        from acere.instances.xc_stream_map import get_xc_stream_map_handler  # noqa: PLC0415
 
-            extinf_line = f"{' '.join(extinf_parts)},{stream.title}\n"
-            stream_url = f"{external_url}/hls/web/{stream.slug}"
-            if token:
-                stream_url += f"?token={token}"
+        cat_handler = get_xc_category_db_handler()
+        xc_map = get_xc_stream_map_handler()
+        result_streams: list[XCStream] = []
+        token_str = "" if token == "" else f"?token={token}"
+        streams = self.get_streams_cached()
 
-            iptv_lines.append(extinf_line + stream_url)
+        current_stream_number = 1
+        for stream in streams:
+            xc_id = xc_map.get_or_create_xc_id("iptv", stream.slug)
+            xc_category_id = cat_handler.get_xc_category_id(stream.group_title)
+            if xc_category_filter is None or xc_category_id == xc_category_filter:
+                result_streams.append(
+                    XCStream(
+                        num=current_stream_number,
+                        name=stream.title,
+                        stream_id=xc_id,
+                        stream_icon=f"{settings.EXTERNAL_URL}/tvg-logo/{stream.tvg_logo}{token_str}"
+                        if stream.tvg_logo
+                        else "",
+                        epg_channel_id=stream.tvg_id,
+                        category_id=str(xc_category_id),
+                    )
+                )
+            current_stream_number += 1
 
-        return m3u8_content + "\n".join(sorted(iptv_lines))
+        return result_streams
+
+    def get_xc_categories(self) -> list[XCCategory]:
+        """Get XC categories in use by IPTV proxy streams."""
+        cat_handler = get_xc_category_db_handler()
+        categories_in_use = {stream.category_id for stream in self.get_streams_as_iptv_xc(xc_category_filter=None)}
+        categories_in_use_int = {int(cat_id) for cat_id in categories_in_use if cat_id.isdigit()}
+        return cat_handler.get_all_categories_api(categories_in_use_int)

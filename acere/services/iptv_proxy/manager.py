@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 from acere.instances.config import settings
 from acere.instances.iptv_streams import get_iptv_streams_db_handler
+from acere.instances.xc_stream_map import get_xc_stream_map_handler
 from acere.utils.logger import get_logger
 
 from .scraper import IPTVProxyScraper
@@ -156,10 +157,17 @@ class IPTVProxyManager:
     def _write_streams_to_database(self, streams: list[FoundIPTVStream]) -> None:
         """Write found streams to the database and update URL map."""
         handler = get_iptv_streams_db_handler()
+        xc_handler = get_xc_stream_map_handler()
 
         self._url_map.clear()
 
+        current_slugs: set[str] = set()
         for stream in streams:
             slug = self.make_slug(stream.upstream_url)
             handler.update_stream(stream=stream, slug=slug)
             self._url_map[slug] = stream.upstream_url
+            current_slugs.add(slug)
+
+        # Register all current IPTV slugs in XC stream map and cleanup stale entries
+        xc_handler.register_keys("iptv", current_slugs)
+        xc_handler.delete_by_type_and_keys("iptv", current_slugs)
