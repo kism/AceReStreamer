@@ -166,6 +166,7 @@ export type Body_Login_login_access_token = {
 export type CombinedStreamAPI = {
     stream_type: 'ace' | 'iptv';
     title: string;
+    stream_url: string;
     tvg_id: string;
     tvg_logo?: (string | null);
     group_title: string;

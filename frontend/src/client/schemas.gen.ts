@@ -628,6 +628,10 @@ export const CombinedStreamAPISchema = {
             type: 'string',
             title: 'Title'
         },
+        stream_url: {
+            type: 'string',
+            title: 'Stream Url'
+        },
         tvg_id: {
             type: 'string',
             title: 'Tvg Id'
@@ -666,7 +670,7 @@ export const CombinedStreamAPISchema = {
         }
     },
     type: 'object',
-    required: ['stream_type', 'title', 'tvg_id', 'group_title', 'last_scraped_time', 'program_title', 'program_description', 'quality'],
+    required: ['stream_type', 'title', 'stream_url', 'tvg_id', 'group_title', 'last_scraped_time', 'program_title', 'program_description', 'quality'],
     title: 'CombinedStreamAPI',
     description: 'Unified stream model combining ace and IPTV streams, for API use.'
 } as const;

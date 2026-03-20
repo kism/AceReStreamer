@@ -1,6 +1,9 @@
 [
   "/",
-  "/admin",
+  "/admin/",
+  "/admin/ace",
+  "/admin/general",
+  "/admin/iptv",
   "/assets/android-chrome-192x192.png",
   "/assets/android-chrome-512x512.png",
   "/assets/apple-touch-icon.png",
