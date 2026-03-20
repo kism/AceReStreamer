@@ -40,4 +40,4 @@ This logic might be cooked
     segment_url = iptv_manager.get_segment_upstream_url(slug, segment)
 ```
 
-Use the name filter for categories too.
+Remove missing iptv urls from scrape immediately.

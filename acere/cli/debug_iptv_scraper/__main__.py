@@ -14,6 +14,7 @@ from acere.instances.paths import setup_app_path_handler
 from acere.services.iptv_proxy.scraper import IPTVProxyScraper
 from acere.services.scraper.models import FoundIPTVStream
 from acere.utils.cli import console
+from acere.utils.logger import setup_logger
 
 
 async def async_main() -> None:
@@ -26,7 +27,17 @@ async def async_main() -> None:
         required=True,
         help="Path to the application configuration file.",
     )
+    parser.add_argument(
+        "-v",
+        action="count",
+        default=0,
+        dest="verbose",
+        help="Increase verbosity (can be used multiple times).",
+    )
     args = parser.parse_args()
+
+    settings.logging.setup_verbosity_cli(args.verbose)
+    setup_logger(settings=settings.logging)
 
     if not args.app_config.is_file():
         console.print(f"[red]Configuration file does not exist at: {args.app_config}[/red]")

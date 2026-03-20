@@ -125,9 +125,10 @@ class IPTVProxyScraper:
             if not stream_id or not stream_name:
                 continue
 
-            group_title = category_map.get(category_id, "")
+            group_title = category_map.get(category_id, "") or "General"
 
-            if not source.title_filter.check_allowed(stream_name):
+            # Apply category filter
+            if not source.category_filter.check_allowed(group_title, thing_were_checking="Category"):
                 continue
 
             # Apply title filter
@@ -145,7 +146,7 @@ class IPTVProxyScraper:
                     source_name=source.name,
                     tvg_id=epg_channel_id,
                     tvg_logo=stream_icon or None,
-                    group_title=group_title or "General",
+                    group_title=group_title,
                     last_scraped_time=now,
                 )
             )
@@ -177,7 +178,7 @@ class IPTVProxyScraper:
             group_title = entry.group_title or "General"
 
             # Apply category filter
-            if not source.category_filter.check_allowed(group_title):
+            if not source.category_filter.check_allowed(group_title, thing_were_checking="Category"):
                 continue
 
             results.append(
