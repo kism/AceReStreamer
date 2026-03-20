@@ -131,6 +131,8 @@ class IPTVProxyScraper:
             if not source.category_filter.check_allowed(group_title, thing_were_checking="Category"):
                 continue
 
+            group_title = source.category_rename.get(group_title, group_title)
+
             # Apply title filter
             title = name_processor.cleanup_candidate_title(stream_name)
             if not source.title_filter.check_allowed(title):
@@ -180,6 +182,8 @@ class IPTVProxyScraper:
             # Apply category filter
             if not source.category_filter.check_allowed(group_title, thing_were_checking="Category"):
                 continue
+
+            group_title = source.category_rename.get(group_title, group_title)
 
             results.append(
                 FoundIPTVStream(

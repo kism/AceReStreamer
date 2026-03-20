@@ -17,6 +17,7 @@ class IPTVSourceXtream(BaseModel):
     password: str
     title_filter: TitleFilter = TitleFilter()
     category_filter: TitleFilter = TitleFilter()
+    category_rename: dict[str, str] = {}
     max_active_streams: int = 0  # 0 = unlimited
 
     @field_validator("name", mode="before")
@@ -35,6 +36,7 @@ class IPTVSourceM3U8(BaseModel):
     url: HttpUrl
     title_filter: TitleFilter = TitleFilter()
     category_filter: TitleFilter = TitleFilter()
+    category_rename: dict[str, str] = {}  # Optional mapping of original channel names to new names
     max_active_streams: int = 0  # 0 = unlimited
 
     @field_validator("name", mode="before")
