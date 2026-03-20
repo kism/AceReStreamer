@@ -530,6 +530,43 @@ export type AcePoolStatsByPidData = {
 
 export type AcePoolStatsByPidResponse = (AcePoolStat);
 
+export type AceScraperSourcesResponse = (Array<AceScraperSourceApi>);
+
+export type AceScraperAddSourceData = {
+    requestBody: (AceScraperSourceApi | Array<AceScraperSourceApi>);
+};
+
+export type AceScraperAddSourceResponse = (MessageResponseModel);
+
+export type AceScraperSourceData = {
+    sourceSlug: string;
+};
+
+export type AceScraperSourceResponse = (AceScraperSourceApi);
+
+export type AceScraperRemoveSourceData = {
+    slug: string;
+};
+
+export type AceScraperRemoveSourceResponse = (MessageResponseModel);
+
+export type AceScraperGetNameOverridesResponse = ({
+    [key: string]: (string);
+});
+
+export type AceScraperDeleteNameOverrideData = {
+    contentId: string;
+};
+
+export type AceScraperDeleteNameOverrideResponse = (MessageResponseModel);
+
+export type AceScraperAddNameOverrideData = {
+    contentId: string;
+    name: string;
+};
+
+export type AceScraperAddNameOverrideResponse = (MessageResponseModel);
+
 export type AceStreamsByContentIdData = {
     contentId: string;
 };
@@ -600,25 +637,25 @@ export type FrontendFrontendIndexResponse = (string);
 
 export type HealthHealthResponse = (HealthResponseModel);
 
-export type IptvSourcesSourcesResponse = (Array<IPTVSourceApi>);
+export type IptvScraperSourcesResponse = (Array<IPTVSourceApi>);
 
-export type IptvSourcesAddSourceData = {
+export type IptvScraperAddSourceData = {
     requestBody: (IPTVSourceApi | Array<IPTVSourceApi>);
 };
 
-export type IptvSourcesAddSourceResponse = (MessageResponseModel);
+export type IptvScraperAddSourceResponse = (MessageResponseModel);
 
-export type IptvSourcesSourceData = {
+export type IptvScraperSourceData = {
     sourceName: string;
 };
 
-export type IptvSourcesSourceResponse = (IPTVSourceApi);
+export type IptvScraperSourceResponse = (IPTVSourceApi);
 
-export type IptvSourcesRemoveSourceData = {
+export type IptvScraperRemoveSourceData = {
     sourceName: string;
 };
 
-export type IptvSourcesRemoveSourceResponse = (MessageResponseModel);
+export type IptvScraperRemoveSourceResponse = (MessageResponseModel);
 
 export type IptvStreamsStreamsResponse = (Array<FoundIPTVStreamAPI>);
 
@@ -684,43 +721,6 @@ export type PrivateCreateUserData = {
 };
 
 export type PrivateCreateUserResponse = (UserPublic);
-
-export type ScraperSourcesResponse = (Array<AceScraperSourceApi>);
-
-export type ScraperAddSourceData = {
-    requestBody: (AceScraperSourceApi | Array<AceScraperSourceApi>);
-};
-
-export type ScraperAddSourceResponse = (MessageResponseModel);
-
-export type ScraperSourceData = {
-    sourceSlug: string;
-};
-
-export type ScraperSourceResponse = (AceScraperSourceApi);
-
-export type ScraperRemoveSourceData = {
-    slug: string;
-};
-
-export type ScraperRemoveSourceResponse = (MessageResponseModel);
-
-export type ScraperGetNameOverridesResponse = ({
-    [key: string]: (string);
-});
-
-export type ScraperDeleteNameOverrideData = {
-    contentId: string;
-};
-
-export type ScraperDeleteNameOverrideResponse = (MessageResponseModel);
-
-export type ScraperAddNameOverrideData = {
-    contentId: string;
-    name: string;
-};
-
-export type ScraperAddNameOverrideResponse = (MessageResponseModel);
 
 export type StreamsStreamsResponse = (Array<CombinedStreamAPI>);
 

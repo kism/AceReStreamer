@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { AcePoolPoolResponse, AcePoolGetByContentIdData, AcePoolGetByContentIdResponse, AcePoolDeleteByContentIdData, AcePoolDeleteByContentIdResponse, AcePoolGetByPidData, AcePoolGetByPidResponse, AcePoolStatsResponse, AcePoolStatsByContentIdData, AcePoolStatsByContentIdResponse, AcePoolStatsByPidData, AcePoolStatsByPidResponse, AceStreamsByContentIdData, AceStreamsByContentIdResponse, AceStreamsDeleteByContentIdData, AceStreamsDeleteByContentIdResponse, AceStreamsStreamsResponse, AceStreamsAddStreamData, AceStreamsAddStreamResponse, AceStreamsCheckResponse, ConfigGetConfigResponse, ConfigUpdateConfigData, ConfigUpdateConfigResponse, ConfigFetchRemoteSettingsResponse, ConfigTriggerFetchRemoteSettingsData, ConfigTriggerFetchRemoteSettingsResponse, ConfigReloadConfigResponse, EpgEpgHealthResponse, EpgGetEpgsResponse, EpgAddEpgData, EpgAddEpgResponse, EpgGetEpgData, EpgGetEpgResponse, EpgDeleteEpgData, EpgDeleteEpgResponse, EpgTvgEpgMappingsResponse, FrontendFrontendIndexHtmlResponse, FrontendFrontendIndexResponse, HealthHealthResponse, IptvSourcesSourcesResponse, IptvSourcesAddSourceData, IptvSourcesAddSourceResponse, IptvSourcesSourceData, IptvSourcesSourceResponse, IptvSourcesRemoveSourceData, IptvSourcesRemoveSourceResponse, IptvStreamsStreamsResponse, IptvStreamsBySlugData, IptvStreamsBySlugResponse, IptvStreamsDeleteBySlugData, IptvStreamsDeleteBySlugResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginResetPasswordData, LoginResetPasswordResponse, MediaIptvIptvM3U83Data, MediaIptvIptvM3U83Response, MediaIptvIptvM3U2Data, MediaIptvIptvM3U2Response, MediaIptvIptvM3U81Data, MediaIptvIptvM3U81Response, MediaXmlEpgXmlData, MediaXmlEpgXmlResponse, MediaXmlEpgXml3Data, MediaXmlEpgXml3Response, PrivateCreateUserData, PrivateCreateUserResponse, ScraperSourcesResponse, ScraperAddSourceData, ScraperAddSourceResponse, ScraperSourceData, ScraperSourceResponse, ScraperRemoveSourceData, ScraperRemoveSourceResponse, ScraperGetNameOverridesResponse, ScraperDeleteNameOverrideData, ScraperDeleteNameOverrideResponse, ScraperAddNameOverrideData, ScraperAddNameOverrideResponse, StreamsStreamsResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersReadStreamTokenMeResponse, UsersRegenerateStreamTokenMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, XtreamCodesXcIptvRouterData, XtreamCodesXcIptvRouterResponse, XtreamCodesXcGetData, XtreamCodesXcGetResponse } from './types.gen';
+import type { AcePoolPoolResponse, AcePoolGetByContentIdData, AcePoolGetByContentIdResponse, AcePoolDeleteByContentIdData, AcePoolDeleteByContentIdResponse, AcePoolGetByPidData, AcePoolGetByPidResponse, AcePoolStatsResponse, AcePoolStatsByContentIdData, AcePoolStatsByContentIdResponse, AcePoolStatsByPidData, AcePoolStatsByPidResponse, AceScraperSourcesResponse, AceScraperAddSourceData, AceScraperAddSourceResponse, AceScraperSourceData, AceScraperSourceResponse, AceScraperRemoveSourceData, AceScraperRemoveSourceResponse, AceScraperGetNameOverridesResponse, AceScraperDeleteNameOverrideData, AceScraperDeleteNameOverrideResponse, AceScraperAddNameOverrideData, AceScraperAddNameOverrideResponse, AceStreamsByContentIdData, AceStreamsByContentIdResponse, AceStreamsDeleteByContentIdData, AceStreamsDeleteByContentIdResponse, AceStreamsStreamsResponse, AceStreamsAddStreamData, AceStreamsAddStreamResponse, AceStreamsCheckResponse, ConfigGetConfigResponse, ConfigUpdateConfigData, ConfigUpdateConfigResponse, ConfigFetchRemoteSettingsResponse, ConfigTriggerFetchRemoteSettingsData, ConfigTriggerFetchRemoteSettingsResponse, ConfigReloadConfigResponse, EpgEpgHealthResponse, EpgGetEpgsResponse, EpgAddEpgData, EpgAddEpgResponse, EpgGetEpgData, EpgGetEpgResponse, EpgDeleteEpgData, EpgDeleteEpgResponse, EpgTvgEpgMappingsResponse, FrontendFrontendIndexHtmlResponse, FrontendFrontendIndexResponse, HealthHealthResponse, IptvScraperSourcesResponse, IptvScraperAddSourceData, IptvScraperAddSourceResponse, IptvScraperSourceData, IptvScraperSourceResponse, IptvScraperRemoveSourceData, IptvScraperRemoveSourceResponse, IptvStreamsStreamsResponse, IptvStreamsBySlugData, IptvStreamsBySlugResponse, IptvStreamsDeleteBySlugData, IptvStreamsDeleteBySlugResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginResetPasswordData, LoginResetPasswordResponse, MediaIptvIptvM3U83Data, MediaIptvIptvM3U83Response, MediaIptvIptvM3U2Data, MediaIptvIptvM3U2Response, MediaIptvIptvM3U81Data, MediaIptvIptvM3U81Response, MediaXmlEpgXmlData, MediaXmlEpgXmlResponse, MediaXmlEpgXml3Data, MediaXmlEpgXml3Response, PrivateCreateUserData, PrivateCreateUserResponse, StreamsStreamsResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersReadStreamTokenMeResponse, UsersRegenerateStreamTokenMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, XtreamCodesXcIptvRouterData, XtreamCodesXcIptvRouterResponse, XtreamCodesXcGetData, XtreamCodesXcGetResponse } from './types.gen';
 
 export class AcePoolService {
     /**
@@ -15,7 +15,7 @@ export class AcePoolService {
     public static pool(): CancelablePromise<AcePoolPoolResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/ace-pool/'
+            url: '/api/v1/ace/pool/'
         });
     }
     
@@ -30,7 +30,7 @@ export class AcePoolService {
     public static getByContentId(data: AcePoolGetByContentIdData): CancelablePromise<AcePoolGetByContentIdResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/ace-pool/content_id/{content_id}',
+            url: '/api/v1/ace/pool/content_id/{content_id}',
             path: {
                 content_id: data.contentId
             },
@@ -51,7 +51,7 @@ export class AcePoolService {
     public static deleteByContentId(data: AcePoolDeleteByContentIdData): CancelablePromise<AcePoolDeleteByContentIdResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/v1/ace-pool/content_id/{content_id}',
+            url: '/api/v1/ace/pool/content_id/{content_id}',
             path: {
                 content_id: data.contentId
             },
@@ -72,7 +72,7 @@ export class AcePoolService {
     public static getByPid(data: AcePoolGetByPidData): CancelablePromise<AcePoolGetByPidResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/ace-pool/pid/{pid}',
+            url: '/api/v1/ace/pool/pid/{pid}',
             path: {
                 pid: data.pid
             },
@@ -91,7 +91,7 @@ export class AcePoolService {
     public static stats(): CancelablePromise<AcePoolStatsResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/ace-pool/stats'
+            url: '/api/v1/ace/pool/stats'
         });
     }
     
@@ -106,7 +106,7 @@ export class AcePoolService {
     public static statsByContentId(data: AcePoolStatsByContentIdData): CancelablePromise<AcePoolStatsByContentIdResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/ace-pool/stats/content_id/{content_id}',
+            url: '/api/v1/ace/pool/stats/content_id/{content_id}',
             path: {
                 content_id: data.contentId
             },
@@ -127,9 +127,144 @@ export class AcePoolService {
     public static statsByPid(data: AcePoolStatsByPidData): CancelablePromise<AcePoolStatsByPidResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/ace-pool/stats/pid/{pid}',
+            url: '/api/v1/ace/pool/stats/pid/{pid}',
             path: {
                 pid: data.pid
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+}
+
+export class AceScraperService {
+    /**
+     * Sources
+     * API endpoint to get the flat streams sources.
+     * @returns AceScraperSourceApi Successful Response
+     * @throws ApiError
+     */
+    public static sources(): CancelablePromise<AceScraperSourcesResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/ace/scraper/source'
+        });
+    }
+    
+    /**
+     * Add Source
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns MessageResponseModel Successful Response
+     * @throws ApiError
+     */
+    public static addSource(data: AceScraperAddSourceData): CancelablePromise<AceScraperAddSourceResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/ace/scraper/source',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Source
+     * API endpoint to get a single stream source by its slug.
+     * @param data The data for the request.
+     * @param data.sourceSlug
+     * @returns AceScraperSourceApi Successful Response
+     * @throws ApiError
+     */
+    public static source(data: AceScraperSourceData): CancelablePromise<AceScraperSourceResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/ace/scraper/source/{source_slug}',
+            path: {
+                source_slug: data.sourceSlug
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Remove Source
+     * API endpoint to remove a scraper source.
+     * @param data The data for the request.
+     * @param data.slug
+     * @returns MessageResponseModel Successful Response
+     * @throws ApiError
+     */
+    public static removeSource(data: AceScraperRemoveSourceData): CancelablePromise<AceScraperRemoveSourceResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/ace/scraper/source/{slug}',
+            path: {
+                slug: data.slug
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Get Name Overrides
+     * API endpoint to get the scraper name overrides.
+     * @returns string Successful Response
+     * @throws ApiError
+     */
+    public static getNameOverrides(): CancelablePromise<AceScraperGetNameOverridesResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/ace/scraper/name-override'
+        });
+    }
+    
+    /**
+     * Delete Name Override
+     * API endpoint to delete a scraper name override.
+     * @param data The data for the request.
+     * @param data.contentId
+     * @returns MessageResponseModel Successful Response
+     * @throws ApiError
+     */
+    public static deleteNameOverride(data: AceScraperDeleteNameOverrideData): CancelablePromise<AceScraperDeleteNameOverrideResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/ace/scraper/name-override/{content_id}',
+            path: {
+                content_id: data.contentId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Add Name Override
+     * API endpoint to add a scraper name override.
+     * @param data The data for the request.
+     * @param data.contentId
+     * @param data.name
+     * @returns MessageResponseModel Successful Response
+     * @throws ApiError
+     */
+    public static addNameOverride(data: AceScraperAddNameOverrideData): CancelablePromise<AceScraperAddNameOverrideResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/ace/scraper/name-override/{content_id}',
+            path: {
+                content_id: data.contentId
+            },
+            query: {
+                name: data.name
             },
             errors: {
                 422: 'Validation Error'
@@ -455,17 +590,17 @@ export class HealthService {
     }
 }
 
-export class IptvSourcesService {
+export class IptvScraperService {
     /**
      * Sources
      * API endpoint to list all IPTV proxy sources.
      * @returns IPTVSourceApi Successful Response
      * @throws ApiError
      */
-    public static sources(): CancelablePromise<IptvSourcesSourcesResponse> {
+    public static sources(): CancelablePromise<IptvScraperSourcesResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/iptv/sources/'
+            url: '/api/v1/iptv/scraper/'
         });
     }
     
@@ -477,10 +612,10 @@ export class IptvSourcesService {
      * @returns MessageResponseModel Successful Response
      * @throws ApiError
      */
-    public static addSource(data: IptvSourcesAddSourceData): CancelablePromise<IptvSourcesAddSourceResponse> {
+    public static addSource(data: IptvScraperAddSourceData): CancelablePromise<IptvScraperAddSourceResponse> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/v1/iptv/sources/',
+            url: '/api/v1/iptv/scraper/',
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
@@ -497,10 +632,10 @@ export class IptvSourcesService {
      * @returns IPTVSourceApi Successful Response
      * @throws ApiError
      */
-    public static source(data: IptvSourcesSourceData): CancelablePromise<IptvSourcesSourceResponse> {
+    public static source(data: IptvScraperSourceData): CancelablePromise<IptvScraperSourceResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/iptv/sources/{source_name}',
+            url: '/api/v1/iptv/scraper/{source_name}',
             path: {
                 source_name: data.sourceName
             },
@@ -518,10 +653,10 @@ export class IptvSourcesService {
      * @returns MessageResponseModel Successful Response
      * @throws ApiError
      */
-    public static removeSource(data: IptvSourcesRemoveSourceData): CancelablePromise<IptvSourcesRemoveSourceResponse> {
+    public static removeSource(data: IptvScraperRemoveSourceData): CancelablePromise<IptvScraperRemoveSourceResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/v1/iptv/sources/{source_name}',
+            url: '/api/v1/iptv/scraper/{source_name}',
             path: {
                 source_name: data.sourceName
             },
@@ -770,141 +905,6 @@ export class PrivateService {
             url: '/api/v1/private/users/',
             body: data.requestBody,
             mediaType: 'application/json',
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-}
-
-export class ScraperService {
-    /**
-     * Sources
-     * API endpoint to get the flat streams sources.
-     * @returns AceScraperSourceApi Successful Response
-     * @throws ApiError
-     */
-    public static sources(): CancelablePromise<ScraperSourcesResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/v1/scraper/source'
-        });
-    }
-    
-    /**
-     * Add Source
-     * @param data The data for the request.
-     * @param data.requestBody
-     * @returns MessageResponseModel Successful Response
-     * @throws ApiError
-     */
-    public static addSource(data: ScraperAddSourceData): CancelablePromise<ScraperAddSourceResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/scraper/source',
-            body: data.requestBody,
-            mediaType: 'application/json',
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Source
-     * API endpoint to get a single stream source by its slug.
-     * @param data The data for the request.
-     * @param data.sourceSlug
-     * @returns AceScraperSourceApi Successful Response
-     * @throws ApiError
-     */
-    public static source(data: ScraperSourceData): CancelablePromise<ScraperSourceResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/v1/scraper/source/{source_slug}',
-            path: {
-                source_slug: data.sourceSlug
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Remove Source
-     * API endpoint to remove a scraper source.
-     * @param data The data for the request.
-     * @param data.slug
-     * @returns MessageResponseModel Successful Response
-     * @throws ApiError
-     */
-    public static removeSource(data: ScraperRemoveSourceData): CancelablePromise<ScraperRemoveSourceResponse> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/v1/scraper/source/{slug}',
-            path: {
-                slug: data.slug
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Get Name Overrides
-     * API endpoint to get the scraper name overrides.
-     * @returns string Successful Response
-     * @throws ApiError
-     */
-    public static getNameOverrides(): CancelablePromise<ScraperGetNameOverridesResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/v1/scraper/name-override'
-        });
-    }
-    
-    /**
-     * Delete Name Override
-     * API endpoint to delete a scraper name override.
-     * @param data The data for the request.
-     * @param data.contentId
-     * @returns MessageResponseModel Successful Response
-     * @throws ApiError
-     */
-    public static deleteNameOverride(data: ScraperDeleteNameOverrideData): CancelablePromise<ScraperDeleteNameOverrideResponse> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/v1/scraper/name-override/{content_id}',
-            path: {
-                content_id: data.contentId
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Add Name Override
-     * API endpoint to add a scraper name override.
-     * @param data The data for the request.
-     * @param data.contentId
-     * @param data.name
-     * @returns MessageResponseModel Successful Response
-     * @throws ApiError
-     */
-    public static addNameOverride(data: ScraperAddNameOverrideData): CancelablePromise<ScraperAddNameOverrideResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/scraper/name-override/{content_id}',
-            path: {
-                content_id: data.contentId
-            },
-            query: {
-                name: data.name
-            },
             errors: {
                 422: 'Validation Error'
             }
