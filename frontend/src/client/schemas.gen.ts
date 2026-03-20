@@ -632,7 +632,8 @@ export const ConfigExport_InputSchema = {
     },
     type: 'object',
     required: ['scraper', 'epgs'],
-    title: 'ConfigExport'
+    title: 'ConfigExport',
+    description: 'Export model for scraper and EPG configuration only.'
 } as const;
 
 export const ConfigExport_OutputSchema = {
@@ -650,7 +651,8 @@ export const ConfigExport_OutputSchema = {
     },
     type: 'object',
     required: ['scraper', 'epgs'],
-    title: 'ConfigExport'
+    title: 'ConfigExport',
+    description: 'Export model for scraper and EPG configuration only.'
 } as const;
 
 export const EPGApiHandlerHealthResponseSchema = {

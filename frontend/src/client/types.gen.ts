@@ -160,11 +160,17 @@ export type Body_Login_login_access_token = {
     client_secret?: (string | null);
 };
 
+/**
+ * Export model for scraper and EPG configuration only.
+ */
 export type ConfigExport_Input = {
     scraper: AceScrapeConf_Input;
     epgs: Array<EPGInstanceConf_Input>;
 };
 
+/**
+ * Export model for scraper and EPG configuration only.
+ */
 export type ConfigExport_Output = {
     scraper: AceScrapeConf_Output;
     epgs: Array<EPGInstanceConf_Output>;
@@ -519,27 +525,7 @@ export type EpgTvgEpgMappingsResponse = (TVGEPGMappingsResponse);
 
 export type FrontendFrontendIndexHtmlResponse = (string);
 
-export type FrontendFrontendResponse = (string);
-
-export type FrontendFrontendAdminResponse = (string);
-
-export type FrontendFrontendEpgResponse = (string);
-
-export type FrontendFrontendInfoResponse = (string);
-
-export type FrontendFrontendInfoIptvResponse = (string);
-
-export type FrontendFrontendInfoPlaybackResponse = (string);
-
-export type FrontendFrontendLoginResponse = (string);
-
-export type FrontendFrontendSettingsResponse = (string);
-
-export type FrontendFrontendCatchAllData = {
-    fullPath: string;
-};
-
-export type FrontendFrontendCatchAllResponse = (unknown);
+export type FrontendFrontendIndexResponse = (string);
 
 export type HealthHealthResponse = (HealthResponseModel);
 
