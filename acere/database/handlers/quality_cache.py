@@ -125,7 +125,7 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
         This is an async function since threading doesn't get app context no matter how hard I try.
         Bit of a hack.
         """
-        from acere.api.routes.hls import hls  # Avoid circular import  # noqa: PLC0415
+        from acere.api.routes.hls.ace import hls  # Avoid circular import  # noqa: PLC0415
 
         handler = get_ace_streams_db_handler()
 

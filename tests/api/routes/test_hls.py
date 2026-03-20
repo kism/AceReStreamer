@@ -113,14 +113,14 @@ async def test_hls_success(
     )
 
     # Mock aiohttp ClientSession
-    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr("acere.api.routes.hls.ace.aiohttp.ClientSession", lambda **kwargs: fake_session)
 
     # Mock ace pool to return our test URL
     async def mock_get_instance_hls_url(self: Any, content_id: str) -> HttpUrl:
         return mock_hls_url
 
     monkeypatch.setattr(
-        "acere.api.routes.hls.get_ace_pool",
+        "acere.api.routes.hls.ace.get_ace_pool",
         type("MockPool", (), {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url}),
     )
 
@@ -146,7 +146,7 @@ async def test_hls_pool_full(
         return None
 
     monkeypatch.setattr(
-        "acere.api.routes.hls.get_ace_pool",
+        "acere.api.routes.hls.ace.get_ace_pool",
         type("MockPool", (), {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url_none}),
     )
 
@@ -176,13 +176,13 @@ async def test_hls_invalid_response_from_ace(
         }
     )
 
-    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr("acere.api.routes.hls.ace.aiohttp.ClientSession", lambda **kwargs: fake_session)
 
     async def mock_get_instance_hls_url(self: Any, content_id: str) -> HttpUrl:
         return mock_hls_url
 
     monkeypatch.setattr(
-        "acere.api.routes.hls.get_ace_pool",
+        "acere.api.routes.hls.ace.get_ace_pool",
         type("MockPool", (), {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url}),
     )
 
@@ -213,11 +213,11 @@ async def test_hls_multi_success(
         }
     )
 
-    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr("acere.api.routes.hls.ace.aiohttp.ClientSession", lambda **kwargs: fake_session)
 
     # Mock ace pool
     monkeypatch.setattr(
-        "acere.api.routes.hls.get_ace_pool",
+        "acere.api.routes.hls.ace.get_ace_pool",
         type("MockPool", (), {"get_instance_by_multistream_path": lambda self, path: mock_content_id}),
     )
 
@@ -248,7 +248,7 @@ async def test_ace_content_success(
         }
     )
 
-    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr("acere.api.routes.hls.ace.aiohttp.ClientSession", lambda **kwargs: fake_session)
 
     response = client.get(f"/ace/c/{content_path}?token={normal_user_stream_token}")
 
@@ -278,7 +278,7 @@ async def test_hls_content_success(
         }
     )
 
-    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr("acere.api.routes.hls.ace.aiohttp.ClientSession", lambda **kwargs: fake_session)
 
     response = client.get(f"/hls/c/{content_path}?token={normal_user_stream_token}")
 
@@ -360,13 +360,13 @@ async def test_xc_m3u8_success(
         }
     )
 
-    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr("acere.api.routes.hls.ace.aiohttp.ClientSession", lambda **kwargs: fake_session)
 
     async def mock_get_instance_hls_url(self: Any, content_id: str) -> HttpUrl:
         return mock_hls_url
 
     monkeypatch.setattr(
-        "acere.api.routes.hls.get_ace_pool",
+        "acere.api.routes.hls.ace.get_ace_pool",
         type("MockPool", (), {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url}),
     )
 

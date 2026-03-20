@@ -1,29 +1,21 @@
-"""Stream Handling Blueprint."""
+"""Ace HLS stream handling routes."""
 
 from http import HTTPStatus
-from typing import TYPE_CHECKING, Annotated
+from typing import TYPE_CHECKING
 
 import aiohttp
-from fastapi import APIRouter, HTTPException, Query, Request, Response
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi.responses import StreamingResponse
 from pydantic import HttpUrl
 
-from acere.constants import STATIC_DIR
 from acere.core.stream_token import verify_stream_token
 from acere.instances.ace_pool import get_ace_pool
 from acere.instances.ace_quality import get_quality_handler
 from acere.instances.config import settings
-from acere.instances.iptv_proxy import get_iptv_proxy_manager
-from acere.instances.paths import get_app_path_handler
-from acere.instances.xc_stream_map import get_xc_stream_map_handler
-from acere.services.xc.helpers import check_xc_auth
 from acere.utils.api_models import MessageResponseModel
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.helpers import check_valid_content_id_or_infohash
-from acere.utils.hls import (
-    replace_hls_m3u_sources,
-    rewrite_iptv_hls_segments,
-)
+from acere.utils.hls import replace_hls_m3u_sources
 from acere.utils.logger import get_logger
 
 if TYPE_CHECKING:
@@ -32,7 +24,8 @@ else:
     AsyncGenerator = object
 
 logger = get_logger(__name__)
-router = APIRouter(tags=["Media/Stream"])
+
+router = APIRouter()
 
 REVERSE_PROXY_EXCLUDED_HEADERS = [
     "content-encoding",
@@ -187,69 +180,6 @@ async def hls_multi(path: str, token: str = "") -> Response:
     return Response(content_str, status_code)
 
 
-# region XC
-# Depending on the Client, it will either be:
-# /live/u/p/<xc_id>.m3u8  | UHF, M3UAndroid, IPTV Smarters Pro
-# /u/p/<xc_id>            | Smarters Player Lite (iOS), iMPlayer Android
-# /u/p/<xc_id>.ts         | iMPlayer iOS, TiViMate, Purple Simple (okay that m3u8 is the response)
-# /u/p/<xc_id>.m3u8      | SparkleTV
-@router.get("/{_path_username}/{_path_password}/{xc_stream}", response_class=Response)
-@router.get("/live/{_path_username}/{_path_password}/{xc_stream}", response_class=Response)
-async def xc_m3u8(
-    request: Request,
-    _path_username: str = "",
-    _path_password: str = "",
-    xc_stream: str = "",
-    password: Annotated[str, Query(alias="password")] = "",
-    username: Annotated[str, Query(alias="username")] = "",
-) -> Response:
-    """Serve the XC m3u8 file for any stream type."""
-    # Who knows if it makes it more efficent
-    # the non-path query params do show up sometimes
-    # maybe i'll need them in the future
-    username = _path_username or username
-    password = _path_password or password
-
-    stream_token = check_xc_auth(username=username, stream_token=password)
-
-    logger.trace(
-        "XC HLS: path='%s' args='%s' ua='%s'",
-        str(request.url) if request else xc_stream,
-        f"username={username},password={password}",
-        request.headers.get("User-Agent", "") if request else "",
-    )
-
-    xc_id_clean = xc_stream.split(".", 1)[0]  # Remove file extension if present
-
-    try:
-        xc_id_int = int(xc_id_clean)
-    except ValueError:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail=f"Client requested invalid XC ID: {xc_stream} -> {xc_id_clean}",
-        ) from None
-
-    stream_info = get_xc_stream_map_handler().get_stream_info_by_xc_id(xc_id_int)
-
-    if stream_info is None:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND,
-            detail="XC ID not found in stream map",
-        )
-
-    stream_type, stream_key = stream_info
-
-    if stream_type == "ace":
-        return await hls(stream_key, stream_token)
-    if stream_type == "iptv":
-        return await hls_web(stream_key, stream_token)
-
-    raise HTTPException(
-        status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
-        detail=f"Unknown stream type in xc_stream_map: {stream_type}",
-    )
-
-
 # region /ace/c/ and /hls/c/ Content paths for regular and multistream
 # Do a full path capture here, since ace puts a bunch of stuff following
 @router.get("/ace/c/{path:path}", response_class=Response, name="ace_content_1")
@@ -290,127 +220,6 @@ async def ace_content(path: str, request: Request, token: str = "") -> Response:
 
     headers = [
         (name, value) for (name, value) in resp.headers.items() if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS
-    ]
-
-    async def generate() -> AsyncGenerator[bytes, None]:
-        try:
-            async for chunk in resp.content.iter_chunked(65536):
-                yield chunk
-        finally:
-            resp.close()
-            await session.close()
-
-    return StreamingResponse(generate(), status_code=resp.status, headers=dict(headers), media_type="video/MP2T")
-
-
-# region /tvg-logo/
-@router.get("/tvg-logo/{path}", response_class=FileResponse)
-def tvg_logo(path: str, token: str = "") -> FileResponse:
-    """Serve the TVG logo from the local filesystem."""
-    # You'll need to define where static_folder and instance_path come from
-    # This might be from settings or app configuration
-    verify_stream_token(token)
-
-    # Not sure if this check is needed
-    if STATIC_DIR is None:
-        raise HTTPException(
-            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
-            detail="Static folder not configured",
-        )
-
-    logo_path = get_app_path_handler().tvg_logos_dir / path
-
-    if not logo_path.is_file():
-        default_logo = STATIC_DIR / "default_tvg_logo.png"
-        return FileResponse(
-            path=default_logo,
-            media_type="image/png",
-            headers={"Cache-Control": "public, max-age=3600"},
-        )
-
-    return FileResponse(path=logo_path, headers={"Cache-Control": "public, max-age=3600"})
-
-
-# region /hls/web/
-@router.get("/hls/web/{slug}", response_class=Response)
-async def hls_web(slug: str, token: str = "") -> Response:
-    """Reverse proxy an upstream IPTV HLS playlist, rewriting segment URLs."""
-    verify_stream_token(token)
-
-    iptv_manager = get_iptv_proxy_manager()
-    upstream_url = iptv_manager.get_upstream_url(slug)
-
-    if not upstream_url:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND,
-            detail=f"Unknown IPTV stream: {slug}",
-        )
-
-    try:
-        timeout = aiohttp.ClientTimeout(total=REVERSE_PROXY_TIMEOUT)
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            async with session.get(upstream_url) as resp:
-                resp.raise_for_status()
-                content_bytes = await resp.read()
-                status_code = resp.status
-                headers = resp.headers
-    except (aiohttp.ClientError, TimeoutError) as e:
-        log_aiohttp_exception(logger, f"[iptv hls {slug}]", e)
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_GATEWAY,
-            detail="Failed to fetch upstream IPTV stream",
-        ) from e
-
-    content_str = content_bytes.decode("utf-8", errors="replace")
-
-    if "#EXTM3U" not in content_str:
-        logger.error("Invalid HLS content received for IPTV slug: %s", slug)
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_GATEWAY,
-            detail="Upstream did not return valid HLS content",
-        )
-
-    content_str = rewrite_iptv_hls_segments(
-        m3u_content=content_str,
-        slug=slug,
-        server_name=settings.EXTERNAL_URL,
-    )
-
-    resp_out = Response(content_str, status_code)
-    resp_out.headers.update(
-        {name: value for name, value in headers.items() if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS}
-    )
-    return resp_out
-
-
-# region /hls/web-segment/
-@router.get("/hls/web-segment/{slug}/{segment:path}", response_class=Response)
-async def hls_web_segment(slug: str, segment: str) -> Response:
-    """Proxy an upstream IPTV segment. No token required (nginx caching)."""
-    iptv_manager = get_iptv_proxy_manager()
-    segment_url = iptv_manager.get_segment_upstream_url(slug, segment)
-
-    if not segment_url:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND,
-            detail=f"Unknown IPTV stream slug: {slug}",
-        )
-
-    timeout = aiohttp.ClientTimeout(total=REVERSE_PROXY_TIMEOUT)
-    session = aiohttp.ClientSession(timeout=timeout)
-    try:
-        resp = await session.get(segment_url)
-        resp.raise_for_status()
-    except (aiohttp.ClientError, TimeoutError) as e:
-        await session.close()
-        log_aiohttp_exception(logger, segment_url, e)
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_GATEWAY,
-            detail="Failed to fetch upstream segment",
-        ) from e
-
-    headers = [
-        (name, value) for name, value in resp.headers.items() if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS
     ]
 
     async def generate() -> AsyncGenerator[bytes, None]:
