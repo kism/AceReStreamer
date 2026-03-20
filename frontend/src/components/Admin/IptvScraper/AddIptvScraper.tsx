@@ -9,7 +9,7 @@ import {
 } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
-import { AceScraperService, type AceScraperSourceApi } from "@/client"
+import { type IPTVSourceApi, IptvScraperService } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
 import { Button } from "@/components/ui/button"
 import { CodeBlock } from "@/components/ui/code"
@@ -18,21 +18,21 @@ import { Link } from "@/components/ui/link"
 import baseURL from "@/helpers"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
-import { jsonExamples } from "./AddScraperExamples"
+import { jsonExamples } from "./AddIptvScraperExamples"
 
 const VITE_API_URL = baseURL()
 
-function AddScraperJson() {
+function AddIptvScraperJson() {
   const [jsonInput, setJsonInput] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const queryClient = useQueryClient()
   const { showSuccessToast, showErrorToast } = useCustomToast()
 
   const mutation = useMutation({
-    mutationFn: (data: AceScraperSourceApi) =>
-      AceScraperService.addSource({ requestBody: data }),
+    mutationFn: (data: IPTVSourceApi) =>
+      IptvScraperService.addSource({ requestBody: data }),
     onSuccess: () => {
-      showSuccessToast("Scraper source added successfully.")
+      showSuccessToast("IPTV source added successfully.")
       setJsonInput("")
       setIsSubmitting(false)
     },
@@ -47,12 +47,12 @@ function AddScraperJson() {
 
   const handleSubmit = () => {
     if (!jsonInput.trim()) {
-      showErrorToast("Please enter JSON data for the scraper source.")
+      showErrorToast("Please enter JSON data for the IPTV source.")
       return
     }
 
     try {
-      const parsedData = JSON.parse(jsonInput) as AceScraperSourceApi
+      const parsedData = JSON.parse(jsonInput) as IPTVSourceApi
 
       setIsSubmitting(true)
       mutation.mutate(parsedData)
@@ -64,14 +64,14 @@ function AddScraperJson() {
   return (
     <VStack align="start" gap={4}>
       <Heading size="md" mt={2} mb={1}>
-        Add Scraper via JSON
+        Add IPTV Source via JSON
       </Heading>
 
       <Text fontSize="sm">
-        Enter the JSON configuration for your scraper source. Can also be done
-        as a list. Refer to TitleFilter in the{" "}
+        Enter the JSON configuration for your IPTV proxy source. Can also be
+        done as a list. Refer to IPTVSourceApi in the{" "}
         <Link href={`${VITE_API_URL}/docs`}>API docs</Link> Schemas for
-        filtering information.
+        configuration information.
       </Text>
 
       <Field label="JSON Configuration" required>
@@ -89,7 +89,7 @@ function AddScraperJson() {
 
       <HStack gap={4} width="full">
         <Select.Root
-          collection={jsonExamples} // The examples are hardcoded in a separate file, if api differs the type check will fail
+          collection={jsonExamples}
           onValueChange={(details) => {
             if (details.items && details.items.length > 0) {
               const selectedItem = details.items[0]
@@ -101,7 +101,6 @@ function AddScraperJson() {
           width="200px"
         >
           <Select.HiddenSelect />
-          {/* <Select.Label>Load Example</Select.Label> */}
           <Select.Control>
             <Select.Trigger>
               <Select.ValueText placeholder="Load Example" />
@@ -130,10 +129,10 @@ function AddScraperJson() {
           loadingText="Adding..."
           colorPalette="teal"
         >
-          Add Scraper Source
+          Add IPTV Source
         </Button>
       </HStack>
     </VStack>
   )
 }
-export default AddScraperJson
+export default AddIptvScraperJson

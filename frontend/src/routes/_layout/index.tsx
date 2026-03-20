@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { lazy, Suspense, useEffect, useState } from "react"
 import { FiMaximize2, FiMinimize2, FiRefreshCw } from "react-icons/fi"
-import { StreamsService } from "@/client"
+import { AceStreamsService } from "@/client"
 import { AcePoolSection } from "@/components/Index/AcePoolSection"
 import { NowPlayingTable } from "@/components/Index/NowPlayingTable"
 import { StreamTable } from "@/components/Index/StreamTable"
@@ -119,7 +119,7 @@ function WebPlayer() {
   }, [])
 
   const { data: streamData } = useQuery({
-    queryFn: () => StreamsService.byContentId({ contentId }),
+    queryFn: () => AceStreamsService.byContentId({ contentId }),
     queryKey: ["content_id", contentId],
     placeholderData: (prevData) => prevData,
     enabled: !!contentId,

@@ -9,14 +9,13 @@ import {
 } from "@chakra-ui/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useCallback } from "react"
-import { AceStreamsService } from "@/client"
-import { getQualityColor } from "@/components/Index/QualityCell"
+import { IptvStreamsService } from "@/client"
 import { Button } from "@/components/ui/button"
 
-function getStreamsQueryOptions() {
+function getIptvStreamsQueryOptions() {
   return {
-    queryFn: () => AceStreamsService.streams(),
-    queryKey: ["items"],
+    queryFn: () => IptvStreamsService.streams(),
+    queryKey: ["iptvStreams"],
   }
 }
 
@@ -44,28 +43,26 @@ function GetRelativeTimeText(timestamp: string) {
   )
 }
 
-function StreamAdminTable() {
+function IptvStreamAdminTable() {
   const queryClient = useQueryClient()
 
   const { data, isLoading } = useQuery({
-    ...getStreamsQueryOptions(),
+    ...getIptvStreamsQueryOptions(),
     placeholderData: (prevData) => prevData,
   })
 
   const mutation = useMutation({
-    mutationFn: (contentId: string) =>
-      AceStreamsService.deleteByContentId({ contentId }),
+    mutationFn: (slug: string) => IptvStreamsService.deleteBySlug({ slug }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["items"] })
+      queryClient.invalidateQueries({ queryKey: ["iptvStreams"] })
     },
   })
 
-  const handleRemoveByContentId = useCallback(
+  const handleRemoveBySlug = useCallback(
     (slug: string) => {
       if (mutation.isPending) {
-        return // Prevent multiple calls while one is in progress
+        return
       }
-      console.log("Deleting stream with content ID:", slug)
       mutation.mutate(slug)
     },
     [mutation],
@@ -80,17 +77,11 @@ function StreamAdminTable() {
   return (
     <>
       <Heading size="md" mt={2} mb={1}>
-        Streams Management
+        IPTV Streams Management
       </Heading>
       <VStack align="start">
         {items?.map((item) => (
-          <Box
-            key={item.content_id}
-            px={2}
-            py={1}
-            borderWidth="1px"
-            width="full"
-          >
+          <Box key={item.slug} px={2} py={1} borderWidth="1px" width="full">
             <Flex width="full" flexDirection="column" gap={1}>
               <Flex justify="space-between" align="center" width="full">
                 <Heading size="sm" py={0}>
@@ -99,20 +90,19 @@ function StreamAdminTable() {
                 <Button
                   size="2xs"
                   colorPalette="red"
-                  onClick={() => handleRemoveByContentId(item.content_id)}
+                  onClick={() => handleRemoveBySlug(item.slug)}
                 >
                   Delete
                 </Button>
               </Flex>
               <Flex flexWrap="wrap" gap={1} fontSize={"xs"} alignItems="center">
                 <Box flex="0 1 auto" bg="bg.muted" px={2} py={1}>
-                  Content ID:{" "}
-                  <Code backgroundColor="bg.emphasized">{item.content_id}</Code>
+                  Slug: <Code backgroundColor="bg.emphasized">{item.slug}</Code>
                 </Box>
                 <Box flex="0 1 auto" bg="bg.muted" px={2} py={1}>
-                  Infohash:{" "}
+                  Source:{" "}
                   <Code backgroundColor="bg.emphasized">
-                    {item.infohash ?? "???"}
+                    {item.source_name}
                   </Code>
                 </Box>
               </Flex>
@@ -121,26 +111,12 @@ function StreamAdminTable() {
                   Last scrape time:
                   {GetRelativeTimeText(item.last_scraped_time)}
                 </HStack>
-                <HStack flex="0 1 auto" bg="bg.muted" px={2} py={1}>
-                  <Text>Has ever worked: </Text>
-                  <Text
-                    color={item.has_ever_worked ? "fg.success" : "fg.error"}
-                  >
-                    {item.has_ever_worked ? "Yes" : "No"}
-                  </Text>
-                  {item.m3u_failures > 0 && (
-                    <Text>(Failures to load: {item.m3u_failures})</Text>
-                  )}
-                  {item.m3u_failures === 0 && !item.has_ever_worked && (
-                    <Text>(Never loaded)</Text>
-                  )}
-                </HStack>
-                <HStack flex="0 1 auto" bg="bg.muted" px={2} py={1}>
-                  Quality:
-                  <Text color={getQualityColor(Number(item.quality))}>
-                    {item.quality !== -1 ? item.quality : "???"}
-                  </Text>
-                </HStack>
+                <Box flex="0 1 auto" bg="bg.muted" px={2} py={1}>
+                  Group:{" "}
+                  <Code backgroundColor="bg.emphasized">
+                    {item.group_title}
+                  </Code>
+                </Box>
               </Flex>
               <Flex flexWrap="wrap" gap={1} fontSize={"xs"} alignItems="center">
                 <Box flex="0 1 auto" bg="bg.muted" px={2} py={1}>
@@ -172,4 +148,4 @@ function StreamAdminTable() {
   )
 }
 
-export default StreamAdminTable
+export default IptvStreamAdminTable

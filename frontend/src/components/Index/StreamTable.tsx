@@ -115,18 +115,18 @@ export function StreamTable({
               opacity={isPlaceholderData ? 0.5 : 1}
               cursor={isPlaceholderData ? "default" : "pointer"}
               color={
-                window.location.hash.substring(1) === item.content_id
+                window.location.hash.substring(1) === item.tvg_id
                   ? "white"
                   : undefined
               }
               background={
-                window.location.hash.substring(1) === item.content_id
+                window.location.hash.substring(1) === item.tvg_id
                   ? "teal"
                   : undefined
               }
               onClick={() => {
                 loadVideoPlayerModule().then((module) => {
-                  module.loadPlayStream(item.content_id)
+                  module.loadPlayStream(item.tvg_id)
                 })
               }}
             >
@@ -149,7 +149,7 @@ export function StreamTable({
                 </Box>
                 <Box
                   color={
-                    window.location.hash.substring(1) === item.content_id
+                    window.location.hash.substring(1) === item.tvg_id
                       ? "gray.300"
                       : item.program_description
                         ? "fg.muted"
@@ -169,7 +169,7 @@ export function StreamTable({
                     overflow="hidden"
                     textOverflow="ellipsis"
                     color={
-                      window.location.hash.substring(1) === item.content_id
+                      window.location.hash.substring(1) === item.tvg_id
                         ? "gray.300"
                         : item.program_description
                           ? undefined

@@ -7,6 +7,7 @@ import {
   FiLogOut,
   FiMonitor,
   FiPlay,
+  FiRadio,
   FiSettings,
   FiTv,
   FiUsers,
@@ -60,7 +61,12 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
   const { logout } = useAuth()
 
   const finalItems: Item[] = currentUser?.is_superuser
-    ? [...items, { icon: FiUsers, title: "Admin", path: "/admin" }]
+    ? [
+        ...items,
+        { icon: FiUsers, title: "Admin", path: "/admin/general" },
+        { icon: FiRadio, title: "Admin Ace", path: "/admin/ace" },
+        { icon: FiTv, title: "Admin IPTV", path: "/admin/iptv" },
+      ]
     : items
 
   const listItems = finalItems.map(({ icon, title, path }) => (

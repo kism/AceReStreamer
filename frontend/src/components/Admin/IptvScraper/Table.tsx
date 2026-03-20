@@ -2,50 +2,50 @@ import { Box, Collapsible, Flex, Heading, VStack } from "@chakra-ui/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useCallback, useState } from "react"
 import { FaAngleDown, FaAngleUp } from "react-icons/fa"
-import { AceScraperService } from "@/client"
+import { IptvScraperService } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
 import { Button } from "@/components/ui/button"
 import { Code, CodeBlock } from "@/components/ui/code"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
 
-function getScrapersQueryOptions() {
+function getIptvScrapersQueryOptions() {
   return {
-    queryFn: () => AceScraperService.sources(),
-    queryKey: ["scrapers"],
+    queryFn: () => IptvScraperService.sources(),
+    queryKey: ["iptvScrapers"],
   }
 }
 
-function ScraperTable() {
+function IptvScraperTable() {
   const queryClient = useQueryClient()
   const { showSuccessToast } = useCustomToast()
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({})
 
   const { data, isLoading } = useQuery({
-    ...getScrapersQueryOptions(),
+    ...getIptvScrapersQueryOptions(),
     placeholderData: (prevData) => prevData,
   })
 
   const mutation = useMutation({
-    mutationFn: (slug: string) =>
-      AceScraperService.removeSource({ slug: slug }),
+    mutationFn: (sourceName: string) =>
+      IptvScraperService.removeSource({ sourceName }),
     onSuccess: () => {
-      showSuccessToast("Scraper source deleted successfully.")
+      showSuccessToast("IPTV source deleted successfully.")
     },
     onError: (err: ApiError) => {
       handleError(err)
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["scrapers"] })
+      queryClient.invalidateQueries({ queryKey: ["iptvScrapers"] })
     },
   })
 
-  const handleRemoveBySlug = useCallback(
-    (slug: string) => {
+  const handleRemoveByName = useCallback(
+    (name: string) => {
       if (mutation.isPending) {
-        return // Prevent multiple calls while one is in progress
+        return
       }
-      mutation.mutate(slug)
+      mutation.mutate(name)
     },
     [mutation],
   )
@@ -64,41 +64,41 @@ function ScraperTable() {
   return (
     <>
       <Heading size="md" mt={2} mb={1}>
-        Scraper List
+        IPTV Source List
       </Heading>
       <VStack align="start">
-        {data?.map((scraper) => (
+        {data?.map((source) => (
           <Flex
-            key={scraper.name}
+            key={source.name}
             direction="column"
             p={2}
             borderWidth="1px"
             w="full"
           >
-            <Collapsible.Root open={openItems[scraper.name] || false}>
+            <Collapsible.Root open={openItems[source.name] || false}>
               <Collapsible.Trigger
                 cursor="pointer"
-                onClick={() => toggleCollapsible(scraper.name)}
+                onClick={() => toggleCollapsible(source.name)}
               >
                 <Flex align="center" justify="space-between">
                   <Box p="1">
-                    {openItems[scraper.name] ? <FaAngleUp /> : <FaAngleDown />}
+                    {openItems[source.name] ? <FaAngleUp /> : <FaAngleDown />}
                   </Box>
                   <Heading size="sm" mr={2}>
-                    {scraper.name}
+                    {source.name}
                   </Heading>
-                  <Code>{scraper.type}</Code>
+                  <Code>{source.type}</Code>
                 </Flex>
               </Collapsible.Trigger>
               <Collapsible.Content>
                 <CodeBlock whiteSpace="pre">
-                  {JSON.stringify(scraper, null, 2)}
+                  {JSON.stringify(source, null, 2)}
                 </CodeBlock>
                 <Button
                   m={2}
                   size="xs"
                   colorPalette="red"
-                  onClick={() => handleRemoveBySlug(scraper.name)}
+                  onClick={() => handleRemoveByName(source.name)}
                 >
                   Delete
                 </Button>
@@ -111,4 +111,4 @@ function ScraperTable() {
   )
 }
 
-export default ScraperTable
+export default IptvScraperTable

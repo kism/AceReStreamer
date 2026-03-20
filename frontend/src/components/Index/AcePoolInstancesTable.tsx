@@ -1,7 +1,7 @@
 import { Box, Heading, Link } from "@chakra-ui/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type { AcePoolForApi } from "@/client"
-import { AcePoolService, StreamsService } from "@/client"
+import { AcePoolService, AceStreamsService } from "@/client"
 import {
   AppTableRoot,
   TableBody,
@@ -16,7 +16,7 @@ const loadVideoPlayerModule = () => import("@/hooks/useVideoPlayer")
 
 function getStreamQueryOptions(content_id: string) {
   return {
-    queryFn: () => StreamsService.byContentId({ contentId: content_id }),
+    queryFn: () => AceStreamsService.byContentId({ contentId: content_id }),
     queryKey: ["content_id", content_id],
   }
 }

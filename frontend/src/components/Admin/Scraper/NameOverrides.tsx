@@ -1,7 +1,7 @@
 import { Box, Heading, HStack, Input, Table, VStack } from "@chakra-ui/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
-import { ScraperService } from "@/client"
+import { AceScraperService } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
 import { Button } from "@/components/ui/button"
 import { Field } from "@/components/ui/field"
@@ -10,7 +10,7 @@ import { handleError } from "@/utils"
 
 function getNameOverridesQueryOptions() {
   return {
-    queryFn: () => ScraperService.getNameOverrides(),
+    queryFn: () => AceScraperService.getNameOverrides(),
     queryKey: ["nameOverrides"],
   }
 }
@@ -29,7 +29,7 @@ function NameOverrides() {
 
   const addMutation = useMutation({
     mutationFn: (data: { contentId: string; name: string }) =>
-      ScraperService.addNameOverride({
+      AceScraperService.addNameOverride({
         contentId: data.contentId,
         name: data.name,
       }),
@@ -50,7 +50,7 @@ function NameOverrides() {
 
   const deleteMutation = useMutation({
     mutationFn: (contentId: string) =>
-      ScraperService.deleteNameOverride({ contentId }),
+      AceScraperService.deleteNameOverride({ contentId }),
     onSuccess: () => {
       showSuccessToast("Name override deleted successfully.")
     },

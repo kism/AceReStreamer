@@ -1,37 +1,26 @@
 import { Tabs, VStack } from "@chakra-ui/react"
 import { createFileRoute } from "@tanstack/react-router"
-import ConfigManagement from "@/components/Admin/ConfigManagement"
+import AceHealthManagement from "@/components/Admin/AceHealthManagement"
 import EPGManagement from "@/components/Admin/EPGManagement"
-import HealthManagement from "@/components/Admin/HealthManagement"
-import RemoteConfigManagement from "@/components/Admin/RemoteConfigManagement"
 import ScraperManagement from "@/components/Admin/ScraperManagement"
 import StreamManagement from "@/components/Admin/StreamManagement"
-import UserManagement from "@/components/Admin/UserManagement"
 import useAuth from "@/hooks/useAuth"
 import { usePageTitle } from "@/hooks/usePageTitle"
 
 const tabsConfig = [
-  { value: "users", title: "Users", component: UserManagement },
   { value: "streams", title: "Streams", component: StreamManagement },
   { value: "scrapers", title: "Scrapers", component: ScraperManagement },
   { value: "epgs", title: "EPGs", component: EPGManagement },
-  { value: "config", title: "Config", component: ConfigManagement },
-  {
-    value: "remote-config",
-    title: "Remote Config",
-    component: RemoteConfigManagement,
-  },
-  { value: "health", title: "Health", component: HealthManagement },
+  { value: "health", title: "Health", component: AceHealthManagement },
 ]
 
-export const Route = createFileRoute("/_layout/admin")({
-  component: AdminSettings,
+export const Route = createFileRoute("/_layout/admin/ace")({
+  component: AdminAce,
 })
 
-function AdminSettings() {
-  usePageTitle("Admin Settings")
+function AdminAce() {
+  usePageTitle("Admin - Ace")
   const { user: currentUser } = useAuth()
-  const finalTabs = currentUser?.is_superuser ? tabsConfig : tabsConfig
 
   if (!currentUser) {
     return null
@@ -39,15 +28,15 @@ function AdminSettings() {
 
   return (
     <VStack gap={6} align="stretch">
-      <Tabs.Root size="sm" defaultValue="users" variant="subtle">
+      <Tabs.Root size="sm" defaultValue="streams" variant="subtle">
         <Tabs.List>
-          {finalTabs.map((tab) => (
+          {tabsConfig.map((tab) => (
             <Tabs.Trigger key={tab.value} value={tab.value}>
               {tab.title}
             </Tabs.Trigger>
           ))}
         </Tabs.List>
-        {finalTabs.map((tab) => (
+        {tabsConfig.map((tab) => (
           <Tabs.Content key={tab.value} value={tab.value}>
             <tab.component />
           </Tabs.Content>

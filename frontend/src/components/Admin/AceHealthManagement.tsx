@@ -9,44 +9,44 @@ import {
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useCallback, useMemo, useState } from "react"
 import { FaAngleDown, FaAngleUp } from "react-icons/fa"
-import { ConfigService, EpgService, HealthService } from "@/client"
+import { AcePoolService, AceStreamsService } from "@/client"
 import { Button } from "@/components/ui/button"
 import { CodeBlock } from "@/components/ui/code"
 
-function HealthManagement() {
+function AceHealthManagement() {
   const queryClient = useQueryClient()
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({})
-  const [configRefreshResult, setConfigRefreshResult] = useState<unknown>(null)
-  const [isRefreshingConfig, setIsRefreshingConfig] = useState(false)
+  const [streamCheckResult, setStreamCheckResult] = useState<unknown>(null)
+  const [isCheckingStreams, setIsCheckingStreams] = useState(false)
 
-  const { data: generalHealth, isLoading: isLoadingGeneral } = useQuery({
-    queryKey: ["health", "general"],
-    queryFn: () => HealthService.health(),
+  const { data: acePoolData, isLoading: isLoadingAcePool } = useQuery({
+    queryKey: ["health", "acePool"],
+    queryFn: () => AcePoolService.pool(),
   })
 
-  const { data: epgHealth, isLoading: isLoadingEpg } = useQuery({
-    queryKey: ["health", "epg"],
-    queryFn: () => EpgService.epgHealth(),
+  const { data: acePoolStats, isLoading: isLoadingAcePoolStats } = useQuery({
+    queryKey: ["health", "acePoolStats"],
+    queryFn: () => AcePoolService.stats(),
   })
 
   const healthSections = useMemo(
     () => [
       {
-        key: "general",
-        title: "General Health",
-        data: generalHealth,
-        isLoading: isLoadingGeneral,
-        queryKey: ["health", "general"],
+        key: "acePool",
+        title: "Ace Pool",
+        data: acePoolData,
+        isLoading: isLoadingAcePool,
+        queryKey: ["health", "acePool"],
       },
       {
-        key: "epg",
-        title: "EPG Health",
-        data: epgHealth,
-        isLoading: isLoadingEpg,
-        queryKey: ["health", "epg"],
+        key: "acePoolStats",
+        title: "Ace Pool Stats",
+        data: acePoolStats,
+        isLoading: isLoadingAcePoolStats,
+        queryKey: ["health", "acePoolStats"],
       },
     ],
-    [generalHealth, epgHealth, isLoadingGeneral, isLoadingEpg],
+    [acePoolData, acePoolStats, isLoadingAcePool, isLoadingAcePoolStats],
   )
 
   const isLoading = healthSections.some((section) => section.isLoading)
@@ -65,15 +65,15 @@ function HealthManagement() {
     [queryClient],
   )
 
-  const handleConfigRefresh = useCallback(async () => {
-    setIsRefreshingConfig(true)
+  const handleStreamCheck = useCallback(async () => {
+    setIsCheckingStreams(true)
     try {
-      const data = await ConfigService.reloadConfig()
-      setConfigRefreshResult(data)
+      const data = await AceStreamsService.check()
+      setStreamCheckResult(data)
     } catch (error) {
-      setConfigRefreshResult({ error: String(error) })
+      setStreamCheckResult({ error: String(error) })
     } finally {
-      setIsRefreshingConfig(false)
+      setIsCheckingStreams(false)
     }
   }, [])
 
@@ -84,7 +84,7 @@ function HealthManagement() {
   return (
     <VStack align="start" width="100%">
       <Box>
-        <Heading size="md">Health Status</Heading>
+        <Heading size="md">Ace Health Status</Heading>
       </Box>
 
       <Flex gap={4}>
@@ -92,15 +92,14 @@ function HealthManagement() {
           <HStack>
             <Button
               size="xs"
-              onClick={handleConfigRefresh}
-              loading={isRefreshingConfig}
+              onClick={handleStreamCheck}
+              loading={isCheckingStreams}
             >
-              Reload Config
+              Check Streams
             </Button>
-
-            {configRefreshResult !== null && (
+            {streamCheckResult !== null && (
               <CodeBlock fontSize="2xs" whiteSpace="pre" flex={1}>
-                {JSON.stringify(configRefreshResult, null)}
+                {JSON.stringify(streamCheckResult, null)}
               </CodeBlock>
             )}
           </HStack>
@@ -152,4 +151,4 @@ function HealthManagement() {
   )
 }
 
-export default HealthManagement
+export default AceHealthManagement
