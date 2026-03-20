@@ -137,7 +137,7 @@ class IPTVProxyScraper:
                 continue
 
             # Build upstream URL
-            upstream_url = f"{base_url}/{source.username}/{source.password}/{stream_id}.m3u8"
+            upstream_url = f"{base_url}/live/{source.username}/{source.password}/{stream_id}.m3u8"
 
             found_streams.append(
                 FoundIPTVStream(

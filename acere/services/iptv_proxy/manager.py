@@ -48,11 +48,19 @@ class IPTVProxyManager:
         return None
 
     def get_segment_upstream_url(self, slug: str, segment: str) -> str | None:
-        """Given a stream slug and segment filename, build the upstream segment URL."""
+        """Given a stream slug and segment path, build the upstream segment URL."""
         upstream = self.get_upstream_url(slug)
         if not upstream:
             return None
-        # Replace the playlist filename with the segment path
+
+        if "/" in segment:
+            # Multi-component path (root-relative) — use the upstream server origin
+            from urllib.parse import urlparse  # noqa: PLC0415
+
+            parsed = urlparse(upstream)
+            return f"{parsed.scheme}://{parsed.netloc}/{segment}"
+
+        # Simple filename — relative to the playlist directory
         base_url = upstream.rsplit("/", 1)[0]
         return f"{base_url}/{segment}"
 

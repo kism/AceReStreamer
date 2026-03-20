@@ -83,9 +83,14 @@ def rewrite_iptv_hls_segments(
         if stripped.startswith("#"):
             result_lines.append(stripped)
         elif stripped.startswith("http"):
-            # Absolute URL — extract the path portion after the last /
-            segment_name = stripped.rsplit("/", 1)[-1]
-            result_lines.append(f"{server_name}/hls/web-segment/{slug}/{segment_name}")
+            # Absolute URL — extract the path from the URL
+            from urllib.parse import urlparse  # noqa: PLC0415
+
+            segment_path = urlparse(stripped).path.lstrip("/")
+            result_lines.append(f"{server_name}/hls/web-segment/{slug}/{segment_path}")
+        elif stripped.startswith("/"):
+            # Root-relative URL — strip leading slash
+            result_lines.append(f"{server_name}/hls/web-segment/{slug}/{stripped.lstrip('/')}")
         elif stripped:
             # Relative URL — use as-is for the segment name
             result_lines.append(f"{server_name}/hls/web-segment/{slug}/{stripped}")
