@@ -1,4 +1,4 @@
-"""IPTV Proxy Sources API Blueprint."""
+"""IPTV Proxy Scraper API Blueprint."""
 
 from http import HTTPStatus
 
@@ -17,7 +17,7 @@ from acere.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-router = APIRouter(prefix="/iptv/sources", tags=["IPTV Sources"])
+router = APIRouter(prefix="/iptv/scraper", tags=["IPTV Scraper"])
 
 
 @router.get("/", dependencies=[Depends(get_current_user)])

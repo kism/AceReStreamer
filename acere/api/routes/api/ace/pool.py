@@ -18,7 +18,7 @@ from acere.utils.logger import get_logger
 logger = get_logger(__name__)
 
 router = APIRouter(
-    prefix="/ace-pool",
+    prefix="/ace/pool",
     tags=["Ace Pool"],
     dependencies=[Depends(get_current_user)],
 )
@@ -27,7 +27,7 @@ content_id_not_found_tmp_str = "Ace content_id '{content_id}' not found in Ace p
 pid_not_found_tmp_str = "Ace PID '{pid}' not found in Ace pool"
 
 
-# region /api/ace-pool
+# region /api/ace/pool
 @router.get("/")
 def pool() -> AcePoolForApi:
     """API endpoint to get the Ace pool."""

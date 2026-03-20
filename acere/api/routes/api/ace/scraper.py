@@ -17,7 +17,7 @@ from acere.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-router = APIRouter(prefix="/scraper", tags=["Scraper"])
+router = APIRouter(prefix="/ace/scraper", tags=["Ace Scraper"])
 
 
 @router.get("/source", dependencies=[Depends(get_current_user)])

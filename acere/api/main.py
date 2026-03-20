@@ -23,7 +23,7 @@ from .routes.api.ace import (
     streams as ace_streams,
 )
 from .routes.api.iptv import (
-    sources as iptv_sources,
+    scraper as iptv_scraper,
 )
 from .routes.api.iptv import (
     streams as iptv_streams,
@@ -39,7 +39,7 @@ api_router = APIRouter()
 api_router.include_router(ace_pool.router)
 api_router.include_router(ace_scraper.router)
 api_router.include_router(ace_streams.router)
-api_router.include_router(iptv_sources.router)
+api_router.include_router(iptv_scraper.router)
 api_router.include_router(iptv_streams.router)
 api_router.include_router(streams.router)
 api_router.include_router(epg.router)
