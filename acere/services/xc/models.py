@@ -39,6 +39,14 @@ class XCServerInfo(BaseModel):
     port: int
     https_port: int | None
     server_protocol: str
+
+    @field_validator("url", mode="before")
+    @classmethod
+    def fix_url_scheme(cls, value: str | HttpUrl) -> str | HttpUrl:
+        """Prepend http:// if the upstream server returns a bare hostname."""
+        if isinstance(value, str) and "://" not in value:
+            return f"http://{value}"
+        return value
     # rtmp_port would go here, but naa null
     timezone: str = UTC.tzname(None)
     timestamp_now: int

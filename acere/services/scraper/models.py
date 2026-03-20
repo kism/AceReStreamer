@@ -203,6 +203,7 @@ class CombinedStreamAPI(BaseModel):
 
     stream_type: Literal["ace", "iptv"]
     title: str
+    stream_url: str
     tvg_id: str
     tvg_logo: str | None = None
     group_title: str

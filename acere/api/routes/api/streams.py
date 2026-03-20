@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 from acere.api.deps import get_current_user
 from acere.instances.ace_quality import get_quality_handler
 from acere.instances.ace_streams import get_ace_streams_db_handler
+from acere.instances.config import settings
 from acere.instances.epg import get_epg_handler
 from acere.instances.iptv_streams import get_iptv_streams_db_handler
 from acere.services.scraper.models import CombinedStreamAPI
@@ -16,6 +17,7 @@ router = APIRouter(prefix="/streams", tags=["Streams"], dependencies=[Depends(ge
 def streams() -> list[CombinedStreamAPI]:
     """API endpoint to get all streams (ace and IPTV combined)."""
     epg_handler = get_epg_handler()
+    external_url = settings.EXTERNAL_URL
     result: list[CombinedStreamAPI] = []
 
     # Ace streams
@@ -28,6 +30,7 @@ def streams() -> list[CombinedStreamAPI]:
             CombinedStreamAPI(
                 stream_type="ace",
                 title=stream.title,
+                stream_url=f"{external_url}/hls/ace/{stream.content_id}",
                 tvg_id=stream.tvg_id,
                 tvg_logo=stream.tvg_logo,
                 group_title=stream.group_title,
@@ -46,6 +49,7 @@ def streams() -> list[CombinedStreamAPI]:
             CombinedStreamAPI(
                 stream_type="iptv",
                 title=iptv_stream.title,
+                stream_url=f"{external_url}/hls/web/{iptv_stream.slug}",
                 tvg_id=iptv_stream.tvg_id,
                 tvg_logo=iptv_stream.tvg_logo,
                 group_title=iptv_stream.group_title,
