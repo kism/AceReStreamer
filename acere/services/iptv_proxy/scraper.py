@@ -127,13 +127,12 @@ class IPTVProxyScraper:
 
             group_title = category_map.get(category_id, "")
 
-            # Apply category filter
-            if source.category_filter and group_title not in source.category_filter:
+            if not source.title_filter.check_allowed(stream_name):
                 continue
 
             # Apply title filter
             title = name_processor.cleanup_candidate_title(stream_name)
-            if not name_processor.check_title_allowed(title=title, title_filter=source.title_filter):
+            if not source.title_filter.check_allowed(title):
                 continue
 
             # Build upstream URL
@@ -172,13 +171,13 @@ class IPTVProxyScraper:
             title = name_processor.cleanup_candidate_title(entry.title)
 
             # Apply title filter
-            if not name_processor.check_title_allowed(title=title, title_filter=source.title_filter):
+            if not source.title_filter.check_allowed(title):
                 continue
 
             group_title = entry.group_title or "General"
 
             # Apply category filter
-            if source.category_filter and group_title not in source.category_filter:
+            if not source.category_filter.check_allowed(group_title):
                 continue
 
             results.append(

@@ -16,7 +16,7 @@ class IPTVSourceXtream(BaseModel):
     username: str
     password: str
     title_filter: TitleFilter = TitleFilter()
-    category_filter: list[str] = []
+    category_filter: TitleFilter = TitleFilter()
     max_active_streams: int = 0  # 0 = unlimited
 
     @field_validator("name", mode="before")
@@ -34,7 +34,7 @@ class IPTVSourceM3U8(BaseModel):
     name: str
     url: HttpUrl
     title_filter: TitleFilter = TitleFilter()
-    category_filter: list[str] = []
+    category_filter: TitleFilter = TitleFilter()
     max_active_streams: int = 0  # 0 = unlimited
 
     @field_validator("name", mode="before")

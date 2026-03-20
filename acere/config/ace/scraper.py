@@ -42,6 +42,33 @@ class TitleFilter(BaseModel):
     include_words: list[str] = []
     regex_postprocessing: list[str] = []
 
+    def check_allowed(self, title: str) -> bool:
+        """Check if the title contains any disallowed words."""
+        if not title:
+            return False
+
+        title = title.lower()
+
+        if any(word.lower() in title for word in self.always_exclude_words):
+            logger.trace("Title '%s' is not allowed, skipping", title)
+            return False
+
+        if any(word.lower() in title for word in self.always_include_words):
+            return True
+
+        if any(word.lower() in title for word in self.exclude_words):
+            logger.trace("Title '%s' is not allowed, skipping", title)
+            return False
+
+        if self.include_words:
+            allowed = any(word.lower() in title for word in self.include_words)
+            if allowed:
+                logger.trace("Title '%s' is allowed due to include_words", title)
+            return allowed
+
+        logger.trace("Title '%s' is default allowed", title)
+        return True
+
     @field_validator("regex_postprocessing", mode="before")
     def ensure_list(cls, value: str | list[str]) -> list[str]:
         """Ensure the regex_postprocessing is a list."""

@@ -161,7 +161,7 @@ class IPTVSourceApi(BaseModel):
     url: HttpUrl
     type: Literal["xtream", "m3u8"]
     title_filter: TitleFilter = TitleFilter()
-    category_filter: list[str] = []
+    category_filter: TitleFilter = TitleFilter()
     max_active_streams: int = 0
     username: str | None = None
     password: str | None = None

@@ -74,7 +74,7 @@ class APIStreamScraper(ScraperCommon):
             override_title = name_processor.get_title_override_from_content_id(stream.infohash)
             title = override_title or name_processor.cleanup_candidate_title(stream.name)
 
-            if not name_processor.check_title_allowed(title=title, title_filter=site.title_filter):
+            if not site.title_filter.check_allowed(title):
                 continue
 
             tvg_id = name_processor.get_tvg_id_from_title(title)

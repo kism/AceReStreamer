@@ -1,7 +1,6 @@
 """M3U Name Replacer for Ace Streamer Scraper Helper."""
 
 import re
-from typing import TYPE_CHECKING
 
 from pydantic import AnyUrl, ValidationError
 
@@ -10,11 +9,6 @@ from acere.instances.config import settings
 from acere.instances.paths import get_app_path_handler
 from acere.utils.helpers import check_valid_content_id_or_infohash, slugify
 from acere.utils.logger import get_logger
-
-if TYPE_CHECKING:
-    from acere.config.ace.scraper import TitleFilter
-else:
-    TitleFilter = object
 
 logger = get_logger(__name__)
 
@@ -122,37 +116,6 @@ def check_valid_ace_uri(url: AnyUrl | str) -> AnyUrl | None:
         return None
 
     return url
-
-
-def check_title_allowed(title: str, title_filter: TitleFilter) -> bool:
-    """Check if the title contains any disallowed words."""
-    if not title:
-        return False
-
-    title = title.lower()
-
-    if any(word.lower() in title for word in title_filter.always_exclude_words):
-        logger.trace("Title '%s' is not allowed, skipping", title)
-        return False
-
-    if any(word.lower() in title for word in title_filter.always_include_words):
-        return True
-
-    if any(word.lower() in title for word in title_filter.exclude_words):
-        logger.trace("Title '%s' is not allowed, skipping", title)
-        return False
-
-    if title_filter.include_words:
-        allowed = any(word.lower() in title for word in title_filter.include_words)
-        if not allowed:
-            pass
-        else:
-            logger.trace("Title '%s' is allowed due to include_words", title)
-
-        return allowed
-
-    logger.trace("Title '%s' is default allowed", title)
-    return True
 
 
 def trim_title(title: str) -> str:

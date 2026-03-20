@@ -80,7 +80,7 @@ class M3UParser:
 
         tvg_id = name_processor.get_tvg_id_from_title(title)  # Redo since we have our own logic for tvg ids
 
-        if not name_processor.check_title_allowed(title=title, title_filter=site.title_filter):
+        if not site.title_filter.check_allowed(title):
             return None
 
         group_title = entry.group_title
