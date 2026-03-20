@@ -65,6 +65,19 @@ class IPTVStreamDBHandler(BaseDatabaseHandler):
             statement = select(IPTVStreamDBEntry).where(IPTVStreamDBEntry.slug == slug)
             return session.exec(statement).first()
 
+    def delete_by_slug(self, slug: str) -> bool:
+        """Delete an IPTV stream by its slug."""
+        with self._get_session() as session:
+            statement = select(IPTVStreamDBEntry).where(IPTVStreamDBEntry.slug == slug)
+            result = session.exec(statement).first()
+            if result:
+                session.delete(result)
+                session.commit()
+                logger.info("Deleted IPTVStreamDBEntry for slug: %s", slug)
+                self._get_streams_cache = None
+                return True
+            return False
+
     def get_streams(self) -> list[IPTVStreamDBEntry]:
         """Get all IPTV streams."""
         with self._get_session() as session:

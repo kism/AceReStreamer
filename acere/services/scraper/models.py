@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Literal, Self
 from pydantic import AnyUrl, BaseModel, HttpUrl, field_serializer, model_validator
 
 from acere.config.ace.scraper import HTMLScraperFilter, TitleFilter
+from acere.config.iptv import IPTVSourceM3U8, IPTVSourceXtream
 from acere.utils.helpers import check_valid_content_id_or_infohash
 
 if TYPE_CHECKING:
@@ -136,3 +137,76 @@ class AceScraperSourceApi(BaseModel):
     def serialize_url(self, value: HttpUrl) -> str:
         """Serialize URL to string."""
         return value.encoded_string()
+
+
+class FoundIPTVStreamAPI(BaseModel):
+    """Model for an IPTV proxy stream, for API use."""
+
+    title: str
+    slug: str
+    upstream_url: str
+    source_name: str
+    tvg_id: str
+    tvg_logo: str | None = None
+    group_title: str
+    last_scraped_time: datetime
+    program_title: str
+    program_description: str
+
+
+class IPTVSourceApi(BaseModel):
+    """Represent an IPTV proxy source, generic for Xtream and M3U8 sources."""
+
+    name: str
+    url: HttpUrl
+    type: Literal["xtream", "m3u8"]
+    title_filter: TitleFilter = TitleFilter()
+    category_filter: list[str] = []
+    max_active_streams: int = 0
+    username: str | None = None
+    password: str | None = None
+
+    @field_serializer("url", mode="plain")
+    def serialize_url(self, value: HttpUrl) -> str:
+        """Serialize URL to string."""
+        return value.encoded_string()
+
+    @staticmethod
+    def from_xtream(source: IPTVSourceXtream) -> IPTVSourceApi:
+        """Create from an Xtream source config."""
+        return IPTVSourceApi(
+            name=source.name,
+            url=source.url,
+            type="xtream",
+            title_filter=source.title_filter,
+            category_filter=source.category_filter,
+            max_active_streams=source.max_active_streams,
+            username=source.username,
+            password=source.password,
+        )
+
+    @staticmethod
+    def from_m3u8(source: IPTVSourceM3U8) -> IPTVSourceApi:
+        """Create from an M3U8 source config."""
+        return IPTVSourceApi(
+            name=source.name,
+            url=source.url,
+            type="m3u8",
+            title_filter=source.title_filter,
+            category_filter=source.category_filter,
+            max_active_streams=source.max_active_streams,
+        )
+
+
+class CombinedStreamAPI(BaseModel):
+    """Unified stream model combining ace and IPTV streams, for API use."""
+
+    stream_type: Literal["ace", "iptv"]
+    title: str
+    tvg_id: str
+    tvg_logo: str | None = None
+    group_title: str
+    last_scraped_time: datetime
+    program_title: str
+    program_description: str
+    quality: int

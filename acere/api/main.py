@@ -4,16 +4,29 @@ from acere.instances.config import settings
 
 from .routes import frontend, hls
 from .routes.api import (
-    ace_pool,
     config,
     epg,
     health,
     login,
     private,
-    scraper,
     streams,
     users,
     xc,
+)
+from .routes.api.ace import (
+    pool as ace_pool,
+)
+from .routes.api.ace import (
+    scraper as ace_scraper,
+)
+from .routes.api.ace import (
+    streams as ace_streams,
+)
+from .routes.api.iptv import (
+    sources as iptv_sources,
+)
+from .routes.api.iptv import (
+    streams as iptv_streams,
 )
 from .routes.iptv import (
     epg as epg_xml,
@@ -24,11 +37,14 @@ from .routes.iptv import (
 
 api_router = APIRouter()
 api_router.include_router(ace_pool.router)
+api_router.include_router(ace_scraper.router)
+api_router.include_router(ace_streams.router)
+api_router.include_router(iptv_sources.router)
+api_router.include_router(iptv_streams.router)
+api_router.include_router(streams.router)
 api_router.include_router(epg.router)
 api_router.include_router(health.router)
 api_router.include_router(login.router)
-api_router.include_router(scraper.router)
-api_router.include_router(streams.router)
 api_router.include_router(users.router)
 api_router.include_router(config.router)
 

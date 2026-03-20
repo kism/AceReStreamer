@@ -1,135 +1,59 @@
-"""Main Stream Site Blueprint."""
+"""Combined Streams API Blueprint."""
 
-from datetime import UTC, datetime
+from fastapi import APIRouter, Depends
 
-from fastapi import APIRouter, Depends, HTTPException
-
-from acere.api.deps import (
-    get_current_active_superuser,
-    get_current_user,
-)
+from acere.api.deps import get_current_user
 from acere.instances.ace_quality import get_quality_handler
 from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.epg import get_epg_handler
-from acere.services.scraper.models import FoundAceStream, FoundAceStreamAPI, ManuallyAddedAceStream
-from acere.services.scraper.name_processor import get_tvg_id_from_title, populate_group_title
-from acere.utils.api_models import MessageResponseModel
-from acere.utils.helpers import slugify
-from acere.utils.logger import get_logger
-
-logger = get_logger(__name__)
+from acere.instances.iptv_streams import get_iptv_streams_db_handler
+from acere.services.scraper.models import CombinedStreamAPI
 
 router = APIRouter(prefix="/streams", tags=["Streams"], dependencies=[Depends(get_current_user)])
 
 
-# region /api/stream(s)
-@router.get("/content_id/{content_id}")
-def by_content_id(content_id: str) -> FoundAceStreamAPI:
-    """API endpoint to get a specific stream by Ace ID."""
-    handler = get_ace_streams_db_handler()
-    stream = handler.get_by_content_id(content_id)
-    if not stream:
-        raise HTTPException(status_code=404, detail="Stream not found")
-
-    quality_handler = get_quality_handler()
-    quality = quality_handler.get_quality(content_id)
-
-    epg_handler = get_epg_handler()
-    program_title, program_description = epg_handler.get_current_program(stream.tvg_id)
-
-    return FoundAceStreamAPI(
-        title=stream.title,
-        content_id=stream.content_id,
-        infohash=stream.infohash,
-        tvg_id=stream.tvg_id,
-        tvg_logo=stream.tvg_logo,
-        quality=quality.quality,
-        has_ever_worked=quality.has_ever_worked,
-        m3u_failures=quality.m3u_failures,
-        program_title=program_title,
-        program_description=program_description,
-        last_scraped_time=stream.last_scraped_time,
-    )
-
-
-@router.delete("/content_id/{content_id}", dependencies=[Depends(get_current_active_superuser)])
-def delete_by_content_id(content_id: str) -> MessageResponseModel:
-    """API endpoint to delete a specific stream by Ace ID."""
-    handler = get_ace_streams_db_handler()
-    deleted = handler.delete_by_content_id(content_id)
-    if not deleted:
-        raise HTTPException(status_code=404, detail="Stream not found")
-
-    return MessageResponseModel(message="Stream deleted successfully")
-
-
 @router.get("/")
-def streams() -> list[FoundAceStreamAPI]:
-    """API endpoint to get the flat streams."""
-    handler = get_ace_streams_db_handler()
-    streams = handler.get_streams_cached()
-
-    streams_api: list[FoundAceStreamAPI] = []
+def streams() -> list[CombinedStreamAPI]:
+    """API endpoint to get all streams (ace and IPTV combined)."""
     epg_handler = get_epg_handler()
+    result: list[CombinedStreamAPI] = []
+
+    # Ace streams
+    ace_handler = get_ace_streams_db_handler()
     quality_handler = get_quality_handler()
-    for stream in streams:
+    for stream in ace_handler.get_streams_cached():
         quality = quality_handler.get_quality(stream.content_id)
-
         program_title, program_description = epg_handler.get_current_program(stream.tvg_id)
-
-        streams_api.append(
-            FoundAceStreamAPI(
+        result.append(
+            CombinedStreamAPI(
+                stream_type="ace",
                 title=stream.title,
-                content_id=stream.content_id,
-                infohash=stream.infohash,
                 tvg_id=stream.tvg_id,
                 tvg_logo=stream.tvg_logo,
-                quality=quality.quality,
-                has_ever_worked=quality.has_ever_worked,
-                m3u_failures=quality.m3u_failures,
+                group_title=stream.group_title,
+                last_scraped_time=stream.last_scraped_time,
                 program_title=program_title,
                 program_description=program_description,
-                last_scraped_time=stream.last_scraped_time,
+                quality=quality.quality,
             )
         )
 
-    return streams_api
-
-
-@router.post("/", dependencies=[Depends(get_current_active_superuser)])
-def add_stream(
-    stream: ManuallyAddedAceStream,
-) -> MessageResponseModel:
-    """API endpoint to add a specific stream by Ace ID."""
-    handler = get_ace_streams_db_handler()
-
-    handler.update_stream(
-        FoundAceStream(
-            title=stream.title,
-            content_id=stream.content_id,
-            infohash=None,
-            tvg_id=get_tvg_id_from_title(stream.title),
-            tvg_logo=f"{slugify(stream.title)}.png",  # find_tvg_logo_image does this
-            group_title=populate_group_title("", stream.title),
-            sites_found_on=[],
-            last_scraped_time=datetime.now(tz=UTC),
+    # IPTV proxy streams
+    iptv_handler = get_iptv_streams_db_handler()
+    for iptv_stream in iptv_handler.get_streams_cached():
+        program_title, program_description = epg_handler.get_current_program(iptv_stream.tvg_id)
+        result.append(
+            CombinedStreamAPI(
+                stream_type="iptv",
+                title=iptv_stream.title,
+                tvg_id=iptv_stream.tvg_id,
+                tvg_logo=iptv_stream.tvg_logo,
+                group_title=iptv_stream.group_title,
+                last_scraped_time=iptv_stream.last_scraped_time,
+                program_title=program_title,
+                program_description=program_description,
+                quality=100,
+            )
         )
-    )
 
-    return MessageResponseModel(message="Stream added successfully")
-
-
-@router.post("/check", dependencies=[Depends(get_current_active_superuser)])
-async def check() -> MessageResponseModel:
-    """API endpoint to attempt to check all streams health."""
-    handler = get_quality_handler()
-    started = await handler.check_missing_quality()
-
-    logger.info("/api/sources/check Health check started: %s", started)
-
-    if started:
-        response = MessageResponseModel(message="Health check started")
-    else:
-        response = MessageResponseModel(message="Health check already running")
-
-    return response
+    return result
