@@ -7,22 +7,27 @@ import { updateStreamStatus } from "./useStreamStatus"
 
 const VITE_API_URL = baseURL()
 
-const baseHLSURL = `${VITE_API_URL}/hls/ace`
 let hls: Hls | null = null
+let cachedToken: string | null = null
 
 async function getAuthToken() {
-  const streamTokenService = UsersService.readStreamTokenMe()
-  return (await streamTokenService)?.stream_token || ""
+  if (cachedToken !== null) {
+    return cachedToken
+  }
+  const result = await UsersService.readStreamTokenMe()
+  cachedToken = result?.stream_token || ""
+  return cachedToken
 }
 
-export async function getStreamURL(content_id: string) {
+export async function getStreamURL(streamUrl: string) {
   const token = await getAuthToken()
-  return `${baseHLSURL}/${content_id}?token=${token}`
+  const separator = streamUrl.includes("?") ? "&" : "?"
+  return `${VITE_API_URL}${streamUrl}${separator}token=${token}`
 }
 
-export async function loadStream(content_id?: string) {
-  const actualContentId = content_id || window.location.hash.substring(1)
-  window.location.hash = `#${actualContentId}`
+export async function loadStream(streamUrl?: string) {
+  const actualStreamUrl = streamUrl || window.location.hash.substring(1)
+  window.location.hash = `#${actualStreamUrl}`
 
   updateStreamStatus({ playerStatus: "Loading" })
   updateStreamStatus({ hlsStatus: "Initialising" })
@@ -37,12 +42,12 @@ export async function loadStream(content_id?: string) {
     hls.destroy()
   }
 
-  const streamUrl = await getStreamURL(actualContentId)
-  updateStreamStatus({ streamURL: streamUrl })
+  const fullUrl = await getStreamURL(actualStreamUrl)
+  updateStreamStatus({ streamURL: fullUrl })
 
   if (Hls.isSupported()) {
     hls = new Hls()
-    hls.loadSource(streamUrl)
+    hls.loadSource(fullUrl)
     hls.attachMedia(video)
 
     updateStreamStatus({ hlsStatus: "Loading" })
@@ -74,7 +79,7 @@ export async function loadStream(content_id?: string) {
     })
   } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
     // Native HLS support (Safari)
-    video.src = streamUrl
+    video.src = fullUrl
     video.addEventListener("loadedmetadata", () => {
       console.log("HLS metadata loaded")
       updateStreamStatus({ hlsStatus: "Loaded", playerStatus: "Ready" })
@@ -86,10 +91,10 @@ export async function loadStream(content_id?: string) {
   return video
 }
 
-export async function loadPlayStream(content_id?: string) {
-  const actualContentId = content_id || window.location.hash.substring(1)
-  window.location.hash = `#${actualContentId}`
-  const video = await loadStream(actualContentId)
+export async function loadPlayStream(streamUrl?: string) {
+  const actualStreamUrl = streamUrl || window.location.hash.substring(1)
+  window.location.hash = `#${actualStreamUrl}`
+  const video = await loadStream(actualStreamUrl)
   video?.play().catch((e) => console.error("Playback failed:", e))
   video?.addEventListener("pause", () =>
     updateStreamStatus({ playerStatus: "Paused" }),

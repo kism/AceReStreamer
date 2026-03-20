@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { lazy, Suspense, useEffect, useState } from "react"
 import { FiMaximize2, FiMinimize2, FiRefreshCw } from "react-icons/fi"
-import { AceStreamsService } from "@/client"
+import { StreamsService } from "@/client"
 import { AcePoolSection } from "@/components/Index/AcePoolSection"
 import { NowPlayingTable } from "@/components/Index/NowPlayingTable"
 import { StreamTable } from "@/components/Index/StreamTable"
@@ -97,7 +97,7 @@ function PlayerControls({
 
 function WebPlayer() {
   const [isExpanded, setIsExpanded] = useState(false)
-  const [contentId, setContentId] = useState(window.location.hash.substring(1))
+  const [streamUrl, setStreamUrl] = useState(window.location.hash.substring(1))
   const isLarge = useBreakpointValue({ base: false, lg: true })
   const isSmall = useBreakpointValue({
     base: true,
@@ -111,19 +111,19 @@ function WebPlayer() {
 
   useEffect(() => {
     const handleHashChange = () => {
-      setContentId(window.location.hash.substring(1))
+      setStreamUrl(window.location.hash.substring(1))
     }
 
     window.addEventListener("hashchange", handleHashChange)
     return () => window.removeEventListener("hashchange", handleHashChange)
   }, [])
 
-  const { data: streamData } = useQuery({
-    queryFn: () => AceStreamsService.byContentId({ contentId }),
-    queryKey: ["content_id", contentId],
+  const { data: allStreams } = useQuery({
+    queryFn: () => StreamsService.streams(),
+    queryKey: ["items"],
     placeholderData: (prevData) => prevData,
-    enabled: !!contentId,
   })
+  const streamData = allStreams?.find((s) => s.stream_url === streamUrl)
   usePageTitle(streamData?.title || "Home")
 
   useEffect(() => {

@@ -40,7 +40,7 @@ function InstanceQuality({ contentId }: { contentId: string }) {
         <Link
           onClick={() =>
             loadVideoPlayerModule().then((module) => {
-              module.loadPlayStream(data?.content_id)
+              module.loadPlayStream(`/hls/ace/${data?.content_id}`)
             })
           }
         >
