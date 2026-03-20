@@ -30,3 +30,14 @@
   - xc scraper
   - m3u8 scraper that is shared with ace
   - cache m3u8 fetches for iptv proxy?
+
+## Fix
+
+This logic might be cooked
+
+```python
+    iptv_manager = get_iptv_proxy_manager()
+    segment_url = iptv_manager.get_segment_upstream_url(slug, segment)
+```
+
+Use the name filter for categories too.
