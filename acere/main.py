@@ -17,11 +17,13 @@ from acere.instances.ace_pool import set_ace_pool
 from acere.instances.ace_quality import set_quality_handler
 from acere.instances.config import settings
 from acere.instances.epg import set_epg_handler
+from acere.instances.iptv_proxy import set_iptv_proxy_manager
 from acere.instances.paths import get_app_path_handler, setup_app_path_handler
 from acere.instances.remote_settings import set_remote_settings_fetcher
 from acere.instances.scraper import set_ace_scraper
 from acere.services.ace.pool import AcePool
 from acere.services.epg import EPGHandler
+from acere.services.iptv_proxy.manager import IPTVProxyManager
 from acere.services.remote_settings import RemoteSettingsFetcher
 from acere.services.scraper import AceScraper
 from acere.utils.logger import get_logger, setup_logger
@@ -100,6 +102,10 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     remote_settings_fetcher = RemoteSettingsFetcher(instance_id=instance_id)
     set_remote_settings_fetcher(remote_settings_fetcher)
 
+    # IPTV Proxy Manager
+    iptv_proxy_manager = IPTVProxyManager(instance_id=instance_id)
+    set_iptv_proxy_manager(iptv_proxy_manager)
+
     # Daily quality check + stream culling at 3:33 AM
     quality_handler = AceQualityCacheHandler()
     set_quality_handler(quality_handler)
@@ -107,9 +113,12 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
     yield
 
-    handlers: list[AceScraper | AcePool | RemoteSettingsFetcher | EPGHandler | AceQualityCacheHandler] = [
+    handlers: list[
+        AceScraper | AcePool | RemoteSettingsFetcher | EPGHandler | AceQualityCacheHandler | IPTVProxyManager
+    ] = [
         ace_pool,
         ace_scraper,
+        iptv_proxy_manager,
         remote_settings_fetcher,
         epg_handler,
         quality_handler,

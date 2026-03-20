@@ -30,6 +30,7 @@ from acere.utils.logger import LoggingConf, get_logger
 from .ace import AceConf
 from .ace.scraper import AceScrapeConf
 from .epg import EPGInstanceConf
+from .iptv import IPTVProxyConf
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -43,9 +44,11 @@ __all__ = [
     "AceReStreamerConf",
     "AceScrapeConf",
     "EPGInstanceConf",
+    "IPTVProxyConf",
 ]
 
 setup_app_path_handler(DEFAULT_INSTANCE_PATH)
+
 
 # region CORS
 def parse_cors(v: Any) -> list[str] | str:  # noqa: ANN401 JSON things
@@ -54,6 +57,7 @@ def parse_cors(v: Any) -> list[str] | str:  # noqa: ANN401 JSON things
     if isinstance(v, list | str):
         return v
     raise ValueError(v)
+
 
 # region Migration
 def _migrate_config_data(data: dict[str, Any]) -> dict[str, Any]:
@@ -90,6 +94,7 @@ class AceReStreamerConf(BaseSettings):
 
     # Default values for our settings
     ace: AceConf = AceConf()
+    iptv: IPTVProxyConf = IPTVProxyConf()
     logging: LoggingConf = LoggingConf()
     epgs: list[EPGInstanceConf] = []
     REMOTE_SETTINGS_URL: HttpUrl | None = None
@@ -263,4 +268,5 @@ class ConfigExport(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     ace: AceConf
+    iptv: IPTVProxyConf
     epgs: list[EPGInstanceConf]

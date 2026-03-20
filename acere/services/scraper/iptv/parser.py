@@ -8,6 +8,7 @@ from pydantic import HttpUrl, ValidationError
 
 from acere.services.scraper import name_processor
 from acere.services.scraper.iptv import tvg_logo
+from acere.services.scraper.m3u_common import GenericM3UParser, M3UEntry
 from acere.services.scraper.models import FoundAceStream
 from acere.utils.logger import get_logger
 
@@ -23,117 +24,57 @@ _COUNTRY_CODE_ALT_REGEX: list[re.Pattern[str]] = [
     re.compile(r"\.(\w{2})\s*$"),  # Matches .uk
     re.compile(r"^(\w{2})[ :]"),  # Matches "UK " or "UK: "
 ]
-TVG_LOGO_REGEX = re.compile(r'tvg-logo="([^"]+)"')
 
 
 class M3UParser:
     """Parser for M3U playlist content to extract AceStream entries.
 
-    This class is stateless and can be reused across multiple parsing operations.
-    All parsing logic for M3U8 files is encapsulated here.
+    Uses GenericM3UParser for raw M3U parsing, then applies AceStream-specific
+    filtering and processing.
     """
 
-    TVG_ID_REGEX = re.compile(r'tvg-id="([^"]+)"')
-    GROUP_TITLE_REGEX = re.compile(r'group-title="([^"]+)"')
-    LAST_FOUND_REGEX = re.compile(r'x-last-found="(\d+)"')
     COUNTRY_CODE_REGEX = re.compile(r"\s*\[\w{2}\]\s*$")
+
+    def __init__(self) -> None:
+        """Initialize with a generic M3U parser."""
+        self._generic_parser = GenericM3UParser()
 
     async def parse_m3u_content(self, content: str, site: ScrapeSiteIPTV) -> list[FoundAceStream]:
         """Parse M3U content and extract AceStream entries."""
+        entries = self._generic_parser.parse(content)
         found_streams: list[FoundAceStream] = []
-        lines = content.splitlines()
 
-        # Split into sections - each section starts with #EXTINF
-        sections = self._split_into_sections(lines)
-
-        for section in sections:
-            if not section:
+        for entry in entries:
+            # Check if the URL is a valid ace URI
+            valid_ace_uri = name_processor.check_valid_ace_uri(entry.url)
+            if valid_ace_uri is None:
                 continue
 
-            # First line is always #EXTINF
-            extinf_line = section[0].strip()
+            content_id = name_processor.extract_content_id_from_url(valid_ace_uri)
+            infohash = name_processor.extract_infohash_from_url(valid_ace_uri)
 
-            # Collect metadata and find acestream URL
-            metadata: dict[str, str] = {}
-            acestream_url = None
-
-            for line in section[1:]:
-                line_stripped = line.strip()
-
-                # Collect metadata lines
-                if line_stripped.startswith("#EXTTV:"):
-                    metadata["exttv"] = line_stripped[7:].strip()
-                elif line_stripped.startswith("#EXTLOGO:"):
-                    metadata["extlogo"] = line_stripped[9:].strip()
-                else:
-                    # Check if this is the acestream URL
-                    valid_ace_uri = name_processor.check_valid_ace_uri(line_stripped)
-                    if valid_ace_uri is not None:
-                        acestream_url = valid_ace_uri
-                        break  # URL is the last meaningful line
-
-            # Process the entry if we found an acestream URL
-            if acestream_url:
-                content_id = name_processor.extract_content_id_from_url(acestream_url)
-                infohash = name_processor.extract_infohash_from_url(acestream_url)
-
-                ace_stream = await self._found_ace_stream_from_extinf_line(
-                    line=extinf_line,
-                    content_id=content_id,
-                    infohash=infohash,
-                    site=site,
-                    metadata=metadata or None,
-                )
-                if ace_stream is not None:
-                    found_streams.append(ace_stream)
+            ace_stream = await self._build_found_ace_stream(
+                entry=entry,
+                content_id=content_id,
+                infohash=infohash,
+                site=site,
+            )
+            if ace_stream is not None:
+                found_streams.append(ace_stream)
 
         return found_streams
 
-    def _split_into_sections(self, lines: list[str]) -> list[list[str]]:
-        """Split lines into sections, each starting with #EXTINF."""
-        sections: list[list[str]] = []
-        current_section: list[str] = []
-
-        for line in lines:
-            line_stripped = line.strip()
-
-            # Skip empty lines and #EXTM3U header
-            if not line_stripped or line_stripped == "#EXTM3U":
-                continue
-
-            # Start new section when we see #EXTINF
-            if line_stripped.startswith("#EXTINF:"):
-                if current_section:
-                    sections.append(current_section)
-                current_section = [line_stripped]
-            elif current_section:
-                # Add line to current section
-                current_section.append(line_stripped)
-
-        # Don't forget the last section
-        if current_section:
-            sections.append(current_section)
-
-        return sections
-
-    async def _found_ace_stream_from_extinf_line(
+    async def _build_found_ace_stream(
         self,
-        line: str,
+        entry: M3UEntry,
         content_id: str,
         infohash: str | None,
         site: ScrapeSiteIPTV,
-        metadata: dict[str, str] | None = None,
     ) -> FoundAceStream | None:
-        """Parse EXTINF line and return title if valid."""
-        extinf_parts = 2
-        parts = line.split(",", 1)  # Split on first comma only
-        if len(parts) != extinf_parts:
-            logger.warning("Malformed EXTINF line: %s", line)
-            return None
+        """Build a FoundAceStream from a generic M3UEntry."""
+        title = entry.title
 
-        title = parts[1].strip()
-
-        tvg_id, title = self._extract_tvg_id(line, title, metadata)
+        tvg_id, title = self._extract_tvg_id(entry, title)
         override_title = name_processor.get_title_override_from_content_id(content_id or infohash)
         title = override_title or name_processor.cleanup_candidate_title(title)
 
@@ -142,15 +83,14 @@ class M3UParser:
         if not name_processor.check_title_allowed(title=title, title_filter=site.title_filter):
             return None
 
-        group_title = self._extract_group_title(line)
+        group_title = entry.group_title
         group_title = name_processor.populate_group_title(group_title, title)
 
-        logo_url = self._extract_logo_url(parts[0], metadata)
+        logo_url = self._extract_logo_url(entry)
         await tvg_logo.download_and_save_logo(logo_url, title)
         tvg_logo_path = name_processor.find_tvg_logo_image(title)
 
-        _get_last_found_time_epoch = self._get_last_found_time(line)
-        _get_last_found_time = datetime.fromtimestamp(_get_last_found_time_epoch, tz=UTC)
+        last_found_time = datetime.fromtimestamp(entry.last_found, tz=UTC)
 
         return FoundAceStream(
             title=title,
@@ -160,48 +100,32 @@ class M3UParser:
             tvg_logo=tvg_logo_path,
             group_title=group_title,
             sites_found_on=[site.name],
-            last_scraped_time=_get_last_found_time,
+            last_scraped_time=last_found_time,
         )
 
-    def _get_last_found_time(self, line: str) -> int:
-        """Extract the last found time from the line."""
-        match = self.LAST_FOUND_REGEX.search(line)
-        if match:
-            return int(match.group(1))
-        return int(datetime.now(tz=UTC).timestamp())  # Could break adhoc?
-
-    def _extract_group_title(self, line: str) -> str:
-        """Extract the group title from the line if it exists."""
-        match = self.GROUP_TITLE_REGEX.search(line)
-        if match:
-            return match.group(1).strip()
-        return ""
-
-    def _extract_logo_url(self, line: str, metadata: dict[str, str] | None = None) -> HttpUrl | None:
-        """Extract the TVG logo URL from an EXTINF line or metadata."""
-        # Check if we have EXTLOGO metadata first
-        if metadata and "extlogo" in metadata:
+    def _extract_logo_url(self, entry: M3UEntry) -> HttpUrl | None:
+        """Extract the TVG logo URL from an M3UEntry."""
+        # Check EXTLOGO metadata first
+        if "extlogo" in entry.metadata:
             try:
-                return HttpUrl(metadata["extlogo"])
+                return HttpUrl(entry.metadata["extlogo"])
             except ValidationError as e:
                 logger.debug("Failed to parse EXTLOGO URL: %s", e)
 
-        # Fall back to tvg-logo attribute
-        match = TVG_LOGO_REGEX.search(line)
-        if match:
+        # Fall back to tvg-logo from EXTINF attributes
+        if entry.tvg_logo_url:
             try:
-                return HttpUrl(match.group(1))
+                return HttpUrl(entry.tvg_logo_url)
             except ValidationError as e:
                 logger.debug("Failed to parse TVG logo URL: %s", e)
         return None
 
     def _extract_tvg_id(  # noqa: C901 Don't care since I put the functions in the function
         self,
-        line: str,
+        entry: M3UEntry,
         title: str,
-        metadata: dict[str, str] | None = None,
     ) -> tuple[str, str]:
-        """Extract the TVG ID from the line or metadata.
+        """Extract the TVG ID from the entry or metadata.
 
         Try put the country code in the title if we can.
         """
@@ -226,9 +150,9 @@ class M3UParser:
         original_title = title
 
         # Check if we have EXTTV metadata first
-        if metadata and "exttv" in metadata:
-            tvg_id = _extract_tvg_id_from_exttv(metadata["exttv"])
-            country = _extract_country_from_exttv(metadata["exttv"])
+        if "exttv" in entry.metadata:
+            tvg_id = _extract_tvg_id_from_exttv(entry.metadata["exttv"])
+            country = _extract_country_from_exttv(entry.metadata["exttv"])
 
             if tvg_id:
                 # Add country code to title if present
@@ -237,12 +161,12 @@ class M3UParser:
                     logger.trace("Added country code from EXTTV to title: %s", title)
                 return tvg_id, title
 
-        # Fall back to existing logic for EXTINF attributes
-        match = self.TVG_ID_REGEX.search(line)
-        if not match:
-            logger.debug("No TVG ID found in line, using name processor for title: %s", title)
+        # Fall back to tvg-id from EXTINF attributes
+        if not entry.tvg_id:
+            logger.debug("No TVG ID found, using name processor for title: %s", title)
             return name_processor.get_tvg_id_from_title(title), title
-        wip_tvg_id = match.group(1).strip()
+
+        wip_tvg_id = entry.tvg_id
 
         # If we have a country code in the title, we leave it as is
         if self.COUNTRY_CODE_REGEX.match(title):
@@ -257,10 +181,8 @@ class M3UParser:
                 break
 
         if original_title != title:
-            logger.trace(
-                "Extracted TVG ID: %s from line, updated title from: %s to: %s", wip_tvg_id, original_title, title
-            )
+            logger.trace("Extracted TVG ID: %s, updated title from: %s to: %s", wip_tvg_id, original_title, title)
         else:
-            logger.trace("Extracted TVG ID: %s from line for title: %s", wip_tvg_id, title)
+            logger.trace("Extracted TVG ID: %s for title: %s", wip_tvg_id, title)
 
         return wip_tvg_id, title

@@ -65,6 +65,18 @@ class FoundAceStream(BaseModel):
         return self
 
 
+class FoundIPTVStream(BaseModel):
+    """Model for a found IPTV stream (non-ace, direct HTTP/HLS)."""
+
+    title: str
+    upstream_url: str
+    source_name: str
+    tvg_id: str = ""
+    tvg_logo: str | None = None
+    group_title: str = ""
+    last_scraped_time: datetime
+
+
 class CandidateAceStream(BaseModel):
     """Model for a candidate AceStream."""
 

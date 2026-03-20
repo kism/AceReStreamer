@@ -55,3 +55,41 @@ def get_last_m3u8_segment_url(m3u_content: str) -> str | None:
 
     logger.warning("No segment URL found in M3U content.")
     return None
+
+
+def rewrite_iptv_hls_segments(
+    m3u_content: str,
+    slug: str,
+    server_name: str,
+) -> str:
+    """Rewrite segment URLs in an HLS playlist to route through the IPTV proxy.
+
+    Converts absolute/relative segment URLs to:
+    {server_name}/hls/web-segment/{slug}/{segment_path}
+
+    No token is appended — segments are served without auth for nginx caching.
+    """
+    if not m3u_content:
+        logger.warning("Received empty M3U content for IPTV rewrite.")
+        return ""
+
+    server_name = server_name.rstrip("/")
+
+    lines = m3u_content.splitlines()
+    result_lines: list[str] = []
+
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("#"):
+            result_lines.append(stripped)
+        elif stripped.startswith("http"):
+            # Absolute URL — extract the path portion after the last /
+            segment_name = stripped.rsplit("/", 1)[-1]
+            result_lines.append(f"{server_name}/hls/web-segment/{slug}/{segment_name}")
+        elif stripped:
+            # Relative URL — use as-is for the segment name
+            result_lines.append(f"{server_name}/hls/web-segment/{slug}/{stripped}")
+        else:
+            result_lines.append(stripped)
+
+    return "\n".join(result_lines)

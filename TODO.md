@@ -46,3 +46,9 @@ In each of the playlist config definitions
 Don't worry about the EPG for now, this will need to be fixed later.
 
 Before you get started, how much benefit would there be to cache in Redis? Right now this is all handled on disk in the instance/ directory. I don't want high ram usage and i'm proxying HLS segments, plus xml EPGs get pretty big too. Is there other options?
+
+---
+
+The RemoteSettingsFetcher should not include the iptv proxy settings
+
+The created adhoc stream list from ace should have all the x-last-found= fields filled in, can you check that that's still the case?

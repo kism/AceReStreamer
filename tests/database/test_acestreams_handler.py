@@ -169,29 +169,29 @@ def test_get_streams_as_iptv_url_validation(
     assert str(epg_url) == "http://192.168.100.130:5100/epg.xml"
 
     # Verify HLS stream URLs are valid
-    assert f"http://192.168.100.130:5100/hls/{content_id_1}" in m3u8_content
-    assert f"http://192.168.100.130:5100/hls/{content_id_2}" in m3u8_content
+    assert f"http://192.168.100.130:5100/hls/ace/{content_id_1}" in m3u8_content
+    assert f"http://192.168.100.130:5100/hls/ace/{content_id_2}" in m3u8_content
 
     # Validate each HLS URL can be parsed as HttpUrl
-    hls_url_1 = HttpUrl(f"http://192.168.100.130:5100/hls/{content_id_1}")
-    hls_url_2 = HttpUrl(f"http://192.168.100.130:5100/hls/{content_id_2}")
-    assert str(hls_url_1) == f"http://192.168.100.130:5100/hls/{content_id_1}"
-    assert str(hls_url_2) == f"http://192.168.100.130:5100/hls/{content_id_2}"
+    hls_url_1 = HttpUrl(f"http://192.168.100.130:5100/hls/ace/{content_id_1}")
+    hls_url_2 = HttpUrl(f"http://192.168.100.130:5100/hls/ace/{content_id_2}")
+    assert str(hls_url_1) == f"http://192.168.100.130:5100/hls/ace/{content_id_1}"
+    assert str(hls_url_2) == f"http://192.168.100.130:5100/hls/ace/{content_id_2}"
 
     # Test with token
     m3u8_with_token = handler.get_streams_as_iptv(token="test_token")
-    assert f"http://192.168.100.130:5100/hls/{content_id_1}?token=test_token" in m3u8_with_token
-    assert f"http://192.168.100.130:5100/hls/{content_id_2}?token=test_token" in m3u8_with_token
+    assert f"http://192.168.100.130:5100/hls/ace/{content_id_1}?token=test_token" in m3u8_with_token
+    assert f"http://192.168.100.130:5100/hls/ace/{content_id_2}?token=test_token" in m3u8_with_token
 
     # Test with different EXTERNAL_URL formats
     # URL without port
     monkeypatch.setattr("acere.instances.config.settings.EXTERNAL_URL", "http://ace.pytest.internal")
     m3u8_no_port = handler.get_streams_as_iptv(token="")
     assert "http://ace.pytest.internal/epg.xml" in m3u8_no_port
-    assert f"http://ace.pytest.internal/hls/{content_id_1}" in m3u8_no_port
+    assert f"http://ace.pytest.internal/hls/ace/{content_id_1}" in m3u8_no_port
 
     # HTTPS URL with port
     monkeypatch.setattr("acere.instances.config.settings.EXTERNAL_URL", "https://secure.ace.pytest.internal:8443")
     m3u8_https = handler.get_streams_as_iptv(token="")
     assert "https://secure.ace.pytest.internal:8443/epg.xml" in m3u8_https
-    assert f"https://secure.ace.pytest.internal:8443/hls/{content_id_1}" in m3u8_https
+    assert f"https://secure.ace.pytest.internal:8443/hls/ace/{content_id_1}" in m3u8_https

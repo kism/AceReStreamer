@@ -10,6 +10,7 @@ from acere.services.scraper.models import (
     CandidateAceStream,
     FoundAceStream,
     FoundAceStreamAPI,
+    FoundIPTVStream,
 )
 
 __all__ = [
@@ -18,6 +19,7 @@ __all__ = [
     "CandidateAceStream",
     "FoundAceStream",
     "FoundAceStreamAPI",
+    "FoundIPTVStream",
     "HTMLStreamScraper",
     "IPTVStreamScraper",
     "Quality",
