@@ -92,9 +92,6 @@ class IPTVProxyManager:
 
                 found_streams = async_loop.run_until_complete(scrape_all())
 
-                # Apply max_active_streams limits per source
-                found_streams = self._apply_stream_limits(found_streams)
-
                 # Write to database and update URL map
                 self._write_streams_to_database(found_streams)
 
@@ -125,34 +122,6 @@ class IPTVProxyManager:
                     logger.warning("Thread %s did not stop in time.", thread.name)
 
         self._stop_event.clear()
-
-    def _apply_stream_limits(self, streams: list[FoundIPTVStream]) -> list[FoundIPTVStream]:
-        """Apply max_active_streams limits per source."""
-        # Build a map of source_name -> max_active_streams
-        limits: dict[str, int] = {}
-        for m3u8_source in settings.iptv.m3u8:
-            if m3u8_source.max_active_streams > 0:
-                limits[m3u8_source.name] = m3u8_source.max_active_streams
-        for xtream_source in settings.iptv.xtream:
-            if xtream_source.max_active_streams > 0:
-                limits[xtream_source.name] = xtream_source.max_active_streams
-
-        if not limits:
-            return streams
-
-        # Count streams per source and filter
-        counts: dict[str, int] = {}
-        filtered: list[FoundIPTVStream] = []
-        for stream in streams:
-            source_name = stream.source_name
-            current_count = counts.get(source_name, 0)
-            max_count = limits.get(source_name, 0)
-            if max_count > 0 and current_count >= max_count:
-                continue
-            counts[source_name] = current_count + 1
-            filtered.append(stream)
-
-        return filtered
 
     def _write_streams_to_database(self, streams: list[FoundIPTVStream]) -> None:
         """Write found streams to the database and update URL map."""
