@@ -40,7 +40,7 @@ class RemoteSettingsFetcher:
 
     def get_export_config(self) -> ConfigExport:
         return ConfigExport(
-            ace=settings.ace,
+            scraper=settings.ace.scraper,
             epgs=settings.epgs,
         )
 
@@ -63,7 +63,7 @@ class RemoteSettingsFetcher:
             logger.info("Remote settings are identical to current settings; no update needed.")
             return current_config
 
-        settings.ace = config.ace
+        settings.ace.scraper = config.scraper
         settings.epgs = config.epgs
         settings.write_backup_config(
             config_path=None,
@@ -73,7 +73,7 @@ class RemoteSettingsFetcher:
         self.reload_config()
 
         return ConfigExport(
-            ace=settings.ace,
+            scraper=settings.ace.scraper,
             epgs=settings.epgs,
         )
 
@@ -120,7 +120,7 @@ class RemoteSettingsFetcher:
 
         self.update_config_with_export(
             ConfigExport(
-                ace=new_settings.ace,
+                scraper=new_settings.ace.scraper,
                 epgs=new_settings.epgs,
             )
         )

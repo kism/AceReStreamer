@@ -264,8 +264,10 @@ class AceReStreamerConf(BaseSettings):
         self.__dict__.update(other.__dict__)
 
 
-class ConfigExport(BaseModel): # No IPTV Proxy config here
+class ConfigExport(BaseModel):
+    """Export model for scraper and EPG configuration only."""
+
     model_config = ConfigDict(extra="ignore")
 
-    ace: AceConf
+    scraper: AceScrapeConf
     epgs: list[EPGInstanceConf]

@@ -51,4 +51,4 @@ Before you get started, how much benefit would there be to cache in Redis? Right
 
 The RemoteSettingsFetcher should not include the iptv proxy settings
 
-The created adhoc stream list from ace should have all the x-last-found= fields filled in, can you check that that's still the case?
+The created adhoc stream list from ace in scraper should have all the x-last-found= fields filled in, can you check that that's still the case? Is this tested?
