@@ -51,17 +51,23 @@ async def hls_web(slug: str, token: str = "") -> Response:
     try:
         timeout = aiohttp.ClientTimeout(total=REVERSE_PROXY_TIMEOUT)
         async with aiohttp.ClientSession(timeout=timeout) as session:
-            async with session.get(upstream_url) as resp:
+            async with session.get(upstream_url, allow_redirects=True) as resp:
                 resp.raise_for_status()
                 content_bytes = await resp.read()
                 status_code = resp.status
                 headers = resp.headers
+                final_url = str(resp.url)
     except (aiohttp.ClientError, TimeoutError) as e:
-        log_aiohttp_exception(logger, f"[iptv hls {slug}]", e)
+        log_aiohttp_exception(logger, f"[iptv hls {slug}] -> {upstream_url}", e)
         raise HTTPException(
             status_code=HTTPStatus.BAD_GATEWAY,
             detail="Failed to fetch upstream IPTV stream",
         ) from e
+
+    # If the upstream redirected, update the URL map so segment requests use the correct base
+    if final_url != upstream_url:
+        logger.debug("IPTV slug %s redirected: %s -> %s", slug, upstream_url, final_url)
+        iptv_manager.update_upstream_url(slug, final_url)
 
     content_str = content_bytes.decode("utf-8", errors="replace")
 
@@ -106,7 +112,7 @@ async def hls_web_segment(slug: str, segment: str) -> Response:
         resp.raise_for_status()
     except (aiohttp.ClientError, TimeoutError) as e:
         await session.close()
-        log_aiohttp_exception(logger, segment_url, e)
+        log_aiohttp_exception(logger, f"[iptv hls segment {slug}/{segment}] -> {segment_url}", e)
         raise HTTPException(
             status_code=HTTPStatus.BAD_GATEWAY,
             detail="Failed to fetch upstream segment",

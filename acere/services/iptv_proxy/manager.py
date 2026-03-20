@@ -56,6 +56,10 @@ class IPTVProxyManager:
         base_url = upstream.rsplit("/", 1)[0]
         return f"{base_url}/{segment}"
 
+    def update_upstream_url(self, slug: str, url: str) -> None:
+        """Update the in-memory URL map entry for a slug (e.g. after following a redirect)."""
+        self._url_map[slug] = url
+
     @staticmethod
     def make_slug(upstream_url: str) -> str:
         """Create a stable, URL-safe slug from an upstream URL."""

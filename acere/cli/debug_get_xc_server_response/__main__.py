@@ -56,7 +56,7 @@ async def fetch_all_endpoints(base_url: str, username: str, password: str, outpu
         console.print("Fetching get.php?type=m3u_plus...")
         out_file = output_dir / "get-m3u-plus.m3u"
         try:
-            async with session.get(get_url, params={**auth_params, "type": "m3u_plus"}) as response:
+            async with session.get(get_url, params={**auth_params, "type": "m3u_plus", "output": "m3u8"}) as response:
                 response.raise_for_status()
                 await _stream_to_file(response, out_file)
             console.print(f"  [green]Saved[/green] {out_file}")

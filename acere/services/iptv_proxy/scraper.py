@@ -25,6 +25,8 @@ else:
 logger = get_logger(__name__)
 
 IPTV_CACHE_MAX_AGE = timedelta(hours=1)
+DEFAULT_HTTP_PORT = 80
+DEFAULT_HTTPS_PORT = 443
 
 
 class IPTVProxyScraper:
@@ -77,7 +79,16 @@ class IPTVProxyScraper:
 
         category_map = await self._fetch_xc_category_map(api_url, source.name)
 
-        found_streams = self._build_xc_streams(streams_data, category_map, base_url, source)
+        # Build the stream base URL from server_info (may differ from the API URL)
+        server = api_response.server_info
+        if server.server_protocol == "https" and server.https_port:
+            port_suffix = "" if server.https_port == DEFAULT_HTTPS_PORT else f":{server.https_port}"
+            stream_base_url = f"https://{server.url.host}{port_suffix}"
+        else:
+            port_suffix = "" if server.port == DEFAULT_HTTP_PORT else f":{server.port}"
+            stream_base_url = f"http://{server.url.host}{port_suffix}"
+
+        found_streams = self._build_xc_streams(streams_data, category_map, stream_base_url, source)
         logger.info("Found %d streams from XC source '%s'", len(found_streams), source.name)
         return found_streams
 
