@@ -2,10 +2,7 @@ import Hls from "hls.js"
 
 import { UsersService } from "@/client"
 
-import baseURL from "@/helpers"
 import { updateStreamStatus } from "./useStreamStatus"
-
-const VITE_API_URL = baseURL()
 
 let hls: Hls | null = null
 let cachedToken: string | null = null
@@ -22,7 +19,7 @@ async function getAuthToken() {
 export async function getStreamURL(streamUrl: string) {
   const token = await getAuthToken()
   const separator = streamUrl.includes("?") ? "&" : "?"
-  return `${VITE_API_URL}${streamUrl}${separator}token=${token}`
+  return `${streamUrl}${separator}token=${token}`
 }
 
 export async function loadStream(streamUrl?: string) {

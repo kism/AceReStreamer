@@ -56,7 +56,7 @@ def streams() -> list[CombinedStreamAPI]:
                 last_scraped_time=iptv_stream.last_scraped_time,
                 program_title=program_title,
                 program_description=program_description,
-                quality=100,
+                quality=99,
             )
         )
 
