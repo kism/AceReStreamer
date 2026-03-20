@@ -87,25 +87,28 @@ class IPTVProxyManager:
             while not self._stop_event.is_set():
                 logger.info("Running IPTV proxy scraper [%s]", self._instance_id)
 
-                async def scrape_all() -> list[FoundIPTVStream]:
+                async def scrape_all() -> tuple[list[FoundIPTVStream], set[str]]:
+                    source_names = [s.name for s in settings.iptv.m3u8] + [s.name for s in settings.iptv.xtream]
                     tasks = [self._scraper.scrape_m3u8_source(source) for source in settings.iptv.m3u8]
                     tasks.extend(self._scraper.scrape_xtream_source(source) for source in settings.iptv.xtream)
 
                     all_results = await asyncio.gather(*tasks, return_exceptions=True)
 
                     found_streams: list[FoundIPTVStream] = []
-                    for result in all_results:
+                    scraped_source_names: set[str] = set()
+                    for source_name, result in zip(source_names, all_results, strict=False):
                         if isinstance(result, list):
                             found_streams.extend(result)
+                            scraped_source_names.add(source_name)
                         else:
-                            logger.error("Error occurred while scraping IPTV: %s", result)
+                            logger.error("Error occurred while scraping IPTV source '%s': %s", source_name, result)
 
-                    return found_streams
+                    return found_streams, scraped_source_names
 
-                found_streams = async_loop.run_until_complete(scrape_all())
+                found_streams, scraped_source_names = async_loop.run_until_complete(scrape_all())
 
                 # Write to database and update URL map
-                self._write_streams_to_database(found_streams)
+                self._write_streams_to_database(found_streams, scraped_source_names)
 
                 logger.info("IPTV proxy scraper found %d total streams", len(found_streams))
 
@@ -135,7 +138,7 @@ class IPTVProxyManager:
 
         self._stop_event.clear()
 
-    def _write_streams_to_database(self, streams: list[FoundIPTVStream]) -> None:
+    def _write_streams_to_database(self, streams: list[FoundIPTVStream], scraped_source_names: set[str]) -> None:
         """Write found streams to the database and update URL map."""
         handler = get_iptv_streams_db_handler()
         xc_handler = get_xc_stream_map_handler()
@@ -143,11 +146,21 @@ class IPTVProxyManager:
         self._url_map.clear()
 
         current_slugs: set[str] = set()
+        current_slugs_by_source: dict[str, set[str]] = {}
         for stream in streams:
             slug = self.make_slug(stream.upstream_url)
             handler.update_stream(stream=stream, slug=slug)
             self._url_map[slug] = stream.upstream_url
             current_slugs.add(slug)
+            current_slugs_by_source.setdefault(stream.source_name, set()).add(slug)
+
+        # Remove stale entries for successfully scraped sources
+        for source_name in scraped_source_names:
+            source_current_slugs = current_slugs_by_source.get(source_name, set())
+            stale_slugs = handler.get_slugs_by_source(source_name) - source_current_slugs
+            for slug in stale_slugs:
+                logger.info("Removing stale IPTV stream (slug: %s) from source '%s'", slug, source_name)
+                handler.delete_by_slug(slug)
 
         # Register all current IPTV slugs in XC stream map and cleanup stale entries
         xc_handler.register_keys("iptv", current_slugs)

@@ -78,6 +78,12 @@ class IPTVStreamDBHandler(BaseDatabaseHandler):
                 return True
             return False
 
+    def get_slugs_by_source(self, source_name: str) -> set[str]:
+        """Get all slugs for streams belonging to a given source."""
+        with self._get_session() as session:
+            statement = select(IPTVStreamDBEntry.slug).where(IPTVStreamDBEntry.source_name == source_name)
+            return set(session.exec(statement).all())
+
     def get_streams(self) -> list[IPTVStreamDBEntry]:
         """Get all IPTV streams."""
         with self._get_session() as session:
