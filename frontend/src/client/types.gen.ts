@@ -161,6 +161,23 @@ export type Body_Login_login_access_token = {
 };
 
 /**
+ * Unified stream model combining ace and IPTV streams, for API use.
+ */
+export type CombinedStreamAPI = {
+    stream_type: 'ace' | 'iptv';
+    title: string;
+    tvg_id: string;
+    tvg_logo?: (string | null);
+    group_title: string;
+    last_scraped_time: string;
+    program_title: string;
+    program_description: string;
+    quality: number;
+};
+
+export type stream_type = 'ace' | 'iptv';
+
+/**
  * Export model for scraper and EPG configuration only.
  */
 export type ConfigExport_Input = {
@@ -255,6 +272,22 @@ export type FoundAceStreamAPI = {
     m3u_failures: number;
 };
 
+/**
+ * Model for an IPTV proxy stream, for API use.
+ */
+export type FoundIPTVStreamAPI = {
+    title: string;
+    slug: string;
+    upstream_url: string;
+    source_name: string;
+    tvg_id: string;
+    tvg_logo?: (string | null);
+    group_title: string;
+    last_scraped_time: string;
+    program_title: string;
+    program_description: string;
+};
+
 export type HealthResponseModel = {
     version: string;
     version_full: string;
@@ -274,6 +307,22 @@ export type HTMLScraperFilter = {
 export type HTTPValidationError = {
     detail?: Array<ValidationError>;
 };
+
+/**
+ * Represent an IPTV proxy source, generic for Xtream and M3U8 sources.
+ */
+export type IPTVSourceApi = {
+    name: string;
+    url: string;
+    type: 'xtream' | 'm3u8';
+    title_filter?: TitleFilter;
+    category_filter?: Array<(string)>;
+    max_active_streams?: number;
+    username?: (string | null);
+    password?: (string | null);
+};
+
+export type type2 = 'xtream' | 'm3u8';
 
 /**
  * Model for a manually added AceStream.
@@ -481,6 +530,28 @@ export type AcePoolStatsByPidData = {
 
 export type AcePoolStatsByPidResponse = (AcePoolStat);
 
+export type AceStreamsByContentIdData = {
+    contentId: string;
+};
+
+export type AceStreamsByContentIdResponse = (FoundAceStreamAPI);
+
+export type AceStreamsDeleteByContentIdData = {
+    contentId: string;
+};
+
+export type AceStreamsDeleteByContentIdResponse = (MessageResponseModel);
+
+export type AceStreamsStreamsResponse = (Array<FoundAceStreamAPI>);
+
+export type AceStreamsAddStreamData = {
+    requestBody: ManuallyAddedAceStream;
+};
+
+export type AceStreamsAddStreamResponse = (MessageResponseModel);
+
+export type AceStreamsCheckResponse = (MessageResponseModel);
+
 export type ConfigGetConfigResponse = (ConfigExport_Output);
 
 export type ConfigUpdateConfigData = {
@@ -528,6 +599,40 @@ export type FrontendFrontendIndexHtmlResponse = (string);
 export type FrontendFrontendIndexResponse = (string);
 
 export type HealthHealthResponse = (HealthResponseModel);
+
+export type IptvSourcesSourcesResponse = (Array<IPTVSourceApi>);
+
+export type IptvSourcesAddSourceData = {
+    requestBody: (IPTVSourceApi | Array<IPTVSourceApi>);
+};
+
+export type IptvSourcesAddSourceResponse = (MessageResponseModel);
+
+export type IptvSourcesSourceData = {
+    sourceName: string;
+};
+
+export type IptvSourcesSourceResponse = (IPTVSourceApi);
+
+export type IptvSourcesRemoveSourceData = {
+    sourceName: string;
+};
+
+export type IptvSourcesRemoveSourceResponse = (MessageResponseModel);
+
+export type IptvStreamsStreamsResponse = (Array<FoundIPTVStreamAPI>);
+
+export type IptvStreamsBySlugData = {
+    slug: string;
+};
+
+export type IptvStreamsBySlugResponse = (FoundIPTVStreamAPI);
+
+export type IptvStreamsDeleteBySlugData = {
+    slug: string;
+};
+
+export type IptvStreamsDeleteBySlugResponse = (MessageResponseModel);
 
 export type LoginLoginAccessTokenData = {
     formData: Body_Login_login_access_token;
@@ -617,27 +722,7 @@ export type ScraperAddNameOverrideData = {
 
 export type ScraperAddNameOverrideResponse = (MessageResponseModel);
 
-export type StreamsByContentIdData = {
-    contentId: string;
-};
-
-export type StreamsByContentIdResponse = (FoundAceStreamAPI);
-
-export type StreamsDeleteByContentIdData = {
-    contentId: string;
-};
-
-export type StreamsDeleteByContentIdResponse = (MessageResponseModel);
-
-export type StreamsStreamsResponse = (Array<FoundAceStreamAPI>);
-
-export type StreamsAddStreamData = {
-    requestBody: ManuallyAddedAceStream;
-};
-
-export type StreamsAddStreamResponse = (MessageResponseModel);
-
-export type StreamsCheckResponse = (MessageResponseModel);
+export type StreamsStreamsResponse = (Array<CombinedStreamAPI>);
 
 export type UsersReadUsersData = {
     limit?: number;

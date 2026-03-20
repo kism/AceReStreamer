@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { AcePoolPoolResponse, AcePoolGetByContentIdData, AcePoolGetByContentIdResponse, AcePoolDeleteByContentIdData, AcePoolDeleteByContentIdResponse, AcePoolGetByPidData, AcePoolGetByPidResponse, AcePoolStatsResponse, AcePoolStatsByContentIdData, AcePoolStatsByContentIdResponse, AcePoolStatsByPidData, AcePoolStatsByPidResponse, ConfigGetConfigResponse, ConfigUpdateConfigData, ConfigUpdateConfigResponse, ConfigFetchRemoteSettingsResponse, ConfigTriggerFetchRemoteSettingsData, ConfigTriggerFetchRemoteSettingsResponse, ConfigReloadConfigResponse, EpgEpgHealthResponse, EpgGetEpgsResponse, EpgAddEpgData, EpgAddEpgResponse, EpgGetEpgData, EpgGetEpgResponse, EpgDeleteEpgData, EpgDeleteEpgResponse, EpgTvgEpgMappingsResponse, FrontendFrontendIndexHtmlResponse, FrontendFrontendIndexResponse, HealthHealthResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginResetPasswordData, LoginResetPasswordResponse, MediaIptvIptvM3U83Data, MediaIptvIptvM3U83Response, MediaIptvIptvM3U2Data, MediaIptvIptvM3U2Response, MediaIptvIptvM3U81Data, MediaIptvIptvM3U81Response, MediaXmlEpgXmlData, MediaXmlEpgXmlResponse, MediaXmlEpgXml3Data, MediaXmlEpgXml3Response, PrivateCreateUserData, PrivateCreateUserResponse, ScraperSourcesResponse, ScraperAddSourceData, ScraperAddSourceResponse, ScraperSourceData, ScraperSourceResponse, ScraperRemoveSourceData, ScraperRemoveSourceResponse, ScraperGetNameOverridesResponse, ScraperDeleteNameOverrideData, ScraperDeleteNameOverrideResponse, ScraperAddNameOverrideData, ScraperAddNameOverrideResponse, StreamsByContentIdData, StreamsByContentIdResponse, StreamsDeleteByContentIdData, StreamsDeleteByContentIdResponse, StreamsStreamsResponse, StreamsAddStreamData, StreamsAddStreamResponse, StreamsCheckResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersReadStreamTokenMeResponse, UsersRegenerateStreamTokenMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, XtreamCodesXcIptvRouterData, XtreamCodesXcIptvRouterResponse, XtreamCodesXcGetData, XtreamCodesXcGetResponse } from './types.gen';
+import type { AcePoolPoolResponse, AcePoolGetByContentIdData, AcePoolGetByContentIdResponse, AcePoolDeleteByContentIdData, AcePoolDeleteByContentIdResponse, AcePoolGetByPidData, AcePoolGetByPidResponse, AcePoolStatsResponse, AcePoolStatsByContentIdData, AcePoolStatsByContentIdResponse, AcePoolStatsByPidData, AcePoolStatsByPidResponse, AceStreamsByContentIdData, AceStreamsByContentIdResponse, AceStreamsDeleteByContentIdData, AceStreamsDeleteByContentIdResponse, AceStreamsStreamsResponse, AceStreamsAddStreamData, AceStreamsAddStreamResponse, AceStreamsCheckResponse, ConfigGetConfigResponse, ConfigUpdateConfigData, ConfigUpdateConfigResponse, ConfigFetchRemoteSettingsResponse, ConfigTriggerFetchRemoteSettingsData, ConfigTriggerFetchRemoteSettingsResponse, ConfigReloadConfigResponse, EpgEpgHealthResponse, EpgGetEpgsResponse, EpgAddEpgData, EpgAddEpgResponse, EpgGetEpgData, EpgGetEpgResponse, EpgDeleteEpgData, EpgDeleteEpgResponse, EpgTvgEpgMappingsResponse, FrontendFrontendIndexHtmlResponse, FrontendFrontendIndexResponse, HealthHealthResponse, IptvSourcesSourcesResponse, IptvSourcesAddSourceData, IptvSourcesAddSourceResponse, IptvSourcesSourceData, IptvSourcesSourceResponse, IptvSourcesRemoveSourceData, IptvSourcesRemoveSourceResponse, IptvStreamsStreamsResponse, IptvStreamsBySlugData, IptvStreamsBySlugResponse, IptvStreamsDeleteBySlugData, IptvStreamsDeleteBySlugResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginResetPasswordData, LoginResetPasswordResponse, MediaIptvIptvM3U83Data, MediaIptvIptvM3U83Response, MediaIptvIptvM3U2Data, MediaIptvIptvM3U2Response, MediaIptvIptvM3U81Data, MediaIptvIptvM3U81Response, MediaXmlEpgXmlData, MediaXmlEpgXmlResponse, MediaXmlEpgXml3Data, MediaXmlEpgXml3Response, PrivateCreateUserData, PrivateCreateUserResponse, ScraperSourcesResponse, ScraperAddSourceData, ScraperAddSourceResponse, ScraperSourceData, ScraperSourceResponse, ScraperRemoveSourceData, ScraperRemoveSourceResponse, ScraperGetNameOverridesResponse, ScraperDeleteNameOverrideData, ScraperDeleteNameOverrideResponse, ScraperAddNameOverrideData, ScraperAddNameOverrideResponse, StreamsStreamsResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersReadStreamTokenMeResponse, UsersRegenerateStreamTokenMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, XtreamCodesXcIptvRouterData, XtreamCodesXcIptvRouterResponse, XtreamCodesXcGetData, XtreamCodesXcGetResponse } from './types.gen';
 
 export class AcePoolService {
     /**
@@ -134,6 +134,96 @@ export class AcePoolService {
             errors: {
                 422: 'Validation Error'
             }
+        });
+    }
+}
+
+export class AceStreamsService {
+    /**
+     * By Content Id
+     * API endpoint to get a specific stream by Ace ID.
+     * @param data The data for the request.
+     * @param data.contentId
+     * @returns FoundAceStreamAPI Successful Response
+     * @throws ApiError
+     */
+    public static byContentId(data: AceStreamsByContentIdData): CancelablePromise<AceStreamsByContentIdResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/ace/streams/content_id/{content_id}',
+            path: {
+                content_id: data.contentId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Delete By Content Id
+     * API endpoint to delete a specific stream by Ace ID.
+     * @param data The data for the request.
+     * @param data.contentId
+     * @returns MessageResponseModel Successful Response
+     * @throws ApiError
+     */
+    public static deleteByContentId(data: AceStreamsDeleteByContentIdData): CancelablePromise<AceStreamsDeleteByContentIdResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/ace/streams/content_id/{content_id}',
+            path: {
+                content_id: data.contentId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Streams
+     * API endpoint to get the flat streams.
+     * @returns FoundAceStreamAPI Successful Response
+     * @throws ApiError
+     */
+    public static streams(): CancelablePromise<AceStreamsStreamsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/ace/streams/'
+        });
+    }
+    
+    /**
+     * Add Stream
+     * API endpoint to add a specific stream by Ace ID.
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns MessageResponseModel Successful Response
+     * @throws ApiError
+     */
+    public static addStream(data: AceStreamsAddStreamData): CancelablePromise<AceStreamsAddStreamResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/ace/streams/',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Check
+     * API endpoint to attempt to check all streams health.
+     * @returns MessageResponseModel Successful Response
+     * @throws ApiError
+     */
+    public static check(): CancelablePromise<AceStreamsCheckResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/ace/streams/check'
         });
     }
 }
@@ -361,6 +451,140 @@ export class HealthService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/health'
+        });
+    }
+}
+
+export class IptvSourcesService {
+    /**
+     * Sources
+     * API endpoint to list all IPTV proxy sources.
+     * @returns IPTVSourceApi Successful Response
+     * @throws ApiError
+     */
+    public static sources(): CancelablePromise<IptvSourcesSourcesResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/iptv/sources/'
+        });
+    }
+    
+    /**
+     * Add Source
+     * API endpoint to add IPTV proxy sources.
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns MessageResponseModel Successful Response
+     * @throws ApiError
+     */
+    public static addSource(data: IptvSourcesAddSourceData): CancelablePromise<IptvSourcesAddSourceResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/iptv/sources/',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Source
+     * API endpoint to get a single IPTV proxy source by name.
+     * @param data The data for the request.
+     * @param data.sourceName
+     * @returns IPTVSourceApi Successful Response
+     * @throws ApiError
+     */
+    public static source(data: IptvSourcesSourceData): CancelablePromise<IptvSourcesSourceResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/iptv/sources/{source_name}',
+            path: {
+                source_name: data.sourceName
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Remove Source
+     * API endpoint to remove an IPTV proxy source.
+     * @param data The data for the request.
+     * @param data.sourceName
+     * @returns MessageResponseModel Successful Response
+     * @throws ApiError
+     */
+    public static removeSource(data: IptvSourcesRemoveSourceData): CancelablePromise<IptvSourcesRemoveSourceResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/iptv/sources/{source_name}',
+            path: {
+                source_name: data.sourceName
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+}
+
+export class IptvStreamsService {
+    /**
+     * Streams
+     * API endpoint to get all IPTV proxy streams.
+     * @returns FoundIPTVStreamAPI Successful Response
+     * @throws ApiError
+     */
+    public static streams(): CancelablePromise<IptvStreamsStreamsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/iptv/streams/'
+        });
+    }
+    
+    /**
+     * By Slug
+     * API endpoint to get a specific IPTV stream by slug.
+     * @param data The data for the request.
+     * @param data.slug
+     * @returns FoundIPTVStreamAPI Successful Response
+     * @throws ApiError
+     */
+    public static bySlug(data: IptvStreamsBySlugData): CancelablePromise<IptvStreamsBySlugResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/iptv/streams/slug/{slug}',
+            path: {
+                slug: data.slug
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Delete By Slug
+     * API endpoint to delete an IPTV stream by slug.
+     * @param data The data for the request.
+     * @param data.slug
+     * @returns MessageResponseModel Successful Response
+     * @throws ApiError
+     */
+    public static deleteBySlug(data: IptvStreamsDeleteBySlugData): CancelablePromise<IptvStreamsDeleteBySlugResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/iptv/streams/slug/{slug}',
+            path: {
+                slug: data.slug
+            },
+            errors: {
+                422: 'Validation Error'
+            }
         });
     }
 }
@@ -690,90 +914,15 @@ export class ScraperService {
 
 export class StreamsService {
     /**
-     * By Content Id
-     * API endpoint to get a specific stream by Ace ID.
-     * @param data The data for the request.
-     * @param data.contentId
-     * @returns FoundAceStreamAPI Successful Response
-     * @throws ApiError
-     */
-    public static byContentId(data: StreamsByContentIdData): CancelablePromise<StreamsByContentIdResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/v1/streams/content_id/{content_id}',
-            path: {
-                content_id: data.contentId
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Delete By Content Id
-     * API endpoint to delete a specific stream by Ace ID.
-     * @param data The data for the request.
-     * @param data.contentId
-     * @returns MessageResponseModel Successful Response
-     * @throws ApiError
-     */
-    public static deleteByContentId(data: StreamsDeleteByContentIdData): CancelablePromise<StreamsDeleteByContentIdResponse> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/v1/streams/content_id/{content_id}',
-            path: {
-                content_id: data.contentId
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
      * Streams
-     * API endpoint to get the flat streams.
-     * @returns FoundAceStreamAPI Successful Response
+     * API endpoint to get all streams (ace and IPTV combined).
+     * @returns CombinedStreamAPI Successful Response
      * @throws ApiError
      */
     public static streams(): CancelablePromise<StreamsStreamsResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/streams/'
-        });
-    }
-    
-    /**
-     * Add Stream
-     * API endpoint to add a specific stream by Ace ID.
-     * @param data The data for the request.
-     * @param data.requestBody
-     * @returns MessageResponseModel Successful Response
-     * @throws ApiError
-     */
-    public static addStream(data: StreamsAddStreamData): CancelablePromise<StreamsAddStreamResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/streams/',
-            body: data.requestBody,
-            mediaType: 'application/json',
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Check
-     * API endpoint to attempt to check all streams health.
-     * @returns MessageResponseModel Successful Response
-     * @throws ApiError
-     */
-    public static check(): CancelablePromise<StreamsCheckResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/streams/check'
         });
     }
 }

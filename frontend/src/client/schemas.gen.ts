@@ -617,6 +617,60 @@ export const Body_Login_login_access_tokenSchema = {
     title: 'Body_Login-login_access_token'
 } as const;
 
+export const CombinedStreamAPISchema = {
+    properties: {
+        stream_type: {
+            type: 'string',
+            enum: ['ace', 'iptv'],
+            title: 'Stream Type'
+        },
+        title: {
+            type: 'string',
+            title: 'Title'
+        },
+        tvg_id: {
+            type: 'string',
+            title: 'Tvg Id'
+        },
+        tvg_logo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Tvg Logo'
+        },
+        group_title: {
+            type: 'string',
+            title: 'Group Title'
+        },
+        last_scraped_time: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Last Scraped Time'
+        },
+        program_title: {
+            type: 'string',
+            title: 'Program Title'
+        },
+        program_description: {
+            type: 'string',
+            title: 'Program Description'
+        },
+        quality: {
+            type: 'integer',
+            title: 'Quality'
+        }
+    },
+    type: 'object',
+    required: ['stream_type', 'title', 'tvg_id', 'group_title', 'last_scraped_time', 'program_title', 'program_description', 'quality'],
+    title: 'CombinedStreamAPI',
+    description: 'Unified stream model combining ace and IPTV streams, for API use.'
+} as const;
+
 export const ConfigExport_InputSchema = {
     properties: {
         scraper: {
@@ -879,6 +933,63 @@ export const FoundAceStreamAPISchema = {
     description: 'Model for a found AceStream.'
 } as const;
 
+export const FoundIPTVStreamAPISchema = {
+    properties: {
+        title: {
+            type: 'string',
+            title: 'Title'
+        },
+        slug: {
+            type: 'string',
+            title: 'Slug'
+        },
+        upstream_url: {
+            type: 'string',
+            title: 'Upstream Url'
+        },
+        source_name: {
+            type: 'string',
+            title: 'Source Name'
+        },
+        tvg_id: {
+            type: 'string',
+            title: 'Tvg Id'
+        },
+        tvg_logo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Tvg Logo'
+        },
+        group_title: {
+            type: 'string',
+            title: 'Group Title'
+        },
+        last_scraped_time: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Last Scraped Time'
+        },
+        program_title: {
+            type: 'string',
+            title: 'Program Title'
+        },
+        program_description: {
+            type: 'string',
+            title: 'Program Description'
+        }
+    },
+    type: 'object',
+    required: ['title', 'slug', 'upstream_url', 'source_name', 'tvg_id', 'group_title', 'last_scraped_time', 'program_title', 'program_description'],
+    title: 'FoundIPTVStreamAPI',
+    description: 'Model for an IPTV proxy stream, for API use.'
+} as const;
+
 export const HTMLScraperFilterSchema = {
     properties: {
         target_class: {
@@ -940,6 +1051,76 @@ export const HealthResponseModelSchema = {
     type: 'object',
     required: ['version', 'version_full', 'time_zone', 'threads', 'memory_usage_mb'],
     title: 'HealthResponseModel'
+} as const;
+
+export const IPTVSourceApiSchema = {
+    properties: {
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        url: {
+            type: 'string',
+            maxLength: 2083,
+            minLength: 1,
+            format: 'uri',
+            title: 'Url'
+        },
+        type: {
+            type: 'string',
+            enum: ['xtream', 'm3u8'],
+            title: 'Type'
+        },
+        title_filter: {
+            '$ref': '#/components/schemas/TitleFilter',
+            default: {
+                always_exclude_words: [],
+                always_include_words: [],
+                exclude_words: [],
+                include_words: [],
+                regex_postprocessing: []
+            }
+        },
+        category_filter: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Category Filter',
+            default: []
+        },
+        max_active_streams: {
+            type: 'integer',
+            title: 'Max Active Streams',
+            default: 0
+        },
+        username: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Username'
+        },
+        password: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Password'
+        }
+    },
+    type: 'object',
+    required: ['name', 'url', 'type'],
+    title: 'IPTVSourceApi',
+    description: 'Represent an IPTV proxy source, generic for Xtream and M3U8 sources.'
 } as const;
 
 export const ManuallyAddedAceStreamSchema = {
