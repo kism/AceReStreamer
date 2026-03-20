@@ -41,7 +41,6 @@ class RemoteSettingsFetcher:
     def get_export_config(self) -> ConfigExport:
         return ConfigExport(
             ace=settings.ace,
-            iptv=settings.iptv,
             epgs=settings.epgs,
         )
 
@@ -75,7 +74,6 @@ class RemoteSettingsFetcher:
 
         return ConfigExport(
             ace=settings.ace,
-            iptv=settings.iptv,
             epgs=settings.epgs,
         )
 
@@ -123,7 +121,6 @@ class RemoteSettingsFetcher:
         self.update_config_with_export(
             ConfigExport(
                 ace=new_settings.ace,
-                iptv=new_settings.iptv,
                 epgs=new_settings.epgs,
             )
         )
