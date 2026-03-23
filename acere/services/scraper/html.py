@@ -229,7 +229,7 @@ class HTMLStreamScraper(ScraperCommon):
 
         for html_class in html_classes_good:
             if html_class == target_html_class:
-                candidate_title = name_processor.cleanup_candidate_title(html_tag.get_text())
+                candidate_title = name_processor.cleanup_ace_candidate_title(html_tag.get_text())
                 candidate_titles.append(candidate_title)
 
         return candidate_titles

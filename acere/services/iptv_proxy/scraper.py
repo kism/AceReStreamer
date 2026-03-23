@@ -1,11 +1,10 @@
 """IPTV proxy scraper — fetches upstream playlists and XC APIs."""
-
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
 import aiohttp
+from pydantic import ValidationError
 
-from acere.services.scraper import name_processor
 from acere.services.scraper.cache import ScraperCache
 from acere.services.scraper.m3u_common import GenericM3UParser, M3UEntry
 from acere.services.scraper.models import FoundIPTVStream
@@ -79,7 +78,7 @@ class IPTVProxyScraper:
 
         try:
             streams_data = [XCStream(**s) for s in streams_raw]
-        except Exception:
+        except ValidationError:
             logger.exception("Failed to parse XC streams for source '%s'", source.name)
             return []
 
@@ -105,8 +104,8 @@ class IPTVProxyScraper:
         if categories_data and isinstance(categories_data, list):
             for cat_data in categories_data:
                 try:
-                    cat = XCCategory.model_validate(cat_data)
-                except Exception:
+                    cat = XCCategory(**cat_data)
+                except ValidationError:
                     continue
                 if cat.category_name:
                     category_map[cat.category_id] = cat.category_name
