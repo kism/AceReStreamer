@@ -95,6 +95,7 @@ class AceStreamDBHandler(BaseDatabaseHandler):
         """Get streams for IPTV generation, with caching, and title deduplication."""
         if self._get_streams_cache is None:
             self._get_streams_cache = self.get_streams().copy()
+            self._mark_ace_streams(self._get_streams_cache)
             self._mark_alternate_streams(self._get_streams_cache)
 
         return self._get_streams_cache
@@ -228,3 +229,10 @@ class AceStreamDBHandler(BaseDatabaseHandler):
             # Mark all but the first as alternate
             for n, stream in enumerate(streams_results):
                 stream.title += f" #{n + 1}"
+
+    def _mark_ace_streams(self, streams: list[AceStreamDBEntry]) -> None:
+        """Mark streams that are from AceStream with a special marker in the title."""
+        if len(settings.iptv.xtream) != 0 or len(settings.iptv.m3u8) != 0:
+            # We have an iptv source that we are proxying, so we want to mark these as ace streams.
+            for stream in streams:
+                stream.title += " [ACE]"

@@ -40,12 +40,12 @@ This logic might be cooked
     segment_url = iptv_manager.get_segment_upstream_url(slug, segment)
 ```
 
-Remove missing iptv urls from scrape immediately.
+~~Remove missing iptv urls from scrape immediately.~~
 
-Quality checking for iptv
-
-Mark ace streams if iptv proxy is enabled.
+~~Mark ace streams if iptv proxy is enabled.~~
 
 ~~Some non pydantic api handling, there are some gets~~
 
-.model_validate > \*\*thing
+~~.model_validate > \*\*thing~~
+
+Quality checking for iptv
