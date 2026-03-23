@@ -141,7 +141,7 @@ class EPGHandler:
         self._condensed_epg_bytes = new_condensed_epg_bytes
 
     # region Setters
-    def add_tvg_ids(self, tvg_ids: list[str]) -> None:
+    def add_tvg_ids(self, tvg_ids: list[str] | set[str]) -> None:
         """Set the TVG IDs for which EPG data should be condensed."""
         for tvg_id in tvg_ids:
             if tvg_id != "":

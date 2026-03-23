@@ -6,6 +6,7 @@ import threading
 from typing import TYPE_CHECKING
 
 from acere.instances.config import settings
+from acere.instances.epg import get_epg_handler
 from acere.instances.iptv_streams import get_iptv_streams_db_handler
 from acere.instances.xc_stream_map import get_xc_stream_map_handler
 from acere.utils.logger import get_logger
@@ -147,12 +148,16 @@ class IPTVProxyManager:
 
         current_slugs: set[str] = set()
         current_slugs_by_source: dict[str, set[str]] = {}
+        tvg_ids_to_add: set[str] = set()
         for stream in streams:
+            tvg_ids_to_add.add(stream.tvg_id)
             slug = self.make_slug(stream.upstream_url)
             handler.update_stream(stream=stream, slug=slug)
             self._url_map[slug] = stream.upstream_url
             current_slugs.add(slug)
             current_slugs_by_source.setdefault(stream.source_name, set()).add(slug)
+
+        get_epg_handler().add_tvg_ids(tvg_ids=tvg_ids_to_add)
 
         # Remove stale entries for successfully scraped sources
         for source_name in scraped_source_names:

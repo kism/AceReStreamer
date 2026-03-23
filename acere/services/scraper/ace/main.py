@@ -175,8 +175,7 @@ class AceScraper:
 
     def _update_epg_with_streams(self) -> None:
         """Update the EPG with the found streams."""
-        tvg_id_list = [stream.tvg_id for stream in self._streams.values()]
-        get_epg_handler().add_tvg_ids(tvg_ids=tvg_id_list)
+        get_epg_handler().add_tvg_ids(tvg_ids=[stream.tvg_id for stream in self._streams.values()])
 
     def _register_xc_mappings(self) -> None:
         """Register all current ace streams in the XC stream map."""
