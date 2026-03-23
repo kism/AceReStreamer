@@ -35,7 +35,7 @@ COUNTRY_CODE_PATTERN = re.compile(r"\[([A-Z]{2})\]")
 COMPILED_REGEX_CACHE: dict[str, re.Pattern[str]] = {}
 
 
-def cleanup_candidate_title(title: str) -> str:
+def cleanup_ace_candidate_title(title: str) -> str:
     """Cleanup the candidate title."""
     title = title.strip()
 

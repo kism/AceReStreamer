@@ -124,8 +124,8 @@ class IPTVProxyScraper:
         now = datetime.now(tz=UTC)
 
         for stream in streams_data:
-            stream_name = stream.name.strip()
-            if not stream_name:
+            title = stream.name.strip()
+            if not title:
                 continue
 
             group_title = category_map.get(stream.category_id, "") or "General"
@@ -136,8 +136,6 @@ class IPTVProxyScraper:
 
             group_title = source.category_rename.get(group_title, group_title)
 
-            # Apply title filter
-            title = name_processor.cleanup_candidate_title(stream_name)
             if not source.title_filter.check_allowed(title):
                 continue
 
@@ -184,7 +182,7 @@ class IPTVProxyScraper:
             if not entry.url.startswith("http"):
                 continue
 
-            title = name_processor.cleanup_candidate_title(entry.title)
+            title = entry.title.strip()
 
             # Apply title filter
             if not source.title_filter.check_allowed(title):
