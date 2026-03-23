@@ -9,7 +9,7 @@ from acere.services.scraper import name_processor
 from acere.services.scraper.cache import ScraperCache
 from acere.services.scraper.m3u_common import GenericM3UParser, M3UEntry
 from acere.services.scraper.models import FoundIPTVStream
-from acere.services.xc.models import XCApiResponse, XCStream
+from acere.services.xc.models import XCApiResponse, XCCategory, XCStream
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.logger import get_logger
 
@@ -103,11 +103,13 @@ class IPTVProxyScraper:
         categories_data = await self._fetch_json(f"{api_url}&action=get_live_categories", source_name)
         category_map: dict[int, str] = {}
         if categories_data and isinstance(categories_data, list):
-            for cat in categories_data:
-                cat_id = cat.get("category_id")
-                cat_name = str(cat.get("category_name", ""))
-                if cat_id is not None and cat_name:
-                    category_map[cat_id] = cat_name
+            for cat_data in categories_data:
+                try:
+                    cat = XCCategory.model_validate(cat_data)
+                except Exception:
+                    continue
+                if cat.category_name:
+                    category_map[cat.category_id] = cat.category_name
         return category_map
 
     def _build_xc_streams(

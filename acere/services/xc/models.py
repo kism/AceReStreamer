@@ -1,10 +1,11 @@
 """Pydantic models for XC (Xtream Codes) IPTV services."""
 
 from datetime import UTC
-from typing import Self
+from typing import Annotated, Self
 
 from pydantic import (
     BaseModel,
+    BeforeValidator,
     HttpUrl,
     field_serializer,
     field_validator,
@@ -16,13 +17,23 @@ from acere.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
+def _coerce_str_to_int(value: object) -> object:
+    """Coerce string values to int for XC API responses that return ints as strings."""
+    if isinstance(value, str):
+        return int(value)
+    return value
+
+
+CoercedInt = Annotated[int, BeforeValidator(_coerce_str_to_int)]
+
+
 class XCUserInfo(BaseModel):
     """Model for XC User Information."""
 
     username: str
     password: str
     message: str = "Welcome to AceRestreamer"
-    auth: int = 1
+    auth: CoercedInt = 1
     status: str = "Active"
     exp_date: str
     is_trial: str = "0"
@@ -36,8 +47,8 @@ class XCServerInfo(BaseModel):
     """Model for XC Server Information."""
 
     url: HttpUrl
-    port: int
-    https_port: int | None
+    port: CoercedInt
+    https_port: CoercedInt | None
     server_protocol: str
 
     @field_validator("url", mode="before")
@@ -50,7 +61,7 @@ class XCServerInfo(BaseModel):
 
     # rtmp_port would go here, but naa null
     timezone: str = UTC.tzname(None)
-    timestamp_now: int
+    timestamp_now: CoercedInt
     time_now: str
     process: bool = True
 
@@ -82,28 +93,28 @@ class XCApiResponse(BaseModel):
 class XCCategory(BaseModel):
     """Model for XC Category."""
 
-    category_id: int
+    category_id: CoercedInt
     category_name: str
-    parent_id: int = 0
+    parent_id: CoercedInt = 0
 
 
 class XCStream(BaseModel):
     """Model for XC Stream."""
 
-    num: int
+    num: CoercedInt
     name: str
     stream_type: str = "live"
-    stream_id: int
+    stream_id: CoercedInt
     stream_icon: str
     epg_channel_id: str = ""
     added: str = "1500000000"
-    is_adult: int = 0
-    category_id: int
-    category_ids: list[int] = []
+    is_adult: CoercedInt = 0
+    category_id: CoercedInt
+    category_ids: list[CoercedInt] = []
     custom_sid: None = None
-    tv_archive: int = 0
+    tv_archive: CoercedInt = 0
     direct_source: str = ""
-    tv_archive_duration: int = 0
+    tv_archive_duration: CoercedInt = 0
 
     @model_validator(mode="after")
     def create_category_ids(self) -> Self:
