@@ -81,7 +81,7 @@ class XCApiResponse(BaseModel):
 class XCCategory(BaseModel):
     """Model for XC Category."""
 
-    category_id: str
+    category_id: int
     category_name: str
     parent_id: int = 0
 
@@ -96,13 +96,13 @@ class XCStream(BaseModel):
     stream_icon: str
     epg_channel_id: str = ""
     added: str = "1500000000"
-    is_adult: str = "0"
-    category_id: str
-    category_ids: list[str] = []
+    is_adult: int = 0
+    category_id: int
+    category_ids: list[int] = []
     custom_sid: None = None
-    tv_archive: str = "0"
+    tv_archive: int = 0
     direct_source: str = ""
-    tv_archive_duration: str = "0"
+    tv_archive_duration: int = 0
 
     @model_validator(mode="after")
     def create_category_ids(self) -> Self:
