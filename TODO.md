@@ -47,3 +47,5 @@ Quality checking for iptv
 Mark ace streams if iptv proxy is enabled.
 
 ~~Some non pydantic api handling, there are some gets~~
+
+cleanup_candidate_title -> cleanup_ace_candidate_title

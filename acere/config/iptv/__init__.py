@@ -6,6 +6,14 @@ from acere.config.ace.scraper import TitleFilter
 from acere.utils.helpers import slugify
 
 
+class IPTVStreamOverride(BaseModel):
+    """Override scraped metadata for a specific IPTV stream by title."""
+
+    name: str = ""
+    category: str = ""
+    tvg_id: str = ""
+
+
 class IPTVSourceXtream(BaseModel):
     """Config for an Xtream Codes IPTV source."""
 
@@ -18,6 +26,7 @@ class IPTVSourceXtream(BaseModel):
     title_filter: TitleFilter = TitleFilter()
     category_filter: TitleFilter = TitleFilter()
     category_rename: dict[str, str] = {}
+    stream_overrides: dict[str, IPTVStreamOverride] = {}
     max_active_streams: int = 0  # 0 = unlimited
 
     @field_validator("name", mode="before")
@@ -37,6 +46,7 @@ class IPTVSourceM3U8(BaseModel):
     title_filter: TitleFilter = TitleFilter()
     category_filter: TitleFilter = TitleFilter()
     category_rename: dict[str, str] = {}  # Optional mapping of original channel names to new names
+    stream_overrides: dict[str, IPTVStreamOverride] = {}
     max_active_streams: int = 0  # 0 = unlimited
 
     @field_validator("name", mode="before")

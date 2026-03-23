@@ -141,6 +141,17 @@ class IPTVProxyScraper:
             if not source.title_filter.check_allowed(title):
                 continue
 
+            # Apply per-stream overrides
+            override = source.stream_overrides.get(title)
+            if override:
+                if override.name:
+                    title = override.name
+                if override.category:
+                    group_title = override.category
+                tvg_id = override.tvg_id or stream.epg_channel_id
+            else:
+                tvg_id = stream.epg_channel_id
+
             # Build upstream URL
             upstream_url = f"{base_url}/live/{source.username}/{source.password}/{stream.stream_id}.m3u8"
 
@@ -149,7 +160,7 @@ class IPTVProxyScraper:
                     title=title,
                     upstream_url=upstream_url,
                     source_name=source.name,
-                    tvg_id=stream.epg_channel_id,
+                    tvg_id=tvg_id,
                     tvg_logo=stream.stream_icon or None,
                     group_title=group_title,
                     last_scraped_time=now,
@@ -187,12 +198,23 @@ class IPTVProxyScraper:
 
             group_title = source.category_rename.get(group_title, group_title)
 
+            # Apply per-stream overrides
+            override = source.stream_overrides.get(title)
+            if override:
+                if override.name:
+                    title = override.name
+                if override.category:
+                    group_title = override.category
+                tvg_id = override.tvg_id or entry.tvg_id
+            else:
+                tvg_id = entry.tvg_id
+
             results.append(
                 FoundIPTVStream(
                     title=title,
                     upstream_url=entry.url,
                     source_name=source_name,
-                    tvg_id=entry.tvg_id,
+                    tvg_id=tvg_id,
                     tvg_logo=None,  # TVG logo handling for IPTV proxy is separate
                     group_title=group_title,
                     last_scraped_time=now,
