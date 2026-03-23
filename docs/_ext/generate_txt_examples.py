@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from acere.services.scraper.name_processor import ACE_URL_PREFIXES_CONTENT_ID, ACE_URL_PREFIXES_INFOHASH
+from acere.services.scraper.ace.name_processor import ACE_URL_PREFIXES_CONTENT_ID, ACE_URL_PREFIXES_INFOHASH
 
 if TYPE_CHECKING:
     from sphinx.application import Sphinx

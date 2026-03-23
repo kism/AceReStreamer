@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from pydantic import HttpUrl
 
 from acere.config.ace.scraper import ScrapeSiteIPTV
-from acere.services.scraper.iptv import IPTVStreamScraper
+from acere.services.scraper.ace.iptv import AceIPTVStreamScraper
 
 from .utils import common_title_check
 
@@ -31,7 +31,7 @@ def _get_test_sites() -> dict[str, ScrapeSiteIPTV]:
     }
 
 
-async def test_site1(scraper: IPTVStreamScraper) -> None:
+async def test_site1(scraper: AceIPTVStreamScraper) -> None:
     """Test scraping from site1.m3u8."""
     playlist_name = "playlist_infohash_1.m3u8"
     site_config = _get_test_sites()[playlist_name]
@@ -48,7 +48,7 @@ async def test_site1(scraper: IPTVStreamScraper) -> None:
         assert stream.infohash is not None
 
 
-async def test_site2(scraper: IPTVStreamScraper, caplog: pytest.LogCaptureFixture) -> None:
+async def test_site2(scraper: AceIPTVStreamScraper, caplog: pytest.LogCaptureFixture) -> None:
     """Test scraping from playlist_infohash_2.m3u8."""
     playlist_name = "playlist_infohash_2.m3u8"
     site_config = _get_test_sites()[playlist_name]

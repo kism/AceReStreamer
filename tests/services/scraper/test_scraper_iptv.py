@@ -4,7 +4,8 @@ from pydantic import HttpUrl
 
 from acere.config.ace.scraper import ScrapeSiteIPTV
 from acere.instances.paths import setup_app_path_handler
-from acere.services.scraper.iptv import IPTVStreamScraper, tvg_logo
+from acere.services.scraper import tvg_logo
+from acere.services.scraper.ace.iptv import AceIPTVStreamScraper
 from tests.test_utils.aiohttp import FakeResponseDef, FakeSession
 
 from . import SCRAPER_TEST_SITES
@@ -34,7 +35,7 @@ def _get_test_sites() -> dict[str, ScrapeSiteIPTV]:
     }
 
 
-async def test_site1(scraper: IPTVStreamScraper) -> None:
+async def test_site1(scraper: AceIPTVStreamScraper) -> None:
     """Test scraping from site1.m3u8."""
     playlist_name = "playlist1.m3u8"
     site_config = _get_test_sites()[playlist_name]
@@ -50,7 +51,7 @@ async def test_site1(scraper: IPTVStreamScraper) -> None:
         assert stream.tvg_logo != ""  # Its patched, so I guess we pretend it's manually downloaded
 
 
-async def test_site2(scraper: IPTVStreamScraper) -> None:
+async def test_site2(scraper: AceIPTVStreamScraper) -> None:
     """Test scraping from playlist2.m3u8."""
     playlist_name = "playlist2.m3u8"
     site_config = _get_test_sites()[playlist_name]
@@ -74,7 +75,7 @@ async def test_get_site_content(
 ) -> None:
     """Test _get_site_content method with aiohttp mocks."""
     # Create scraper without mocking _get_site_content
-    scraper = IPTVStreamScraper()
+    scraper = AceIPTVStreamScraper()
 
     # Read test data
     test_content = (SCRAPER_TEST_SITES / "playlist1.m3u8").read_text(encoding="utf-8")

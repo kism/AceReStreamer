@@ -1,4 +1,4 @@
-"""Helper functions and functions for searching in beautiful soup tags."""
+"""AceStream HTML Scraper - searches HTML pages for AceStream links."""
 
 from collections import Counter
 from datetime import UTC, datetime, timedelta
@@ -7,12 +7,13 @@ from typing import TYPE_CHECKING
 import aiohttp
 from bs4 import BeautifulSoup, Tag
 
+from acere.services.scraper import name_processor
+from acere.services.scraper.common import ScraperCommon
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.helpers import check_valid_content_id_or_infohash
 from acere.utils.logger import get_logger
 
-from . import name_processor
-from .common import ScraperCommon
+from . import name_processor as ace_name_processor
 from .models import CandidateAceStream, FoundAceStream
 
 if TYPE_CHECKING:
@@ -25,7 +26,7 @@ logger = get_logger(__name__)
 _HTML_CACHE_MAX_AGE = timedelta(hours=1)  # HTML Sources we need to scrape more often
 
 
-class HTMLStreamScraper(ScraperCommon):
+class AceHTMLStreamScraper(ScraperCommon):
     """Scraper for websites to find AceStream streams."""
 
     async def scrape_sites(self, sites: list[ScrapeSiteHTML]) -> list[FoundAceStream]:
@@ -75,7 +76,7 @@ class HTMLStreamScraper(ScraperCommon):
                 continue
 
             # We are iterating through all links, we only want AceStream links
-            valid_ace_uri = name_processor.check_valid_ace_uri(link_href)
+            valid_ace_uri = ace_name_processor.check_valid_ace_uri(link_href)
 
             if valid_ace_uri is not None:
                 candidate_titles: list[str] = []
@@ -181,13 +182,13 @@ class HTMLStreamScraper(ScraperCommon):
             return title
 
         for candidate in candidates:
-            content_id = name_processor.extract_content_id_from_url(candidate.ace_uri)
+            content_id = ace_name_processor.extract_content_id_from_url(candidate.ace_uri)
 
             if not check_valid_content_id_or_infohash(content_id):
                 logger.warning("Invalid Ace ID found in candidate: %s, skipping", content_id)
                 continue
 
-            override_title = name_processor.get_title_override_from_content_id(content_id)
+            override_title = ace_name_processor.get_title_override_from_content_id(content_id)
             title = override_title or _select_best_title(candidate, content_id)
 
             if not site.title_filter.check_allowed(title):
@@ -229,7 +230,7 @@ class HTMLStreamScraper(ScraperCommon):
 
         for html_class in html_classes_good:
             if html_class == target_html_class:
-                candidate_title = name_processor.cleanup_ace_candidate_title(html_tag.get_text())
+                candidate_title = ace_name_processor.cleanup_ace_candidate_title(html_tag.get_text())
                 candidate_titles.append(candidate_title)
 
         return candidate_titles

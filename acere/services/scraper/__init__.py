@@ -1,28 +1,41 @@
 """Scraper service."""
 
-from acere.services.scraper.api import APIStreamScraper
-from acere.services.scraper.cache import ScraperCache
-from acere.services.scraper.helpers import create_unique_stream_list
-from acere.services.scraper.html import HTMLStreamScraper
-from acere.services.scraper.iptv import IPTVStreamScraper
-from acere.services.scraper.main import AceScraper
-from acere.services.scraper.models import (
+from acere.services.scraper.ace import (
+    AceAPIStreamScraper,
+    AceHTMLStreamScraper,
+    AceIPTVStreamScraper,
+    AceScraper,
+    AceScraperSourceApi,
+    AceScraperSourcesApi,
     CandidateAceStream,
     FoundAceStream,
     FoundAceStreamAPI,
+    ManuallyAddedAceStream,
+    ace_create_unique_stream_list,
+)
+from acere.services.scraper.cache import ScraperCache
+from acere.services.scraper.models import (
+    CombinedStreamAPI,
     FoundIPTVStream,
+    FoundIPTVStreamAPI,
+    IPTVSourceApi,
 )
 
 __all__ = [
-    "APIStreamScraper",
+    "AceAPIStreamScraper",
+    "AceHTMLStreamScraper",
+    "AceIPTVStreamScraper",
     "AceScraper",
+    "AceScraperSourceApi",
+    "AceScraperSourcesApi",
     "CandidateAceStream",
+    "CombinedStreamAPI",
     "FoundAceStream",
     "FoundAceStreamAPI",
     "FoundIPTVStream",
-    "HTMLStreamScraper",
-    "IPTVStreamScraper",
-    "Quality",
+    "FoundIPTVStreamAPI",
+    "IPTVSourceApi",
+    "ManuallyAddedAceStream",
     "ScraperCache",
-    "create_unique_stream_list",
+    "ace_create_unique_stream_list",
 ]

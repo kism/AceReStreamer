@@ -9,12 +9,12 @@ from pydantic import HttpUrl
 from acere.config.ace.scraper import ScrapeSiteIPTV
 from acere.instances.config import settings
 from acere.instances.paths import get_app_path_handler
-from acere.services.scraper import (
-    APIStreamScraper,
+from acere.services.scraper.ace import (
+    AceAPIStreamScraper,
+    AceHTMLStreamScraper,
+    AceIPTVStreamScraper,
     FoundAceStream,
-    HTMLStreamScraper,
-    IPTVStreamScraper,
-    create_unique_stream_list,
+    ace_create_unique_stream_list,
 )
 from acere.utils.logger import get_logger
 from acere.utils.m3u8 import create_extinf_line
@@ -37,9 +37,9 @@ class PlaylistCreator:
 
     def __init__(self) -> None:
         """Initialize the PlaylistCreator."""
-        self._html_scraper = HTMLStreamScraper()
-        self._iptv_scraper = IPTVStreamScraper()
-        self._api_scraper = APIStreamScraper()
+        self._html_scraper = AceHTMLStreamScraper()
+        self._iptv_scraper = AceIPTVStreamScraper()
+        self._api_scraper = AceAPIStreamScraper()
 
     async def scrape(self) -> None:
         """Scrape the streams."""
@@ -81,7 +81,7 @@ class PlaylistCreator:
             len(found_api_streams),
         )
         found_streams = found_html_streams + found_iptv_streams + found_api_streams
-        found_streams_unique = list(create_unique_stream_list(found_streams).values())  # Unique list of content_ids
+        found_streams_unique = list(ace_create_unique_stream_list(found_streams).values())  # Unique list of content_ids
         found_streams_infohash_only = [stream for stream in found_streams if stream.infohash and not stream.content_id]
         return found_streams_unique + found_streams_infohash_only
 

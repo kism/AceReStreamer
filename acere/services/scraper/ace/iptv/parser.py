@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING
 
 from pydantic import HttpUrl, ValidationError
 
-from acere.services.scraper import name_processor
-from acere.services.scraper.iptv import tvg_logo
+from acere.services.scraper import name_processor, tvg_logo
+from acere.services.scraper.ace import name_processor as ace_name_processor
+from acere.services.scraper.ace.models import FoundAceStream
 from acere.services.scraper.m3u_common import GenericM3UParser, M3UEntry
-from acere.services.scraper.models import FoundAceStream
 from acere.utils.logger import get_logger
 
 if TYPE_CHECKING:
@@ -26,7 +26,7 @@ _COUNTRY_CODE_ALT_REGEX: list[re.Pattern[str]] = [
 ]
 
 
-class M3UParser:
+class AceM3UParser:
     """Parser for M3U playlist content to extract AceStream entries.
 
     Uses GenericM3UParser for raw M3U parsing, then applies AceStream-specific
@@ -46,12 +46,12 @@ class M3UParser:
 
         for entry in entries:
             # Check if the URL is a valid ace URI
-            valid_ace_uri = name_processor.check_valid_ace_uri(entry.url)
+            valid_ace_uri = ace_name_processor.check_valid_ace_uri(entry.url)
             if valid_ace_uri is None:
                 continue
 
-            content_id = name_processor.extract_content_id_from_url(valid_ace_uri)
-            infohash = name_processor.extract_infohash_from_url(valid_ace_uri)
+            content_id = ace_name_processor.extract_content_id_from_url(valid_ace_uri)
+            infohash = ace_name_processor.extract_infohash_from_url(valid_ace_uri)
 
             ace_stream = await self._build_found_ace_stream(
                 entry=entry,
@@ -75,8 +75,8 @@ class M3UParser:
         title = entry.title
 
         tvg_id, title = self._extract_tvg_id(entry, title)
-        override_title = name_processor.get_title_override_from_content_id(content_id or infohash)
-        title = override_title or name_processor.cleanup_ace_candidate_title(title)
+        override_title = ace_name_processor.get_title_override_from_content_id(content_id or infohash)
+        title = override_title or ace_name_processor.cleanup_ace_candidate_title(title)
 
         tvg_id = name_processor.get_tvg_id_from_title(title)  # Redo since we have our own logic for tvg ids
 

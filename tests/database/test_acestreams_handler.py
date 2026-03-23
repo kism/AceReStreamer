@@ -7,7 +7,7 @@ from sqlmodel import create_engine
 
 from acere.database.handlers.acestreams import AceStreamDBHandler
 from acere.database.models import AceStreamDBEntry
-from acere.services.scraper.models import FoundAceStream
+from acere.services.scraper.ace.models import FoundAceStream
 from tests.test_utils.ace import get_random_content_id
 
 if TYPE_CHECKING:

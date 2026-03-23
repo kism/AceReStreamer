@@ -4,7 +4,7 @@ import pytest
 from pydantic import HttpUrl
 
 from acere.config.ace.scraper import HTMLScraperFilter, ScrapeSiteHTML, TitleFilter
-from acere.services.scraper.html import HTMLStreamScraper
+from acere.services.scraper.ace.html import AceHTMLStreamScraper
 
 from . import SCRAPER_TEST_SITES
 from .utils import common_title_check
@@ -16,9 +16,9 @@ else:
 
 
 @pytest.fixture
-def scraper(tmp_path: Path) -> HTMLStreamScraper:
-    """Fixture providing a configured HTMLStreamScraper."""
-    return HTMLStreamScraper()
+def scraper(tmp_path: Path) -> AceHTMLStreamScraper:
+    """Fixture providing a configured AceHTMLStreamScraper."""
+    return AceHTMLStreamScraper()
 
 
 def _get_test_sites() -> dict[str, ScrapeSiteHTML]:
@@ -69,7 +69,7 @@ def _get_test_sites() -> dict[str, ScrapeSiteHTML]:
     }
 
 
-async def test_site1(scraper: HTMLStreamScraper, caplog: pytest.LogCaptureFixture) -> None:
+async def test_site1(scraper: AceHTMLStreamScraper, caplog: pytest.LogCaptureFixture) -> None:
     """Test HTML scraper with site1.html - basic scraping with column_title class."""
     site = _get_test_sites()["site1.html"]
     site_html_str = (SCRAPER_TEST_SITES / "site1.html").read_text(encoding="utf-8")
@@ -89,7 +89,7 @@ async def test_site1(scraper: HTMLStreamScraper, caplog: pytest.LogCaptureFixtur
     assert "SMPTE RP 219:2002" in titles
 
 
-async def test_site2(scraper: HTMLStreamScraper, caplog: pytest.LogCaptureFixture) -> None:
+async def test_site2(scraper: AceHTMLStreamScraper, caplog: pytest.LogCaptureFixture) -> None:
     """Test HTML scraper with site2.html - includes regex postprocessing to remove 'Server X: ' prefix."""
     site = _get_test_sites()["site2.html"]
     site_html_str = (SCRAPER_TEST_SITES / "site2.html").read_text(encoding="utf-8")
@@ -111,7 +111,7 @@ async def test_site2(scraper: HTMLStreamScraper, caplog: pytest.LogCaptureFixtur
     )
 
 
-async def test_site3(scraper: HTMLStreamScraper, caplog: pytest.LogCaptureFixture) -> None:
+async def test_site3(scraper: AceHTMLStreamScraper, caplog: pytest.LogCaptureFixture) -> None:
     """Test HTML scraper with site3.html - includes exclude_words filter and name truncation."""
     site = _get_test_sites()["site3.html"]
     site_html_str = (SCRAPER_TEST_SITES / "site3.html").read_text(encoding="utf-8")
@@ -133,7 +133,7 @@ async def test_site3(scraper: HTMLStreamScraper, caplog: pytest.LogCaptureFixtur
     )
 
 
-async def test_site4(scraper: HTMLStreamScraper, caplog: pytest.LogCaptureFixture) -> None:
+async def test_site4(scraper: AceHTMLStreamScraper, caplog: pytest.LogCaptureFixture) -> None:
     """Test HTML scraper with site4.html - streamtext2 class with regex postprocessing."""
     site = _get_test_sites()["site4.html"]
     site_html_str = (SCRAPER_TEST_SITES / "site4.html").read_text(encoding="utf-8")
@@ -151,7 +151,7 @@ async def test_site4(scraper: HTMLStreamScraper, caplog: pytest.LogCaptureFixtur
         assert not title.startswith("Server "), f"Title filter failed to remove 'Server ' prefix: {title}"
 
 
-async def test_all_for_duplicates(scraper: HTMLStreamScraper) -> None:
+async def test_all_for_duplicates(scraper: AceHTMLStreamScraper) -> None:
     """Test all HTML test sites for duplicate stream titles."""
     test_sites = _get_test_sites()
     all_titles: set[str] = set()

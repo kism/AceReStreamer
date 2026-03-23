@@ -59,7 +59,7 @@ async def test_async_main_with_app_config(tmp_path: Path) -> None:
     # Also need to patch the global settings object that the scrapers use
     with (
         patch.object(sys, "argv", test_args),
-        patch("acere.services.scraper.iptv.aiohttp.ClientSession", fake_client_session),
+        patch("acere.services.scraper.ace.iptv.aiohttp.ClientSession", fake_client_session),
     ):
         await async_main()
 

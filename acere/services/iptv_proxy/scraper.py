@@ -1,4 +1,5 @@
 """IPTV proxy scraper — fetches upstream playlists and XC APIs."""
+
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 

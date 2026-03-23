@@ -9,7 +9,7 @@ from acere.utils.logger import get_logger
 if TYPE_CHECKING:
     from pydantic import HttpUrl
 
-    from acere.services.scraper.models import FoundAceStream
+    from acere.services.scraper.ace.models import FoundAceStream
 else:
     HttpUrl = object
     FoundAceStream = object

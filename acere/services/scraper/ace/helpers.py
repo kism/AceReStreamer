@@ -18,7 +18,7 @@ else:
 logger = get_logger(__name__)
 
 
-def create_unique_stream_list(
+def ace_create_unique_stream_list(
     streams: list[FoundAceStream],
 ) -> dict[str, FoundAceStream]:
     """Create a unique list of FoundAceStream objects based on their infohash and content_id."""

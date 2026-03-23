@@ -11,7 +11,7 @@ from acere.api.deps import (
 from acere.config.ace.scraper import ScrapeSiteAPI, ScrapeSiteHTML, ScrapeSiteIPTV
 from acere.instances.config import settings
 from acere.instances.scraper import get_ace_scraper
-from acere.services.scraper.models import AceScraperSourceApi
+from acere.services.scraper.ace.models import AceScraperSourceApi
 from acere.utils.api_models import MessageResponseModel
 from acere.utils.logger import get_logger
 

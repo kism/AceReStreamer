@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 import pytest
 
 from acere.config.ace.scraper import ScrapeSiteIPTV
-from acere.services.scraper.iptv import IPTVStreamScraper
+from acere.services.scraper.ace.iptv import AceIPTVStreamScraper
 
 from . import SCRAPER_TEST_SITES
 
@@ -16,9 +16,9 @@ else:
 
 
 @pytest.fixture
-async def scraper(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> IPTVStreamScraper:
-    """Fixture providing a configured IPTVStreamScraper."""
-    scraper = IPTVStreamScraper()
+async def scraper(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> AceIPTVStreamScraper:
+    """Fixture providing a configured AceIPTVStreamScraper."""
+    scraper = AceIPTVStreamScraper()
 
     async def _mock_get_site_content(site: ScrapeSiteIPTV) -> str:
         assert site.url.path is not None

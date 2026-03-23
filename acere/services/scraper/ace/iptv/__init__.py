@@ -1,15 +1,16 @@
-"""Scraper for IPTV sites to find AceStream streams."""
+"""AceStream scraper for IPTV M3U playlists."""
 
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 import aiohttp
 
+from acere.services.scraper.ace.models import FoundAceStream
 from acere.services.scraper.common import ScraperCommon
-from acere.services.scraper.iptv.parser import M3UParser
-from acere.services.scraper.models import FoundAceStream
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.logger import get_logger
+
+from .parser import AceM3UParser
 
 if TYPE_CHECKING:
     from acere.config.ace.scraper import ScrapeSiteIPTV
@@ -19,13 +20,13 @@ else:
 logger = get_logger(__name__)
 
 
-class IPTVStreamScraper(ScraperCommon):
+class AceIPTVStreamScraper(ScraperCommon):
     """Scraper for IPTV sites to find AceStream streams."""
 
     def __init__(self) -> None:
-        """Initialize the IPTVStreamScraper with parser."""
+        """Initialize the AceIPTVStreamScraper with parser."""
         super().__init__()
-        self._parser = M3UParser()
+        self._parser = AceM3UParser()
 
     async def scrape_iptv_playlists(self, sites: list[ScrapeSiteIPTV]) -> list[FoundAceStream]:
         """Scrape the streams from the configured IPTV sites."""
@@ -78,6 +79,6 @@ class IPTVStreamScraper(ScraperCommon):
     async def parse_m3u_content(self, content: str, site: ScrapeSiteIPTV) -> list[FoundAceStream]:
         """Parse M3U content and extract AceStream entries.
 
-        This method delegates to M3UParser for backward compatibility.
+        This method delegates to AceM3UParser for backward compatibility.
         """
         return await self._parser.parse_m3u_content(content, site)

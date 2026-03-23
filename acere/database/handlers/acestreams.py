@@ -16,7 +16,7 @@ from acere.utils.m3u8 import create_extinf_line
 from .base import BaseDatabaseHandler
 
 if TYPE_CHECKING:
-    from acere.services.scraper.models import FoundAceStream
+    from acere.services.scraper.ace.models import FoundAceStream
 else:
     FoundAceStream = object
 

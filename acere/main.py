@@ -25,7 +25,7 @@ from acere.services.ace.pool import AcePool
 from acere.services.epg import EPGHandler
 from acere.services.iptv_proxy.manager import IPTVProxyManager
 from acere.services.remote_settings import RemoteSettingsFetcher
-from acere.services.scraper import AceScraper
+from acere.services.scraper.ace import AceScraper
 from acere.utils.logger import get_logger, setup_logger
 from acere.version import PROGRAM_NAME, __version__
 

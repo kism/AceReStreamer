@@ -1,4 +1,4 @@
-"""Scraper object."""
+"""AceStream scraper orchestrator."""
 
 import asyncio
 import re
@@ -13,10 +13,10 @@ from acere.instances.epg import get_epg_handler
 from acere.instances.xc_stream_map import get_xc_stream_map_handler
 from acere.utils.logger import get_logger
 
-from .api import APIStreamScraper
-from .helpers import create_unique_stream_list, get_content_id_from_infohash_acestream_api
-from .html import HTMLStreamScraper
-from .iptv import IPTVStreamScraper
+from .api import AceAPIStreamScraper
+from .helpers import ace_create_unique_stream_list, get_content_id_from_infohash_acestream_api
+from .html import AceHTMLStreamScraper
+from .iptv import AceIPTVStreamScraper
 from .models import AceScraperSourceApi, FoundAceStream
 
 if TYPE_CHECKING:
@@ -52,9 +52,9 @@ class AceScraper:
         self._stop_event = threading.Event()
         self._instance_id = instance_id
         self._streams: dict[str, FoundAceStream] = {}
-        self._html_scraper: HTMLStreamScraper = HTMLStreamScraper()
-        self._iptv_scraper: IPTVStreamScraper = IPTVStreamScraper()
-        self._api_scraper: APIStreamScraper = APIStreamScraper()
+        self._html_scraper: AceHTMLStreamScraper = AceHTMLStreamScraper()
+        self._iptv_scraper: AceIPTVStreamScraper = AceIPTVStreamScraper()
+        self._api_scraper: AceAPIStreamScraper = AceAPIStreamScraper()
 
     # region GET API Scraper
     def get_scraper_sources_flat_api(self) -> list[AceScraperSourceApi]:
@@ -216,7 +216,7 @@ class AceScraper:
 
                 found_streams = async_loop.run_until_complete(find_streams())
 
-                self._streams = create_unique_stream_list(found_streams)
+                self._streams = ace_create_unique_stream_list(found_streams)
 
                 # Populate ourself
                 self._print_streams(found_streams)
@@ -235,7 +235,9 @@ class AceScraper:
                     async_loop.run_until_complete(self._populate_missing_content_ids(missing_content_id_streams))
 
                     # Re-create unique stream list after modification
-                    self._streams = create_unique_stream_list(missing_content_id_streams + list(self._streams.values()))
+                    self._streams = ace_create_unique_stream_list(
+                        missing_content_id_streams + list(self._streams.values())
+                    )
 
                     # Check if there are still missing content_ids after population attempt
                     still_missing = [stream for stream in found_streams if not stream.content_id and stream.infohash]

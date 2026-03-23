@@ -1,4 +1,4 @@
-"""API Scraper."""
+"""AceStream API Scraper."""
 
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
@@ -6,11 +6,12 @@ from typing import TYPE_CHECKING
 import aiohttp
 from pydantic import BaseModel, ConfigDict, ValidationError
 
+from acere.services.scraper import name_processor
+from acere.services.scraper.common import ScraperCommon
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.logger import get_logger
 
-from . import name_processor
-from .common import ScraperCommon
+from . import name_processor as ace_name_processor
 from .models import FoundAceStream
 
 if TYPE_CHECKING:
@@ -22,7 +23,7 @@ else:
 logger = get_logger(__name__)
 
 
-class APISiteResponseItem(BaseModel):
+class AceAPISiteResponseItem(BaseModel):
     """Model API response."""
 
     model_config = ConfigDict(extra="ignore")  # I dont trust extras
@@ -34,8 +35,8 @@ class APISiteResponseItem(BaseModel):
     categories: list[str] | None = None
 
 
-class APIStreamScraper(ScraperCommon):
-    """API Scraper object."""
+class AceAPIStreamScraper(ScraperCommon):
+    """AceStream API Scraper object."""
 
     async def scrape_api_endpoints(self, sites: list[ScrapeSiteAPI]) -> list[FoundAceStream]:
         """Scrape the streams from the configured API sites."""
@@ -63,16 +64,16 @@ class APIStreamScraper(ScraperCommon):
             return []
 
         logger.debug("Scraped %d items from API site: %s", len(response_json), site.name)
-        stream_list: list[APISiteResponseItem] = []
+        stream_list: list[AceAPISiteResponseItem] = []
         for item in response_json:
             try:
-                stream_list.append(APISiteResponseItem(**item))
+                stream_list.append(AceAPISiteResponseItem(**item))
             except ValidationError:
                 logger.exception("Failed to validate API response item: %s", item)
 
         for stream in stream_list:
-            override_title = name_processor.get_title_override_from_content_id(stream.infohash)
-            title = override_title or name_processor.cleanup_ace_candidate_title(stream.name)
+            override_title = ace_name_processor.get_title_override_from_content_id(stream.infohash)
+            title = override_title or ace_name_processor.cleanup_ace_candidate_title(stream.name)
 
             if not site.title_filter.check_allowed(title):
                 continue

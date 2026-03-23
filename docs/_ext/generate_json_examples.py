@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from pydantic import HttpUrl
 
 from acere.config.ace.scraper import HTMLScraperFilter, ScrapeSiteAPI, ScrapeSiteHTML, ScrapeSiteIPTV, TitleFilter
-from acere.services.scraper.api import APISiteResponseItem
+from acere.services.scraper.ace.api import AceAPISiteResponseItem
 
 if TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -65,14 +65,14 @@ def generate_json_examples(app: Sphinx) -> None:
     )
 
     example_api_site_response = [
-        APISiteResponseItem(
+        AceAPISiteResponseItem(
             infohash="1000000000000000000000000000000000000001",
             name="Channel 1 [AU]",
             availability=1,
             availability_updated_at=1769756822,
             categories=["general"],
         ),
-        APISiteResponseItem(
+        AceAPISiteResponseItem(
             infohash="1000000000000000000000000000000000000002",
             name="Channel 5 [AU]",
             availability=1,
@@ -103,7 +103,7 @@ def generate_json_examples(app: Sphinx) -> None:
         "api_example.json": api_example,
     }
 
-    examples_list: dict[str, list[APISiteResponseItem]] = {
+    examples_list: dict[str, list[AceAPISiteResponseItem]] = {
         "api_site_response_example.json": example_api_site_response,
     }
 

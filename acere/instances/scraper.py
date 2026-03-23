@@ -3,7 +3,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from acere.services.scraper import AceScraper
+    from acere.services.scraper.ace import AceScraper
 else:
     AceScraper = object
 

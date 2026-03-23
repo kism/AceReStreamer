@@ -5,8 +5,8 @@ import pytest
 from pydantic import HttpUrl
 
 from acere.config import AceScrapeConf
-from acere.services.scraper import AceScraper
-from acere.services.scraper.models import FoundAceStream
+from acere.services.scraper.ace import AceScraper
+from acere.services.scraper.ace.models import FoundAceStream
 from tests.test_utils.ace import get_random_content_id
 
 if TYPE_CHECKING:
