@@ -1,5 +1,6 @@
 import secrets
 
+from sqlalchemy import event
 from sqlmodel import Session, SQLModel, create_engine, select
 
 from acere import crud
@@ -13,7 +14,16 @@ logger = get_logger(__name__)
 engine = create_engine(
     f"sqlite:///{get_app_path_handler().database_file}",
     echo=False,
+    connect_args={"timeout": 30},
 )
+
+
+@event.listens_for(engine, "connect")
+def _set_sqlite_wal_mode(dbapi_connection: object, _connection_record: object) -> None:
+    """Enable WAL mode for better concurrent read/write performance."""
+    cursor = dbapi_connection.cursor()  # type: ignore[attr-defined]
+    cursor.execute("PRAGMA journal_mode=WAL")
+    cursor.close()
 
 
 # make sure all SQLModel models are imported (app.models) before initializing DB

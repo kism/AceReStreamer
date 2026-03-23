@@ -98,22 +98,22 @@ class IPTVProxyScraper:
         logger.info("Found %d streams from XC source '%s'", len(found_streams), source.name)
         return found_streams
 
-    async def _fetch_xc_category_map(self, api_url: str, source_name: str) -> dict[str, str]:
+    async def _fetch_xc_category_map(self, api_url: str, source_name: str) -> dict[int, str]:
         """Fetch XC categories and build a category_id -> category_name map."""
         categories_data = await self._fetch_json(f"{api_url}&action=get_live_categories", source_name)
-        category_map: dict[str, str] = {}
+        category_map: dict[int, str] = {}
         if categories_data and isinstance(categories_data, list):
             for cat in categories_data:
-                cat_id = str(cat.get("category_id", ""))
+                cat_id = cat.get("category_id")
                 cat_name = str(cat.get("category_name", ""))
-                if cat_id and cat_name:
+                if cat_id is not None and cat_name:
                     category_map[cat_id] = cat_name
         return category_map
 
     def _build_xc_streams(
         self,
         streams_data: list[XCStream],
-        category_map: dict[str, str],
+        category_map: dict[int, str],
         base_url: str,
         source: IPTVSourceXtream,
     ) -> list[FoundIPTVStream]:

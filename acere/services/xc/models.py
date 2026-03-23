@@ -47,6 +47,7 @@ class XCServerInfo(BaseModel):
         if isinstance(value, str) and "://" not in value:
             return f"http://{value}"
         return value
+
     # rtmp_port would go here, but naa null
     timezone: str = UTC.tzname(None)
     timestamp_now: int

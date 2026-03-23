@@ -8,6 +8,7 @@ from sqlmodel import select
 from acere.database.models.iptv_stream import IPTVStreamDBEntry
 from acere.instances.config import settings
 from acere.instances.xc_category import get_xc_category_db_handler
+from acere.services.xc.helpers import get_xc_categories_in_use
 from acere.services.xc.models import XCCategory, XCStream
 from acere.utils.logger import get_logger
 from acere.utils.m3u8 import create_extinf_line
@@ -167,7 +168,7 @@ class IPTVStreamDBHandler(BaseDatabaseHandler):
                         if stream.tvg_logo
                         else "",
                         epg_channel_id=stream.tvg_id,
-                        category_id=str(xc_category_id),
+                        category_id=xc_category_id,
                     )
                 )
             current_stream_number += 1
@@ -176,7 +177,5 @@ class IPTVStreamDBHandler(BaseDatabaseHandler):
 
     def get_xc_categories(self) -> list[XCCategory]:
         """Get XC categories in use by IPTV proxy streams."""
-        cat_handler = get_xc_category_db_handler()
         categories_in_use = {stream.category_id for stream in self.get_streams_as_iptv_xc(xc_category_filter=None)}
-        categories_in_use_int = {int(cat_id) for cat_id in categories_in_use if cat_id.isdigit()}
-        return cat_handler.get_all_categories_api(categories_in_use_int)
+        return get_xc_categories_in_use(categories_in_use)

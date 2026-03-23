@@ -9,6 +9,8 @@ from sqlmodel import Session
 
 from acere.crud import authenticate_stream_token
 from acere.database.init import engine
+from acere.instances.xc_category import get_xc_category_db_handler
+from acere.services.xc.models import XCCategory
 
 if TYPE_CHECKING:
     from pydantic import HttpUrl
@@ -48,3 +50,8 @@ def check_xc_auth(username: str, stream_token: str) -> str:
         status_code=HTTPStatus.UNAUTHORIZED,
         detail="Invalid username or password",
     )
+
+
+def get_xc_categories_in_use(category_ids_in_use: set[int]) -> list[XCCategory]:
+    """Get XC categories filtered to only those with IDs in the given set."""
+    return get_xc_category_db_handler().get_all_categories_api(category_ids_in_use)

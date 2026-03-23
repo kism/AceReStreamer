@@ -42,7 +42,7 @@ class TitleFilter(BaseModel):
     include_words: list[str] = []
     regex_postprocessing: list[str] = []
 
-    def check_allowed(self, title: str , thing_were_checking: str = "Title") -> bool:
+    def check_allowed(self, title: str, thing_were_checking: str = "Title") -> bool:
         """Check if the title contains any disallowed words."""
         if not title:
             return False

@@ -42,7 +42,7 @@ class CategoryXCCategoryIDDatabaseHandler(BaseDatabaseHandler):
         with self._get_session() as session:
             categories = session.exec(select(CategoryXCCategoryID)).all()
             return [
-                XCCategory(category_id=str(cat.xc_category_id), category_name=cat.category)
+                XCCategory(category_id=cat.xc_category_id, category_name=cat.category)
                 for cat in categories
                 if cat.xc_category_id in categories_in_use
             ]

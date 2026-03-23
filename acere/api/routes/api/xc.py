@@ -107,7 +107,7 @@ def _get_live_categories() -> list[XCCategory]:
     iptv_categories = get_iptv_streams_db_handler().get_xc_categories()
 
     # Merge, deduplicating by category_id
-    seen: set[str] = set()
+    seen: set[int] = set()
     merged: list[XCCategory] = []
     for cat in ace_categories + iptv_categories:
         if cat.category_id not in seen:
