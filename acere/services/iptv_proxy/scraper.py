@@ -154,7 +154,6 @@ class IPTVProxyScraper:
                 )
             )
 
-        logger.info("Found %d streams from XC source '%s'", len(found_streams), source.name)
         return found_streams
 
     def _filter_and_convert_entries(
