@@ -219,7 +219,9 @@ async def ace_content(path: str, request: Request, token: str = "") -> Response:
         )
 
     headers = [
-        (name, value) for (name, value) in resp.headers.items() if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS
+        (name, value)
+        for (name, value) in resp.headers.items()
+        if name.lower() not in {*REVERSE_PROXY_EXCLUDED_HEADERS, "content-type"}
     ]
 
     async def generate() -> AsyncGenerator[bytes, None]:

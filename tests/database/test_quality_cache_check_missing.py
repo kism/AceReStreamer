@@ -110,7 +110,7 @@ async def test_check_missing_quality_with_streams(
         """Mock HLS function that tracks calls."""
         hls_calls.append({"path": path, "authentication_override": authentication_override})
 
-    monkeypatch.setattr("acere.api.routes.hls.hls", mock_hls)
+    monkeypatch.setattr("acere.api.routes.hls.ace.hls", mock_hls)
 
     # Call check_missing_quality
     result = await handler.check_missing_quality(stream_delay=0, attempt_delay=0)
@@ -172,7 +172,7 @@ async def test_check_missing_quality_with_exception(
     async def mock_hls_exception(path: str, *, authentication_override: bool = False) -> None:
         raise RuntimeError("Test exception")
 
-    monkeypatch.setattr("acere.api.routes.hls.hls", mock_hls_exception)
+    monkeypatch.setattr("acere.api.routes.hls.ace.hls", mock_hls_exception)
 
     assert await handler.check_missing_quality(stream_delay=0, attempt_delay=0) is True
 

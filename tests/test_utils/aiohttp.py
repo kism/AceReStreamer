@@ -7,11 +7,14 @@ from multidict import CIMultiDict, CIMultiDictProxy
 from yarl import URL
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+
     from aiohttp.pytest_plugin import AiohttpServer
     from pytest_mock import MockerFixture  # pragma: no cover
 else:
     MockerFixture = object
     AiohttpServer = object
+    AsyncGenerator = object
 
 
 class FakeResponseDef(TypedDict):
@@ -32,6 +35,12 @@ class FakeContent:
         result = self._data[self._position : self._position + size]
         self._position += size
         return result
+
+    async def iter_chunked(self, chunk_size: int) -> AsyncGenerator[bytes, None]:
+        while self._position < len(self._data):
+            chunk = self._data[self._position : self._position + chunk_size]
+            self._position += chunk_size
+            yield chunk
 
 
 class FakeResponse:
@@ -72,8 +81,30 @@ class FakeResponse:
     async def raw_headers(self) -> bytes:
         return b""
 
+    def close(self) -> None:
+        pass
+
     async def __aenter__(self) -> Self:
         return self
+
+    async def __aexit__(self, *args: object) -> None:
+        pass
+
+
+class FakeRequestContextManager:
+    """Mimics aiohttp's _RequestContextManager: both awaitable and an async context manager."""
+
+    def __init__(self, response: FakeResponse) -> None:
+        self._response = response
+
+    def __await__(self) -> Any:
+        async def _coro() -> FakeResponse:
+            return self._response
+
+        return _coro().__await__()
+
+    async def __aenter__(self) -> FakeResponse:
+        return self._response
 
     async def __aexit__(self, *args: object) -> None:
         pass
@@ -84,12 +115,14 @@ class FakeSession:
         self.responses = responses
         self.closed = False
 
-    def get(self, url: str, **kwargs: Any) -> FakeResponse:
+    def get(self, url: str, **kwargs: Any) -> FakeRequestContextManager:
         response_def = self.responses.get(url)
         if response_def is None:
-            return FakeResponse(data=b"", status=404, url=url)
+            return FakeRequestContextManager(FakeResponse(data=b"", status=404, url=url))
 
-        return FakeResponse(data=response_def["data"], status=response_def["status"], url=url)
+        return FakeRequestContextManager(
+            FakeResponse(data=response_def["data"], status=response_def["status"], url=url)
+        )
 
     async def request(self, method: str, url: str, **kwargs: Any) -> FakeResponse:
         response_def = self.responses.get(url)
