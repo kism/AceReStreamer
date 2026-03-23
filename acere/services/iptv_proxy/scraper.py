@@ -9,7 +9,7 @@ from acere.services.scraper import name_processor
 from acere.services.scraper.cache import ScraperCache
 from acere.services.scraper.m3u_common import GenericM3UParser, M3UEntry
 from acere.services.scraper.models import FoundIPTVStream
-from acere.services.xc.models import XCApiResponse
+from acere.services.xc.models import XCApiResponse, XCStream
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.logger import get_logger
 
@@ -72,9 +72,15 @@ class IPTVProxyScraper:
             )
 
         # Fetch live streams and categories
-        streams_data = await self._fetch_json(f"{api_url}&action=get_live_streams", source.name)
-        if streams_data is None or not isinstance(streams_data, list):
+        streams_raw = await self._fetch_json(f"{api_url}&action=get_live_streams", source.name)
+        if streams_raw is None or not isinstance(streams_raw, list):
             logger.error("Failed to fetch live streams for source '%s'", source.name)
+            return []
+
+        try:
+            streams_data = [XCStream(**s) for s in streams_raw]
+        except Exception:
+            logger.exception("Failed to parse XC streams for source '%s'", source.name)
             return []
 
         category_map = await self._fetch_xc_category_map(api_url, source.name)
@@ -106,7 +112,7 @@ class IPTVProxyScraper:
 
     def _build_xc_streams(
         self,
-        streams_data: list[dict[str, str]],
+        streams_data: list[XCStream],
         category_map: dict[str, str],
         base_url: str,
         source: IPTVSourceXtream,
@@ -115,17 +121,12 @@ class IPTVProxyScraper:
         found_streams: list[FoundIPTVStream] = []
         now = datetime.now(tz=UTC)
 
-        for stream_data in streams_data:
-            stream_id = stream_data.get("stream_id")
-            stream_name = str(stream_data.get("name", "")).strip()
-            category_id = str(stream_data.get("category_id", ""))
-            stream_icon = str(stream_data.get("stream_icon", ""))
-            epg_channel_id = str(stream_data.get("epg_channel_id", ""))
-
-            if not stream_id or not stream_name:
+        for stream in streams_data:
+            stream_name = stream.name.strip()
+            if not stream_name:
                 continue
 
-            group_title = category_map.get(category_id, "") or "General"
+            group_title = category_map.get(stream.category_id, "") or "General"
 
             # Apply category filter
             if not source.category_filter.check_allowed(group_title, thing_were_checking="Category"):
@@ -139,15 +140,15 @@ class IPTVProxyScraper:
                 continue
 
             # Build upstream URL
-            upstream_url = f"{base_url}/live/{source.username}/{source.password}/{stream_id}.m3u8"
+            upstream_url = f"{base_url}/live/{source.username}/{source.password}/{stream.stream_id}.m3u8"
 
             found_streams.append(
                 FoundIPTVStream(
                     title=title,
                     upstream_url=upstream_url,
                     source_name=source.name,
-                    tvg_id=epg_channel_id,
-                    tvg_logo=stream_icon or None,
+                    tvg_id=stream.epg_channel_id,
+                    tvg_logo=stream.stream_icon or None,
                     group_title=group_title,
                     last_scraped_time=now,
                 )
