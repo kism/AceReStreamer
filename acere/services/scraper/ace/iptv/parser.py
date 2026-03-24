@@ -87,7 +87,7 @@ class AceM3UParser:
         group_title = name_processor.populate_group_title(group_title, title)
 
         logo_url = self._extract_logo_url(entry)
-        await tvg_logo.download_and_save_logo(logo_url, title)
+        await tvg_logo.download_and_save_logo(logo_url, title, ace=True)
         tvg_logo_path = name_processor.find_tvg_logo_image(title)
 
         last_found_time = datetime.fromtimestamp(entry.last_found, tz=UTC)

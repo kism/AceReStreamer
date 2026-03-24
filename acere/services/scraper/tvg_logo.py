@@ -64,7 +64,7 @@ def _get_logo_path_for_title(title: str, extension: str | None = None) -> Path:
     return tvg_logos_path / title_slug
 
 
-async def download_and_save_logo(logo_url: HttpUrl | None, title: str) -> None:
+async def download_and_save_logo(logo_url: HttpUrl | None, title: str, *, ace: bool = False) -> None:
     """Download and save a TVG logo for a stream.
 
     This function:
@@ -84,8 +84,8 @@ async def download_and_save_logo(logo_url: HttpUrl | None, title: str) -> None:
         if logo_path.is_file():
             return
 
-    # Try external URL source if configured
-    if settings.ace.scraper.tvg_logo_external_url is not None:
+    # Try external URL source if configured, only for ACE
+    if settings.ace.scraper.tvg_logo_external_url is not None and ace:
         title_slug = slugify(title)
         for extension in SUPPORTED_TVG_LOGO_EXTENSIONS:
             file_name = f"{title_slug}.{extension}"
