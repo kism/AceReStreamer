@@ -1086,12 +1086,14 @@ export const IPTVSourceApiSchema = {
             }
         },
         category_filter: {
-            items: {
-                type: 'string'
-            },
-            type: 'array',
-            title: 'Category Filter',
-            default: []
+            '$ref': '#/components/schemas/TitleFilter',
+            default: {
+                always_exclude_words: [],
+                always_include_words: [],
+                exclude_words: [],
+                include_words: [],
+                regex_postprocessing: []
+            }
         },
         max_active_streams: {
             type: 'integer',
@@ -1125,6 +1127,29 @@ export const IPTVSourceApiSchema = {
     required: ['name', 'url', 'type'],
     title: 'IPTVSourceApi',
     description: 'Represent an IPTV proxy source, generic for Xtream and M3U8 sources.'
+} as const;
+
+export const IPTVStreamOverrideSchema = {
+    properties: {
+        name: {
+            type: 'string',
+            title: 'Name',
+            default: ''
+        },
+        category: {
+            type: 'string',
+            title: 'Category',
+            default: ''
+        },
+        tvg_id: {
+            type: 'string',
+            title: 'Tvg Id',
+            default: ''
+        }
+    },
+    type: 'object',
+    title: 'IPTVStreamOverride',
+    description: 'Override scraped metadata for a specific IPTV stream by title.'
 } as const;
 
 export const ManuallyAddedAceStreamSchema = {

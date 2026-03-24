@@ -317,13 +317,22 @@ export type IPTVSourceApi = {
     url: string;
     type: 'xtream' | 'm3u8';
     title_filter?: TitleFilter;
-    category_filter?: Array<(string)>;
+    category_filter?: TitleFilter;
     max_active_streams?: number;
     username?: (string | null);
     password?: (string | null);
 };
 
 export type type2 = 'xtream' | 'm3u8';
+
+/**
+ * Override scraped metadata for a specific IPTV stream by title.
+ */
+export type IPTVStreamOverride = {
+    name?: string;
+    category?: string;
+    tvg_id?: string;
+};
 
 /**
  * Model for a manually added AceStream.
@@ -657,6 +666,29 @@ export type IptvScraperRemoveSourceData = {
 };
 
 export type IptvScraperRemoveSourceResponse = (MessageResponseModel);
+
+export type IptvScraperGetStreamOverridesData = {
+    sourceName: string;
+};
+
+export type IptvScraperGetStreamOverridesResponse = ({
+    [key: string]: IPTVStreamOverride;
+});
+
+export type IptvScraperSetStreamOverrideData = {
+    requestBody: IPTVStreamOverride;
+    sourceName: string;
+    streamTitle: string;
+};
+
+export type IptvScraperSetStreamOverrideResponse = (MessageResponseModel);
+
+export type IptvScraperDeleteStreamOverrideData = {
+    sourceName: string;
+    streamTitle: string;
+};
+
+export type IptvScraperDeleteStreamOverrideResponse = (MessageResponseModel);
 
 export type IptvStreamsStreamsResponse = (Array<FoundIPTVStreamAPI>);
 
