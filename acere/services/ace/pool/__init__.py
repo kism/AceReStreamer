@@ -1,7 +1,7 @@
 """Ace Pool service."""
 
 import asyncio
-import contextlib
+from contextlib import suppress
 import threading
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
@@ -98,7 +98,7 @@ class AcePool:
             caller = f"{caller}: "
         if content_id in self._ace_instances:
             logger.info("%sRemoving AceStream instance with content_id %s", caller, content_id)
-            with contextlib.suppress(KeyError):
+            with suppress(KeyError):
                 await self._ace_instances[content_id].stop()
                 del self._ace_instances[content_id]
             return True

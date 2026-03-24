@@ -1,7 +1,7 @@
 """Handler for quality cache."""
 
 import asyncio
-import contextlib
+from contextlib import suppress
 import threading
 from datetime import UTC, datetime, timedelta
 from typing import ClassVar
@@ -170,7 +170,7 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
                         )
 
                         for _ in range(3):
-                            with contextlib.suppress(
+                            with suppress(
                                 aiohttp.ClientError,
                                 asyncio.TimeoutError,
                                 fastapi.exceptions.HTTPException,
