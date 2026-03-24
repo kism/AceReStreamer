@@ -53,3 +53,5 @@ This logic might be cooked
 Quality checking for iptv
 
 Api endpoint for channel overrides.
+
+Retry when fetching xc endpoint.
