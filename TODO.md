@@ -50,8 +50,8 @@ This logic might be cooked
 
 ~~EPG for iptv proxy~~
 
+~~Retry when fetching xc endpoint.~~
+
+~~Api endpoint for channel overrides.~~
+
 Quality checking for iptv
-
-Api endpoint for channel overrides.
-
-Retry when fetching xc endpoint.
