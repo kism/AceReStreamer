@@ -37,6 +37,7 @@ API_V1_STR = "/api/v1"
 # Config
 ENV_PREFIX = "ACERE_"
 
-
 # EPG Related but used everywhere
 SUPPORTED_TVG_LOGO_EXTENSIONS = ["png", "jpg", "jpeg", "webp", "svg"]
+
+DEFAULT_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0"
