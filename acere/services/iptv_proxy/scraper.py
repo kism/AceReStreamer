@@ -1,5 +1,6 @@
 """IPTV proxy scraper — fetches upstream playlists and XC APIs."""
 
+import asyncio
 from contextlib import suppress
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
@@ -262,11 +263,15 @@ class IPTVProxyScraper:
     async def _fetch_json(self, url: str, source_name: str) -> Any:  # noqa: ANN401
         """Fetch JSON from a URL."""
         logger.debug("Fetching JSON from %s for source '%s'", url, source_name)
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url) as response:
-                    response.raise_for_status()
-                    return await response.json(content_type=None)
-        except (aiohttp.ClientError, TimeoutError) as e:
-            log_aiohttp_exception(logger, url, e)
-            return None
+        for _ in range(3):
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url) as response:
+                        response.raise_for_status()
+                        return await response.json(content_type=None)
+            except aiohttp.ClientError as e:
+                log_aiohttp_exception(logger, url, e)
+            except TimeoutError as e:
+                log_aiohttp_exception(logger, url, e)
+
+        return None
