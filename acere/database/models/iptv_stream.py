@@ -13,6 +13,7 @@ class IPTVStreamDBEntry(SQLModel, table=True):
     __tablename__ = "iptv_streams"
     id: int | None = Field(default=None, primary_key=True, index=True)
     title: str = Field(default="", max_length=255)
+    original_title: str = Field(default="", max_length=255)
     upstream_url: str = Field(max_length=2048, nullable=False)
     slug: str = Field(max_length=16, unique=True, nullable=False, index=True)
     source_name: str = Field(max_length=255, nullable=False)

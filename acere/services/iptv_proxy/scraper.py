@@ -139,6 +139,8 @@ class IPTVProxyScraper:
             if not source.title_filter.check_allowed(title):
                 continue
 
+            original_title = title
+
             # Apply per-stream overrides
             override = source.stream_overrides.get(title)
             if override:
@@ -162,6 +164,7 @@ class IPTVProxyScraper:
             found_streams.append(
                 FoundIPTVStream(
                     title=title,
+                    original_title=original_title,
                     upstream_url=upstream_url,
                     source_name=source.name,
                     tvg_id=tvg_id,
@@ -202,6 +205,8 @@ class IPTVProxyScraper:
 
             group_title = source.category_rename.get(group_title, group_title)
 
+            original_title = title
+
             # Apply per-stream overrides
             override = source.stream_overrides.get(title)
             if override:
@@ -222,6 +227,7 @@ class IPTVProxyScraper:
             results.append(
                 FoundIPTVStream(
                     title=title,
+                    original_title=original_title,
                     upstream_url=entry.url,
                     source_name=source_name,
                     tvg_id=tvg_id,

@@ -36,6 +36,7 @@ class IPTVStreamDBHandler(BaseDatabaseHandler):
             result = session.exec(statement).first()
             if result:
                 result.title = stream.title
+                result.original_title = stream.original_title
                 result.upstream_url = stream.upstream_url
                 result.source_name = stream.source_name
                 result.tvg_id = stream.tvg_id
@@ -48,6 +49,7 @@ class IPTVStreamDBHandler(BaseDatabaseHandler):
             else:
                 new_entry = IPTVStreamDBEntry(
                     title=stream.title,
+                    original_title=stream.original_title,
                     upstream_url=stream.upstream_url,
                     slug=slug,
                     source_name=stream.source_name,

@@ -34,6 +34,7 @@ def upgrade() -> None:
             "iptv_streams",
             sa.Column("id", sa.Integer, primary_key=True, autoincrement=True),
             sa.Column("title", sa.String(255), nullable=False, server_default=""),
+            sa.Column("original_title", sa.String(255), nullable=False, server_default=""),
             sa.Column("upstream_url", sa.String(2048), nullable=False),
             sa.Column("slug", sa.String(16), nullable=False),
             sa.Column("source_name", sa.String(255), nullable=False),

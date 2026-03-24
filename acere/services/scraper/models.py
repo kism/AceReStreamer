@@ -13,6 +13,7 @@ class FoundIPTVStream(BaseModel):
     """Model for a found IPTV stream (non-ace, direct HTTP/HLS)."""
 
     title: str
+    original_title: str = ""
     upstream_url: str
     source_name: str
     tvg_id: str = ""
@@ -25,6 +26,7 @@ class FoundIPTVStreamAPI(BaseModel):
     """Model for an IPTV proxy stream, for API use."""
 
     title: str
+    original_title: str
     slug: str
     upstream_url: str
     source_name: str

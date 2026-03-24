@@ -32,6 +32,7 @@ def streams() -> list[FoundIPTVStreamAPI]:
         result.append(
             FoundIPTVStreamAPI(
                 title=stream.title,
+                original_title=stream.original_title,
                 slug=stream.slug,
                 upstream_url=stream.upstream_url,
                 source_name=stream.source_name,
@@ -60,6 +61,7 @@ def by_slug(slug: str) -> FoundIPTVStreamAPI:
 
     return FoundIPTVStreamAPI(
         title=stream.title,
+        original_title=stream.original_title,
         slug=stream.slug,
         upstream_url=stream.upstream_url,
         source_name=stream.source_name,
