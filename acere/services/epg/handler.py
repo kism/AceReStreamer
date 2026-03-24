@@ -277,7 +277,8 @@ class EPGHandler:
         database_tvg_ids = get_ace_streams_db_handler().get_all_distinct_tvg_ids()
         database_tvg_ids |= get_iptv_streams_db_handler().get_all_distinct_tvg_ids()
         for tvg_id in database_tvg_ids:
-            self._set_of_tvg_ids.add(tvg_id)
+            if tvg_id != "":
+                self._set_of_tvg_ids.add(tvg_id)
 
         thread = threading.Thread(target=_start_epg_update_thread, name="EPGHandler: update_epgs", daemon=True)
         thread.start()
