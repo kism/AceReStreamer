@@ -2,12 +2,18 @@ import { Tabs, VStack } from "@chakra-ui/react"
 import { createFileRoute } from "@tanstack/react-router"
 import IptvScraperManagement from "@/components/Admin/IptvScraperManagement"
 import IptvStreamManagement from "@/components/Admin/IptvStreamManagement"
+import IptvStreamOverrideManagement from "@/components/Admin/IptvStreamOverrideManagement"
 import useAuth from "@/hooks/useAuth"
 import { usePageTitle } from "@/hooks/usePageTitle"
 
 const tabsConfig = [
   { value: "streams", title: "Streams", component: IptvStreamManagement },
   { value: "scrapers", title: "Scrapers", component: IptvScraperManagement },
+  {
+    value: "overrides",
+    title: "Stream Overrides",
+    component: IptvStreamOverrideManagement,
+  },
 ]
 
 export const Route = createFileRoute("/_layout/admin/iptv")({
