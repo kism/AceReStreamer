@@ -278,6 +278,7 @@ export type FoundAceStreamAPI = {
  */
 export type FoundIPTVStreamAPI = {
     title: string;
+    original_title: string;
     slug: string;
     upstream_url: string;
     source_name: string;

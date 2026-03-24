@@ -943,6 +943,10 @@ export const FoundIPTVStreamAPISchema = {
             type: 'string',
             title: 'Title'
         },
+        original_title: {
+            type: 'string',
+            title: 'Original Title'
+        },
         slug: {
             type: 'string',
             title: 'Slug'
@@ -989,7 +993,7 @@ export const FoundIPTVStreamAPISchema = {
         }
     },
     type: 'object',
-    required: ['title', 'slug', 'upstream_url', 'source_name', 'tvg_id', 'group_title', 'last_scraped_time', 'program_title', 'program_description'],
+    required: ['title', 'original_title', 'slug', 'upstream_url', 'source_name', 'tvg_id', 'group_title', 'last_scraped_time', 'program_title', 'program_description'],
     title: 'FoundIPTVStreamAPI',
     description: 'Model for an IPTV proxy stream, for API use.'
 } as const;
