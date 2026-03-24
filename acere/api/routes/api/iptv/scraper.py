@@ -8,7 +8,7 @@ from acere.api.deps import (
     get_current_active_superuser,
     get_current_user,
 )
-from acere.config.iptv import IPTVSourceM3U8, IPTVSourceXtream
+from acere.config.iptv import IPTVSourceM3U8, IPTVSourceXtream, IPTVStreamOverride
 from acere.instances.config import settings
 from acere.instances.iptv_proxy import get_iptv_proxy_manager
 from acere.services.scraper.models import IPTVSourceApi
@@ -103,4 +103,38 @@ def remove_source(source_name: str) -> MessageResponseModel:
 
     settings.write_config()
 
+    return MessageResponseModel(message=msg)
+
+
+@router.get("/{source_name}/stream-override", dependencies=[Depends(get_current_active_superuser)])
+def get_stream_overrides(source_name: str) -> dict[str, IPTVStreamOverride]:
+    """API endpoint to get all stream overrides for an IPTV source."""
+    overrides = settings.iptv.get_stream_overrides(source_name)
+    if overrides is None:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="IPTV source not found")
+    return overrides
+
+
+@router.post("/{source_name}/stream-override/{stream_title}", dependencies=[Depends(get_current_active_superuser)])
+def set_stream_override(source_name: str, stream_title: str, body: IPTVStreamOverride) -> MessageResponseModel:
+    """API endpoint to add or update a stream override for an IPTV source."""
+    success, msg = settings.iptv.set_stream_override(source_name, stream_title, body)
+    if not success:
+        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=msg)
+
+    settings.write_config()
+    get_iptv_proxy_manager().start_scrape_thread()
+    return MessageResponseModel(message=msg)
+
+
+@router.delete("/{source_name}/stream-override/{stream_title}", dependencies=[Depends(get_current_active_superuser)])
+def delete_stream_override(source_name: str, stream_title: str) -> MessageResponseModel:
+    """API endpoint to delete a stream override for an IPTV source."""
+    success, msg = settings.iptv.delete_stream_override(source_name, stream_title)
+    if not success:
+        status = HTTPStatus.NOT_FOUND if "not found" in msg.lower() else HTTPStatus.BAD_REQUEST
+        raise HTTPException(status_code=status, detail=msg)
+
+    settings.write_config()
+    get_iptv_proxy_manager().start_scrape_thread()
     return MessageResponseModel(message=msg)

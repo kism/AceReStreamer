@@ -4,6 +4,9 @@ from pydantic import BaseModel, ConfigDict, HttpUrl, field_validator
 
 from acere.config.ace.scraper import TitleFilter
 from acere.utils.helpers import slugify
+from acere.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class IPTVStreamOverride(BaseModel):
@@ -101,3 +104,42 @@ class IPTVProxyConf(BaseModel):
                 self.m3u8.remove(m3u8_source)
                 return True, "Source removed"
         return False, f"Source not found: {name}"
+
+    def _find_source(self, source_name: str) -> IPTVSourceXtream | IPTVSourceM3U8 | None:
+        """Find a source by name across both xtream and m3u8 lists."""
+        for xtream_source in self.xtream:
+            if xtream_source.name == source_name:
+                return xtream_source
+        for m3u8_source in self.m3u8:
+            if m3u8_source.name == source_name:
+                return m3u8_source
+        return None
+
+    def get_stream_overrides(self, source_name: str) -> dict[str, IPTVStreamOverride] | None:
+        """Get all stream overrides for a source. Returns None if source not found."""
+        source = self._find_source(source_name)
+        if source is None:
+            return None
+        return source.stream_overrides
+
+    def set_stream_override(
+        self, source_name: str, stream_title: str, override: IPTVStreamOverride
+    ) -> tuple[bool, str]:
+        """Add or update a stream override for a source."""
+        source = self._find_source(source_name)
+        if source is None:
+            return False, f"Source not found: {source_name}"
+        source.stream_overrides[stream_title] = override
+        logger.info("Set stream override for '%s' on source '%s'", stream_title, source_name)
+        return True, "Stream override set"
+
+    def delete_stream_override(self, source_name: str, stream_title: str) -> tuple[bool, str]:
+        """Delete a stream override from a source."""
+        source = self._find_source(source_name)
+        if source is None:
+            return False, f"Source not found: {source_name}"
+        if stream_title not in source.stream_overrides:
+            return False, f"Stream override not found: {stream_title}"
+        del source.stream_overrides[stream_title]
+        logger.info("Deleted stream override for '%s' on source '%s'", stream_title, source_name)
+        return True, "Stream override deleted"
