@@ -69,9 +69,10 @@ async def download_and_save_logo(logo_url: HttpUrl | None, title: str) -> None:
 
     This function:
     1. Checks if logo already exists (skips if found)
-    2. Falls back to provided URL
-    3. Validates file extension
-    4. Downloads and saves to disk
+    2. Tries external URL source if configured in settings
+    3. Falls back to provided URL
+    4. Validates file extension
+    5. Downloads and saves to disk
 
     Args:
         logo_url: The TVG logo URL to download from (can be None)
@@ -82,6 +83,21 @@ async def download_and_save_logo(logo_url: HttpUrl | None, title: str) -> None:
         logo_path = _get_logo_path_for_title(title, extension)
         if logo_path.is_file():
             return
+
+    # Try external URL source if configured
+    if settings.ace.scraper.tvg_logo_external_url is not None:
+        title_slug = slugify(title)
+        for extension in SUPPORTED_TVG_LOGO_EXTENSIONS:
+            file_name = f"{title_slug}.{extension}"
+            external_url = HttpUrl(f"{settings.ace.scraper.tvg_logo_external_url}/{file_name}")
+
+            logo_content = await _fetch_logo_content(external_url, title)
+            if logo_content is not None:
+                logo_path = _get_logo_path_for_title(title, extension)
+                logo_path.parent.mkdir(parents=True, exist_ok=True)
+                with logo_path.open("wb") as file:
+                    file.write(logo_content)
+                return
 
     # Fall back to provided URL
     if logo_url is None:
