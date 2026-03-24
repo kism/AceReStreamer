@@ -57,9 +57,11 @@ function StreamOverrides() {
     const overrideKeys = new Set(overrides ? Object.keys(overrides) : [])
     return streams
       .filter(
-        (s) => s.source_name === selectedSource && !overrideKeys.has(s.title),
+        (s) =>
+          s.source_name === selectedSource &&
+          !overrideKeys.has(s.original_title),
       )
-      .map((s) => s.title)
+      .map((s) => s.original_title)
       .sort()
   }, [streams, selectedSource, overrides])
 
