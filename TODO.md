@@ -48,8 +48,8 @@ This logic might be cooked
 
 ~~.model_validate > \*\*thing~~
 
-Quality checking for iptv
+~~EPG for iptv proxy~~
 
-EPG for iptv proxy
+Quality checking for iptv
 
 Api endpoint for channel overrides.
