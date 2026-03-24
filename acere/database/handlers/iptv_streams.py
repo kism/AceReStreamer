@@ -112,6 +112,13 @@ class IPTVStreamDBHandler(BaseDatabaseHandler):
             logger.info("Deleted %d IPTV streams from source '%s'", count, source_name)
             return count
 
+    def get_all_distinct_tvg_ids(self) -> set[str]:
+        """Get all distinct TVG IDs from the database."""
+        with self._get_session() as session:
+            statement = select(IPTVStreamDBEntry.tvg_id).distinct()
+            results = session.exec(statement).all()
+            return set(results)
+
     def get_iptv_lines(self, token: str) -> list[str]:
         """Return IPTV EXTINF+URL pairs for all IPTV proxy streams, without M3U header."""
         external_url = settings.EXTERNAL_URL

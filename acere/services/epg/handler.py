@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 from lxml import etree
 
 from acere.instances.ace_streams import get_ace_streams_db_handler
+from acere.instances.iptv_streams import get_iptv_streams_db_handler
 from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger
 from acere.version import PROGRAM_NAME, URL
@@ -274,6 +275,7 @@ class EPGHandler:
             self._epgs.append(EPG(epg_conf=epg_conf))
 
         database_tvg_ids = get_ace_streams_db_handler().get_all_distinct_tvg_ids()
+        database_tvg_ids |= get_iptv_streams_db_handler().get_all_distinct_tvg_ids()
         for tvg_id in database_tvg_ids:
             self._set_of_tvg_ids.add(tvg_id)
 

@@ -114,6 +114,7 @@ class FakeSession:
     def __init__(self, responses: dict[str, FakeResponseDef]) -> None:
         self.responses = responses
         self.closed = False
+        self.headers: dict[str, str] = {}
 
     def get(self, url: str, **kwargs: Any) -> FakeRequestContextManager:
         response_def = self.responses.get(url)
