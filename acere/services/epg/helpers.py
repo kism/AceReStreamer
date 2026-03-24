@@ -39,10 +39,10 @@ def normalise_epg_tvg_id(tvg_id: str | None, overrides: dict[str, str] | None = 
         return tvg_id
 
     # Cleanup
-    channel_name = channel_name.replace(".", " ")
-    channel_name = channel_name.replace("_", " ")
+    channel_name = channel_name.replace(" ", ".")
+    channel_name = channel_name.replace("_", ".")
     channel_name = channel_name.replace("&amp;", "&")
-    channel_name = channel_name.strip()
+    channel_name = channel_name.strip(".")
 
     country_code = country_code.lower()
     country_code = country_code.strip()

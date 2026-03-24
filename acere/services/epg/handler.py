@@ -17,7 +17,7 @@ from acere.version import PROGRAM_NAME, URL
 
 from .candidate import EPGCandidateHandler
 from .epg import EPG, EPG_LIFESPAN
-from .helpers import find_current_program_xml
+from .helpers import find_current_program_xml, normalise_epg_tvg_id
 from .models import EPGApiHandlerHealthResponse, EPGApiHealthResponse, TVGEPGMappingsResponse
 
 if TYPE_CHECKING:
@@ -145,8 +145,9 @@ class EPGHandler:
     def add_tvg_ids(self, tvg_ids: list[str] | set[str]) -> None:
         """Set the TVG IDs for which EPG data should be condensed."""
         for tvg_id in tvg_ids:
-            if tvg_id != "":
-                self._set_of_tvg_ids.add(tvg_id)
+            normalised = normalise_epg_tvg_id(tvg_id)
+            if normalised:
+                self._set_of_tvg_ids.add(normalised)
 
         # This needs to be forced, otherwise the list might be empty on startup
         self._condense_epgs()
@@ -158,6 +159,10 @@ class EPGHandler:
 
     def get_current_program(self, tvg_id: str) -> tuple[str, str]:
         """Get the current program for a given TVG ID."""
+        normalised = normalise_epg_tvg_id(tvg_id)
+        if normalised:
+            tvg_id = normalised
+
         if len(self._epgs) == 0:
             if datetime.now(tz=UTC) - self._last_warned_current_program > EPG_CHECK_INTERVAL_MINIMUM:
                 logger.warning(
@@ -277,8 +282,9 @@ class EPGHandler:
         database_tvg_ids = get_ace_streams_db_handler().get_all_distinct_tvg_ids()
         database_tvg_ids |= get_iptv_streams_db_handler().get_all_distinct_tvg_ids()
         for tvg_id in database_tvg_ids:
-            if tvg_id != "":
-                self._set_of_tvg_ids.add(tvg_id)
+            normalised = normalise_epg_tvg_id(tvg_id)
+            if normalised:
+                self._set_of_tvg_ids.add(normalised)
 
         thread = threading.Thread(target=_start_epg_update_thread, name="EPGHandler: update_epgs", daemon=True)
         thread.start()
