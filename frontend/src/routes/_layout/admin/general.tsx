@@ -1,6 +1,7 @@
 import { Tabs, VStack } from "@chakra-ui/react"
 import { createFileRoute } from "@tanstack/react-router"
 import ConfigManagement from "@/components/Admin/ConfigManagement"
+import EPGManagement from "@/components/Admin/EPGManagement"
 import HealthManagement from "@/components/Admin/HealthManagement"
 import RemoteConfigManagement from "@/components/Admin/RemoteConfigManagement"
 import UserManagement from "@/components/Admin/UserManagement"
@@ -15,6 +16,7 @@ const tabsConfig = [
     title: "Remote Config",
     component: RemoteConfigManagement,
   },
+  { value: "epg", title: "EPG", component: EPGManagement },
   { value: "health", title: "Health", component: HealthManagement },
 ]
 

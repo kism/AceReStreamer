@@ -162,6 +162,9 @@ class IPTVProxyScraper:
                     logo_url = HttpUrl(stream.stream_icon)
             await download_and_save_logo(logo_url, title)
 
+            if tvg_id == "":
+                tvg_id = name_processor.get_tvg_id_from_title(title)
+
             found_streams.append(
                 FoundIPTVStream(
                     title=title,

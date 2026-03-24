@@ -65,12 +65,12 @@ def find_tvg_logo_image(title: str) -> str:
 
 
 def get_tvg_id_from_title(title: str) -> str:
-    """Extract the TVG ID from the title."""
+    """Extract the TVG ID from the title, gets it into approximately epgshare01 format."""
     country_code_match = COUNTRY_CODE_PATTERN.search(title)
     if country_code_match:
         country_code = country_code_match.group(1)
-        title_no_cc = title.replace(f"[{country_code}]", "").strip()
-        return f"{title_no_cc}.{country_code.lower()}"
+        title_no_cc = title.replace(f"[{country_code}]", "").replace(" ", ".").strip()
+        return f"{title_no_cc}.{country_code.lower()}".replace("..", ".").strip(".")
 
     return ""
 
