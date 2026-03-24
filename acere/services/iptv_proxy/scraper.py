@@ -1,26 +1,26 @@
 """IPTV proxy scraper — fetches upstream playlists and XC APIs."""
 
+from contextlib import suppress
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
 import aiohttp
-from pydantic import ValidationError
+from pydantic import HttpUrl, ValidationError
 
+from acere.services.scraper import name_processor
 from acere.services.scraper.cache import ScraperCache
 from acere.services.scraper.m3u_common import GenericM3UParser, M3UEntry
 from acere.services.scraper.models import FoundIPTVStream
+from acere.services.scraper.tvg_logo import download_and_save_logo
 from acere.services.xc.models import XCApiResponse, XCCategory, XCStream
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.logger import get_logger
 
 if TYPE_CHECKING:
-    from pydantic import HttpUrl
-
     from acere.config.iptv import IPTVSourceM3U8, IPTVSourceXtream
 else:
     IPTVSourceM3U8 = object
     IPTVSourceXtream = object
-    HttpUrl = object
 
 logger = get_logger(__name__)
 
@@ -44,7 +44,7 @@ class IPTVProxyScraper:
             return []
 
         entries = self._generic_parser.parse(content)
-        return self._filter_and_convert_entries(entries, source.name, source)
+        return await self._filter_and_convert_entries(entries, source.name, source)
 
     async def scrape_xtream_source(self, source: IPTVSourceXtream) -> list[FoundIPTVStream]:
         """Use XC player_api.php to get streams, then build upstream URLs."""
@@ -94,7 +94,7 @@ class IPTVProxyScraper:
             port_suffix = "" if server.port == DEFAULT_HTTP_PORT else f":{server.port}"
             stream_base_url = f"http://{server.url.host}{port_suffix}"
 
-        found_streams = self._build_xc_streams(streams_data, category_map, stream_base_url, source)
+        found_streams = await self._build_xc_streams(streams_data, category_map, stream_base_url, source)
         logger.info("Found %d streams from XC source '%s'", len(found_streams), source.name)
         return found_streams
 
@@ -112,7 +112,7 @@ class IPTVProxyScraper:
                     category_map[cat.category_id] = cat.category_name
         return category_map
 
-    def _build_xc_streams(
+    async def _build_xc_streams(
         self,
         streams_data: list[XCStream],
         category_map: dict[int, str],
@@ -153,13 +153,19 @@ class IPTVProxyScraper:
             # Build upstream URL
             upstream_url = f"{base_url}/live/{source.username}/{source.password}/{stream.stream_id}.m3u8"
 
+            logo_url = None
+            if stream.stream_icon:
+                with suppress(ValidationError):
+                    logo_url = HttpUrl(stream.stream_icon)
+            await download_and_save_logo(logo_url, title)
+
             found_streams.append(
                 FoundIPTVStream(
                     title=title,
                     upstream_url=upstream_url,
                     source_name=source.name,
                     tvg_id=tvg_id,
-                    tvg_logo=stream.stream_icon or None,
+                    tvg_logo=name_processor.find_tvg_logo_image(title) or None,
                     group_title=group_title,
                     last_scraped_time=now,
                 )
@@ -167,7 +173,7 @@ class IPTVProxyScraper:
 
         return found_streams
 
-    def _filter_and_convert_entries(
+    async def _filter_and_convert_entries(
         self,
         entries: list[M3UEntry],
         source_name: str,
@@ -207,13 +213,19 @@ class IPTVProxyScraper:
             else:
                 tvg_id = entry.tvg_id
 
+            logo_url = None
+            if entry.tvg_logo_url:
+                with suppress(ValidationError):
+                    logo_url = HttpUrl(entry.tvg_logo_url)
+            await download_and_save_logo(logo_url, title)
+
             results.append(
                 FoundIPTVStream(
                     title=title,
                     upstream_url=entry.url,
                     source_name=source_name,
                     tvg_id=tvg_id,
-                    tvg_logo=None,  # TVG logo handling for IPTV proxy is separate
+                    tvg_logo=name_processor.find_tvg_logo_image(title) or None,
                     group_title=group_title,
                     last_scraped_time=now,
                 )
