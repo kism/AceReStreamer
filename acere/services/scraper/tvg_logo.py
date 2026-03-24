@@ -19,7 +19,7 @@ else:
 logger = get_logger(__name__)
 
 
-async def fetch_logo_content(logo_url: HttpUrl, title: str) -> bytes | None:
+async def _fetch_logo_content(logo_url: HttpUrl, title: str) -> bytes | None:
     """Download logo content from a URL.
 
     Args:
@@ -46,7 +46,7 @@ async def fetch_logo_content(logo_url: HttpUrl, title: str) -> bytes | None:
     return output_logo
 
 
-def get_logo_path_for_title(title: str, extension: str | None = None) -> Path:
+def _get_logo_path_for_title(title: str, extension: str | None = None) -> Path:
     """Get the filesystem path for a logo given a stream title.
 
     Args:
@@ -80,7 +80,7 @@ async def download_and_save_logo(logo_url: HttpUrl | None, title: str) -> None:
     """
     # Check if logo already exists
     for extension in SUPPORTED_TVG_LOGO_EXTENSIONS:
-        logo_path = get_logo_path_for_title(title, extension)
+        logo_path = _get_logo_path_for_title(title, extension)
         if logo_path.is_file():
             return
 
@@ -91,9 +91,9 @@ async def download_and_save_logo(logo_url: HttpUrl | None, title: str) -> None:
             file_name = f"{title_slug}.{extension}"
             external_url = HttpUrl(f"{settings.ace.scraper.tvg_logo_external_url}/{file_name}")
 
-            logo_content = await fetch_logo_content(external_url, title)
+            logo_content = await _fetch_logo_content(external_url, title)
             if logo_content is not None:
-                logo_path = get_logo_path_for_title(title, extension)
+                logo_path = _get_logo_path_for_title(title, extension)
                 logo_path.parent.mkdir(parents=True, exist_ok=True)
                 with logo_path.open("wb") as file:
                     file.write(logo_content)
@@ -117,11 +117,11 @@ async def download_and_save_logo(logo_url: HttpUrl | None, title: str) -> None:
 
     # Download and save
     logger.info("Downloading TVG logo for %s from m3u8 %s", title, logo_url)
-    content = await fetch_logo_content(logo_url, title)
+    content = await _fetch_logo_content(logo_url, title)
     if content is None:
         return
 
-    logo_path = get_logo_path_for_title(title, url_file_extension)
+    logo_path = _get_logo_path_for_title(title, url_file_extension)
     logo_path.parent.mkdir(parents=True, exist_ok=True)
     with logo_path.open("wb") as file:
         file.write(content)
