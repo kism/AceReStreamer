@@ -73,7 +73,11 @@ class Quality(BaseModel):
                 rating = min(max(n_new_segments, 1), 5) + int(self._streak / STREAK_BONUS_THRESHOLD)
                 self._streak += n_new_segments
                 self._last_segment_fetched = current_time
-                self.last_message = f"Score +{rating} ({n_new_segments} new {'segments' if n_new_segments > 1 else 'segment'}, streak: {self._streak})"
+                segment_label = "segments" if n_new_segments > 1 else "segment"
+                self.last_message = (
+                    f"Score +{rating} ({n_new_segments} new {segment_label}, "
+                    f"streak: {self._streak})"
+                )
             elif segment_is_late:
                 # This is a fair comparison since we don't actually know when the pending segment became available
                 # If it's a new stream, we are less harsh
