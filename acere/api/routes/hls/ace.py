@@ -10,8 +10,8 @@ from pydantic import HttpUrl
 
 from acere.core.stream_token import verify_stream_token
 from acere.instances.ace_pool import get_ace_pool
-from acere.instances.ace_quality import get_quality_handler
 from acere.instances.config import settings
+from acere.instances.quality import get_quality_handler
 from acere.utils.api_models import MessageResponseModel
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.helpers import check_valid_content_id_or_infohash

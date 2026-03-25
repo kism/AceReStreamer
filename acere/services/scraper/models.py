@@ -36,6 +36,9 @@ class FoundIPTVStreamAPI(BaseModel):
     last_scraped_time: datetime
     program_title: str
     program_description: str
+    quality: int
+    has_ever_worked: bool
+    m3u_failures: int
 
 
 class IPTVSourceApi(BaseModel):

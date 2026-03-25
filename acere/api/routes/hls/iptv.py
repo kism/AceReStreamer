@@ -10,6 +10,8 @@ from fastapi.responses import StreamingResponse
 from acere.core.stream_token import verify_stream_token
 from acere.instances.config import settings
 from acere.instances.iptv_proxy import get_iptv_proxy_manager
+from acere.instances.iptv_streams import get_iptv_streams_db_handler
+from acere.instances.quality import get_quality_handler
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.hls import rewrite_iptv_hls_segments
 from acere.utils.logger import get_logger
@@ -56,6 +58,10 @@ async def hls_web(slug: str, token: str = "") -> Response:
             detail=f"Unknown IPTV stream: {slug}",
         )
 
+    # Get canonical upstream URL from DB for quality tracking (stable, not affected by redirects)
+    db_entry = get_iptv_streams_db_handler().get_by_slug(slug)
+    quality_hls_identifier = db_entry.upstream_url if db_entry else upstream_url
+
     try:
         timeout = aiohttp.ClientTimeout(total=REVERSE_PROXY_TIMEOUT)
         async with aiohttp.ClientSession(timeout=timeout) as session:
@@ -67,6 +73,7 @@ async def hls_web(slug: str, token: str = "") -> Response:
                 final_url = str(resp.url)
     except (aiohttp.ClientError, TimeoutError) as e:
         log_aiohttp_exception(logger, f"[iptv hls {slug}] -> {upstream_url}", e)
+        get_quality_handler().increment_quality(quality_hls_identifier, "")
         raise HTTPException(
             status_code=HTTPStatus.BAD_GATEWAY,
             detail="Failed to fetch upstream IPTV stream",
@@ -81,6 +88,7 @@ async def hls_web(slug: str, token: str = "") -> Response:
 
     if "#EXTM3U" not in content_str:
         logger.error("Invalid HLS content received for IPTV slug: %s", slug)
+        get_quality_handler().increment_quality(quality_hls_identifier, "")
         raise HTTPException(
             status_code=HTTPStatus.BAD_GATEWAY,
             detail="Upstream did not return valid HLS content",
@@ -91,6 +99,8 @@ async def hls_web(slug: str, token: str = "") -> Response:
         slug=slug,
         server_name=settings.EXTERNAL_URL,
     )
+
+    get_quality_handler().increment_quality(quality_hls_identifier, content_str)
 
     resp_out = Response(content=content_str, status_code=status_code)
     resp_out.headers.update(

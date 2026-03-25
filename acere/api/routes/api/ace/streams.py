@@ -8,9 +8,9 @@ from acere.api.deps import (
     get_current_active_superuser,
     get_current_user,
 )
-from acere.instances.ace_quality import get_quality_handler
 from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.epg import get_epg_handler
+from acere.instances.quality import get_quality_handler
 from acere.services.scraper.ace.models import FoundAceStream, FoundAceStreamAPI, ManuallyAddedAceStream
 from acere.services.scraper.name_processor import get_tvg_id_from_title, populate_group_title
 from acere.utils.api_models import MessageResponseModel

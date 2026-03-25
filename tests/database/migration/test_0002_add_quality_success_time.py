@@ -59,11 +59,13 @@ def test_0002_upgrade_from_old_schema(engine: Engine, get_columns: Callable[[Eng
     assert "has_ever_worked" in columns_before
     assert "last_quality_success_time" not in columns_before
 
+    # After upgrade to head (0003), table is renamed to quality_cache with hls_identifier
     runner.upgrade(engine)
 
-    columns_after = get_columns(engine, "ace_quality_cache")
+    columns_after = get_columns(engine, "quality_cache")
     assert "last_quality_success_time" in columns_after
     assert "has_ever_worked" not in columns_after
+    assert "hls_identifier" in columns_after
 
     user_columns_after = get_columns(engine, "user")
     assert "password_changed_at" in user_columns_after
@@ -75,18 +77,22 @@ def test_0002_upgrade_idempotent(engine: Engine, get_columns: Callable[[Engine, 
     runner.upgrade(engine)
     runner.upgrade(engine)
 
-    columns = get_columns(engine, "ace_quality_cache")
+    # After upgrade to head, table is quality_cache with hls_identifier
+    columns = get_columns(engine, "quality_cache")
     assert "last_quality_success_time" in columns
     assert "has_ever_worked" not in columns
+    assert "hls_identifier" in columns
 
 
 def test_0002_downgrade_restores_old_schema(engine: Engine, get_columns: Callable[[Engine, str], set[str]]) -> None:
-    """Downgrading 0002 → 0001 restores has_ever_worked and removes last_quality_success_time."""
+    """Downgrading 0002 -> 0001 restores has_ever_worked and removes last_quality_success_time."""
     SQLModel.metadata.create_all(engine)
     runner.upgrade(engine)
 
+    # After downgrade to 0001, 0003 downgrade reverses the rename, then 0002 downgrade restores has_ever_worked
     runner.downgrade(engine, "0001")
 
     columns = get_columns(engine, "ace_quality_cache")
     assert "has_ever_worked" in columns
     assert "last_quality_success_time" not in columns
+    assert "content_id" in columns

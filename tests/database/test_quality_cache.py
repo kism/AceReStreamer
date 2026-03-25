@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
-from acere.database.handlers.quality_cache import AceQualityCacheHandler
-from acere.services.ace.quality import Quality
+from acere.database.handlers.quality_cache import QualityCacheHandler
+from acere.services.quality import Quality
 from tests.test_utils.ace import get_random_content_id
 from tests.test_utils.hls import generate_hls_m3u8
 
@@ -18,8 +18,8 @@ else:
     pytest = object
 
 
-def test_init(quality_cache_handler: AceQualityCacheHandler) -> None:
-    """Test initialization of AceQualityCacheHandler."""
+def test_init(quality_cache_handler: QualityCacheHandler) -> None:
+    """Test initialization of QualityCacheHandler."""
     handler = quality_cache_handler
     override_quality = 50
 
@@ -53,7 +53,7 @@ def test_init(quality_cache_handler: AceQualityCacheHandler) -> None:
 
 
 def test_clean_table(
-    quality_cache_handler: AceQualityCacheHandler,
+    quality_cache_handler: QualityCacheHandler,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     """Test cleaning of the quality cache table."""
@@ -62,10 +62,10 @@ def test_clean_table(
     with caplog.at_level("ERROR"):
         handler.clean_table()
 
-    assert "Found invalid content_id" in caplog.text
+    assert "Found invalid hls_identifier" in caplog.text
 
 
-def test_get_quality_no_cache(quality_cache_handler: AceQualityCacheHandler) -> None:
+def test_get_quality_no_cache(quality_cache_handler: QualityCacheHandler) -> None:
     handler = quality_cache_handler
     handler._cache.clear()
     content_id = get_random_content_id()

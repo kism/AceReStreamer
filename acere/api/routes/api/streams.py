@@ -3,11 +3,11 @@
 from fastapi import APIRouter, Depends
 
 from acere.api.deps import get_current_user
-from acere.instances.ace_quality import get_quality_handler
 from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.config import settings
 from acere.instances.epg import get_epg_handler
 from acere.instances.iptv_streams import get_iptv_streams_db_handler
+from acere.instances.quality import get_quality_handler
 from acere.services.scraper.models import CombinedStreamAPI
 
 router = APIRouter(prefix="/streams", tags=["Streams"], dependencies=[Depends(get_current_user)])
@@ -44,6 +44,7 @@ def streams() -> list[CombinedStreamAPI]:
     # IPTV proxy streams
     iptv_handler = get_iptv_streams_db_handler()
     for iptv_stream in iptv_handler.get_streams_cached():
+        quality = quality_handler.get_quality(iptv_stream.upstream_url)
         program_title, program_description = epg_handler.get_current_program(iptv_stream.tvg_id)
         result.append(
             CombinedStreamAPI(
@@ -56,7 +57,7 @@ def streams() -> list[CombinedStreamAPI]:
                 last_scraped_time=iptv_stream.last_scraped_time,
                 program_title=program_title,
                 program_description=program_description,
-                quality=99,
+                quality=quality.quality,
             )
         )
 

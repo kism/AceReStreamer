@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 
-from acere.database.handlers.quality_cache import AceQualityCacheHandler
+from acere.database.handlers.quality_cache import QualityCacheHandler
 from acere.database.models import AceStreamDBEntry
-from acere.services.ace.quality import Quality
+from acere.services.quality import Quality
 from tests.test_utils.ace import get_random_content_id
 
 if TYPE_CHECKING:
@@ -27,7 +27,7 @@ def set_external_url(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.mark.asyncio
 async def test_check_missing_quality_no_streams(
-    quality_cache_handler: AceQualityCacheHandler,
+    quality_cache_handler: QualityCacheHandler,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test check_missing_quality when there are no streams."""
@@ -54,19 +54,19 @@ async def test_check_missing_quality_no_streams(
 
 @pytest.mark.asyncio
 async def test_check_missing_quality_already_checking(
-    quality_cache_handler: AceQualityCacheHandler,
+    quality_cache_handler: QualityCacheHandler,
 ) -> None:
     """Test check_missing_quality when already checking."""
-    AceQualityCacheHandler._currently_checking_quality.set()
+    QualityCacheHandler._currently_checking_quality.set()
     try:
         assert await quality_cache_handler.check_missing_quality(stream_delay=0, attempt_delay=0) is False
     finally:
-        AceQualityCacheHandler._currently_checking_quality.clear()
+        QualityCacheHandler._currently_checking_quality.clear()
 
 
 @pytest.mark.asyncio
 async def test_check_missing_quality_with_streams(
-    quality_cache_handler: AceQualityCacheHandler,
+    quality_cache_handler: QualityCacheHandler,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test check_missing_quality with streams that need checking."""
@@ -136,7 +136,7 @@ async def test_check_missing_quality_with_streams(
 
 @pytest.mark.asyncio
 async def test_check_missing_quality_with_exception(
-    quality_cache_handler: AceQualityCacheHandler,
+    quality_cache_handler: QualityCacheHandler,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test check_missing_quality handles exceptions gracefully."""

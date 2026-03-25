@@ -36,13 +36,15 @@ def test_fresh_install(
     runner.upgrade(engine)
 
     tables = get_tables(engine)
-    assert "ace_quality_cache" in tables
+    assert "quality_cache" in tables
     assert "alembic_version" in tables
     assert "xc_stream_map" in tables
 
-    columns = get_columns(engine, "ace_quality_cache")
+    columns = get_columns(engine, "quality_cache")
     assert "last_quality_success_time" in columns
     assert "has_ever_worked" not in columns
+    assert "hls_identifier" in columns
+    assert "content_id" not in columns
 
 
 def test_get_current_revision(engine: Engine) -> None:

@@ -1,4 +1,4 @@
-"""AceQuality, for tracking quality of Ace URIs."""
+"""Quality tracking for HLS streams."""
 
 import re
 from datetime import UTC, datetime, timedelta

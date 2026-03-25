@@ -1,4 +1,4 @@
-"""Add iptv_streams and xc_stream_map tables.
+"""Add iptv_streams and xc_stream_map tables. Rename ace_quality_cache to quality_cache.
 
 Revision ID: 0003
 Revises: 0002
@@ -28,6 +28,12 @@ def upgrade() -> None:
     existing_tables = {
         row[0] for row in bind.execute(sa.text("SELECT name FROM sqlite_master WHERE type='table'")).fetchall()
     }
+
+    # Rename ace_quality_cache -> quality_cache and content_id -> hls_identifier
+    if "ace_quality_cache" in existing_tables:
+        op.rename_table("ace_quality_cache", "quality_cache")
+        with op.batch_alter_table("quality_cache") as batch_op:
+            batch_op.alter_column("content_id", new_column_name="hls_identifier", type_=sa.String(2048))
 
     if "iptv_streams" not in existing_tables:
         op.create_table(
@@ -84,3 +90,9 @@ def downgrade() -> None:
 
     if "iptv_streams" in existing_tables:
         op.drop_table("iptv_streams")
+
+    # Reverse quality_cache rename
+    if "quality_cache" in existing_tables:
+        with op.batch_alter_table("quality_cache") as batch_op:
+            batch_op.alter_column("hls_identifier", new_column_name="content_id", type_=sa.String(40))
+        op.rename_table("quality_cache", "ace_quality_cache")

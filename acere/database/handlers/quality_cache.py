@@ -12,13 +12,13 @@ from pydantic import HttpUrl
 from sqlmodel import select
 
 from acere.constants import OUR_TIMEZONE
-from acere.database.models import AceQualityCache
+from acere.database.models import QualityCache
 from acere.database.models.acestream import AceStreamDBEntry
 from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.config import settings
-from acere.services.ace.quality import Quality
+from acere.services.quality import Quality
 from acere.utils.ace import ace_id_short
-from acere.utils.helpers import check_valid_content_id_or_infohash
+from acere.utils.helpers import ACE_ID_LENGTH, check_valid_content_id_or_infohash
 from acere.utils.logger import get_logger
 
 from .base import BaseDatabaseHandler
@@ -42,7 +42,7 @@ def _seconds_until_daily_check() -> float:
     return (target - now).total_seconds()
 
 
-def _has_not_worked_recently(quality_cache: AceQualityCache) -> bool:
+def _has_not_worked_recently(quality_cache: QualityCache) -> bool:
     """Return True if the stream has not had a successful quality check in the past threshold."""
     if quality_cache.last_quality_success_time is None:
         return True
@@ -50,21 +50,21 @@ def _has_not_worked_recently(quality_cache: AceQualityCache) -> bool:
     return datetime.now(tz=UTC) - quality_cache.last_quality_success_time >= _CHECK_LAST_WORKED_THRESHOLD
 
 
-class AceQualityCacheHandler(BaseDatabaseHandler):
-    """Database handler for the Ace Quality Cache."""
+class QualityCacheHandler(BaseDatabaseHandler):
+    """Database handler for the Quality Cache."""
 
     _cache: ClassVar[dict[str, Quality]] = {}
     _threads: ClassVar[list[threading.Thread]] = []
     _stop_event: ClassVar[threading.Event] = threading.Event()
     _currently_checking_quality: ClassVar[threading.Event] = threading.Event()
 
-    def get_quality(self, content_id: str) -> Quality:
-        """Get the quality for a given content_id."""
-        if content_id in self._cache:
-            return self._cache[content_id]
+    def get_quality(self, hls_identifier: str) -> Quality:
+        """Get the quality for a given hls_identifier."""
+        if hls_identifier in self._cache:
+            return self._cache[hls_identifier]
 
         with self._get_session() as session:
-            result = session.exec(select(AceQualityCache).where(AceQualityCache.content_id == content_id)).first()
+            result = session.exec(select(QualityCache).where(QualityCache.hls_identifier == hls_identifier)).first()
             if result:
                 return Quality(
                     quality=result.quality,
@@ -73,22 +73,22 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
                 )
 
             new_quality = Quality()
-            self.set_quality(content_id=content_id, quality=new_quality)
+            self.set_quality(hls_identifier=hls_identifier, quality=new_quality)
             return new_quality
 
     # region SET
-    def set_quality(self, content_id: str, quality: Quality) -> None:
-        """Set the quality for a given content_id."""
-        self._cache[content_id] = quality
+    def set_quality(self, hls_identifier: str, quality: Quality) -> None:
+        """Set the quality for a given hls_identifier."""
+        self._cache[hls_identifier] = quality
 
         if not quality.time_to_write_to_db():
             return
 
-        logger.trace("Writing quality cache to DB for content_id %s: %s", content_id, ace_id_short(content_id))
+        logger.trace("Writing quality cache to DB for hls_identifier %s", hls_identifier[:40])
         with self._get_session() as session:
-            result = session.exec(select(AceQualityCache).where(AceQualityCache.content_id == content_id)).first()
+            result = session.exec(select(QualityCache).where(QualityCache.hls_identifier == hls_identifier)).first()
             if not result:
-                result = AceQualityCache(content_id=content_id)
+                result = QualityCache(hls_identifier=hls_identifier)
                 session.add(result)
 
             result.quality = quality.quality
@@ -99,28 +99,28 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
 
             session.commit()
 
-    def increment_quality(self, content_id: str, m3u_playlist: str) -> None:
-        """Increment the quality of a stream by content_id."""
-        if not check_valid_content_id_or_infohash(content_id):
+    def increment_quality(self, hls_identifier: str, m3u_playlist: str) -> None:
+        """Increment the quality of a stream by hls_identifier."""
+        if not hls_identifier:
             return
 
         if "#EXT-X-STREAM-INF" in m3u_playlist:
             logger.debug(
-                "Skipping quality update for Ace ID %s, multistream detected",
-                content_id,
+                "Skipping quality update for %s, multistream detected",
+                hls_identifier[:40],
             )
             return
 
-        entry = self.get_quality(content_id)
+        entry = self.get_quality(hls_identifier)
         entry.update_quality(m3u_playlist)
 
-        logger.debug("Stream quality %s: %s [%s]", ace_id_short(content_id), entry.quality, entry.last_message)
+        logger.debug("Stream quality %s: %s [%s]", hls_identifier[:40], entry.quality, entry.last_message)
 
-        self.set_quality(content_id, entry)
+        self.set_quality(hls_identifier, entry)
 
     # region Quality
     async def check_missing_quality(self, attempt_delay: float = 1, stream_delay: float = 10) -> bool:
-        """Check the quality of all streams.
+        """Check the quality of all ace streams.
 
         This is an async function since threading doesn't get app context no matter how hard I try.
         Bit of a hack.
@@ -134,14 +134,14 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
 
         async def check_missing_quality_thread(base_url: HttpUrl) -> None:
             try:
-                AceQualityCacheHandler._currently_checking_quality.set()
+                QualityCacheHandler._currently_checking_quality.set()
                 await asyncio.sleep(0)  # This await means the task returns faster I think
 
                 streams_valid_content_id = handler.get_streams()
 
                 if not streams_valid_content_id:
                     logger.warning("No streams found to check quality.")
-                    AceQualityCacheHandler._currently_checking_quality.clear()
+                    QualityCacheHandler._currently_checking_quality.clear()
                     return
 
                 def need_to_check_quality(stream: AceStreamDBEntry) -> bool:
@@ -187,7 +187,7 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
                 logger.exception("")
                 logger.error("Unhandled exception occurred during quality check: %s", exception_name)
 
-            AceQualityCacheHandler._currently_checking_quality.clear()
+            QualityCacheHandler._currently_checking_quality.clear()
 
         url = f"{settings.EXTERNAL_URL}/hls"
 
@@ -199,14 +199,14 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
 
     # region Culling
     def cull_stale_streams(self) -> None:
-        """Remove streams that have not worked or been scraped in the past day."""
+        """Remove ace streams that have not worked or been scraped in the past day."""
         handler = get_ace_streams_db_handler()
         streams = handler.get_streams()
         now = datetime.now(tz=UTC)
 
         with self._get_session() as session:
-            quality_entries = session.exec(select(AceQualityCache)).all()
-            quality_map = {entry.content_id: entry for entry in quality_entries}
+            quality_entries = session.exec(select(QualityCache)).all()
+            quality_map = {entry.hls_identifier: entry for entry in quality_entries}
 
         for stream in streams:
             if now - stream.last_scraped_time >= _CHECK_LAST_SCRAPE_THRESHOLD:
@@ -251,7 +251,7 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
                 if self._stop_event.wait(120):
                     break
 
-        thread = threading.Thread(target=_run, name="AceQualityCache: daily_check", daemon=True)
+        thread = threading.Thread(target=_run, name="QualityCache: daily_check", daemon=True)
         thread.start()
         self._threads.append(thread)
 
@@ -276,12 +276,14 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
     def clean_table(self) -> None:
         """Clean the quality cache table."""
         with self._get_session() as session:
-            all_entries = session.exec(select(AceQualityCache)).all()
+            all_entries = session.exec(select(QualityCache)).all()
             for entry in all_entries:
-                if not check_valid_content_id_or_infohash(entry.content_id):
+                # Only validate short identifiers as ace content_ids; longer entries are IPTV URLs
+                is_ace_length = len(entry.hls_identifier) <= ACE_ID_LENGTH
+                if is_ace_length and not check_valid_content_id_or_infohash(entry.hls_identifier):
                     logger.error(
-                        "Found invalid content_id in quality cache: %s",
-                        entry.content_id,
+                        "Found invalid hls_identifier in quality cache: %s",
+                        entry.hls_identifier,
                     )
                     session.delete(entry)
             session.commit()

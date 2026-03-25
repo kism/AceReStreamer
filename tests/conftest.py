@@ -37,7 +37,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, delete
 
-from acere.database.handlers.quality_cache import AceQualityCacheHandler
+from acere.database.handlers.quality_cache import QualityCacheHandler
 from acere.database.init import engine, init_db
 from acere.database.models.user import User
 from acere.instances.config import settings
@@ -93,12 +93,12 @@ def normal_user_token_headers(client: TestClient, db: Session) -> dict[str, str]
 
 
 @pytest.fixture
-def quality_cache_handler(tmp_path: Path) -> Generator[AceQualityCacheHandler, None, None]:
-    """Fixture for AceQualityCacheHandler."""
+def quality_cache_handler(tmp_path: Path) -> Generator[QualityCacheHandler, None, None]:
+    """Fixture for QualityCacheHandler."""
     db_path = tmp_path / "test_quality_cache.db"
     test_engine = create_engine(f"sqlite:///{db_path}", echo=False)
 
-    yield AceQualityCacheHandler(test_engine=test_engine)
+    yield QualityCacheHandler(test_engine=test_engine)
 
     test_engine.dispose()
     db_path.unlink(missing_ok=True)
