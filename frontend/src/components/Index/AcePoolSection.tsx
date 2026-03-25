@@ -1,14 +1,21 @@
 import { Box, HStack, Text } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { FiSearch } from "react-icons/fi"
-import { AcePoolService } from "@/client"
+import { AcePoolService, IptvPoolService } from "@/client"
 import { AcePoolBackendInfo } from "@/components/Index/AcePoolBackendInfo"
-import { AcePoolInstancesTable } from "@/components/Index/AcePoolInstancesTable"
+import { PoolInstancesTable } from "@/components/Index/AcePoolInstancesTable"
 
 export function AcePoolSection() {
   const { isLoading, error, data, isPlaceholderData } = useQuery({
     queryFn: () => AcePoolService.pool(),
     queryKey: ["ace_instances"],
+    placeholderData: (prevData) => prevData,
+    refetchInterval: 30000,
+  })
+
+  const { data: iptvPoolData } = useQuery({
+    queryFn: () => IptvPoolService.pool(),
+    queryKey: ["iptv_pool"],
     placeholderData: (prevData) => prevData,
     refetchInterval: 30000,
   })
@@ -43,7 +50,7 @@ export function AcePoolSection() {
         acePoolData={data}
         isPlaceholderData={isPlaceholderData}
       />
-      <AcePoolInstancesTable acePoolData={data} />
+      <PoolInstancesTable acePoolData={data} iptvPoolData={iptvPoolData} />
     </>
   )
 }

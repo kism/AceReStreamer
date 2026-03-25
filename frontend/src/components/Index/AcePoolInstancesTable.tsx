@@ -1,7 +1,12 @@
 import { Box, Heading, Link } from "@chakra-ui/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import type { AcePoolForApi } from "@/client"
-import { AcePoolService, AceStreamsService } from "@/client"
+import type { AcePoolForApi, IPTVPoolForAPI } from "@/client"
+import {
+  AcePoolService,
+  AceStreamsService,
+  IptvPoolService,
+  IptvStreamsService,
+} from "@/client"
 import {
   AppTableRoot,
   TableBody,
@@ -14,53 +19,88 @@ import { QualityCell } from "./QualityCell"
 
 const loadVideoPlayerModule = () => import("@/hooks/useVideoPlayer")
 
-function getStreamQueryOptions(content_id: string) {
-  return {
-    queryFn: () => AceStreamsService.byContentId({ contentId: content_id }),
-    queryKey: ["content_id", content_id],
-  }
+function AceInstanceQuality({ contentId }: { contentId: string }) {
+  const { data } = useQuery({
+    queryFn: () => AceStreamsService.byContentId({ contentId }),
+    queryKey: ["content_id", contentId],
+    enabled: !!contentId,
+    refetchInterval: 30000,
+  })
+  return <QualityCell quality={data?.quality ?? -1} />
 }
 
-function InstanceQuality({ contentId }: { contentId: string }) {
+function AceInstanceTitle({ contentId }: { contentId: string }) {
   const { data } = useQuery({
-    ...getStreamQueryOptions(contentId),
+    queryFn: () => AceStreamsService.byContentId({ contentId }),
+    queryKey: ["content_id", contentId],
     enabled: !!contentId,
-    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchInterval: 30000,
   })
   return (
-    <>
-      <QualityCell quality={data?.quality ?? -1} />
-      <TableCell
-        maxW="250px"
-        overflow="hidden"
-        textOverflow="ellipsis"
-        whiteSpace="nowrap"
-        textAlign={"center"}
+    <TableCell
+      maxW="250px"
+      overflow="hidden"
+      textOverflow="ellipsis"
+      whiteSpace="nowrap"
+      textAlign={"center"}
+    >
+      <Link
+        onClick={() =>
+          loadVideoPlayerModule().then((module) => {
+            module.loadPlayStream(`/hls/ace/${data?.content_id}`)
+          })
+        }
       >
-        <Link
-          onClick={() =>
-            loadVideoPlayerModule().then((module) => {
-              module.loadPlayStream(`/hls/ace/${data?.content_id}`)
-            })
-          }
-        >
-          {data?.title || "N/A"}
-        </Link>
-      </TableCell>
-    </>
+        {data?.title || "N/A"}
+      </Link>
+    </TableCell>
   )
 }
 
-interface AcePoolInstancesTableProps {
-  acePoolData: AcePoolForApi
+function IptvInstanceTitle({ slug }: { slug: string }) {
+  const { data } = useQuery({
+    queryFn: () => IptvStreamsService.bySlug({ slug }),
+    queryKey: ["iptv_slug", slug],
+    enabled: !!slug,
+    refetchInterval: 30000,
+  })
+  return (
+    <TableCell
+      maxW="250px"
+      overflow="hidden"
+      textOverflow="ellipsis"
+      whiteSpace="nowrap"
+      textAlign={"center"}
+    >
+      <Link
+        onClick={() =>
+          loadVideoPlayerModule().then((module) => {
+            module.loadPlayStream(`/hls/web/${slug}`)
+          })
+        }
+      >
+        {data?.title || slug}
+      </Link>
+    </TableCell>
+  )
 }
 
-export function AcePoolInstancesTable({
+function formatTime(seconds: number) {
+  return `${Math.floor(seconds / 60)}:${(seconds % 60).toString().padStart(2, "0")}`
+}
+
+interface PoolInstancesTableProps {
+  acePoolData: AcePoolForApi
+  iptvPoolData: IPTVPoolForAPI | undefined
+}
+
+export function PoolInstancesTable({
   acePoolData,
-}: AcePoolInstancesTableProps) {
+  iptvPoolData,
+}: PoolInstancesTableProps) {
   const queryClient = useQueryClient()
 
-  const deleteStreamMutation = useMutation({
+  const deleteAceMutation = useMutation({
     mutationFn: (contentId: string) =>
       AcePoolService.deleteByContentId({ contentId }),
     onSuccess: () => {
@@ -68,45 +108,102 @@ export function AcePoolInstancesTable({
     },
   })
 
-  if (acePoolData.ace_instances.length === 0) {
+  const deleteIptvMutation = useMutation({
+    mutationFn: ({ sourceName, slug }: { sourceName: string; slug: string }) =>
+      IptvPoolService.deleteEntry({ sourceName, slug }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["iptv_pool"] })
+    },
+  })
+
+  const iptvEntries =
+    iptvPoolData?.sources.flatMap((source) =>
+      source.entries.map((entry) => ({
+        ...entry,
+        source_name: source.source_name,
+      })),
+    ) ?? []
+
+  const hasEntries =
+    acePoolData.ace_instances.length > 0 || iptvEntries.length > 0
+
+  if (!hasEntries) {
     return null
   }
 
   return (
     <Box>
       <Heading size="sm" py={1}>
-        AceStream Instances
+        Stream Pool Instances
       </Heading>
       <AppTableRoot preset="outlineSm" maxW="fit-content">
         <TableHeader>
           <TableRow>
-            <TableColumnHeader>#</TableColumnHeader>
-            <TableColumnHeader>Status</TableColumnHeader>
+            <TableColumnHeader>Type</TableColumnHeader>
+            <TableColumnHeader>Source</TableColumnHeader>
             <TableColumnHeader>Quality</TableColumnHeader>
+            <TableColumnHeader>Status</TableColumnHeader>
             <TableColumnHeader>Currently Playing</TableColumnHeader>
             <TableColumnHeader>Make Available</TableColumnHeader>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {acePoolData.ace_instances.map((instance, index: number) => (
-            <TableRow key={index}>
-              <TableCell textAlign={"center"}>{instance.ace_pid}</TableCell>
+          {acePoolData.ace_instances.map((instance, index) => (
+            <TableRow key={`ace-${instance.ace_pid}`}>
+              <TableCell textAlign={"center"}>ace</TableCell>
+              <TableCell textAlign={"center"}>ACE [{index + 1}]</TableCell>
+              <AceInstanceQuality contentId={instance.content_id} />
               <TableCell textAlign={"center"}>
                 {instance.locked_in
-                  ? `🔒 Locked for (${Math.floor((instance.time_until_unlock ?? 0) / 60)}:${((instance.time_until_unlock ?? 0) % 60).toString().padStart(2, "0")})`
+                  ? `🔒 Locked (${formatTime(instance.time_until_unlock ?? 0)})`
                   : "Available"}
               </TableCell>
-              <InstanceQuality contentId={instance.content_id} />
+              <AceInstanceTitle contentId={instance.content_id} />
               <TableCell textAlign={"center"}>
                 {instance.locked_in ? (
                   <Link
                     colorPalette="red"
                     onClick={() =>
-                      deleteStreamMutation.mutate(instance.content_id)
+                      deleteAceMutation.mutate(instance.content_id)
                     }
                     cursor="pointer"
                   >
-                    🔓 Unlock Instance
+                    🔓 Unlock
+                  </Link>
+                ) : (
+                  "-"
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+          {iptvEntries.map((entry, index) => (
+            <TableRow key={`iptv-${entry.source_name}-${entry.slug}`}>
+              <TableCell textAlign={"center"}>iptv</TableCell>
+              <TableCell textAlign={"center"}>
+                {entry.source_name} [{index + 1}]
+              </TableCell>
+              <TableCell textAlign={"center"} color="fg.muted">
+                -
+              </TableCell>
+              <TableCell textAlign={"center"}>
+                {entry.locked_in
+                  ? `🔒 Locked (${formatTime(entry.time_until_unlock_seconds)})`
+                  : "Available"}
+              </TableCell>
+              <IptvInstanceTitle slug={entry.slug} />
+              <TableCell textAlign={"center"}>
+                {entry.locked_in ? (
+                  <Link
+                    colorPalette="red"
+                    onClick={() =>
+                      deleteIptvMutation.mutate({
+                        sourceName: entry.source_name,
+                        slug: entry.slug,
+                      })
+                    }
+                    cursor="pointer"
+                  >
+                    🔓 Unlock
                   </Link>
                 ) : (
                   "-"
