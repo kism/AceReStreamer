@@ -57,6 +57,16 @@ function AceInstanceTitle({ contentId }: { contentId: string }) {
   )
 }
 
+function IptvInstanceQuality({ slug }: { slug: string }) {
+  const { data } = useQuery({
+    queryFn: () => IptvStreamsService.bySlug({ slug }),
+    queryKey: ["iptv_slug", slug],
+    enabled: !!slug,
+    refetchInterval: 30000,
+  })
+  return <QualityCell quality={data?.quality ?? -1} />
+}
+
 function IptvInstanceTitle({ slug }: { slug: string }) {
   const { data } = useQuery({
     queryFn: () => IptvStreamsService.bySlug({ slug }),
@@ -182,9 +192,7 @@ export function PoolInstancesTable({
               <TableCell textAlign={"center"}>
                 {entry.source_name} [{index + 1}]
               </TableCell>
-              <TableCell textAlign={"center"} color="fg.muted">
-                -
-              </TableCell>
+              <IptvInstanceQuality slug={entry.slug} />
               <TableCell textAlign={"center"}>
                 {entry.locked_in
                   ? `🔒 Locked (${formatTime(entry.time_until_unlock_seconds)})`
