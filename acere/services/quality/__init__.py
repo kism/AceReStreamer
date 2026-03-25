@@ -20,7 +20,8 @@ LATE_SEGMENT_PUNISHMENT = -4
 TIME_BETWEEN_DB_WRITES = timedelta(minutes=1)
 
 NEW_STREAM_THRESHOLD = 20  # If the TS number is below this, we are more lenient with the quality rating
-STREAK_BONUS_THRESHOLD = 5 # Divide streak by this for the bonus
+STREAK_BONUS_THRESHOLD = 5  # Divide streak by this for the bonus
+
 
 # region: Quality
 class Quality(BaseModel):
@@ -74,10 +75,7 @@ class Quality(BaseModel):
                 self._streak += n_new_segments
                 self._last_segment_fetched = current_time
                 segment_label = "segments" if n_new_segments > 1 else "segment"
-                self.last_message = (
-                    f"Score +{rating} ({n_new_segments} new {segment_label}, "
-                    f"streak: {self._streak})"
-                )
+                self.last_message = f"Score +{rating} ({n_new_segments} new {segment_label}, streak: {self._streak})"
             elif segment_is_late:
                 # This is a fair comparison since we don't actually know when the pending segment became available
                 # If it's a new stream, we are less harsh
