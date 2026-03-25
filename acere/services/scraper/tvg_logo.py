@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import aiohttp
 from pydantic import HttpUrl
 
-from acere.constants import SUPPORTED_TVG_LOGO_EXTENSIONS, DEFAULT_USER_AGENT
+from acere.constants import DEFAULT_USER_AGENT, SUPPORTED_TVG_LOGO_EXTENSIONS
 from acere.instances.config import settings
 from acere.instances.paths import get_app_path_handler
 from acere.utils.helpers import slugify

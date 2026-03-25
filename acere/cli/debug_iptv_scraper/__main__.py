@@ -11,7 +11,7 @@ from rich.table import Table
 from acere.config import AceReStreamerConf
 from acere.instances.config import settings
 from acere.instances.paths import setup_app_path_handler
-from acere.services.iptv_proxy.scraper import IPTVProxyScraper
+from acere.services.scraper.iptv import IPTVProxyScraper
 from acere.services.scraper.models import FoundIPTVStream
 from acere.utils.cli import console
 from acere.utils.logger import setup_logger

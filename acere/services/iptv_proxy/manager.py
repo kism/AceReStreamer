@@ -9,9 +9,8 @@ from acere.instances.config import settings
 from acere.instances.epg import get_epg_handler
 from acere.instances.iptv_streams import get_iptv_streams_db_handler
 from acere.instances.xc_stream_map import get_xc_stream_map_handler
+from acere.services.scraper.iptv import IPTVProxyScraper
 from acere.utils.logger import get_logger
-
-from .scraper import IPTVProxyScraper
 
 if TYPE_CHECKING:
     from acere.services.scraper.models import FoundIPTVStream

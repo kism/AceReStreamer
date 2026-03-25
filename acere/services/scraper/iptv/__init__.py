@@ -1,6 +1,5 @@
 """IPTV proxy scraper — fetches upstream playlists and XC APIs."""
 
-import asyncio
 from contextlib import suppress
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any

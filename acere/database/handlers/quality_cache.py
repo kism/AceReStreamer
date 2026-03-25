@@ -1,8 +1,8 @@
 """Handler for quality cache."""
 
 import asyncio
-from contextlib import suppress
 import threading
+from contextlib import suppress
 from datetime import UTC, datetime, timedelta
 from typing import ClassVar
 
