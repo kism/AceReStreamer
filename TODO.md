@@ -54,4 +54,10 @@ This logic might be cooked
 
 ~~Api endpoint for channel overrides.~~
 
-Quality checking for iptv
+~~Quality checking for iptv~~
+
+Pool ui for each iptv source
+
+Better scoring for quality, streak system?
+
+Use epg field for iptv sources

@@ -20,7 +20,7 @@ LATE_SEGMENT_PUNISHMENT = -4
 TIME_BETWEEN_DB_WRITES = timedelta(minutes=1)
 
 NEW_STREAM_THRESHOLD = 20  # If the TS number is below this, we are more lenient with the quality rating
-
+STREAK_BONUS_THRESHOLD = 5 # Divide streak by this for the bonus
 
 # region: Quality
 class Quality(BaseModel):
@@ -33,6 +33,7 @@ class Quality(BaseModel):
     _last_segment_fetched: datetime = datetime.now(tz=UTC)
     _last_db_write: datetime = datetime.min.replace(tzinfo=UTC)
     _next_segment_expected: timedelta = DEFAULT_NEXT_SEGMENT_EXPECTED
+    _streak: int = 0
     last_message: str = ""
     quality_increased: bool = False
 
@@ -44,6 +45,7 @@ class Quality(BaseModel):
         if not m3u_playlist:
             rating = max(0 - self.m3u_failures, -5)
             self.m3u_failures += 1
+            self._streak = 0
         else:  # We have a playlist, let's see if the new segment showed up in time
             # Get the sequence number in the hls stream m3u
             self.m3u_failures = 0  # Reset
@@ -68,15 +70,15 @@ class Quality(BaseModel):
             if ts_number_int != self._last_segment_number:
                 # If we get two segments it will be +2 etc, if it jumps by more than 5 I wouldn't call it healthy
                 n_new_segments = ts_number_int - self._last_segment_number
-                rating = min(max(n_new_segments, 1), 5)
+                rating = min(max(n_new_segments, 1), 5) + int(self._streak / STREAK_BONUS_THRESHOLD)
+                self._streak += 1
                 self._last_segment_fetched = current_time
-                self.last_message = (
-                    f"Score +{rating} ({n_new_segments} new {'segments' if n_new_segments > 1 else 'segment'})"
-                )
+                self.last_message = f"Score +{rating} ({n_new_segments} new {'segments' if n_new_segments > 1 else 'segment'}, streak: {self._streak})"
             elif segment_is_late:
                 # This is a fair comparison since we don't actually know when the pending segment became available
                 # If it's a new stream, we are less harsh
                 rating = -1 if ts_number_int < NEW_STREAM_THRESHOLD else LATE_SEGMENT_PUNISHMENT
+                self._streak = 0
                 time_diff = time_since_last_segment - self._next_segment_expected
                 self.last_message = f"Score {rating} (Expected segment {time_diff.seconds}s ago)"
             else:
@@ -102,7 +104,7 @@ class Quality(BaseModel):
         self.quality = max(self.quality, MIN_QUALITY)
         self.quality = min(self.quality, MAX_QUALITY)
         self.quality_increased = rating > 0
-        logger.trace("New quality %s %s", self.quality, f"(rating: {rating})")
+        logger.trace("New quality %s %s (streak: %s)", self.quality, f"(rating: {rating})", self._streak)
 
     def time_to_write_to_db(self) -> bool:
         """Determine if it's time to write the quality to the database."""
