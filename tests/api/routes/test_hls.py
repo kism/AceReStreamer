@@ -11,7 +11,7 @@ from acere.instances import epg as epg_instance_module
 from acere.instances.config import settings
 from acere.instances.paths import get_app_path_handler
 from acere.services.epg.handler import EPGHandler
-from acere.services.scraper.ace import main as scraper_main_module
+from acere.services.ace import manager as ace_manager_module
 from tests.test_utils.ace import get_random_content_id
 from tests.test_utils.aiohttp import FakeSession
 from tests.test_utils.hls import generate_hls_m3u8
@@ -41,7 +41,7 @@ def setup_epg_handler(monkeypatch: pytest.MonkeyPatch) -> Generator[None, None, 
     """Setup EPG handler before tests."""
     epg_handler = EPGHandler(instance_id="test_epg_handler")
     monkeypatch.setattr(epg_instance_module, "get_epg_handler", lambda: epg_handler)
-    monkeypatch.setattr(scraper_main_module, "get_epg_handler", lambda: epg_handler)
+    monkeypatch.setattr(ace_manager_module, "get_epg_handler", lambda: epg_handler)
 
     assert epg_instance_module.get_epg_handler() is epg_handler
 

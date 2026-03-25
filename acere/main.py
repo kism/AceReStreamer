@@ -13,6 +13,7 @@ from acere.api.main import api_router, api_router_xc, frontend_router, hls_route
 from acere.constants import API_V1_STR, DEFAULT_INSTANCE_PATH
 from acere.database.handlers.quality_cache import AceQualityCacheHandler
 from acere.database.init import engine, init_db
+from acere.instances.ace_manager import set_ace_manager
 from acere.instances.ace_pool import set_ace_pool
 from acere.instances.ace_quality import set_quality_handler
 from acere.instances.config import settings
@@ -20,12 +21,11 @@ from acere.instances.epg import set_epg_handler
 from acere.instances.iptv_proxy import set_iptv_proxy_manager
 from acere.instances.paths import get_app_path_handler, setup_app_path_handler
 from acere.instances.remote_settings import set_remote_settings_fetcher
-from acere.instances.scraper import set_ace_scraper
+from acere.services.ace.manager import AceManager
 from acere.services.ace.pool import AcePool
 from acere.services.epg import EPGHandler
 from acere.services.iptv_proxy.manager import IPTVProxyManager
 from acere.services.remote_settings import RemoteSettingsFetcher
-from acere.services.scraper.ace import AceScraper
 from acere.utils.logger import get_logger, setup_logger
 from acere.version import PROGRAM_NAME, __version__
 
@@ -94,9 +94,9 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     ace_pool = AcePool(instance_id=instance_id)
     set_ace_pool(ace_pool)
 
-    # Scraper
-    ace_scraper = AceScraper(instance_id=instance_id)
-    set_ace_scraper(ace_scraper)
+    # AceManager
+    ace_manager = AceManager(instance_id=instance_id)
+    set_ace_manager(ace_manager)
 
     # Settings Fetcher
     remote_settings_fetcher = RemoteSettingsFetcher(instance_id=instance_id)
@@ -114,10 +114,10 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     yield
 
     handlers: list[
-        AceScraper | AcePool | RemoteSettingsFetcher | EPGHandler | AceQualityCacheHandler | IPTVProxyManager
+        AceManager | AcePool | RemoteSettingsFetcher | EPGHandler | AceQualityCacheHandler | IPTVProxyManager
     ] = [
         ace_pool,
-        ace_scraper,
+        ace_manager,
         iptv_proxy_manager,
         remote_settings_fetcher,
         epg_handler,

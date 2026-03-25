@@ -7,9 +7,9 @@ import aiohttp
 from pydantic import HttpUrl, ValidationError
 
 from acere.config import AceReStreamerConf, ConfigExport
+from acere.instances.ace_manager import get_ace_manager
 from acere.instances.config import settings
 from acere.instances.epg import get_epg_handler
-from acere.instances.scraper import get_ace_scraper
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.logger import get_logger
 
@@ -80,7 +80,7 @@ class RemoteSettingsFetcher:
     def reload_config(self) -> None:
         """Reload the current configuration."""
         settings.write_config()
-        get_ace_scraper().start_scrape_thread()
+        get_ace_manager().start_scrape_thread()
         get_epg_handler().update_epgs(settings.epgs)
 
     # region Fetch http

@@ -9,8 +9,8 @@ from acere.api.deps import (
     get_current_user,
 )
 from acere.config.ace.scraper import ScrapeSiteAPI, ScrapeSiteHTML, ScrapeSiteIPTV
+from acere.instances.ace_manager import get_ace_manager
 from acere.instances.config import settings
-from acere.instances.scraper import get_ace_scraper
 from acere.services.scraper.ace.models import AceScraperSourceApi
 from acere.utils.api_models import MessageResponseModel
 from acere.utils.logger import get_logger
@@ -23,15 +23,15 @@ router = APIRouter(prefix="/ace/scraper", tags=["Ace Scraper"])
 @router.get("/source", dependencies=[Depends(get_current_user)])
 def sources() -> list[AceScraperSourceApi]:
     """API endpoint to get the flat streams sources."""
-    ace_scraper = get_ace_scraper()
-    return ace_scraper.get_scraper_sources_flat_api()
+    ace_manager = get_ace_manager()
+    return ace_manager.get_scraper_sources_flat_api()
 
 
 @router.get("/source/{source_slug}", dependencies=[Depends(get_current_user)])
 def source(source_slug: str) -> AceScraperSourceApi:
     """API endpoint to get a single stream source by its slug."""
-    ace_scraper = get_ace_scraper()
-    wip = ace_scraper.get_scraper_sources_flat_api()
+    ace_manager = get_ace_manager()
+    wip = ace_manager.get_scraper_sources_flat_api()
     for source in wip:
         if source.name == source_slug:
             return source
@@ -87,7 +87,7 @@ def add_source(  # noqa: C901 Revisit once I have some tests
         msg = "Source added successfully"
 
     settings.write_config()
-    get_ace_scraper().start_scrape_thread()
+    get_ace_manager().start_scrape_thread()
 
     return MessageResponseModel(message=msg)
 
@@ -125,7 +125,7 @@ def delete_name_override(content_id: str) -> MessageResponseModel:
         )
 
     settings.write_config()
-    get_ace_scraper().start_scrape_thread()
+    get_ace_manager().start_scrape_thread()
     return MessageResponseModel(message="Content ID name override deleted successfully")
 
 
@@ -135,5 +135,5 @@ def add_name_override(content_id: str, name: str) -> MessageResponseModel:
     settings.ace.scraper.add_content_id_name_override(content_id, name)
 
     settings.write_config()
-    get_ace_scraper().start_scrape_thread()
+    get_ace_manager().start_scrape_thread()
     return MessageResponseModel(message="Content ID name override added successfully")

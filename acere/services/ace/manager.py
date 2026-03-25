@@ -1,4 +1,4 @@
-"""AceStream scraper orchestrator."""
+"""AceStream Manager — orchestrates scraping, stream management, and lifecycle."""
 
 import asyncio
 import re
@@ -6,57 +6,44 @@ import threading
 import time
 from typing import TYPE_CHECKING
 
-from acere.config.ace.scraper import HTMLScraperFilter
 from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.config import settings
 from acere.instances.epg import get_epg_handler
 from acere.instances.xc_stream_map import get_xc_stream_map_handler
+from acere.services.scraper.ace.api import AceAPIStreamScraper
+from acere.services.scraper.ace.helpers import (
+    ace_create_unique_stream_list,
+    get_content_id_from_infohash_acestream_api,
+)
+from acere.services.scraper.ace.html import AceHTMLStreamScraper
+from acere.services.scraper.ace.iptv import AceIPTVStreamScraper
+from acere.services.scraper.ace.models import AceScraperSourceApi, FoundAceStream
 from acere.utils.logger import get_logger
 
-from .api import AceAPIStreamScraper
-from .helpers import ace_create_unique_stream_list, get_content_id_from_infohash_acestream_api
-from .html import AceHTMLStreamScraper
-from .iptv import AceIPTVStreamScraper
-from .models import AceScraperSourceApi, FoundAceStream
-
 if TYPE_CHECKING:
-    from acere.config.ace.scraper import (
-        AceScrapeConf,
-        ScrapeSiteHTML,
-        ScrapeSiteIPTV,
-    )
-    from acere.config.epg import EPGInstanceConf
-    from acere.services.ace.quality import Quality
+    from acere.config.ace.scraper import HTMLScraperFilter
 else:
-    ScrapeSiteHTML = object
-    ScrapeSiteIPTV = object
-    EPGInstanceConf = object
-    AceScrapeConf = object
-    Quality = object
+    HTMLScraperFilter = object
 
 logger = get_logger(__name__)
 
-SCRAPE_INTERVAL = 60 * 60  # Default scrape interval in seconds (1 hour)
-
-
+SCRAPE_INTERVAL = 60 * 60  # 1 hour
 _REGEX_STREAM_NUMBER = re.compile(r"#(\d+)$")
 
 
-class AceScraper:
-    """Scraper object."""
+class AceManager:
+    """Manages AceStream streams: scraping, management, and lifecycle."""
 
-    # region Initialization
     def __init__(self, instance_id: str = "") -> None:
-        """Init the scraper."""
+        """Initialize the AceStream manager."""
+        self._instance_id = instance_id
         self._threads: list[threading.Thread] = []
         self._stop_event = threading.Event()
-        self._instance_id = instance_id
         self._streams: dict[str, FoundAceStream] = {}
-        self._html_scraper: AceHTMLStreamScraper = AceHTMLStreamScraper()
-        self._iptv_scraper: AceIPTVStreamScraper = AceIPTVStreamScraper()
-        self._api_scraper: AceAPIStreamScraper = AceAPIStreamScraper()
+        self._html_scraper = AceHTMLStreamScraper()
+        self._iptv_scraper = AceIPTVStreamScraper()
+        self._api_scraper = AceAPIStreamScraper()
 
-    # region GET API Scraper
     def get_scraper_sources_flat_api(self) -> list[AceScraperSourceApi]:
         """Get the sources for the scraper, as a flat list."""
         sources = [
@@ -99,7 +86,106 @@ class AceScraper:
 
         return sources
 
-    # region Helpers
+    def start_scrape_thread(self) -> None:
+        """Start the background scraping thread."""
+
+        def run_scrape_thread() -> None:
+            """Thread function to run the scraper."""
+            async_loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(async_loop)
+
+            while not self._stop_event.is_set():
+                logger.info("Running AceStream scraper [%s]", self._instance_id)
+
+                async def find_streams() -> list[FoundAceStream]:
+                    tasks = [
+                        self._html_scraper.scrape_sites(sites=settings.ace.scraper.html),
+                        self._iptv_scraper.scrape_iptv_playlists(sites=settings.ace.scraper.iptv_m3u8),
+                        self._api_scraper.scrape_api_endpoints(sites=settings.ace.scraper.api),
+                    ]
+
+                    all_results = await asyncio.gather(*tasks, return_exceptions=True)
+
+                    found_streams: list[FoundAceStream] = []
+
+                    for result in all_results:
+                        if isinstance(result, list):
+                            found_streams.extend(result)
+                        else:
+                            logger.error("Error occurred while scraping: %s", result)
+
+                    return found_streams
+
+                found_streams = async_loop.run_until_complete(find_streams())
+
+                self._streams = ace_create_unique_stream_list(found_streams)
+
+                # Print stream info
+                self._print_streams(found_streams)
+                self._update_epg_with_streams()
+
+                # For streams with only an infohash, populate the content_id using the api
+                for attempt in range(2):
+                    # Check current streams for missing content_ids
+                    missing_content_id_streams = [
+                        stream for stream in found_streams if not stream.content_id and stream.infohash
+                    ]
+                    if len(missing_content_id_streams) == 0:
+                        break
+
+                    # Try to populate from database and API
+                    async_loop.run_until_complete(self._populate_missing_content_ids(missing_content_id_streams))
+
+                    # Re-create unique stream list after modification
+                    self._streams = ace_create_unique_stream_list(
+                        missing_content_id_streams + list(self._streams.values())
+                    )
+
+                    # Check if there are still missing content_ids after population attempt
+                    still_missing = [stream for stream in found_streams if not stream.content_id and stream.infohash]
+
+                    self._write_streams_to_database()
+                    self._register_xc_mappings()
+
+                    if len(still_missing) == 0:
+                        break
+
+                    # Only sleep if we're going to retry
+                    if attempt < 1:
+                        logger.info(
+                            "Still have %d streams with missing content_ids, retrying in 60 seconds", len(still_missing)
+                        )
+                        time.sleep(60)
+
+                self._update_epg_with_streams()
+                self._print_warnings()
+
+                if self._stop_event.wait(SCRAPE_INTERVAL):
+                    break
+
+        self.stop_all_threads()
+
+        thread = threading.Thread(target=run_scrape_thread, name="AceManager: run_scrape", daemon=True)
+        thread.start()
+        self._threads.append(thread)
+
+    def stop_all_threads(self) -> None:
+        """Stop all threads."""
+        if len(self._threads) == 0:
+            return
+
+        logger.info("Stopping all %s threads [%s]", self.__class__.__name__, self._instance_id)
+        self._stop_event.set()
+        for thread in self._threads.copy():
+            if thread.is_alive():
+                thread.join(timeout=60)
+                if not thread.is_alive():
+                    self._threads.remove(thread)
+                else:
+                    logger.warning("Thread %s did not stop in time.", thread.name)
+
+        self._stop_event.clear()
+
     def _print_streams(self, all_found_streams: list[FoundAceStream]) -> None:
         """Print the found streams."""
         # All found streams includes infohash
@@ -175,112 +261,9 @@ class AceScraper:
 
     def _update_epg_with_streams(self) -> None:
         """Update the EPG with the found streams."""
-        get_epg_handler().add_tvg_ids(
-            tvg_ids=[stream.tvg_id for stream in self._streams.values()]
-        )
+        get_epg_handler().add_tvg_ids(tvg_ids=[stream.tvg_id for stream in self._streams.values()])
 
     def _register_xc_mappings(self) -> None:
         """Register all current ace streams in the XC stream map."""
         content_ids = {stream.content_id for stream in self._streams.values() if stream.content_id}
         get_xc_stream_map_handler().register_keys("ace", content_ids)
-
-    # region Thread
-    def start_scrape_thread(self) -> None:  # noqa: C901
-        """Run the scraper to find AceStreams."""
-
-        def run_scrape_thread() -> None:
-            """Thread function to run the scraper."""
-            async_loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(async_loop)
-
-            while not self._stop_event.is_set():
-                logger.info("Running AceStream scraper [%s]", self._instance_id)
-
-                async def find_streams() -> list[FoundAceStream]:
-                    tasks = [
-                        self._html_scraper.scrape_sites(sites=settings.ace.scraper.html),
-                        self._iptv_scraper.scrape_iptv_playlists(sites=settings.ace.scraper.iptv_m3u8),
-                        self._api_scraper.scrape_api_endpoints(sites=settings.ace.scraper.api),
-                    ]
-
-                    all_results = await asyncio.gather(*tasks, return_exceptions=True)
-
-                    found_streams: list[FoundAceStream] = []
-
-                    for result in all_results:
-                        if isinstance(result, list):
-                            found_streams.extend(result)
-                        else:
-                            logger.error("Error occurred while scraping: %s", result)
-
-                    return found_streams
-
-                found_streams = async_loop.run_until_complete(find_streams())
-
-                self._streams = ace_create_unique_stream_list(found_streams)
-
-                # Populate ourself
-                self._print_streams(found_streams)
-                self._update_epg_with_streams()
-
-                # For streams with only an infohash, populate the content_id using the api
-                for attempt in range(2):
-                    # Check current streams for missing content_ids
-                    missing_content_id_streams = [
-                        stream for stream in found_streams if not stream.content_id and stream.infohash
-                    ]
-                    if len(missing_content_id_streams) == 0:
-                        break
-
-                    # Try to populate from database and API
-                    async_loop.run_until_complete(self._populate_missing_content_ids(missing_content_id_streams))
-
-                    # Re-create unique stream list after modification
-                    self._streams = ace_create_unique_stream_list(
-                        missing_content_id_streams + list(self._streams.values())
-                    )
-
-                    # Check if there are still missing content_ids after population attempt
-                    still_missing = [stream for stream in found_streams if not stream.content_id and stream.infohash]
-
-                    self._write_streams_to_database()
-                    self._register_xc_mappings()
-
-                    if len(still_missing) == 0:
-                        break
-
-                    # Only sleep if we're going to retry
-                    if attempt < 1:
-                        logger.info(
-                            "Still have %d streams with missing content_ids, retrying in 60 seconds", len(still_missing)
-                        )
-                        time.sleep(60)
-
-                self._update_epg_with_streams()
-
-                self._print_warnings()
-                if self._stop_event.wait(SCRAPE_INTERVAL):
-                    break
-
-        self.stop_all_threads()
-
-        thread = threading.Thread(target=run_scrape_thread, name="AceScraper: run_scrape", daemon=True)
-        thread.start()
-        self._threads.append(thread)
-
-    def stop_all_threads(self) -> None:
-        """Stop all threads in the AceScraper."""
-        if len(self._threads) == 0:
-            return
-
-        logger.info("Stopping all %s threads [%s]", self.__class__.__name__, self._instance_id)
-        self._stop_event.set()
-        for thread in self._threads.copy():
-            if thread.is_alive():
-                thread.join(timeout=60)
-                if not thread.is_alive():
-                    self._threads.remove(thread)
-                else:
-                    logger.warning("Thread %s did not stop in time.", thread.name)
-
-        self._stop_event.clear()

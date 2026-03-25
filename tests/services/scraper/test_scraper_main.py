@@ -5,7 +5,7 @@ import pytest
 from pydantic import HttpUrl
 
 from acere.config import AceScrapeConf
-from acere.services.scraper.ace import AceScraper
+from acere.services.ace.manager import AceManager
 from acere.services.scraper.ace.models import FoundAceStream
 from tests.test_utils.ace import get_random_content_id
 
@@ -37,13 +37,13 @@ def get_stream() -> FoundAceStream:
 
 @pytest.mark.asyncio
 async def test_scraper_main(tmp_path: Path) -> None:
-    """Test the AceScraper main functionality."""
-    scraper = AceScraper()
+    """Test the AceManager main functionality."""
+    manager = AceManager()
 
-    scraper.start_scrape_thread()
-    for thread in scraper._threads:
+    manager.start_scrape_thread()
+    for thread in manager._threads:
         thread.join(timeout=1)
 
     steam_api_example = get_stream()
     content_id = steam_api_example.content_id
-    scraper._streams = {content_id: steam_api_example}
+    manager._streams = {content_id: steam_api_example}
