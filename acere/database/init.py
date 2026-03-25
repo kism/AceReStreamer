@@ -1,4 +1,5 @@
 import secrets
+from typing import TYPE_CHECKING
 
 from sqlalchemy import event
 from sqlmodel import Session, SQLModel, create_engine, select
@@ -10,6 +11,11 @@ from acere.instances.config import settings
 from acere.instances.paths import get_app_path_handler
 from acere.utils.logger import get_logger
 
+if TYPE_CHECKING:
+    import sqlite3
+else:
+    sqlite3 = object
+
 logger = get_logger(__name__)
 engine = create_engine(
     f"sqlite:///{get_app_path_handler().database_file}",
@@ -19,7 +25,7 @@ engine = create_engine(
 
 
 @event.listens_for(engine, "connect")
-def _set_sqlite_wal_mode(dbapi_connection: object, _connection_record: object) -> None:
+def _set_sqlite_wal_mode(dbapi_connection: sqlite3.Connection, _connection_record: object) -> None:
     """Enable WAL mode for better concurrent read/write performance."""
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA journal_mode=WAL")
