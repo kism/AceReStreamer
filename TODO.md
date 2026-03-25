@@ -56,8 +56,8 @@ This logic might be cooked
 
 ~~Quality checking for iptv~~
 
-Pool ui for each iptv source
+~~Better scoring for quality, streak system?~~
 
-Better scoring for quality, streak system?
+Pool ui for each iptv source
 
 Use epg field for iptv sources

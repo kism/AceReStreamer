@@ -66,6 +66,27 @@ def add_epg(body_json: EPGInstanceConf | list[EPGInstanceConf]) -> None:
     epg_handler.update_epgs(settings.epgs)
 
 
+@router.patch("/", dependencies=[Depends(get_current_active_superuser)])
+def modify_epg(body_json: EPGInstanceConf | list[EPGInstanceConf]) -> None:
+    """Modify an existing EPG source."""
+    if not body_json:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail="json is empty",
+        )
+
+    epg_handler = get_epg_handler()
+    if not isinstance(body_json, list):
+        body_json = [body_json]
+
+    for epg_instance in body_json:
+        settings.modify_epg(epg_instance)
+
+    settings.write_config()
+
+    epg_handler.update_epgs(settings.epgs)
+
+
 @router.delete("/slug/{slug}", dependencies=[Depends(get_current_active_superuser)])
 def delete_epg(slug: str) -> None:
     """Delete an EPG source by slug."""

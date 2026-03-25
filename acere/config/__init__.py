@@ -166,8 +166,19 @@ class AceReStreamerConf(BaseSettings):
             self.epgs.append(epg)
             logger.info("Added new EPG source, total sources: %d", len(self.epgs))
         else:
-            matching_epg = epg
-            logger.info("Updating existing EPG source: %s", epg.url)
+            logger.info("EPG already exists: %s", epg.url)
+
+    def modify_epg(self, epg: EPGInstanceConf) -> bool:
+        """Modify an existing EPG instance in the config via URL."""
+        matching_epg = next((existing_epg for existing_epg in self.epgs if existing_epg.url == epg.url), None)
+
+        if matching_epg:
+            self.epgs.remove(matching_epg)
+            self.epgs.append(epg)
+            logger.info("Modified EPG source, total sources: %d", len(self.epgs))
+            return True
+
+        return False
 
     def remove_epg(self, epg_url_slug: str) -> bool:
         """Remove an EPG instance from the config via URL."""

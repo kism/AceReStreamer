@@ -6,7 +6,9 @@ from typing import TYPE_CHECKING, Any
 
 import aiohttp
 from pydantic import HttpUrl, ValidationError
+from acere.instances.config import settings
 
+from acere.config.epg import EPGInstanceConf
 from acere.services.scraper import name_processor
 from acere.services.scraper.cache import ScraperCache
 from acere.services.scraper.m3u_common import GenericM3UParser, M3UEntry
@@ -49,6 +51,11 @@ class IPTVProxyScraper:
     async def scrape_xtream_source(self, source: IPTVSourceXtream) -> list[FoundIPTVStream]:
         """Use XC player_api.php to get streams, then build upstream URLs."""
         base_url = source.url.encoded_string().rstrip("/")
+
+        # Add epg to epg config if needed
+        if source.use_epg:
+            epg_url = HttpUrl(f"{base_url}/xmltv.php?username={source.username}&password={source.password}")
+            settings.add_epg(EPGInstanceConf(url=epg_url))
 
         # Fetch server info to check max_connections
         api_url = f"{base_url}/player_api.php?username={source.username}&password={source.password}"
