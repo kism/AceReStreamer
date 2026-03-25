@@ -9,6 +9,7 @@ from acere.instances.config import settings
 from acere.instances.epg import get_epg_handler
 from acere.instances.iptv_streams import get_iptv_streams_db_handler
 from acere.instances.xc_stream_map import get_xc_stream_map_handler
+from acere.services.iptv_proxy.pool import IPTVPoolManager
 from acere.services.scraper.iptv import IPTVProxyScraper
 from acere.utils.logger import get_logger
 
@@ -32,6 +33,7 @@ class IPTVProxyManager:
         self._stop_event = threading.Event()
         self._scraper = IPTVProxyScraper()
         self._url_map: dict[str, str] = {}
+        self.pool = IPTVPoolManager(instance_id=instance_id)
 
     def get_upstream_url(self, slug: str) -> str | None:
         """Look up the upstream HLS URL for a given slug."""
@@ -67,6 +69,19 @@ class IPTVProxyManager:
     def update_upstream_url(self, slug: str, url: str) -> None:
         """Update the in-memory URL map entry for a slug (e.g. after following a redirect)."""
         self._url_map[slug] = url
+
+    def check_stream_allowed(self, slug: str) -> bool:
+        """Check if a stream is allowed by the pool. Returns True if allowed."""
+        source_name = self._get_source_name_for_slug(slug)
+        if source_name is None:
+            return True  # Unknown stream, allow (will 404 later anyway)
+        return self.pool.check_in(slug, source_name)
+
+    def _get_source_name_for_slug(self, slug: str) -> str | None:
+        """Get the source name for a slug from the database."""
+        handler = get_iptv_streams_db_handler()
+        entry = handler.get_by_slug(slug)
+        return entry.source_name if entry else None
 
     @staticmethod
     def make_slug(upstream_url: str) -> str:
@@ -117,12 +132,16 @@ class IPTVProxyManager:
 
         self.stop_all_threads()
 
+        self.pool.start_cleanup_thread()
+
         thread = threading.Thread(target=run_scrape_thread, name="IPTVProxyManager: run_scrape", daemon=True)
         thread.start()
         self._threads.append(thread)
 
     def stop_all_threads(self) -> None:
         """Stop all threads."""
+        self.pool.stop_all_threads()
+
         if len(self._threads) == 0:
             return
 

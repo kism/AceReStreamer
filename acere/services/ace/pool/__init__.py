@@ -10,6 +10,7 @@ import aiohttp
 from pydantic import HttpUrl, TypeAdapter
 
 from acere.instances.config import settings
+from acere.services.pool.pool import BasePool
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.helpers import check_valid_content_id_or_infohash
 from acere.utils.logger import get_logger
@@ -33,25 +34,30 @@ else:
     AceConf = object
 
 
-class AcePool:
+class AcePool(BasePool[AcePoolEntry]):
     """A pool of AceStream instances to distribute requests across."""
 
     def __init__(self, instance_id: str = "") -> None:
         """Initialize the AcePool."""
-        self._instance_id = instance_id
-        self._threads: list[threading.Thread] = []
-        self._stop_event = threading.Event()
-        self._ace_instances: dict[str, AcePoolEntry] = {}
+        super().__init__(instance_id=instance_id, max_size=settings.ace.ace_max_streams)
         self._healthy = False
         self._ace_version: AceVersionResult | None = None
 
         # These are mostly to make testing easier
         self._ace_address = settings.ace.ace_address
-        self._max_size = settings.ace.ace_max_streams
         self._transcode_audio = settings.ace.transcode_audio
 
         self._ace_poolboy_running = False
         self.ace_poolboy()
+
+    @property
+    def _ace_instances(self) -> dict[str, AcePoolEntry]:
+        """Backward-compatible alias for _entries."""
+        return self._entries
+
+    @_ace_instances.setter
+    def _ace_instances(self, value: dict[str, AcePoolEntry]) -> None:
+        self._entries = value
 
     # region Health
     async def check_ace_running(self) -> bool:
@@ -96,11 +102,11 @@ class AcePool:
         """Remove an AceStream instance from the pool by content_id."""
         if caller != "":
             caller = f"{caller}: "
-        if content_id in self._ace_instances:
+        if content_id in self._entries:
             logger.info("%sRemoving AceStream instance with content_id %s", caller, content_id)
             with suppress(KeyError):
-                await self._ace_instances[content_id].stop()
-                del self._ace_instances[content_id]
+                await self._entries[content_id].stop()
+                del self._entries[content_id]
             return True
 
         return False
@@ -108,14 +114,14 @@ class AcePool:
     # region Getters
     async def get_available_instance_number(self) -> int | None:
         """Get the next available AceStream instance number."""
-        instance_numbers = [instance.ace_pid for instance in self._ace_instances.values()]
+        instance_numbers = [instance.ace_pid for instance in self._entries.values()]
 
         for n in range(1, self._max_size + 1):  # Minimum instance number is 1, per the API
             if n not in instance_numbers:
                 return n
 
         shortlist_instances_to_reclaim = [  # We will try to reclaim a non-locked-in instance
-            instance for instance in self._ace_instances.values() if not instance.check_locked_in()
+            instance for instance in self._entries.values() if not instance.check_locked_in()
         ]
 
         if shortlist_instances_to_reclaim:
@@ -138,8 +144,8 @@ class AcePool:
             logger.error("Invalid AceStream content ID: %s", content_id)
             return None
 
-        if self._ace_instances.get(content_id):
-            instance = self._ace_instances[content_id]
+        if self._entries.get(content_id):
+            instance = self._entries[content_id]
             instance.update_last_used()
             return instance.get_m3u8_url()
 
@@ -155,7 +161,7 @@ class AcePool:
             transcode_audio=self._transcode_audio,
         )
 
-        self._ace_instances[content_id] = new_instance
+        self._entries[content_id] = new_instance
 
         return new_instance.get_m3u8_url()
 
@@ -166,7 +172,7 @@ class AcePool:
             logger.warning("No multistream path provided, cannot get AceStream instance.")
             return ""
 
-        for instance in self._ace_instances.values():
+        for instance in self._entries.values():
             # We could use .path here but this avoids dealing with None
             m3u8_url = instance.get_m3u8_url()
 
@@ -178,7 +184,7 @@ class AcePool:
 
     def get_instance_by_pid(self, pid: int) -> AcePoolEntry | None:
         """Get the AcePoolEntry instance by its process ID."""
-        for entry in self._ace_instances.values():
+        for entry in self._entries.values():
             if entry.ace_pid == pid:
                 return entry
 
@@ -188,7 +194,7 @@ class AcePool:
     # region GET API
     def get_instance_by_content_id_api(self, content_id: str) -> AcePoolEntryForAPI | None:
         """Get the AcePoolEntry instance by its content ID."""
-        instance = self._ace_instances.get(content_id)
+        instance = self._entries.get(content_id)
         if instance:
             return self._make_api_response_from_instance(instance)
 
@@ -197,7 +203,7 @@ class AcePool:
 
     def get_instance_by_pid_api(self, ace_pid: int) -> AcePoolEntryForAPI | None:
         """Get the AcePoolEntry instance by its process ID."""
-        for entry in self._ace_instances.values():
+        for entry in self._entries.values():
             if entry.ace_pid == ace_pid:
                 return self._make_api_response_from_instance(entry)
 
@@ -207,7 +213,7 @@ class AcePool:
     def get_instances_api(self) -> AcePoolForApi:
         """Get a list of AcePoolEntryForAPI instances for the API."""
         if self._ace_address:
-            instances = [self._make_api_response_from_instance(instance) for instance in self._ace_instances.values()]
+            instances = [self._make_api_response_from_instance(instance) for instance in self._entries.values()]
         else:
             logger.error("get_instances_api called, Ace address is not set, cannot get instances.")
             instances = []
@@ -240,7 +246,7 @@ class AcePool:
             logger.error("Ace pool is not healthy, cannot get stats.")
             return None
 
-        for entry in self._ace_instances.values():
+        for entry in self._entries.values():
             if entry.ace_pid == pid:
                 ace_stat = await entry.get_ace_stat()
                 if ace_stat is not None:
@@ -254,7 +260,7 @@ class AcePool:
             logger.error("Ace pool is not healthy, cannot get stats.")
             return None
 
-        instance = self._ace_instances.get(content_id)
+        instance = self._entries.get(content_id)
         if instance:
             ace_stat = await instance.get_ace_stat()
             if ace_stat is not None:
@@ -302,7 +308,7 @@ class AcePool:
 
                 instances_to_remove: list[str] = []
 
-                for instance in self._ace_instances.copy().values():  # copy to avoid runtime error
+                for instance in self._entries.copy().values():  # copy to avoid runtime error
                     # If the instance is stale, remove it
                     if instance.check_if_stale():
                         instances_to_remove.append(instance.content_id)
@@ -321,20 +327,3 @@ class AcePool:
         thread = threading.Thread(target=ace_poolboy_thread, name="AcePool: ace_poolboy", daemon=True)
         thread.start()
         self._threads.append(thread)
-
-    def stop_all_threads(self) -> None:
-        """Stop all threads in the AcePool."""
-        if len(self._threads) == 0:
-            return
-
-        logger.info("Stopping all %s threads [%s]", self.__class__.__name__, self._instance_id)
-        self._stop_event.set()
-        for thread in self._threads.copy():
-            if thread.is_alive():
-                thread.join(timeout=60)
-                if not thread.is_alive():
-                    self._threads.remove(thread)
-                else:
-                    logger.warning("Thread %s did not stop in time.", thread.name)
-
-        self._stop_event.clear()

@@ -40,6 +40,14 @@ async def hls_web(slug: str, token: str = "") -> Response:
     verify_stream_token(token)
 
     iptv_manager = get_iptv_proxy_manager()
+
+    # Pool enforcement — check if this source has capacity
+    if not iptv_manager.check_stream_allowed(slug):
+        raise HTTPException(
+            status_code=HTTPStatus.SERVICE_UNAVAILABLE,
+            detail="IPTV source stream limit reached, all active streams are locked in",
+        )
+
     upstream_url = iptv_manager.get_upstream_url(slug)
 
     if not upstream_url:
@@ -97,6 +105,10 @@ async def hls_web(slug: str, token: str = "") -> Response:
 async def hls_web_segment(slug: str, segment: str) -> Response:
     """Proxy an upstream IPTV segment. No token required (nginx caching)."""
     iptv_manager = get_iptv_proxy_manager()
+
+    # Update last-used for pool tracking
+    iptv_manager.pool.touch(slug)
+
     segment_url = iptv_manager.get_segment_upstream_url(slug, segment)
 
     if not segment_url:

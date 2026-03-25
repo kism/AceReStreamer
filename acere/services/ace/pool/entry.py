@@ -1,12 +1,12 @@
-"""AceStream pool management module."""
+"""AceStream pool entry module."""
 
 import asyncio
 from contextlib import suppress
-from datetime import UTC, datetime, timedelta
 
 import aiohttp
 from pydantic import HttpUrl, ValidationError
 
+from acere.services.pool.entry import BasePoolEntry
 from acere.utils.ace import get_middleware_url
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.helpers import check_valid_content_id_or_infohash
@@ -18,11 +18,8 @@ from .models import AceMiddlewareResponse, AceMiddlewareResponseFull, AcePoolSta
 
 logger = get_logger(__name__)
 
-LOCK_IN_TIME: timedelta = timedelta(minutes=5)
-LOCK_IN_RESET_MAX: timedelta = timedelta(minutes=15)
 
-
-class AcePoolEntry:
+class AcePoolEntry(BasePoolEntry):
     """Model for an AceStream pool entry."""
 
     # region Initialization
@@ -40,10 +37,11 @@ class AcePoolEntry:
             msg = f"AcePoolEntry: Invalid AceStream content_id: {content_id}"
             raise ValueError(msg)
 
+        super().__init__(key=content_id)
+
         self._keep_alive_run_once = False
 
         self.ace_pid = ace_pid
-        self.content_id = content_id
         self.infohash = infohash
         self.ace_address = ace_address
 
@@ -56,9 +54,10 @@ class AcePoolEntry:
 
         self._middleware_info: AceMiddlewareResponse | None = None
 
-        # Required to ensure that this actually gets the current time
-        self.date_started = datetime.now(tz=UTC)
-        self.date_last_used = datetime.now(tz=UTC)
+    @property
+    def content_id(self) -> str:
+        """Content ID (alias for key)."""
+        return self.key
 
     @classmethod
     async def create(
@@ -102,10 +101,6 @@ class AcePoolEntry:
 
         self._middleware_info = middleware_response.response
 
-    def update_last_used(self) -> None:
-        """Update the last used timestamp."""
-        self.date_last_used = datetime.now(tz=UTC)
-
     # region Get
     def get_m3u8_url(self) -> HttpUrl | None:
         """Get the AceStream HLS M3U8 URL."""
@@ -145,76 +140,16 @@ class AcePoolEntry:
 
         return None
 
-    def get_required_time_until_unlock(self) -> timedelta:
-        """Get the time until the instance is unlocked."""
-        # 2026-01-29 The logic of this is correct, don't question it
-        time_now = datetime.now(tz=UTC)
-        time_since_last_watched: timedelta = time_now - self.date_last_used
-        time_since_date_started: timedelta = time_now - self.date_started
-        return min(LOCK_IN_RESET_MAX, (time_since_date_started - time_since_last_watched))
-
-    def get_time_until_unlock(self) -> timedelta:
-        """Get the time until the instance is unlocked."""
-        return self.date_last_used + self.get_required_time_until_unlock() - datetime.now(tz=UTC)
-
-    def check_running_long_enough_to_lock_in(self) -> bool:
-        """Check if the instance has been running long enough to be locked in."""
-        return datetime.now(tz=UTC) - self.date_started > LOCK_IN_TIME
-
-    # region Check
-    def _check_unused_longer_than_lock_in_reset(self) -> bool:
-        """Check if the instance has been unused longer than the lock-in reset time."""
-        time_now = datetime.now(tz=UTC)
-        time_since_last_watched: timedelta = time_now - self.date_last_used
-        return time_since_last_watched > LOCK_IN_RESET_MAX
-
-    def check_locked_in(self) -> bool:
-        """Check if the instance is locked in for a certain period."""
-        # If the instance has not been used for a while, it is not locked in, maximum reset time is LOCK_IN_RESET_MAX
-        time_now = datetime.now(tz=UTC)
-        time_since_last_watched: timedelta = time_now - self.date_last_used
-        required_time_to_unlock = self.get_required_time_until_unlock()
-
-        if not self.check_running_long_enough_to_lock_in():
-            return False
-
-        if time_since_last_watched <= required_time_to_unlock:  # noqa: SIM103 Clearer to read this way
-            return True
-
-        return False  # This is the same as self.get_time_until_unlock() < timedelta(seconds=1)
-
     def check_if_stale(self) -> bool:
-        """Check if the instance is stale, if so stop the keep_alive thread."""
-        stale = False
-        # If we have locked in at one point
-        condition_one = self.check_running_long_enough_to_lock_in()
-        # If we are not locked in
-        condition_two = not self.check_locked_in()
-        # If we have gone past the required time to unlock
-        condition_three = self.get_time_until_unlock() < timedelta(seconds=1)
-        # If it has been unused longer than the lock-in reset time
-        condition_four = self._check_unused_longer_than_lock_in_reset()
+        """Check if the instance is stale, with Ace-specific logging."""
+        stale = super().check_if_stale()
 
-        if condition_one and condition_two and condition_three:
+        if stale:
             logger.debug(
-                "Old ace_pid %d with content_id %s is stale. one=%s, two=%s, three=%s",
+                "ace_pid %d with content_id %s is stale",
                 self.ace_pid,
                 self.content_id,
-                condition_one,
-                condition_two,
-                condition_three,
             )
-            stale = True
-
-        if not condition_one and condition_four:
-            logger.debug(
-                "New-ish and unused ace_pid %d with content_id %s is stale. one=%s, four=%s",
-                self.ace_pid,
-                self.content_id,
-                condition_one,
-                condition_four,
-            )
-            stale = True
 
         return stale
 
