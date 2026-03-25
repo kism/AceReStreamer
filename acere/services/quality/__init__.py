@@ -63,9 +63,11 @@ class Quality(BaseModel):
             # Get the time between now and when we last successfully fetched a segment
             time_since_last_segment = current_time - self._last_segment_fetched
 
-            segment_is_late = (
-                time_since_last_segment > self._next_segment_expected
-            )  # If more time has passed than expected
+            # If more time has passed than expected
+            # This is inheriently lenient since we don't actually know the exact time the segment became available.
+            # This is a good enough thing and means we don't need to add a buffer to make the comparison 'fair'.
+            # But does mean that the score could be considered optimistic.
+            segment_is_late = time_since_last_segment > self._next_segment_expected
 
             # If the stream has progressed, give it a positive rating, we can't check if it was late.
             if ts_number_int != self._last_segment_number:
