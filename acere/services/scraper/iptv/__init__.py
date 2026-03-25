@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING, Any
 
 import aiohttp
 from pydantic import HttpUrl, ValidationError
-from acere.instances.config import settings
 
 from acere.config.epg import EPGInstanceConf
+from acere.instances.config import settings
 from acere.services.scraper import name_processor
 from acere.services.scraper.cache import ScraperCache
 from acere.services.scraper.m3u_common import GenericM3UParser, M3UEntry
