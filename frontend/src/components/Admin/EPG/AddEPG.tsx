@@ -73,6 +73,7 @@ function AddEPGJson() {
     ? Object.entries(data)
         .filter(([, epgId]) => epgId === null)
         .map(([tvgId]) => tvgId)
+        .sort()
     : []
 
   return (
