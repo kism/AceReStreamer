@@ -311,6 +311,39 @@ export type HTTPValidationError = {
 };
 
 /**
+ * API representation of a single IPTV pool entry.
+ */
+export type IPTVPoolEntryForAPI = {
+    slug: string;
+    source_name: string;
+    date_started: string;
+    last_used: string;
+    locked_in: boolean;
+    time_until_unlock_seconds: number;
+    time_running_seconds: number;
+};
+
+/**
+ * API representation of all IPTV source pools.
+ */
+export type IPTVPoolForAPI = {
+    sources: Array<IPTVPoolSourceForAPI>;
+};
+
+/**
+ * API representation of a single source's pool.
+ */
+export type IPTVPoolSourceForAPI = {
+    source_name: string;
+    max_size: number;
+    entries: Array<IPTVPoolEntryForAPI>;
+    /**
+     * Number of active entries.
+     */
+    readonly active_count: number;
+};
+
+/**
  * Represent an IPTV proxy source, generic for Xtream and M3U8 sources.
  */
 export type IPTVSourceApi = {
@@ -647,6 +680,21 @@ export type FrontendFrontendIndexHtmlResponse = (string);
 export type FrontendFrontendIndexResponse = (string);
 
 export type HealthHealthResponse = (HealthResponseModel);
+
+export type IptvPoolPoolResponse = (IPTVPoolForAPI);
+
+export type IptvPoolPoolBySourceData = {
+    sourceName: string;
+};
+
+export type IptvPoolPoolBySourceResponse = (IPTVPoolSourceForAPI);
+
+export type IptvPoolDeleteEntryData = {
+    slug: string;
+    sourceName: string;
+};
+
+export type IptvPoolDeleteEntryResponse = (MessageResponseModel);
 
 export type IptvScraperSourcesResponse = (Array<IPTVSourceApi>);
 

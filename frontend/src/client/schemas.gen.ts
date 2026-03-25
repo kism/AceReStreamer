@@ -1061,6 +1061,91 @@ export const HealthResponseModelSchema = {
     title: 'HealthResponseModel'
 } as const;
 
+export const IPTVPoolEntryForAPISchema = {
+    properties: {
+        slug: {
+            type: 'string',
+            title: 'Slug'
+        },
+        source_name: {
+            type: 'string',
+            title: 'Source Name'
+        },
+        date_started: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Date Started'
+        },
+        last_used: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Last Used'
+        },
+        locked_in: {
+            type: 'boolean',
+            title: 'Locked In'
+        },
+        time_until_unlock_seconds: {
+            type: 'integer',
+            title: 'Time Until Unlock Seconds'
+        },
+        time_running_seconds: {
+            type: 'integer',
+            title: 'Time Running Seconds'
+        }
+    },
+    type: 'object',
+    required: ['slug', 'source_name', 'date_started', 'last_used', 'locked_in', 'time_until_unlock_seconds', 'time_running_seconds'],
+    title: 'IPTVPoolEntryForAPI',
+    description: 'API representation of a single IPTV pool entry.'
+} as const;
+
+export const IPTVPoolForAPISchema = {
+    properties: {
+        sources: {
+            items: {
+                '$ref': '#/components/schemas/IPTVPoolSourceForAPI'
+            },
+            type: 'array',
+            title: 'Sources'
+        }
+    },
+    type: 'object',
+    required: ['sources'],
+    title: 'IPTVPoolForAPI',
+    description: 'API representation of all IPTV source pools.'
+} as const;
+
+export const IPTVPoolSourceForAPISchema = {
+    properties: {
+        source_name: {
+            type: 'string',
+            title: 'Source Name'
+        },
+        max_size: {
+            type: 'integer',
+            title: 'Max Size'
+        },
+        entries: {
+            items: {
+                '$ref': '#/components/schemas/IPTVPoolEntryForAPI'
+            },
+            type: 'array',
+            title: 'Entries'
+        },
+        active_count: {
+            type: 'integer',
+            title: 'Active Count',
+            description: 'Number of active entries.',
+            readOnly: true
+        }
+    },
+    type: 'object',
+    required: ['source_name', 'max_size', 'entries', 'active_count'],
+    title: 'IPTVPoolSourceForAPI',
+    description: "API representation of a single source's pool."
+} as const;
+
 export const IPTVSourceApiSchema = {
     properties: {
         name: {
