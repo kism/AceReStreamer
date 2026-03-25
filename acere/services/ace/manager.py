@@ -86,7 +86,7 @@ class AceManager:
 
         return sources
 
-    def start_scrape_thread(self) -> None:
+    def start_scrape_thread(self) -> None:  # noqa: C901
         """Start the background scraping thread."""
 
         def run_scrape_thread() -> None:

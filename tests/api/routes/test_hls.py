@@ -10,8 +10,8 @@ from acere.constants import STATIC_DIR
 from acere.instances import epg as epg_instance_module
 from acere.instances.config import settings
 from acere.instances.paths import get_app_path_handler
-from acere.services.epg.handler import EPGHandler
 from acere.services.ace import manager as ace_manager_module
+from acere.services.epg.handler import EPGHandler
 from tests.test_utils.ace import get_random_content_id
 from tests.test_utils.aiohttp import FakeSession
 from tests.test_utils.hls import generate_hls_m3u8
