@@ -288,6 +288,9 @@ export type FoundIPTVStreamAPI = {
     last_scraped_time: string;
     program_title: string;
     program_description: string;
+    quality: number;
+    has_ever_worked: boolean;
+    m3u_failures: number;
 };
 
 export type HealthResponseModel = {

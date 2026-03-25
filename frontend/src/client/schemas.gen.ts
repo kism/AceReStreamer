@@ -990,10 +990,22 @@ export const FoundIPTVStreamAPISchema = {
         program_description: {
             type: 'string',
             title: 'Program Description'
+        },
+        quality: {
+            type: 'integer',
+            title: 'Quality'
+        },
+        has_ever_worked: {
+            type: 'boolean',
+            title: 'Has Ever Worked'
+        },
+        m3u_failures: {
+            type: 'integer',
+            title: 'M3U Failures'
         }
     },
     type: 'object',
-    required: ['title', 'original_title', 'slug', 'upstream_url', 'source_name', 'tvg_id', 'group_title', 'last_scraped_time', 'program_title', 'program_description'],
+    required: ['title', 'original_title', 'slug', 'upstream_url', 'source_name', 'tvg_id', 'group_title', 'last_scraped_time', 'program_title', 'program_description', 'quality', 'has_ever_worked', 'm3u_failures'],
     title: 'FoundIPTVStreamAPI',
     description: 'Model for an IPTV proxy stream, for API use.'
 } as const;
