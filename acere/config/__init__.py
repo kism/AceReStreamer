@@ -33,9 +33,11 @@ from .epg import EPGInstanceConf
 from .iptv import IPTVProxyConf
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from pathlib import Path
 else:
     Path = object
+    Sequence = object
 logger = get_logger(__name__)
 
 
@@ -73,7 +75,8 @@ def _migrate_config_data(data: dict[str, Any]) -> dict[str, Any]:
 class MigratingJsonConfigSettingsSource(JsonConfigSettingsSource):
     """JSON config source that applies config migration before loading."""
 
-    def _read_files(self, files: typing.Any, deep_merge: bool = False) -> dict[str, Any]:  # noqa: ANN401, FBT001, FBT002
+    @typing.override
+    def _read_files(self, files: Path | str | Sequence[Path | str] | None, deep_merge: bool = False) -> dict[str, Any]:
         data = super()._read_files(files, deep_merge=deep_merge)
         return _migrate_config_data(data)
 
