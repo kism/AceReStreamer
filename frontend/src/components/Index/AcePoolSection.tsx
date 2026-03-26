@@ -1,4 +1,4 @@
-import { Box, Heading, HStack, Text } from "@chakra-ui/react"
+import { Box, Heading, HStack, Text, VStack } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { FiSearch } from "react-icons/fi"
 import type { IPTVPoolForAPI } from "@/client"
@@ -16,12 +16,14 @@ import {
 
 function IptvSourcesTable({
   iptvPoolData,
-}: { iptvPoolData: IPTVPoolForAPI | undefined }) {
+}: {
+  iptvPoolData: IPTVPoolForAPI | undefined
+}) {
   if (!iptvPoolData?.sources.length) return null
 
   return (
     <Box>
-      <Heading size="xs" pb={1}>
+      <Heading size="xs" py={1}>
         IPTV Proxy Sources
       </Heading>
       <AppTableRoot preset="outlineSm" w="fit-content">
@@ -87,16 +89,16 @@ export function UpstreamSection() {
   }
 
   return (
-    <>
-      <Heading size="md" >
-        Upstream Sources
-      </Heading>
-      <AcePoolBackendInfo
-        acePoolData={data}
-        isPlaceholderData={isPlaceholderData}
-      />
-      <IptvSourcesTable iptvPoolData={iptvPoolData} />
+    <VStack align="stretch" gap={4}>
       <PoolInstancesTable acePoolData={data} iptvPoolData={iptvPoolData} />
-    </>
+      <VStack align="stretch" gap={1}>
+        <Heading size="md">Upstream Sources</Heading>
+        <AcePoolBackendInfo
+          acePoolData={data}
+          isPlaceholderData={isPlaceholderData}
+        />
+        <IptvSourcesTable iptvPoolData={iptvPoolData} />
+      </VStack>
+    </VStack>
   )
 }

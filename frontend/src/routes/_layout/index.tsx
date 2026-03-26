@@ -43,7 +43,7 @@ function ProgramDescription({
   return (
     <Box>
       <Heading size="sm" py={1}>
-        <HStack px={1}>
+        <HStack>
           <Text>Now Playing: </Text> {title ? title : "No Program Information"}
         </HStack>
       </Heading>
