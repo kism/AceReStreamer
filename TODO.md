@@ -5,6 +5,8 @@
 - check for typing.Any
 - ~~Cache m3u8 fetches for iptv proxy~~
 - /hls/web/<whatever> fix in frontend
+  - ace
+  - iptv
 - add HEAD method to /hls/ace and /hls/web
 - shaka player
   - fix lazy loading
