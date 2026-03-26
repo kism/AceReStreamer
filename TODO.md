@@ -58,6 +58,6 @@ This logic might be cooked
 
 ~~Better scoring for quality, streak system?~~
 
-Pool ui for each iptv source
+~~Pool ui for each iptv source~~
 
 ~~Use epg field for iptv sources~~

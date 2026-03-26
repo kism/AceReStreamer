@@ -21,6 +21,7 @@ TIME_BETWEEN_DB_WRITES = timedelta(minutes=1)
 
 NEW_STREAM_THRESHOLD = 20  # If the TS number is below this, we are more lenient with the quality rating
 STREAK_BONUS_THRESHOLD = 5  # Divide streak by this for the bonus
+STREAK_BONUS_MAX = 9 # This will make it 10 at max streak
 
 
 # region: Quality
@@ -73,7 +74,9 @@ class Quality(BaseModel):
             if ts_number_int != self._last_segment_number:
                 # If we get two segments it will be +2 etc, if it jumps by more than 5 I wouldn't call it healthy
                 n_new_segments = ts_number_int - self._last_segment_number
-                rating = min(max(n_new_segments, 1), 5) + int(self._streak / STREAK_BONUS_THRESHOLD)
+                rating = min(max(n_new_segments, 1), 5) + min(
+                    int(self._streak / STREAK_BONUS_THRESHOLD), STREAK_BONUS_MAX
+                )
                 self._streak += n_new_segments
                 self._last_segment_fetched = current_time
                 segment_label = "segments" if n_new_segments > 1 else "segment"
