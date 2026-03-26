@@ -12,7 +12,5 @@
   - toggle EPG or Ace scraper
   - epg config import doesnt affect other epgs (with different URLs)
 - frontend
-  - `module.loadPlayStream(`/hls/ace/${data?.content_id}`)` rename
-  - `video.addEventListener("contextmenu", (e) => {` does nothing?
   - remover Player: Playing from the table
   - put video source stats instead
