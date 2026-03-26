@@ -47,6 +47,16 @@ export async function loadStream(streamUrl?: string) {
     player = null
   }
 
+  // Clean up any residual Shaka UI elements left after destroy
+  if (video.parentElement !== container) {
+    container.appendChild(video)
+  }
+  for (const child of Array.from(container.children)) {
+    if (child !== video) {
+      child.remove()
+    }
+  }
+
   const fullUrl = await getStreamURL(actualStreamUrl)
   updateStreamStatus({ streamURL: fullUrl })
 
