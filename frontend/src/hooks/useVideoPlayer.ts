@@ -1,10 +1,10 @@
-import Hls from "hls.js"
+import shaka from "shaka-player"
 
 import { UsersService } from "@/client"
 
 import { updateStreamStatus } from "./useStreamStatus"
 
-let hls: Hls | null = null
+let player: shaka.Player | null = null
 let cachedToken: string | null = null
 
 async function getAuthToken() {
@@ -35,45 +35,72 @@ export async function loadStream(streamUrl?: string) {
     return
   }
 
-  if (hls) {
-    hls.destroy()
+  if (player) {
+    await player.destroy()
+    player = null
   }
 
   const fullUrl = await getStreamURL(actualStreamUrl)
   updateStreamStatus({ streamURL: fullUrl })
 
-  if (Hls.isSupported()) {
-    hls = new Hls()
-    hls.loadSource(fullUrl)
-    hls.attachMedia(video)
+  if (shaka.Player.isBrowserSupported()) {
+    player = new shaka.Player()
+    await player.attach(video)
+
+    // We don't have much faith in IPTV or Acestream so we play it safe.
+    player.configure({
+      streaming: {
+        lowLatencyMode: false,
+        rebufferingGoal: 15,
+        bufferingGoal: 30,
+        bufferBehind: 60,
+        loadTimeout: 60,
+        stopFetchingOnPause: false,
+        retryParameters: {
+          maxAttempts: 10,
+          baseDelay: 1000,
+          backoffFactor: 2,
+          fuzzFactor: 0.5,
+        },
+      },
+    })
+
+    player.addEventListener("error", (event) => {
+      const detail = (event as unknown as { detail: shaka.util.Error }).detail
+      console.error("Shaka error:", detail)
+
+      let errorMessage = "Stream loading failed"
+      if (detail.category === shaka.util.Error.Category.NETWORK) {
+        errorMessage = "Network error: Ace doesn't have the stream segment"
+      } else if (detail.category === shaka.util.Error.Category.MEDIA) {
+        errorMessage = "Media error: Stream not ready"
+      } else if (detail.message) {
+        errorMessage = `Player error: ${detail.message}`
+      }
+      updateStreamStatus({ hlsStatus: errorMessage })
+    })
+
+    player.addEventListener("buffering", (event) => {
+      const buffering = (event as unknown as { buffering: boolean }).buffering
+      if (!buffering) {
+        updateStreamStatus({ hlsStatus: "Healthy" })
+      }
+    })
 
     updateStreamStatus({ hlsStatus: "Loading" })
 
-    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+    try {
+      await player.load(fullUrl)
       updateStreamStatus({ hlsStatus: "Healthy", playerStatus: "Ready" })
-      video.play() // Hopefully prevents the grey overlay persisting
-    })
-
-    hls.on(Hls.Events.ERROR, (_event, data) => {
-      console.error("HLS error:", data)
-      let errorMessage = "Stream loading failed"
-
-      if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-        errorMessage = "Network error: Ace doen't have the stream segment"
-      } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-        errorMessage = "Media error: Stream not ready"
-      } else if (data.type === Hls.ErrorTypes.MUX_ERROR) {
-        errorMessage = "Stream parsing error"
-      } else if (data.details) {
-        errorMessage = `HLS error: ${data.details}`
+      video.play()
+    } catch (e) {
+      if (e instanceof shaka.util.Error) {
+        console.error("Shaka load error:", e)
+        updateStreamStatus({ hlsStatus: `Load error: ${e.message}` })
+      } else {
+        throw e
       }
-      updateStreamStatus({ hlsStatus: errorMessage })
-      console.log("HLS error", errorMessage, data)
-    })
-
-    hls.on(Hls.Events.BUFFER_APPENDED, () => {
-      updateStreamStatus({ hlsStatus: "Healthy" })
-    })
+    }
   } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
     // Native HLS support (Safari)
     video.src = fullUrl

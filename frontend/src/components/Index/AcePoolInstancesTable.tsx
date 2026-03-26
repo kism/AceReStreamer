@@ -161,7 +161,9 @@ export function PoolInstancesTable({
           {acePoolData.ace_instances.map((instance, index) => (
             <TableRow key={`ace-${instance.ace_pid}`}>
               <TableCell textAlign={"center"}>ACE</TableCell>
-              <TableCell textAlign={"center"}>Acestream [{index + 1}]</TableCell>
+              <TableCell textAlign={"center"}>
+                Acestream [{index + 1}]
+              </TableCell>
               <AceInstanceQuality contentId={instance.content_id} />
               <TableCell textAlign={"center"}>
                 {instance.locked_in
