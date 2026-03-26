@@ -1,9 +1,12 @@
-import shaka from "shaka-player"
+import shaka from "shaka-player/dist/shaka-player.ui"
+import "shaka-player/dist/controls.css"
+import "./videoPlayer.css"
 
 import { UsersService } from "@/client"
 
 import { updateStreamStatus } from "./useStreamStatus"
 
+let overlay: shaka.ui.Overlay | null = null
 let player: shaka.Player | null = null
 let cachedToken: string | null = null
 
@@ -29,14 +32,18 @@ export async function loadStream(streamUrl?: string) {
   updateStreamStatus({ playerStatus: "Loading" })
   updateStreamStatus({ hlsStatus: "Initialising" })
 
-  const video = document.querySelector("video") as HTMLVideoElement
-  if (!video) {
-    console.error("Video element not found")
+  const container = document.getElementById(
+    "shaka-container",
+  ) as HTMLElement | null
+  const video = container?.querySelector("video") as HTMLVideoElement | null
+  if (!container || !video) {
+    console.error("Video container or element not found")
     return
   }
 
-  if (player) {
-    await player.destroy()
+  if (overlay) {
+    await overlay.destroy()
+    overlay = null
     player = null
   }
 
@@ -46,6 +53,25 @@ export async function loadStream(streamUrl?: string) {
   if (shaka.Player.isBrowserSupported()) {
     player = new shaka.Player()
     await player.attach(video)
+    overlay = new shaka.ui.Overlay(player, container, video)
+
+    overlay.configure({
+      forceLandscapeOnFullscreen: true,
+      seekBarColors: {
+        played: "#008080",
+        buffered: "rgba(0, 128, 128, 0.4)",
+        base: "rgba(255, 255, 255, 0.3)",
+      },
+      controlPanelElements: [
+        // No cog for settings
+        "play_pause",
+        "mute",
+        "volume",
+        "time_and_duration",
+        "spacer",
+        "fullscreen",
+      ],
+    })
 
     // We don't have much faith in IPTV or Acestream so we play it safe.
     player.configure({
