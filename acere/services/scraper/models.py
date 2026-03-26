@@ -52,6 +52,7 @@ class IPTVSourceApi(BaseModel):
     max_active_streams: int = 0
     username: str | None = None
     password: str | None = None
+    use_epg: bool | None = None
 
     @field_serializer("url", mode="plain")
     def serialize_url(self, value: HttpUrl) -> str:
@@ -70,6 +71,7 @@ class IPTVSourceApi(BaseModel):
             max_active_streams=source.max_active_streams,
             username=source.username,
             password=source.password,
+            use_epg=source.use_epg,
         )
 
     @staticmethod

@@ -60,4 +60,4 @@ This logic might be cooked
 
 Pool ui for each iptv source
 
-Use epg field for iptv sources
+~~Use epg field for iptv sources~~

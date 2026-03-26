@@ -358,6 +358,7 @@ export type IPTVSourceApi = {
     max_active_streams?: number;
     username?: (string | null);
     password?: (string | null);
+    use_epg?: (boolean | null);
 };
 
 export type type2 = 'xtream' | 'm3u8';
@@ -663,6 +664,12 @@ export type EpgAddEpgData = {
 };
 
 export type EpgAddEpgResponse = (unknown);
+
+export type EpgModifyEpgData = {
+    requestBody: (EPGInstanceConf_Input | Array<EPGInstanceConf_Input>);
+};
+
+export type EpgModifyEpgResponse = (unknown);
 
 export type EpgGetEpgData = {
     slug: string;
