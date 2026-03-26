@@ -20,6 +20,8 @@ from .epg import EPG, EPG_LIFESPAN
 from .helpers import find_current_program_xml, normalise_epg_tvg_id
 from .models import EPGApiHandlerHealthResponse, EPGApiHealthResponse, TVGEPGMappingsResponse
 
+from acere.instances.config import settings
+
 if TYPE_CHECKING:
     from pydantic import HttpUrl
 
@@ -226,6 +228,18 @@ class EPGHandler:
 
         return time_to_wait
 
+    def _get_xc_epgs(self) -> list[EPG]:
+        epgs = []
+
+        for xc_source in settings.iptv.xtream:
+            if xc_source.use_epg:
+                epg_url = HttpUrl(
+                    f"{xc_source.url}/xmltv.php?username={xc_source.username}&password={xc_source.password}"
+                )
+                epgs.append(EPG(epg_conf=EPGInstanceConf(url=epg_url)))
+
+        return epgs
+
     def update_epgs(self, epg_conf_list: list[EPGInstanceConf]) -> None:  # noqa: C901 I split it up within the function
         """Update all EPGs with the current instance path."""
 
@@ -278,6 +292,12 @@ class EPGHandler:
         self._epgs.clear()
         for epg_conf in epg_conf_list:
             self._epgs.append(EPG(epg_conf=epg_conf))
+
+        # Add xc epgs, prevent double-add if epg is specifically defined
+        xc_epgs = self._get_xc_epgs()
+        for xc_epg in xc_epgs:
+            if all(xc_epg.url != epg.url for epg in self._epgs):
+                self._epgs.append(xc_epg)
 
         database_tvg_ids = get_ace_streams_db_handler().get_all_distinct_tvg_ids()
         database_tvg_ids |= get_iptv_streams_db_handler().get_all_distinct_tvg_ids()
