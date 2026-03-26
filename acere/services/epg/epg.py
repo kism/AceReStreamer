@@ -145,7 +145,8 @@ class EPG:
         need_to_update = time_since_last_update > EPG_LIFESPAN
 
         logger.debug(
-            "Time since last update for %s, lifespan: %s, need_to_update=%s",
+            "Time since last update for %s: %s, lifespan: %s, need_to_update=%s",
+            self.url,
             time_since_last_update,
             EPG_LIFESPAN,
             need_to_update,

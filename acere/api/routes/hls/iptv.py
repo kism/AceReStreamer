@@ -44,10 +44,63 @@ class _CachedPlaylist:
     headers: dict[str, str]
 
 
-_playlist_cache: FetchCache[_CachedPlaylist] = FetchCache(ttl=3.0)
+@dataclass
+class _CachedHead:
+    status: int
+    headers: dict[str, str]
+
+
+_playlist_cache: FetchCache[_CachedPlaylist] = FetchCache()
+_playlist_head_cache: FetchCache[_CachedHead] = FetchCache()
+_segment_head_cache: FetchCache[_CachedHead] = FetchCache()
 
 
 # region /hls/web/
+@router.head("/hls/web/{slug}", response_class=Response)
+async def hls_web_head(slug: str, token: str = "") -> Response:
+    """Return headers only for an upstream IPTV HLS playlist (no body)."""
+    verify_stream_token(token)
+
+    iptv_manager = get_iptv_proxy_manager()
+
+    if not iptv_manager.check_stream_allowed(slug):
+        raise HTTPException(
+            status_code=HTTPStatus.SERVICE_UNAVAILABLE,
+            detail="IPTV source stream limit reached, all active streams are locked in",
+        )
+
+    upstream_url = iptv_manager.get_upstream_url(slug)
+
+    if not upstream_url:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail=f"Unknown IPTV stream: {slug}",
+        )
+
+    async def _fetch_head(url: str) -> _CachedHead:
+        timeout = aiohttp.ClientTimeout(total=REVERSE_PROXY_TIMEOUT)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.head(url, allow_redirects=True) as resp:
+                resp.raise_for_status()
+                headers = {
+                    name: value
+                    for name, value in resp.headers.items()
+                    if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS
+                }
+                return _CachedHead(status=resp.status, headers=headers)
+
+    try:
+        cached = await _playlist_head_cache.get(upstream_url, _fetch_head)
+    except (aiohttp.ClientError, TimeoutError) as e:
+        log_aiohttp_exception(logger, f"[iptv hls head {slug}] -> {upstream_url}", e)
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_GATEWAY,
+            detail="Failed to reach upstream IPTV stream",
+        ) from e
+
+    return Response(status_code=cached.status, headers=cached.headers)
+
+
 @router.get("/hls/web/{slug}", response_class=Response)
 async def hls_web(slug: str, token: str = "") -> Response:
     """Reverse proxy an upstream IPTV HLS playlist, rewriting segment URLs."""
@@ -127,6 +180,43 @@ async def hls_web(slug: str, token: str = "") -> Response:
 
 
 # region /hls/web-segment/
+@router.head("/hls/web-segment/{slug}/{segment:path}", response_class=Response)
+async def hls_web_segment_head(slug: str, segment: str) -> Response:
+    """Return headers only for an upstream IPTV segment (no body)."""
+    iptv_manager = get_iptv_proxy_manager()
+
+    segment_url = iptv_manager.get_segment_upstream_url(slug, segment)
+
+    if not segment_url:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail=f"Unknown IPTV stream slug: {slug}",
+        )
+
+    async def _fetch_head(url: str) -> _CachedHead:
+        timeout = aiohttp.ClientTimeout(total=REVERSE_PROXY_TIMEOUT)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.head(url, allow_redirects=True) as resp:
+                resp.raise_for_status()
+                headers = {
+                    name: value
+                    for name, value in resp.headers.items()
+                    if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS
+                }
+                return _CachedHead(status=resp.status, headers=headers)
+
+    try:
+        cached = await _segment_head_cache.get(segment_url, _fetch_head)
+    except (aiohttp.ClientError, TimeoutError) as e:
+        log_aiohttp_exception(logger, f"[iptv hls segment head {slug}/{segment}] -> {segment_url}", e)
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_GATEWAY,
+            detail="Failed to reach upstream segment",
+        ) from e
+
+    return Response(status_code=cached.status, headers=cached.headers)
+
+
 @router.get("/hls/web-segment/{slug}/{segment:path}", response_class=Response)
 async def hls_web_segment(slug: str, segment: str) -> Response:
     """Proxy an upstream IPTV segment. No token required (nginx caching)."""

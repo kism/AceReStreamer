@@ -48,6 +48,8 @@ class FetchCache[T]:
 
         # Start a new fetch and publish the future so waiters can join
         future: asyncio.Future[T] = asyncio.get_running_loop().create_future()
+        # Prevent "Future exception was never retrieved" when no waiters joined
+        future.add_done_callback(lambda f: f.exception() if not f.cancelled() else None)
         self._inflight[url] = future
 
         try:
