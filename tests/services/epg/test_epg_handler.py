@@ -25,7 +25,7 @@ else:
 def epg_conf() -> EPGInstanceConf:
     """Fixture for EPGInstanceConf."""
     return EPGInstanceConf(
-        url="http://ace.pytest.internal/epg.xml",  # type: ignore[arg-type]
+        url="http://ace.pytest.internal/epg.xml",  # type: ignore[arg-type]  # ty:ignore[invalid-argument-type]
         format="xml",
         tvg_id_overrides={},
     )

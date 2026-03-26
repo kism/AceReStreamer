@@ -31,7 +31,7 @@ class IPTVSourceXtream(BaseModel):
     category_rename: dict[str, str] = {}
     stream_overrides: dict[str, IPTVStreamOverride] = {}
     max_active_streams: int = 0  # 0 = unlimited
-    use_epg: bool = True # Try use the built-in EPG from the XC server
+    use_epg: bool = True  # Try use the built-in EPG from the XC server
 
     @field_validator("name", mode="before")
     @classmethod

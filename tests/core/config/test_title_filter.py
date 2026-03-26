@@ -10,5 +10,5 @@ def test_title_filter_postprocessing() -> None:
     assert title_filter.regex_postprocessing == []
 
     # If a string is passed in, its converted to a list
-    title_filter = TitleFilter(regex_postprocessing="Server \\d+: ")  # type: ignore[arg-type] # This is a test, it can load from config this way
+    title_filter = TitleFilter(regex_postprocessing="Server \\d+: ")  # type: ignore[arg-type]  # ty:ignore[invalid-argument-type]  # This is a test, it can load from config this way
     assert title_filter.regex_postprocessing == ["Server \\d+: "]

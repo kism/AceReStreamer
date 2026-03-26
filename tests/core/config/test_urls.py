@@ -24,7 +24,7 @@ def test_default_urls_as_strings() -> None:
 def test_strip_trailing_slash(url: str, expected: str) -> None:
     """Test that ace_address always has a trailing slash."""
     app_config = AceConf(
-        ace_address=url,  # type: ignore[arg-type, invalid-argument-type]
+        ace_address=url,  # type: ignore[arg-type]  # ty:ignore[invalid-argument-type]
     )
 
     assert app_config.ace_address.encoded_string() == expected
