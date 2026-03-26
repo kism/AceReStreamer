@@ -5,11 +5,13 @@ import threading
 import urllib.parse
 from datetime import UTC, datetime, timedelta
 from io import BytesIO
-from typing import TYPE_CHECKING
 
 from lxml import etree
+from pydantic import HttpUrl
 
+from acere.config import EPGInstanceConf
 from acere.instances.ace_streams import get_ace_streams_db_handler
+from acere.instances.config import settings
 from acere.instances.iptv_streams import get_iptv_streams_db_handler
 from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger
@@ -19,16 +21,6 @@ from .candidate import EPGCandidateHandler
 from .epg import EPG, EPG_LIFESPAN
 from .helpers import find_current_program_xml, normalise_epg_tvg_id
 from .models import EPGApiHandlerHealthResponse, EPGApiHealthResponse, TVGEPGMappingsResponse
-
-from acere.instances.config import settings
-
-if TYPE_CHECKING:
-    from pydantic import HttpUrl
-
-    from acere.config import EPGInstanceConf
-else:
-    EPGInstanceConf = object
-    HttpUrl = object
 
 logger = get_logger(__name__)
 
@@ -229,16 +221,16 @@ class EPGHandler:
         return time_to_wait
 
     def _get_xc_epgs(self) -> list[EPG]:
-        epgs = []
+        xc_epgs = []
 
         for xc_source in settings.iptv.xtream:
             if xc_source.use_epg:
                 epg_url = HttpUrl(
                     f"{xc_source.url}/xmltv.php?username={xc_source.username}&password={xc_source.password}"
                 )
-                epgs.append(EPG(epg_conf=EPGInstanceConf(url=epg_url)))
+                xc_epgs.append(EPG(epg_conf=EPGInstanceConf(url=epg_url)))
 
-        return epgs
+        return xc_epgs
 
     def update_epgs(self, epg_conf_list: list[EPGInstanceConf]) -> None:  # noqa: C901 I split it up within the function
         """Update all EPGs with the current instance path."""
