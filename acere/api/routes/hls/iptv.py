@@ -1,5 +1,6 @@
 """IPTV proxy HLS stream handling routes."""
 
+from dataclasses import dataclass
 from http import HTTPStatus
 from typing import TYPE_CHECKING
 
@@ -15,6 +16,7 @@ from acere.instances.quality import get_quality_handler
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.hls import rewrite_iptv_hls_segments
 from acere.utils.logger import get_logger
+from acere.utils.m3u8_fetch_cache import FetchCache
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
@@ -33,6 +35,30 @@ REVERSE_PROXY_EXCLUDED_HEADERS = [
     "keep-alive",
 ]
 REVERSE_PROXY_TIMEOUT = 10  # Very high but alas
+
+
+@dataclass
+class _PlaylistFetch:
+    content: bytes
+    status: int
+    headers: dict[str, str]
+    final_url: str
+
+
+_playlist_cache: FetchCache[_PlaylistFetch] = FetchCache(ttl=3.0)
+
+
+async def _fetch_playlist(url: str) -> _PlaylistFetch:
+    timeout = aiohttp.ClientTimeout(total=REVERSE_PROXY_TIMEOUT)
+    async with aiohttp.ClientSession(timeout=timeout) as session:
+        async with session.get(url, allow_redirects=True) as resp:
+            resp.raise_for_status()
+            return _PlaylistFetch(
+                content=await resp.read(),
+                status=resp.status,
+                headers=dict(resp.headers),
+                final_url=str(resp.url),
+            )
 
 
 # region /hls/web/
@@ -63,14 +89,7 @@ async def hls_web(slug: str, token: str = "") -> Response:
     quality_hls_identifier = db_entry.upstream_url if db_entry else upstream_url
 
     try:
-        timeout = aiohttp.ClientTimeout(total=REVERSE_PROXY_TIMEOUT)
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            async with session.get(upstream_url, allow_redirects=True) as resp:
-                resp.raise_for_status()
-                content_bytes = await resp.read()
-                status_code = resp.status
-                headers = resp.headers
-                final_url = str(resp.url)
+        fetched = await _playlist_cache.get(upstream_url, _fetch_playlist)
     except (aiohttp.ClientError, TimeoutError) as e:
         log_aiohttp_exception(logger, f"[iptv hls {slug}] -> {upstream_url}", e)
         get_quality_handler().increment_quality(quality_hls_identifier, "")
@@ -80,11 +99,11 @@ async def hls_web(slug: str, token: str = "") -> Response:
         ) from e
 
     # If the upstream redirected, update the URL map so segment requests use the correct base
-    if final_url != upstream_url:
-        logger.debug("IPTV slug %s redirected: %s -> %s", slug, upstream_url, final_url)
-        iptv_manager.update_upstream_url(slug, final_url)
+    if fetched.final_url != upstream_url:
+        logger.debug("IPTV slug %s redirected: %s -> %s", slug, upstream_url, fetched.final_url)
+        iptv_manager.update_upstream_url(slug, fetched.final_url)
 
-    content_str = content_bytes.decode("utf-8", errors="replace")
+    content_str = fetched.content.decode("utf-8", errors="replace")
 
     if "#EXTM3U" not in content_str:
         logger.error("Invalid HLS content received for IPTV slug: %s", slug)
@@ -102,9 +121,9 @@ async def hls_web(slug: str, token: str = "") -> Response:
 
     get_quality_handler().increment_quality(quality_hls_identifier, content_str)
 
-    resp_out = Response(content=content_str, status_code=status_code)
+    resp_out = Response(content=content_str, status_code=fetched.status)
     resp_out.headers.update(
-        {name: value for name, value in headers.items() if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS}
+        {name: value for name, value in fetched.headers.items() if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS}
     )
 
     return resp_out
