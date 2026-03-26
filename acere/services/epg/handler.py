@@ -226,9 +226,9 @@ class EPGHandler:
         for xc_source in settings.iptv.xtream:
             if xc_source.use_epg:
                 epg_url = HttpUrl(
-                    f"{xc_source.url}/xmltv.php?username={xc_source.username}&password={xc_source.password}"
+                    f"{str(xc_source.url).strip('/')}/xmltv.php?username={xc_source.username}&password={xc_source.password}"
                 )
-                xc_epgs.append(EPG(epg_conf=EPGInstanceConf(url=epg_url)))
+                xc_epgs.append(EPG(epg_conf=EPGInstanceConf(format="xml", url=epg_url)))
 
         return xc_epgs
 
