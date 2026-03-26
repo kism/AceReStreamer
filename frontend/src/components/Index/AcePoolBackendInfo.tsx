@@ -24,8 +24,8 @@ export function AcePoolBackendInfo({
 }: AcePoolBackendInfoProps) {
   return (
     <Box>
-      <Heading size="sm" py={1}>
-        AceStream Backend Information
+      <Heading size="xs" pb={1}>
+        AceStream Backend
       </Heading>
       {acePoolData && acePoolData.external_url !== VITE_API_URL && (
         <Box p={2} border={"1px solid orange"} my={2}>

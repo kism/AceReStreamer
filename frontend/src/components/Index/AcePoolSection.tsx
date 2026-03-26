@@ -21,8 +21,8 @@ function IptvSourcesTable({
 
   return (
     <Box>
-      <Heading size="sm" py={1}>
-        IPTV Proxied Sources
+      <Heading size="xs" pb={1}>
+        IPTV Proxy Sources
       </Heading>
       <AppTableRoot preset="outlineSm" w="fit-content">
         <TableHeader>
@@ -88,6 +88,9 @@ export function UpstreamSection() {
 
   return (
     <>
+      <Heading size="md" >
+        Upstream Sources
+      </Heading>
       <AcePoolBackendInfo
         acePoolData={data}
         isPlaceholderData={isPlaceholderData}
