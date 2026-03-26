@@ -11,8 +11,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import baseURL from "@/helpers"
 import { QualityCell } from "./QualityCell"
 
+const VITE_API_URL = baseURL()
 const loadVideoPlayerModule = () => import("@/hooks/useVideoPlayer")
 
 function getStreamsQueryOptions() {
@@ -115,18 +117,21 @@ export function StreamTable({
               opacity={isPlaceholderData ? 0.5 : 1}
               cursor={isPlaceholderData ? "default" : "pointer"}
               color={
-                window.location.hash.substring(1) === item.stream_url
+                item.stream_url.endsWith(window.location.hash.substring(1))
                   ? "white"
                   : undefined
               }
               background={
-                window.location.hash.substring(1) === item.stream_url
+                item.stream_url.endsWith(window.location.hash.substring(1))
                   ? "teal"
                   : undefined
               }
               onClick={() => {
+                const relativeUrl = item.stream_url.startsWith(VITE_API_URL)
+                  ? item.stream_url.slice(VITE_API_URL.length)
+                  : item.stream_url
                 loadVideoPlayerModule().then((module) => {
-                  module.loadPlayStream(item.stream_url)
+                  module.loadPlayStream(relativeUrl)
                 })
               }}
             >
@@ -149,7 +154,7 @@ export function StreamTable({
                 </Box>
                 <Box
                   color={
-                    window.location.hash.substring(1) === item.stream_url
+                    item.stream_url.endsWith(window.location.hash.substring(1))
                       ? "gray.300"
                       : item.program_description
                         ? "fg.muted"
@@ -169,7 +174,9 @@ export function StreamTable({
                     overflow="hidden"
                     textOverflow="ellipsis"
                     color={
-                      window.location.hash.substring(1) === item.stream_url
+                      item.stream_url.endsWith(
+                        window.location.hash.substring(1),
+                      )
                         ? "gray.300"
                         : item.program_description
                           ? undefined

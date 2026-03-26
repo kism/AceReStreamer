@@ -3,6 +3,7 @@ import "shaka-player/dist/controls.css"
 import "./videoPlayer.css"
 
 import { UsersService } from "@/client"
+import { baseUrl } from "@/helpers"
 
 import { updateStreamStatus } from "./useStreamStatus"
 
@@ -21,8 +22,11 @@ async function getAuthToken() {
 
 export async function getStreamURL(streamUrl: string) {
   const token = await getAuthToken()
-  const separator = streamUrl.includes("?") ? "&" : "?"
-  return `${streamUrl}${separator}token=${token}`
+  const resolvedUrl = streamUrl.startsWith("/")
+    ? `${baseUrl()}${streamUrl}`
+    : streamUrl
+  const separator = resolvedUrl.includes("?") ? "&" : "?"
+  return `${resolvedUrl}${separator}token=${token}`
 }
 
 export async function loadStream(streamUrl?: string) {

@@ -128,7 +128,9 @@ function WebPlayer() {
     queryKey: ["items"],
     placeholderData: (prevData) => prevData,
   })
-  const streamData = allStreams?.find((s) => s.stream_url === streamUrl)
+  const streamData = allStreams?.find(
+    (s) => s.stream_url === streamUrl || s.stream_url.endsWith(streamUrl),
+  )
   usePageTitle(streamData?.title || "Home")
 
   useEffect(() => {
