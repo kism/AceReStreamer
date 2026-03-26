@@ -160,8 +160,8 @@ export function PoolInstancesTable({
         <TableBody>
           {acePoolData.ace_instances.map((instance, index) => (
             <TableRow key={`ace-${instance.ace_pid}`}>
-              <TableCell textAlign={"center"}>ace</TableCell>
-              <TableCell textAlign={"center"}>ACE [{index + 1}]</TableCell>
+              <TableCell textAlign={"center"}>ACE</TableCell>
+              <TableCell textAlign={"center"}>Acestream [{index + 1}]</TableCell>
               <AceInstanceQuality contentId={instance.content_id} />
               <TableCell textAlign={"center"}>
                 {instance.locked_in
@@ -188,7 +188,7 @@ export function PoolInstancesTable({
           ))}
           {iptvEntries.map((entry, index) => (
             <TableRow key={`iptv-${entry.source_name}-${entry.slug}`}>
-              <TableCell textAlign={"center"}>iptv</TableCell>
+              <TableCell textAlign={"center"}>IPTV</TableCell>
               <TableCell textAlign={"center"}>
                 {entry.source_name} [{index + 1}]
               </TableCell>
