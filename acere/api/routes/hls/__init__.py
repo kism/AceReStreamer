@@ -91,7 +91,7 @@ async def xc_m3u8(
     if stream_type == "ace":
         return await hls(stream_key, stream_token)
     if stream_type == "iptv":
-        return await hls_web(stream_key, stream_token)
+        return await hls_web(request, stream_key, stream_token)
 
     raise HTTPException(
         status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
