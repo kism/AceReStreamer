@@ -144,7 +144,7 @@ export function PoolInstancesTable({
   return (
     <Box>
       <Heading size="sm" py={1}>
-        Stream Pool Instances
+        Currently Loaded Streams
       </Heading>
       <AppTableRoot preset="outlineSm" maxW="fit-content">
         <TableHeader>

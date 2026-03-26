@@ -13,7 +13,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { lazy, Suspense, useEffect, useState } from "react"
 import { FiMaximize2, FiMinimize2, FiRefreshCw } from "react-icons/fi"
 import { StreamsService } from "@/client"
-import { AcePoolSection } from "@/components/Index/AcePoolSection"
+import { UpstreamSection } from "@/components/Index/AcePoolSection"
 import { NowPlayingTable } from "@/components/Index/NowPlayingTable"
 import { StreamTable } from "@/components/Index/StreamTable"
 import { usePageTitle } from "@/hooks/usePageTitle"
@@ -168,7 +168,7 @@ function WebPlayer() {
             description={streamData?.program_description ?? ""}
             title={streamData?.program_title ?? ""}
           />
-          <AcePoolSection />
+          <UpstreamSection />
           <Box flexShrink={0} h={4} /> {/* Bit of a hack */}
         </VStack>
       </Flex>
