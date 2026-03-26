@@ -65,7 +65,7 @@ def rewrite_iptv_hls_segments(
     """Rewrite segment URLs in an HLS playlist to route through the IPTV proxy.
 
     Converts absolute/relative segment URLs to:
-    {server_name}/hls/web-segment/{slug}/{segment_path}
+    {server_name}/hls/seg/{slug}/{segment_path}
 
     No token is appended — segments are served without auth for nginx caching.
     """
@@ -87,13 +87,13 @@ def rewrite_iptv_hls_segments(
             from urllib.parse import urlparse  # noqa: PLC0415
 
             segment_path = urlparse(stripped).path.lstrip("/")
-            result_lines.append(f"{server_name}/hls/web-segment/{slug}/{segment_path}")
+            result_lines.append(f"{server_name}/hls/seg/{slug}/{segment_path}")
         elif stripped.startswith("/"):
             # Root-relative URL — strip leading slash
-            result_lines.append(f"{server_name}/hls/web-segment/{slug}/{stripped.lstrip('/')}")
+            result_lines.append(f"{server_name}/hls/seg/{slug}/{stripped.lstrip('/')}")
         elif stripped:
             # Relative URL — use as-is for the segment name
-            result_lines.append(f"{server_name}/hls/web-segment/{slug}/{stripped}")
+            result_lines.append(f"{server_name}/hls/seg/{slug}/{stripped}")
         else:
             result_lines.append(stripped)
 

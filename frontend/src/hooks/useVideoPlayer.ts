@@ -10,6 +10,31 @@ import { updateStreamStatus } from "./useStreamStatus"
 let overlay: shaka.ui.Overlay | null = null
 let player: shaka.Player | null = null
 let cachedToken: string | null = null
+let statsInterval: ReturnType<typeof setInterval> | null = null
+
+function startStatsPolling() {
+  stopStatsPolling()
+  statsInterval = setInterval(() => {
+    if (!player) return
+    const tracks = player.getVariantTracks()
+    const active = tracks.find((t) => t.active)
+    if (active) {
+      const parts: string[] = []
+      if (active.width && active.height)
+        parts.push(`${active.width}x${active.height}`)
+      if (active.videoCodec) parts.push(active.videoCodec)
+      if (active.audioCodec) parts.push(active.audioCodec)
+      updateStreamStatus({ videoStats: parts.join(" / ") })
+    }
+  }, 2000)
+}
+
+function stopStatsPolling() {
+  if (statsInterval) {
+    clearInterval(statsInterval)
+    statsInterval = null
+  }
+}
 
 async function getAuthToken() {
   if (cachedToken !== null) {
@@ -33,8 +58,11 @@ export async function loadStream(streamUrl?: string) {
   const actualStreamUrl = streamUrl || window.location.hash.substring(1)
   window.location.hash = `#${actualStreamUrl}`
 
-  updateStreamStatus({ playerStatus: "Loading" })
-  updateStreamStatus({ hlsStatus: "Initialising" })
+  updateStreamStatus({
+    hlsStatus: "Initialising",
+    videoStats: "",
+  })
+  stopStatsPolling()
 
   const container = document.getElementById(
     "shaka-container",
@@ -46,6 +74,7 @@ export async function loadStream(streamUrl?: string) {
   }
 
   if (overlay) {
+    stopStatsPolling()
     await overlay.destroy()
     overlay = null
     player = null
@@ -131,7 +160,8 @@ export async function loadStream(streamUrl?: string) {
 
     try {
       await player.load(fullUrl)
-      updateStreamStatus({ hlsStatus: "Healthy", playerStatus: "Ready" })
+      updateStreamStatus({ hlsStatus: "Healthy" })
+      startStatsPolling()
       video.play()
     } catch (e) {
       if (e instanceof shaka.util.Error) {
@@ -146,7 +176,7 @@ export async function loadStream(streamUrl?: string) {
     video.src = fullUrl
     video.addEventListener("loadedmetadata", () => {
       console.log("HLS metadata loaded")
-      updateStreamStatus({ hlsStatus: "Loaded", playerStatus: "Ready" })
+      updateStreamStatus({ hlsStatus: "Loaded" })
     })
   } else {
     console.error("HLS not supported in this browser")
@@ -160,10 +190,4 @@ export async function loadPlayStream(streamUrl?: string) {
   window.location.hash = `#${actualStreamUrl}`
   const video = await loadStream(actualStreamUrl)
   video?.play().catch((e) => console.error("Playback failed:", e))
-  video?.addEventListener("pause", () =>
-    updateStreamStatus({ playerStatus: "Paused" }),
-  )
-  video?.addEventListener("play", () =>
-    updateStreamStatus({ playerStatus: "Playing" }),
-  )
 }

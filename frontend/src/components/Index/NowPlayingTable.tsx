@@ -17,13 +17,15 @@ export function NowPlayingTable() {
     <AppTableRoot preset="outlineSm" maxW="600px">
       <TableBody>
         <TableRow>
-          <TableRowHeader>Player</TableRowHeader>
-          <TableCell>{streamStatus.playerStatus}</TableCell>
-        </TableRow>
-        <TableRow>
           <TableRowHeader>Stream</TableRowHeader>
           <TableCell>{streamStatus.hlsStatus}</TableCell>
         </TableRow>
+        {streamStatus.videoStats && (
+          <TableRow>
+            <TableRowHeader>Video Stats</TableRowHeader>
+            <TableCell>{streamStatus.videoStats}</TableCell>
+          </TableRow>
+        )}
         <TableRow>
           <TableRowHeader>Direct URL</TableRowHeader>
           <TableCell maxWidth={0}>

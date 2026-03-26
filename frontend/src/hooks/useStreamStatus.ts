@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react"
 
 export interface StreamStatus {
-  playerStatus: string
   hlsStatus: string
   streamURL: string
+  videoStats: string
 }
 
 let streamStatus: StreamStatus = {
-  playerStatus: "Idle",
   hlsStatus: "Idle",
   streamURL: "<no stream loaded>",
+  videoStats: "",
 }
 
 const statusListeners: Set<(status: StreamStatus) => void> = new Set()

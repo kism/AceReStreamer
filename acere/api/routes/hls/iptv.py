@@ -136,7 +136,7 @@ async def hls_web(request: Request, slug: str, token: str = "") -> Response:
     return resp_out
 
 
-@router.get("/hls/web-segment/{slug}/{segment:path}", response_class=Response)
+@router.get("/hls/seg/{slug}/{segment:path}", response_class=Response)
 async def hls_web_segment(slug: str, segment: str) -> Response:
     """Proxy an upstream IPTV segment. No token required (nginx caching)."""
     iptv_manager = get_iptv_proxy_manager()
