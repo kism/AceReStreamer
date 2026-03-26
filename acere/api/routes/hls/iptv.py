@@ -2,11 +2,9 @@
 
 from dataclasses import dataclass
 from http import HTTPStatus
-from typing import TYPE_CHECKING
 
 import aiohttp
 from fastapi import APIRouter, HTTPException, Request, Response
-from fastapi.responses import StreamingResponse
 
 from acere.core.stream_token import verify_stream_token
 from acere.instances.config import settings
@@ -17,11 +15,6 @@ from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.hls import rewrite_iptv_hls_segments
 from acere.utils.logger import get_logger
 from acere.utils.m3u8_fetch_cache import FetchCache
-
-if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator
-else:
-    AsyncGenerator = object
 
 logger = get_logger(__name__)
 
@@ -153,28 +146,22 @@ async def hls_web_segment(slug: str, segment: str) -> Response:
         )
 
     timeout = aiohttp.ClientTimeout(total=REVERSE_PROXY_TIMEOUT)
-    session = aiohttp.ClientSession(timeout=timeout)
     try:
-        resp = await session.get(segment_url)
-        resp.raise_for_status()
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.get(segment_url) as resp:
+                resp.raise_for_status()
+                content = await resp.read()
+                headers = {
+                    name: value
+                    for name, value in resp.headers.items()
+                    if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS
+                }
+                status = resp.status
     except (aiohttp.ClientError, TimeoutError) as e:
-        await session.close()
         log_aiohttp_exception(logger, f"[iptv hls segment {slug}/{segment}] -> {segment_url}", e)
         raise HTTPException(
             status_code=HTTPStatus.BAD_GATEWAY,
             detail="Failed to fetch upstream segment",
         ) from e
 
-    headers = [
-        (name, value) for name, value in resp.headers.items() if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS
-    ]
-
-    async def generate() -> AsyncGenerator[bytes, None]:
-        try:
-            async for chunk in resp.content.iter_chunked(65536):
-                yield chunk
-        finally:
-            resp.close()
-            await session.close()
-
-    return StreamingResponse(generate(), status_code=resp.status, headers=dict(headers), media_type="video/MP2T")
+    return Response(content=content, status_code=status, headers=headers, media_type="video/MP2T")
