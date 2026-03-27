@@ -1,3 +1,4 @@
+from acere.services.epg.epg import EPG
 import asyncio
 import json
 import threading
@@ -6,7 +7,7 @@ from datetime import UTC, datetime, timedelta
 import aiohttp
 from pydantic import HttpUrl, ValidationError
 
-from acere.config import AceReStreamerConf, ConfigExport
+from acere.config import AceReStreamerConf, ConfigExport, EPGInstanceConf
 from acere.instances.ace_manager import get_ace_manager
 from acere.instances.config import settings
 from acere.instances.epg import get_epg_handler
@@ -74,7 +75,7 @@ class RemoteSettingsFetcher:
             return current_config
 
         settings.ace.scraper = config.scraper
-        settings.epgs = config.epgs
+        settings.epgs = self._get_non_overlapping_epgs(config.epgs)
         settings.write_backup_config(
             config_path=None,
             existing_data=json.loads(settings.model_dump_json()),
@@ -92,6 +93,14 @@ class RemoteSettingsFetcher:
         settings.write_config()
         get_ace_manager().start_scrape_thread()
         get_epg_handler().update_epgs(settings.epgs)
+
+    def _get_non_overlapping_epgs(self, new_epgs: list[EPGInstanceConf]) -> list[EPGInstanceConf]:
+        """Helper to merge new EPG config with existing, keeping any existing EPGs that have unique URLs."""
+        existing_epgs = settings.epgs
+        merged_epgs = {epg.url: epg for epg in existing_epgs}  # Start with existing EPGs
+        for new_epg in new_epgs:
+            merged_epgs[new_epg.url] = new_epg  # Add/replace with new EPGs based on URL
+        return list(merged_epgs.values())
 
     # region Fetch http
     async def fetch_settings(self) -> None:
