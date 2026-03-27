@@ -16,11 +16,6 @@ from acere.utils.logger import get_logger
 
 from .models import RemoteSettingsGetModel
 
-if TYPE_CHECKING:
-    from .models import RemoteSettingsGetModel
-else:
-    RemoteSettingsGetModel = object
-
 logger = get_logger(__name__)
 
 REMOTE_SETTINGS_FETCH_TIME = timedelta(days=1)
