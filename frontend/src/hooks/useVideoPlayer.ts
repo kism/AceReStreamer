@@ -7,6 +7,50 @@ import { baseUrl } from "@/helpers"
 
 import { updateStreamStatus } from "./useStreamStatus"
 
+const VIDEO_CODEC_NAMES: Record<string, string> = {
+  avc1: "H.264",
+  avc3: "H.264",
+  hvc1: "H.265",
+  hev1: "H.265",
+  vp08: "VP8",
+  vp09: "VP9",
+  av01: "AV1",
+}
+
+const AUDIO_CODEC_NAMES: Record<string, string> = {
+  "mp4a.40.2": "AAC-LC",
+  "mp4a.40.5": "HE-AAC",
+  "mp4a.40.29": "HE-AACv2",
+  opus: "Opus",
+  flac: "FLAC",
+  "ac-3": "AC-3",
+  "ec-3": "E-AC-3",
+  dtsc: "DTS",
+  dtse: "DTS-HD",
+}
+
+function friendlyVideoCodec(codec: string): string {
+  const prefix = codec.split(".")[0] ?? codec
+  return VIDEO_CODEC_NAMES[prefix] ?? codec
+}
+
+function friendlyAudioCodec(codec: string): string {
+  return AUDIO_CODEC_NAMES[codec] ?? (codec.split(".")[0] ?? codec).toUpperCase()
+}
+
+function friendlyResolution(width: number, height: number): string {
+  const knownHeights: Record<number, string> = {
+    2160: "4K",
+    1440: "1440p",
+    1080: "1080p",
+    720: "720p",
+    480: "480p",
+    360: "360p",
+    240: "240p",
+  }
+  return knownHeights[height] ?? `${width}x${height}`
+}
+
 let overlay: shaka.ui.Overlay | null = null
 let player: shaka.Player | null = null
 let cachedToken: string | null = null
@@ -21,9 +65,9 @@ function startStatsPolling() {
     if (active) {
       const parts: string[] = []
       if (active.width && active.height)
-        parts.push(`${active.width}x${active.height}`)
-      if (active.videoCodec) parts.push(active.videoCodec)
-      if (active.audioCodec) parts.push(active.audioCodec)
+        parts.push(friendlyResolution(active.width, active.height))
+      if (active.videoCodec) parts.push(friendlyVideoCodec(active.videoCodec))
+      if (active.audioCodec) parts.push(friendlyAudioCodec(active.audioCodec))
       updateStreamStatus({ videoStats: parts.join(" / ") })
     }
   }, 2000)

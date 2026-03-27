@@ -13,4 +13,4 @@
   - remover Player: Playing from the table
   - put video source stats instead
   - no attempt to auto-play?
-- /hls/web/ quality, do before uuuh resolving the redirect
+- /hls/web/ quality, do before uuuh resolving the redirect? Maybe? I guess if it jumps then the quality jumps, is that desired?
