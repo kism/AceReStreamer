@@ -2,7 +2,6 @@ import asyncio
 import json
 import threading
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING
 
 import aiohttp
 from pydantic import HttpUrl, ValidationError

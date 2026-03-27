@@ -11,12 +11,12 @@ import { usePageTitle } from "@/hooks/usePageTitle"
 const tabsConfig = [
   { value: "users", title: "Users", component: UserManagement },
   { value: "config", title: "Config", component: ConfigManagement },
+  { value: "epg", title: "EPG", component: EPGManagement },
   {
     value: "remote-config",
     title: "Remote Config",
     component: RemoteConfigManagement,
   },
-  { value: "epg", title: "EPG", component: EPGManagement },
   { value: "health", title: "Health", component: HealthManagement },
 ]
 
