@@ -13,5 +13,5 @@
   - ~~no attempt to auto-play?~~
 
 - more settings for settings import
-  - toggle EPG or Ace scraper
+  - ~~toggle EPG or Ace scraper~~
   - epg config import doesnt affect other epgs (with different URLs)
