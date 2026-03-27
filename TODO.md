@@ -14,3 +14,4 @@
   - ~~toggle EPG or Ace scraper~~
   - ~~epg config import doesnt affect other epgs (with different URLs)~~
 - warnings on re-gets of segments? reverse proxy?
+- change speed in which quality is checked
