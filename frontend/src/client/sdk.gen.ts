@@ -401,8 +401,8 @@ export class ConfigService {
     
     /**
      * Fetch Remote Settings
-     * API endpoint to get the current remote settings URL.
-     * @returns RemoteSettingsURLGetModel Successful Response
+     * API endpoint to get the current remote settings URL and flags.
+     * @returns RemoteSettingsGetModel Successful Response
      * @throws ApiError
      */
     public static fetchRemoteSettings(): CancelablePromise<ConfigFetchRemoteSettingsResponse> {
@@ -414,7 +414,7 @@ export class ConfigService {
     
     /**
      * Trigger Fetch Remote Settings
-     * API endpoint to set the remote settings URL.
+     * API endpoint to set the remote settings URL and flags.
      * @param data The data for the request.
      * @param data.requestBody
      * @returns MessageResponseModel Successful Response

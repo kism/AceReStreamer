@@ -1222,6 +1222,17 @@ export const IPTVSourceApiSchema = {
                 }
             ],
             title: 'Password'
+        },
+        use_epg: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Use Epg'
         }
     },
     type: 'object',
@@ -1362,7 +1373,7 @@ export const PrivateUserCreateSchema = {
     title: 'PrivateUserCreate'
 } as const;
 
-export const RemoteSettingsURLGetModelSchema = {
+export const RemoteSettingsGetModelSchema = {
     properties: {
         url: {
             anyOf: [
@@ -1377,6 +1388,14 @@ export const RemoteSettingsURLGetModelSchema = {
                 }
             ],
             title: 'Url'
+        },
+        enable_epg: {
+            type: 'boolean',
+            title: 'Enable Epg'
+        },
+        enable_ace: {
+            type: 'boolean',
+            title: 'Enable Ace'
         },
         status: {
             type: 'string',
@@ -1396,11 +1415,11 @@ export const RemoteSettingsURLGetModelSchema = {
         }
     },
     type: 'object',
-    required: ['url', 'status', 'last_fetched'],
-    title: 'RemoteSettingsURLGetModel'
+    required: ['url', 'enable_epg', 'enable_ace', 'status', 'last_fetched'],
+    title: 'RemoteSettingsGetModel'
 } as const;
 
-export const RemoteSettingsURLSetModelSchema = {
+export const RemoteSettingsSetModelSchema = {
     properties: {
         url: {
             anyOf: [
@@ -1415,11 +1434,21 @@ export const RemoteSettingsURLSetModelSchema = {
                 }
             ],
             title: 'Url'
+        },
+        enable_epg: {
+            type: 'boolean',
+            title: 'Enable Epg',
+            default: true
+        },
+        enable_ace: {
+            type: 'boolean',
+            title: 'Enable Ace',
+            default: true
         }
     },
     type: 'object',
     required: ['url'],
-    title: 'RemoteSettingsURLSetModel'
+    title: 'RemoteSettingsSetModel'
 } as const;
 
 export const ScrapeSiteAPISchema = {

@@ -405,14 +405,18 @@ export type PrivateUserCreate = {
     is_verified?: boolean;
 };
 
-export type RemoteSettingsURLGetModel = {
+export type RemoteSettingsGetModel = {
     url: (string | null);
+    enable_epg: boolean;
+    enable_ace: boolean;
     status: string;
     last_fetched: (string | null);
 };
 
-export type RemoteSettingsURLSetModel = {
+export type RemoteSettingsSetModel = {
     url: (string | null);
+    enable_epg?: boolean;
+    enable_ace?: boolean;
 };
 
 /**
@@ -645,10 +649,10 @@ export type ConfigUpdateConfigData = {
 
 export type ConfigUpdateConfigResponse = (ConfigExport_Output);
 
-export type ConfigFetchRemoteSettingsResponse = (RemoteSettingsURLGetModel);
+export type ConfigFetchRemoteSettingsResponse = (RemoteSettingsGetModel);
 
 export type ConfigTriggerFetchRemoteSettingsData = {
-    requestBody: RemoteSettingsURLSetModel;
+    requestBody: RemoteSettingsSetModel;
 };
 
 export type ConfigTriggerFetchRemoteSettingsResponse = (MessageResponseModel);
