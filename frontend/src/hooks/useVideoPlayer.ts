@@ -68,7 +68,7 @@ function startStatsPolling() {
         parts.push(friendlyResolution(active.width, active.height))
       if (active.videoCodec) parts.push(friendlyVideoCodec(active.videoCodec))
       if (active.audioCodec) parts.push(friendlyAudioCodec(active.audioCodec))
-      updateStreamStatus({ videoStats: parts.join(" / ") })
+      updateStreamStatus({ videoStats: parts.join(" ") })
     }
   }, 2000)
 }
