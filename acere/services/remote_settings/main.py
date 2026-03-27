@@ -2,6 +2,7 @@ import asyncio
 import json
 import threading
 from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING
 
 import aiohttp
 from pydantic import HttpUrl, ValidationError
@@ -13,7 +14,12 @@ from acere.instances.epg import get_epg_handler
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.logger import get_logger
 
-from .models import RemoteSettingsURLGetModel
+from .models import RemoteSettingsGetModel
+
+if TYPE_CHECKING:
+    from .models import RemoteSettingsGetModel
+else:
+    RemoteSettingsGetModel = object
 
 logger = get_logger(__name__)
 
@@ -30,10 +36,12 @@ class RemoteSettingsFetcher:
         self.start_fetching()
 
     # region GET
-    def get_remote_settings_url(self) -> RemoteSettingsURLGetModel:
+    def get_remote_settings_url(self) -> RemoteSettingsGetModel:
         """Get the current remote settings URL."""
-        return RemoteSettingsURLGetModel(
-            url=settings.REMOTE_SETTINGS_URL,
+        return RemoteSettingsGetModel(
+            url=settings.remote_settings.url,
+            enable_epg=settings.remote_settings.enable_epg,
+            enable_ace=settings.remote_settings.enable_ace,
             status=self._status,
             last_fetched=self._last_fetch_time,
         )
@@ -45,12 +53,20 @@ class RemoteSettingsFetcher:
         )
 
     # region POST
-    def set_remote_settings_url(self, url: HttpUrl | None) -> None:
-        settings.REMOTE_SETTINGS_URL = url
+    def set_remote_settings_url(
+        self,
+        url: HttpUrl | None,
+        *,
+        enable_epg: bool = True,
+        enable_ace: bool = True,
+    ) -> None:
+        settings.remote_settings.url = url
+        settings.remote_settings.enable_epg = enable_epg
+        settings.remote_settings.enable_ace = enable_ace
         settings.write_backup_config(
             config_path=None,
             existing_data=json.loads(settings.model_dump_json()),
-            reason="Remote settings URL updated via API",
+            reason="Remote settings URL and flags updated via API",
         )
         settings.write_config()
         self._status = "URL Updated..."
@@ -85,18 +101,18 @@ class RemoteSettingsFetcher:
 
     # region Fetch http
     async def fetch_settings(self) -> None:
-        if settings.REMOTE_SETTINGS_URL is None:
+        if settings.remote_settings.url is None:
             logger.trace("Remote settings URL is not set; skipping fetch. id: %s", self._instance_id)
             return
 
-        logger.info("Fetching remote settings from %s", settings.REMOTE_SETTINGS_URL.encoded_string())
+        logger.info("Fetching remote settings from %s", settings.remote_settings.url.encoded_string())
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.get(settings.REMOTE_SETTINGS_URL.encoded_string()) as resp:
+                async with session.get(settings.remote_settings.url.encoded_string()) as resp:
                     resp.raise_for_status()
                     data = await resp.text()
             except (aiohttp.ClientError, TimeoutError) as e:
-                log_aiohttp_exception(logger, settings.REMOTE_SETTINGS_URL, e, "Failed to fetch remote settings")
+                log_aiohttp_exception(logger, settings.remote_settings.url, e, "Failed to fetch remote settings")
                 return
             except Exception as e:
                 self._status = e.__class__.__name__
@@ -118,10 +134,14 @@ class RemoteSettingsFetcher:
         self._status = "fetched"
         self._last_fetch_time = datetime.now(tz=UTC)
 
+        # Build ConfigExport based on enabled flags, falling back to current config if disabled
+        scraper = new_settings.ace.scraper if settings.remote_settings.enable_ace else settings.ace.scraper
+        epgs = new_settings.epgs if settings.remote_settings.enable_epg else settings.epgs
+
         self.update_config_with_export(
             ConfigExport(
-                scraper=new_settings.ace.scraper,
-                epgs=new_settings.epgs,
+                scraper=scraper,
+                epgs=epgs,
             )
         )
 

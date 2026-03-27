@@ -61,14 +61,31 @@ def parse_cors(v: Any) -> list[str] | str:  # noqa: ANN401 JSON things
     raise ValueError(v)
 
 
+# region RemoteSettingsConf
+class RemoteSettingsConf(BaseModel):
+    """Remote settings configuration."""
+
+    url: HttpUrl | None = None
+    enable_epg: bool = False
+    enable_ace: bool = False
+
+
 # region Migration
 def _migrate_config_data(data: dict[str, Any]) -> dict[str, Any]:
-    """Migrate old config format: top-level 'app' and 'scraper' keys into 'ace'."""
+    """Migrate old config format: top-level 'app' and 'scraper' keys into 'ace', and REMOTE_SETTINGS_URL to remote_settings."""
     if "app" in data and "ace" not in data:
         logger.warning("Migrating old config format: 'app' and 'scraper' -> 'ace'")
         ace = dict(data.pop("app", {}))
         ace["scraper"] = data.pop("scraper", {})
         data["ace"] = ace
+
+    # Migrate REMOTE_SETTINGS_URL to remote_settings
+    if "REMOTE_SETTINGS_URL" in data and "remote_settings" not in data:
+        logger.warning("Migrating old config format: 'REMOTE_SETTINGS_URL' -> 'remote_settings.url'")
+        remote_url = data.pop("REMOTE_SETTINGS_URL", None)
+        if remote_url:
+            data["remote_settings"] = {"url": remote_url, "enable_epg": True, "enable_ace": True}
+
     return data
 
 
@@ -100,7 +117,7 @@ class AceReStreamerConf(BaseSettings):
     iptv: IPTVProxyConf = IPTVProxyConf()
     logging: LoggingConf = LoggingConf()
     epgs: list[EPGInstanceConf] = []
-    REMOTE_SETTINGS_URL: HttpUrl | None = None
+    remote_settings: RemoteSettingsConf = RemoteSettingsConf()
     FRONTEND_HOST: str = ""  # Set to http://localhost:5173 for local dev
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
     EXTERNAL_URL: str = "http://localhost:5100"
@@ -146,14 +163,6 @@ class AceReStreamerConf(BaseSettings):
         """Validate the secret key, generate one if not set."""
         if not value or value.strip() == "":
             value = secrets.token_urlsafe(32)
-        return value
-
-    @field_validator("REMOTE_SETTINGS_URL", mode="before")
-    @classmethod
-    def validate_remote_settings_url(cls, value: str | None) -> str | None:
-        """Validate the remote settings URL, generate one if not set."""
-        if value == "" or value is None:
-            return None
         return value
 
     @computed_field
