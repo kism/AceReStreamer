@@ -10,7 +10,7 @@ import {
 } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { FiMaximize2, FiMinimize2, FiRefreshCw } from "react-icons/fi"
 import { StreamsService } from "@/client"
 import { UpstreamSection } from "@/components/Index/AcePoolSection"
@@ -133,8 +133,11 @@ function WebPlayer() {
   )
   usePageTitle(streamData?.title || "Home")
 
+  const hasLoadedRef = useRef(false)
   useEffect(() => {
+    if (hasLoadedRef.current) return
     if (window.location.hash) {
+      hasLoadedRef.current = true
       loadVideoPlayerModule().then((module) => {
         module.loadStream(window.location.hash.substring(1))
       })
