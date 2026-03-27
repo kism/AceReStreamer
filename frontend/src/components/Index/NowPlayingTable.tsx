@@ -14,7 +14,7 @@ export function NowPlayingTable() {
   const streamStatus = useStreamStatus()
 
   return (
-    <AppTableRoot preset="outlineSm" maxW="600px">
+    <AppTableRoot preset="outlineSm" maxW="800px">
       <TableBody>
         <TableRow>
           <TableRowHeader>Stream</TableRowHeader>
