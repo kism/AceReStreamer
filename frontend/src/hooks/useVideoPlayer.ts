@@ -38,6 +38,10 @@ function friendlyAudioCodec(codec: string): string {
   return AUDIO_CODEC_NAMES[codec] ?? (codec.split(".")[0] ?? codec).toUpperCase()
 }
 
+function friendlyFrameRate(fps: number): string {
+  return `${Math.round(fps)}fps`
+}
+
 function friendlyResolution(width: number, height: number): string {
   const knownHeights: Record<number, string> = {
     2160: "4K",
@@ -53,8 +57,13 @@ function friendlyResolution(width: number, height: number): string {
 
 let overlay: shaka.ui.Overlay | null = null
 let player: shaka.Player | null = null
+let videoElement: HTMLVideoElement | null = null
 let cachedToken: string | null = null
 let statsInterval: ReturnType<typeof setInterval> | null = null
+let lastFrameCount: number | null = null
+let lastFrameTime: number | null = null
+
+const STATS_POLL_INTERVAL_MS = 5000
 
 function startStatsPolling() {
   stopStatsPolling()
@@ -66,11 +75,27 @@ function startStatsPolling() {
       const parts: string[] = []
       if (active.width && active.height)
         parts.push(friendlyResolution(active.width, active.height))
+
+      if (videoElement) {
+        const quality = videoElement.getVideoPlaybackQuality()
+        const now = Date.now()
+        if (lastFrameCount !== null && lastFrameTime !== null) {
+          const deltaFrames = quality.totalVideoFrames - lastFrameCount
+          const deltaTime = (now - lastFrameTime) / 1000 // convert ms to seconds
+          if (deltaTime > 0 && deltaFrames > 0)
+            parts.push(friendlyFrameRate(deltaFrames / deltaTime))
+        }
+        lastFrameCount = quality.totalVideoFrames
+        lastFrameTime = now
+      } else if (active.frameRate) {
+        parts.push(friendlyFrameRate(active.frameRate))
+      }
+
       if (active.videoCodec) parts.push(friendlyVideoCodec(active.videoCodec))
       if (active.audioCodec) parts.push(friendlyAudioCodec(active.audioCodec))
       updateStreamStatus({ videoStats: parts.join(" ") })
     }
-  }, 2000)
+  }, STATS_POLL_INTERVAL_MS)
 }
 
 function stopStatsPolling() {
@@ -78,6 +103,8 @@ function stopStatsPolling() {
     clearInterval(statsInterval)
     statsInterval = null
   }
+  lastFrameCount = null
+  lastFrameTime = null
 }
 
 async function getAuthToken() {
@@ -116,12 +143,14 @@ export async function loadStream(streamUrl?: string) {
     console.error("Video container or element not found")
     return
   }
+  videoElement = video
 
   if (overlay) {
     stopStatsPolling()
     await overlay.destroy()
     overlay = null
     player = null
+    videoElement = null
   }
 
   // Clean up any residual Shaka UI elements left after destroy
