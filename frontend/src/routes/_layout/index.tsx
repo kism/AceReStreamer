@@ -160,11 +160,11 @@ function WebPlayer() {
           onToggleExpand={() => setIsExpanded(!isExpanded)}
         />
         <VStack align="stretch" gap={4}>
-          <NowPlayingTable />
           <ProgramDescription
             description={streamData?.program_description ?? ""}
             title={streamData?.program_title ?? ""}
           />
+          <NowPlayingTable />
           <UpstreamSection />
           <Box flexShrink={0} h={4} /> {/* Bit of a hack */}
         </VStack>
