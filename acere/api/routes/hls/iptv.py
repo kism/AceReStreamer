@@ -74,12 +74,6 @@ async def hls_web(request: Request, slug: str, token: str = "") -> Response:
                 content_bytes = await resp.read()
                 status_code = resp.status
                 headers = dict(resp.headers)
-                final_url = str(resp.url)
-
-        if final_url != url:
-            logger.debug("IPTV slug %s redirected: %s -> %s", slug, url, final_url)
-            iptv_manager.update_upstream_url(slug, final_url)
-
         content_str = content_bytes.decode("utf-8", errors="replace")
 
         if "#EXTM3U" not in content_str:
@@ -101,25 +95,12 @@ async def hls_web(request: Request, slug: str, token: str = "") -> Response:
     try:
         cached = await _playlist_cache.get(upstream_url, _fetch_and_process)
     except (aiohttp.ClientError, TimeoutError) as e:
-        # If the cached URL failed, try the original DB URL as fallback
-        if db_entry and db_entry.upstream_url != upstream_url:
-            logger.debug("IPTV slug %s: cached URL failed, retrying with original URL", slug)
-            try:
-                cached = await _playlist_cache.get(db_entry.upstream_url, _fetch_and_process)
-            except (aiohttp.ClientError, TimeoutError) as fallback_e:
-                log_aiohttp_exception(logger, f"[iptv hls {slug}] -> {db_entry.upstream_url}", fallback_e)
-                get_quality_handler().increment_quality(quality_hls_identifier, "")
-                raise HTTPException(
-                    status_code=HTTPStatus.BAD_GATEWAY,
-                    detail="Failed to fetch upstream IPTV stream",
-                ) from fallback_e
-        else:
-            log_aiohttp_exception(logger, f"[iptv hls {slug}] -> {upstream_url}", e)
-            get_quality_handler().increment_quality(quality_hls_identifier, "")
-            raise HTTPException(
-                status_code=HTTPStatus.BAD_GATEWAY,
-                detail="Failed to fetch upstream IPTV stream",
-            ) from e
+        log_aiohttp_exception(logger, f"[iptv hls {slug}] -> {upstream_url}", e)
+        get_quality_handler().increment_quality(quality_hls_identifier, "")
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_GATEWAY,
+            detail="Failed to fetch upstream IPTV stream",
+        ) from e
 
     get_quality_handler().increment_quality(quality_hls_identifier, cached.content_str)
 
