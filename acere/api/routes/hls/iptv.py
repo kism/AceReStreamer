@@ -6,6 +6,7 @@ from http import HTTPStatus
 import aiohttp
 from fastapi import APIRouter, HTTPException, Request, Response
 
+from acere.constants import HLS_USER_AGENT
 from acere.core.stream_token import verify_stream_token
 from acere.instances.config import settings
 from acere.instances.iptv_proxy import get_iptv_proxy_manager
@@ -69,6 +70,7 @@ async def hls_web(request: Request, slug: str, token: str = "") -> Response:
     async def _fetch_and_process(url: str) -> _CachedPlaylist:
         timeout = aiohttp.ClientTimeout(total=REVERSE_PROXY_TIMEOUT)
         async with aiohttp.ClientSession(timeout=timeout) as session:
+            session.headers.update({"User-Agent": HLS_USER_AGENT})
             async with session.get(url, allow_redirects=True) as resp:
                 resp.raise_for_status()
                 content_bytes = await resp.read()
@@ -142,6 +144,7 @@ async def hls_web_segment(slug: str, segment: str) -> Response:
     timeout = aiohttp.ClientTimeout(total=REVERSE_PROXY_TIMEOUT)
     try:
         async with aiohttp.ClientSession(timeout=timeout) as session:
+            session.headers.update({"User-Agent": HLS_USER_AGENT})
             async with session.get(segment_url) as resp:
                 resp.raise_for_status()
                 content = await resp.read()

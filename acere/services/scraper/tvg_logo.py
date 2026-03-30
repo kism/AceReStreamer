@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import aiohttp
 from pydantic import HttpUrl
 
-from acere.constants import DEFAULT_USER_AGENT, SUPPORTED_TVG_LOGO_EXTENSIONS
+from acere.constants import SCRAPER_USER_AGENT, SUPPORTED_TVG_LOGO_EXTENSIONS
 from acere.instances.config import settings
 from acere.instances.paths import get_app_path_handler
 from acere.utils.helpers import slugify
@@ -32,7 +32,7 @@ async def _fetch_logo_content(logo_url: HttpUrl, title: str) -> bytes | None:
     output_logo = None
     try:
         async with aiohttp.ClientSession() as session:
-            session.headers.update({"User-Agent": DEFAULT_USER_AGENT})
+            session.headers.update({"User-Agent": SCRAPER_USER_AGENT})
             async with session.get(logo_url.encoded_string(), timeout=aiohttp.ClientTimeout(total=5)) as response:
                 response.raise_for_status()
                 output_logo = await response.read()

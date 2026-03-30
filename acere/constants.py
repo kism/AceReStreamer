@@ -40,4 +40,5 @@ ENV_PREFIX = "ACERE_"
 # EPG Related but used everywhere
 SUPPORTED_TVG_LOGO_EXTENSIONS = ["png", "jpg", "jpeg", "webp", "svg"]
 
-DEFAULT_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0"
+SCRAPER_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0"
+HLS_USER_AGENT = "VLC/3.0.18 LibVLC/3.0.18"
