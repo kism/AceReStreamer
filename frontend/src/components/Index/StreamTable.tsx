@@ -111,84 +111,79 @@ export function StreamTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {items?.map((item) => (
-            <TableRow
-              key={item.stream_url}
-              opacity={isPlaceholderData ? 0.5 : 1}
-              cursor={isPlaceholderData ? "default" : "pointer"}
-              color={
-                item.stream_url.endsWith(window.location.hash.substring(1))
-                  ? "white"
-                  : undefined
-              }
-              background={
-                item.stream_url.endsWith(window.location.hash.substring(1))
-                  ? "teal"
-                  : undefined
-              }
-              onClick={() => {
-                const relativeUrl = item.stream_url.startsWith(VITE_API_URL)
-                  ? item.stream_url.slice(VITE_API_URL.length)
-                  : item.stream_url
-                loadVideoPlayerModule().then((module) => {
-                  module.loadPlayStream(relativeUrl)
-                })
-              }}
-            >
-              <QualityCell
-                quality={item.quality}
-                p={1}
-                px={2}
-                maxW="30px"
-                w="30px"
-              />
-              {/* This maxW is load bearing */}
-              <TableCell overflow="hidden" p={1} maxW={0}>
-                <Box
-                  whiteSpace="nowrap"
-                  overflow="hidden"
-                  textOverflow="ellipsis"
-                  color="fg"
-                >
-                  {item.title}
-                </Box>
-                <Box
-                  color={
-                    item.stream_url.endsWith(window.location.hash.substring(1))
-                      ? "gray.300"
-                      : item.program_description
-                        ? "fg.muted"
-                        : "fg.subtle"
-                  }
-                  whiteSpace="nowrap"
-                  overflow="hidden"
-                  textOverflow="ellipsis"
-                >
-                  {item.program_title || "<No Title>"}
-                </Box>
-              </TableCell>
-              {showProgramInformation && (
-                <TableCell textAlign="left" maxW="150px" p={1} px={2}>
+          {items?.map((item) => {
+            const activeHash = window.location.hash.substring(1)
+            const isActive =
+              activeHash !== "" && item.stream_url.endsWith(activeHash)
+            return (
+              <TableRow
+                key={item.stream_url}
+                opacity={isPlaceholderData ? 0.5 : 1}
+                cursor={isPlaceholderData ? "default" : "pointer"}
+                color={isActive ? "white" : undefined}
+                background={isActive ? "teal" : undefined}
+                onClick={() => {
+                  const relativeUrl = item.stream_url.startsWith(VITE_API_URL)
+                    ? item.stream_url.slice(VITE_API_URL.length)
+                    : item.stream_url
+                  loadVideoPlayerModule().then((module) => {
+                    module.loadPlayStream(relativeUrl)
+                  })
+                }}
+              >
+                <QualityCell
+                  quality={item.quality}
+                  p={1}
+                  px={2}
+                  maxW="30px"
+                  w="30px"
+                />
+                {/* This maxW is load bearing */}
+                <TableCell overflow="hidden" p={1} maxW={0}>
                   <Box
-                    whiteSpace="normal"
+                    whiteSpace="nowrap"
                     overflow="hidden"
                     textOverflow="ellipsis"
+                    color="fg"
+                  >
+                    {item.title}
+                  </Box>
+                  <Box
                     color={
-                      item.stream_url.endsWith(
-                        window.location.hash.substring(1),
-                      )
+                      isActive
                         ? "gray.300"
                         : item.program_description
-                          ? undefined
+                          ? "fg.muted"
                           : "fg.subtle"
                     }
+                    whiteSpace="nowrap"
+                    overflow="hidden"
+                    textOverflow="ellipsis"
                   >
-                    {item.program_description || "<No Description>"}
+                    {item.program_title || "<No Title>"}
                   </Box>
                 </TableCell>
-              )}
-            </TableRow>
-          ))}
+                {showProgramInformation && (
+                  <TableCell textAlign="left" maxW="150px" p={1} px={2}>
+                    <Box
+                      whiteSpace="normal"
+                      overflow="hidden"
+                      textOverflow="ellipsis"
+                      color={
+                        isActive
+                          ? "gray.300"
+                          : item.program_description
+                            ? undefined
+                            : "fg.subtle"
+                      }
+                    >
+                      {item.program_description || "<No Description>"}
+                    </Box>
+                  </TableCell>
+                )}
+              </TableRow>
+            )
+          })}
         </TableBody>
       </AppTableRoot>
     </Box>
