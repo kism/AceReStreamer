@@ -1,4 +1,3 @@
-from acere.services.epg.epg import EPG
 import asyncio
 import json
 import threading

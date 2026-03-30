@@ -74,10 +74,10 @@ class Quality(BaseModel):
             if ts_number_int != self._last_segment_number:
                 # If we get two segments it will be +2 etc, if it jumps by more than 5 I wouldn't call it healthy
                 n_new_segments = ts_number_int - self._last_segment_number
-                rating = min( # Base rating, +1 per segment, but max 5
+                rating = min(  # Base rating, +1 per segment, but max 5
                     max(n_new_segments, 1),
                     5,
-                ) + max( # Bonus for consecutive successes, but max 10, no negative bonus
+                ) + max(  # Bonus for consecutive successes, but max 10, no negative bonus
                     min(int(self._streak / STREAK_BONUS_THRESHOLD), STREAK_BONUS_MAX),
                     0,
                 )
