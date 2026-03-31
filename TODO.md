@@ -15,3 +15,6 @@
   - ~~epg config import doesnt affect other epgs (with different URLs)~~
 - warnings on re-gets of segments? reverse proxy?
 - change speed in which quality is checked
+- IPTV expiry available
+- Shaka player error 4032
+- only ace html scraper uses candidates_regex_cleanup

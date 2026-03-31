@@ -189,7 +189,7 @@ export async function loadStream(streamUrl?: string) {
 
       let errorMessage = "Stream loading failed"
       if (detail.category === shaka.util.Error.Category.NETWORK) {
-        errorMessage = "Network error: Ace doesn't have the stream segment"
+        errorMessage = "Network error: Can't get stream segment"
       } else if (detail.category === shaka.util.Error.Category.MEDIA) {
         errorMessage = "Media error: Stream not ready"
       } else if (detail.message) {

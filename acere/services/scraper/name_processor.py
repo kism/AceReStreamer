@@ -17,6 +17,13 @@ COUNTRY_CODE_PATTERN = re.compile(r"\[([A-Z]{2})\]")
 
 COMPILED_REGEX_CACHE: dict[str, re.Pattern[str]] = {}
 
+# These should extract and remove the country code from the title
+BAD_COUNTRY_CODE_FORMATS: list[re.Pattern[str]] = [
+    re.compile(r"^[A-Z]{2}\s*[\|:-]\s*"),  # Starts with XX |
+    re.compile(r"^[A-Z]{2}\s*▎\s*"),  # Starts with XX ▎
+    re.compile(r"\([A-Z]{2}\)$"),  # Ends with (XX)
+]
+
 
 def candidates_regex_cleanup(candidate_titles: list[str], regex_list: list[str]) -> list[str]:
     """Cleanup the title using a regex."""
