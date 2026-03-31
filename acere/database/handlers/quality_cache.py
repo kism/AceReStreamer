@@ -9,6 +9,7 @@ from typing import ClassVar
 import aiohttp
 import fastapi
 from pydantic import HttpUrl
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
 
 from acere.constants import OUR_TIMEZONE
@@ -97,7 +98,11 @@ class QualityCacheHandler(BaseDatabaseHandler):
             if quality.quality_increased:
                 result.last_quality_success_time = datetime.now(tz=UTC)
 
-            session.commit()
+            try:
+                session.commit()
+            except IntegrityError:
+                logger.debug("Concurrent insert for hls_identifier %s, skipping DB write", hls_identifier[:40])
+                session.rollback()
 
     def increment_quality(self, hls_identifier: str, m3u_playlist: str) -> None:
         """Increment the quality of a stream by hls_identifier."""

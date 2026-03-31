@@ -24,7 +24,17 @@ def _coerce_str_to_int(value: object) -> object:
     return value
 
 
+def _coerce_str_or_none_to_int(value: object) -> object:
+    """Coerce string or None values to int, treating None as 0."""
+    if value is None:
+        return 0
+    if isinstance(value, str):
+        return int(value)
+    return value
+
+
 CoercedInt = Annotated[int, BeforeValidator(_coerce_str_to_int)]
+CoercedIntNullable = Annotated[int, BeforeValidator(_coerce_str_or_none_to_int)]
 
 
 class XCUserInfo(BaseModel):
@@ -109,9 +119,9 @@ class XCStream(BaseModel):
     epg_channel_id: str | None = None
     added: str = "1500000000"
     is_adult: CoercedInt = 0
-    category_id: CoercedInt
+    category_id: CoercedIntNullable = 0
     category_ids: list[CoercedInt] = []
-    custom_sid: None = None
+    custom_sid: None | str = None
     tv_archive: CoercedInt = 0
     direct_source: str = ""
     tv_archive_duration: CoercedInt = 0
