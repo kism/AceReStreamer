@@ -66,6 +66,14 @@ class IPTVProxyManager:
         base_url = upstream.rsplit("/", 1)[0]
         return f"{base_url}/{segment}"
 
+    def update_upstream_url(self, slug: str, url: str) -> None:
+        """Update the in-memory URL map entry for a slug (e.g. after following a redirect).
+
+        Many IPTV source have purposefully unstable URLs that change on every request.
+        Our slug will remain stable since it's based on the HLS url pre-redirect.
+        """
+        self._url_map[slug] = url
+
     def check_stream_allowed(self, slug: str) -> bool:
         """Check if a stream is allowed by the pool. Returns True if allowed."""
         source_name = self._get_source_name_for_slug(slug)
