@@ -18,3 +18,4 @@
 - IPTV expiry available
 - Shaka player error 4032
 - only ace html scraper uses candidates_regex_cleanup
+- better logic for duplicate streams, put source in the title.

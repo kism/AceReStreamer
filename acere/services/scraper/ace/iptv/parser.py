@@ -77,6 +77,7 @@ class AceM3UParser:
         tvg_id, title = self._extract_tvg_id(entry, title)
         override_title = ace_name_processor.get_title_override_from_content_id(content_id or infohash)
         title = override_title or ace_name_processor.cleanup_ace_candidate_title(title)
+        title = name_processor.title_regex_cleanup(title, site.title_filter.regex_postprocessing)
 
         tvg_id = name_processor.get_tvg_id_from_title(title)  # Redo since we have our own logic for tvg ids
 

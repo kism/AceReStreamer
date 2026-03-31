@@ -74,6 +74,7 @@ class AceAPIStreamScraper(ScraperCommon):
         for stream in stream_list:
             override_title = ace_name_processor.get_title_override_from_content_id(stream.infohash)
             title = override_title or ace_name_processor.cleanup_ace_candidate_title(stream.name)
+            title = name_processor.title_regex_cleanup(title, site.title_filter.regex_postprocessing)
 
             if not site.title_filter.check_allowed(title):
                 continue

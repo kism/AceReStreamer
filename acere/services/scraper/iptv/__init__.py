@@ -152,6 +152,8 @@ class IPTVProxyScraper:
             else:
                 tvg_id = stream.epg_channel_id
 
+            title = name_processor.title_regex_cleanup(title, source.title_filter.regex_postprocessing)
+
             # Build upstream URL
             upstream_url = f"{base_url}/live/{source.username}/{source.password}/{stream.stream_id}.m3u8"
 
@@ -220,6 +222,8 @@ class IPTVProxyScraper:
                 tvg_id = override.tvg_id or entry.tvg_id
             else:
                 tvg_id = entry.tvg_id
+
+            title = name_processor.title_regex_cleanup(title, source.title_filter.regex_postprocessing)
 
             logo_url = None
             if entry.tvg_logo_url:

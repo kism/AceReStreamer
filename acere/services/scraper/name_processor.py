@@ -25,22 +25,70 @@ BAD_COUNTRY_CODE_FORMATS: list[re.Pattern[str]] = [
 ]
 
 
-def candidates_regex_cleanup(candidate_titles: list[str], regex_list: list[str]) -> list[str]:
-    """Cleanup the title using a regex."""
-    if not regex_list:
-        return candidate_titles
+_COUNTRY_CODE_RE = re.compile(r"[A-Z]{2}")
 
+
+def _normalize_country_code_format(title: str) -> str:
+    """Reformat a country code from a bad format to [XX] appended at the end.
+
+    Checks BAD_COUNTRY_CODE_FORMATS patterns in order. On the first match,
+    removes the bad-format code and appends it as [XX].
+    """
+    for pattern in BAD_COUNTRY_CODE_FORMATS:
+        match = pattern.search(title)
+        if match:
+            cc_match = _COUNTRY_CODE_RE.search(match.group(0))
+            if cc_match:
+                title = pattern.sub("", title).strip()
+                return f"{title} [{cc_match.group(0)}]"
+    return title
+
+
+def _apply_regex_list(title: str, regex_list: list[str]) -> str:
+    """Apply a list of regexes to a title, appending any extracted country code in [XX] format."""
+    wip_title = title
+    extracted_country_code: str | None = None
+
+    for regex_str in regex_list:
+        if regex_str not in COMPILED_REGEX_CACHE:
+            COMPILED_REGEX_CACHE[regex_str] = re.compile(regex_str)
+
+        compiled_regex = COMPILED_REGEX_CACHE[regex_str]
+        match = compiled_regex.search(wip_title)
+        if match:
+            if extracted_country_code is None:
+                cc_match = _COUNTRY_CODE_RE.search(match.group(0))
+                if cc_match:
+                    extracted_country_code = cc_match.group(0)
+            wip_title = compiled_regex.sub("", wip_title).strip()
+
+    if extracted_country_code:
+        wip_title = f"{wip_title} [{extracted_country_code}]"
+
+    return wip_title
+
+
+def title_regex_cleanup(title: str, regex_list: list[str]) -> str:
+    """Clean up a single title: normalize country codes then apply config regexes.
+
+    Always normalizes bad country code formats (e.g. ``UK:`` → ``[UK]``).
+    Then applies *regex_list* (from config) if non-empty.
+    """
+    title = _normalize_country_code_format(title)
+    if regex_list:
+        title = _apply_regex_list(title, regex_list)
+    return title
+
+
+def candidates_regex_cleanup(candidate_titles: list[str], regex_list: list[str]) -> list[str]:
+    """Clean up a list of title candidates via title_regex_cleanup.
+
+    Titles that become empty or contain only non-alphanumeric characters are dropped.
+    """
     new_candidate_titles = []
 
-    # For each candidate title
     for title in candidate_titles:
-        wip_title = title
-        for regex_str in regex_list:
-            if regex_str not in COMPILED_REGEX_CACHE:
-                COMPILED_REGEX_CACHE[regex_str] = re.compile(regex_str)
-
-            compiled_regex = COMPILED_REGEX_CACHE[regex_str]
-            wip_title = compiled_regex.sub("", wip_title).strip()
+        wip_title = title_regex_cleanup(title, regex_list)
 
         # If name is not empty or only non-alphanumeric characters, add it
         if wip_title and not all(not c.isalnum() for c in wip_title):
