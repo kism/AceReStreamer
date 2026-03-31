@@ -170,7 +170,7 @@ class IPTVProxyScraper:
                     original_title=original_title,
                     upstream_url=upstream_url,
                     source_name=source.name,
-                    tvg_id=tvg_id,
+                    tvg_id=tvg_id or "",
                     tvg_logo=name_processor.find_tvg_logo_image(title) or None,
                     group_title=group_title,
                     last_scraped_time=now,

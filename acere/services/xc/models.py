@@ -106,7 +106,7 @@ class XCStream(BaseModel):
     stream_type: str = "live"
     stream_id: CoercedInt
     stream_icon: str
-    epg_channel_id: str = ""
+    epg_channel_id: str | None = None
     added: str = "1500000000"
     is_adult: CoercedInt = 0
     category_id: CoercedInt
