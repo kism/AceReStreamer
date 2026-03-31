@@ -91,7 +91,12 @@ class IPTVStreamDBHandler(BaseDatabaseHandler):
         """Get all IPTV streams."""
         with self._get_session() as session:
             statement = select(IPTVStreamDBEntry)
-            return list(session.exec(statement).all())
+            list_wip = list(session.exec(statement).all())
+
+        for entry in list_wip:
+            entry.title = f"{entry.title} [{entry.source_name}]"
+
+        return list_wip
 
     def get_streams_cached(self) -> list[IPTVStreamDBEntry]:
         """Get streams with caching."""
