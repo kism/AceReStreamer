@@ -55,7 +55,7 @@ class FetchCache[T]:
         try:
             value = await fetch(url)
             self._cache[url] = (value, time.monotonic() + self._ttl)
-            logger.debug("hls/web: Fetched and cached URL: %s", url)
+            logger.trace("hls/web: Fetched and cached URL: %s", url)
             future.set_result(value)
         except Exception as exc:
             future.set_exception(exc)
