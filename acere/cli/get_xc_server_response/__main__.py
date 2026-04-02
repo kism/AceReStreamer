@@ -78,7 +78,7 @@ def main() -> None:
     args = parser.parse_args()
 
     server_slug = slugify(args.url)
-    output_dir: Path = args.instance_dir / server_slug
+    output_dir: Path = args.instance_dir / "cli_xc_response" / server_slug
     output_dir.mkdir(parents=True, exist_ok=True)
 
     console.print(f"Server: [cyan]{args.url}[/cyan]")
