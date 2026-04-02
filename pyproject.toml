@@ -67,7 +67,8 @@ module-root = ""
 [project.scripts]
 acerestreamer-scrape = "acere.cli.scraper:__main__.main"
 acerestreamer-password-reset = "acere.cli.password_reset:__main__.main"
-acerestreamer-get-xc-server-response = "acere.cli.get_xc_server_response:__main__.main"
+acerestreamer-debug-get-xc-server-response = "acere.cli.get_xc_server_response:__main__.main"
+acerestreamer-debug-epg-now-playing = "acere.cli.epg_now_playing:__main__.main"
 acerestreamer-migrate = "acere.cli.db_migrate:__main__.main"
 
 [tool.ruff]

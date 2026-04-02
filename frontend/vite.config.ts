@@ -45,8 +45,8 @@ export default defineConfig({
       output: {
         manualChunks: (id) => {
           // This will be lazy loaded
-          if (id.includes("hls.js")) {
-            return "hlsjs"
+          if (id.includes("shaka-player")) {
+            return "shaka-player"
           }
 
           // TanStack
