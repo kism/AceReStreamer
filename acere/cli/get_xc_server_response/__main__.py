@@ -7,11 +7,9 @@ from pathlib import Path
 import aiohttp
 import anyio
 
-from acere.constants import DEFAULT_INSTANCE_PATH
+from acere.constants import DEFAULT_INSTANCE_PATH, XC_USER_AGENT
 from acere.utils.cli import console
 from acere.utils.helpers import slugify
-
-from acere.constants import XC_USER_AGENT
 
 XC_ACTIONS = [
     "get_live_categories",
