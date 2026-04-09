@@ -2,6 +2,7 @@
 
 import asyncio
 import contextlib
+import random
 import threading
 from datetime import UTC, datetime, timedelta
 from typing import ClassVar
@@ -11,7 +12,6 @@ import fastapi
 from pydantic import HttpUrl
 from sqlmodel import select
 
-from acere.constants import OUR_TIMEZONE
 from acere.database.models import AceQualityCache
 from acere.database.models.acestream import AceStreamDBEntry
 from acere.instances.ace_streams import get_ace_streams_db_handler
@@ -23,23 +23,22 @@ from acere.utils.logger import get_logger
 
 from .base import BaseDatabaseHandler
 
-_CHECK_LAST_SCRAPE_THRESHOLD = timedelta(days=3)
-_CHECK_LAST_WORKED_THRESHOLD = timedelta(days=3)
+_CULL_NEVER_WORKED_SCRAPE_THRESHOLD = timedelta(days=1, hours=2)
+_CULL_STALE_SCRAPE_THRESHOLD = timedelta(days=3)
+_CULL_LAST_WORKED_THRESHOLD = timedelta(days=3)
 
-_DAILY_CHECK_HOUR = 3
-_DAILY_CHECK_MINUTE = 33
+_CHECK_INTERVAL_BASE = timedelta(hours=6)
+_CHECK_INTERVAL_JITTER = timedelta(minutes=30)
 
 _async_background_tasks: set[asyncio.Task[None]] = set()
 logger = get_logger(__name__)
 
 
-def _seconds_until_daily_check() -> float:
-    """Return seconds until the next 3:33 AM in the local timezone."""
-    now = datetime.now(tz=OUR_TIMEZONE)
-    target = now.replace(hour=_DAILY_CHECK_HOUR, minute=_DAILY_CHECK_MINUTE, second=0, microsecond=0)
-    if now >= target:
-        target += timedelta(days=1)
-    return (target - now).total_seconds()
+def _seconds_until_next_check() -> float:
+    """Return a semi-random interval of ~6 hours (+/- 30 minutes)."""
+    base = _CHECK_INTERVAL_BASE.total_seconds()
+    jitter = _CHECK_INTERVAL_JITTER.total_seconds()
+    return base + random.uniform(-jitter, jitter)  # noqa: S311
 
 
 def _has_not_worked_recently(quality_cache: AceQualityCache) -> bool:
@@ -47,7 +46,7 @@ def _has_not_worked_recently(quality_cache: AceQualityCache) -> bool:
     if quality_cache.last_quality_success_time is None:
         return True
 
-    return datetime.now(tz=UTC) - quality_cache.last_quality_success_time >= _CHECK_LAST_WORKED_THRESHOLD
+    return datetime.now(tz=UTC) - quality_cache.last_quality_success_time >= _CULL_LAST_WORKED_THRESHOLD
 
 
 class AceQualityCacheHandler(BaseDatabaseHandler):
@@ -199,7 +198,7 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
 
     # region Culling
     def cull_stale_streams(self) -> None:
-        """Remove streams that have not worked or been scraped in the past day."""
+        """Remove streams that have not worked or been scraped within thresholds."""
         handler = get_ace_streams_db_handler()
         streams = handler.get_streams()
         now = datetime.now(tz=UTC)
@@ -209,49 +208,54 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
             quality_map = {entry.content_id: entry for entry in quality_entries}
 
         for stream in streams:
-            if now - stream.last_scraped_time >= _CHECK_LAST_SCRAPE_THRESHOLD:
+            scrape_age = now - stream.last_scraped_time
+            quality_entry = quality_map.get(stream.content_id)
+            has_ever_worked = quality_entry is not None and quality_entry.has_ever_worked
+
+            # Rule 1: Not scraped in 1 day and has never worked
+            if scrape_age >= _CULL_NEVER_WORKED_SCRAPE_THRESHOLD and not has_ever_worked:
                 logger.info(
-                    "Culling stream %s (%s): not scraped in 1 day",
+                    "Culling stream %s (%s): not scraped in 1 day and never worked",
                     ace_id_short(stream.content_id),
                     stream.title,
                 )
                 handler.delete_by_content_id(stream.content_id)
                 continue
 
-            quality_entry = quality_map.get(stream.content_id)
-            if quality_entry is None or _has_not_worked_recently(quality_entry):
+            # Rule 2: Not scraped in 3 days and not worked recently
+            not_worked = quality_entry is None or _has_not_worked_recently(quality_entry)
+            if scrape_age >= _CULL_STALE_SCRAPE_THRESHOLD and not_worked:
                 logger.info(
-                    "Culling stream %s (%s): not worked within threshold",
+                    "Culling stream %s (%s): not scraped in 3 days and not worked recently",
                     ace_id_short(stream.content_id),
                     stream.title,
                 )
                 handler.delete_by_content_id(stream.content_id)
 
-    # region Daily Schedule
-    def start_daily_check_thread(self) -> None:
-        """Start a thread that triggers the quality check at 3:33 AM each day."""
+    # region Check Schedule
+    def start_check_thread(self) -> None:
+        """Start a thread that triggers quality checks ~4 times per day (every 6h +/- 30min)."""
         loop = asyncio.get_running_loop()
 
         def _run() -> None:
             while not self._stop_event.is_set():
-                seconds = _seconds_until_daily_check()
+                seconds = _seconds_until_next_check()
                 logger.info(
-                    "Next scheduled quality check in %.0f seconds (at %02d:%02d local time)",
+                    "Next scheduled quality check in %.0f seconds (~%.1f hours)",
                     seconds,
-                    _DAILY_CHECK_HOUR,
-                    _DAILY_CHECK_MINUTE,
+                    seconds / 3600,
                 )
                 if self._stop_event.wait(seconds):
                     break
 
-                logger.info("Starting daily scheduled quality check and stream culling")
+                logger.info("Starting scheduled quality check and stream culling")
                 asyncio.run_coroutine_threadsafe(self.check_missing_quality(), loop)
 
-                # Wait briefly to avoid re-triggering within the same minute
+                # Wait briefly to avoid re-triggering
                 if self._stop_event.wait(120):
                     break
 
-        thread = threading.Thread(target=_run, name="AceQualityCache: daily_check", daemon=True)
+        thread = threading.Thread(target=_run, name="AceQualityCache: check_schedule", daemon=True)
         thread.start()
         self._threads.append(thread)
 

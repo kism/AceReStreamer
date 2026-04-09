@@ -100,10 +100,10 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     remote_settings_fetcher = RemoteSettingsFetcher(instance_id=instance_id)
     set_remote_settings_fetcher(remote_settings_fetcher)
 
-    # Daily quality check + stream culling at 3:33 AM
+    # Quality check (~4x/day) + stream culling
     quality_handler = AceQualityCacheHandler()
     set_quality_handler(quality_handler)
-    quality_handler.start_daily_check_thread()
+    quality_handler.start_check_thread()
 
     yield
 
