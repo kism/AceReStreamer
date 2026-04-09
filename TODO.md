@@ -1,5 +1,4 @@
 # TODO
 
-- oddball casts
 - old stream culling
-- cookie duration
+- no-proxy mode for dispatcharr
