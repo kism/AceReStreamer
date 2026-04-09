@@ -8,6 +8,7 @@ from sqlmodel import select
 from acere.database.models import AceStreamDBEntry
 from acere.instances.config import settings
 from acere.instances.xc_category import get_xc_category_db_handler
+from acere.instances.xc_stream import get_xc_stream_db_handler
 from acere.services.xc.models import XCCategory, XCStream
 from acere.utils.logger import get_logger
 from acere.utils.m3u8 import create_extinf_line
@@ -54,6 +55,9 @@ class AceStreamDBHandler(BaseDatabaseHandler):
                 logger.debug(
                     "Created new AceStreamDBEntry for content_id/infohash: %s/%s", stream.content_id, stream.infohash
                 )
+
+        # Ensure persistent xc_id mapping exists
+        get_xc_stream_db_handler().get_or_create_xc_id(stream.content_id)
 
     # region DELETE API
     def delete_by_content_id(self, content_id: str) -> bool:
@@ -110,20 +114,11 @@ class AceStreamDBHandler(BaseDatabaseHandler):
     # region Get API XC
     def get_content_id_by_xc_id(self, xc_id: int) -> str | None:
         """Get content_id by xc_id."""
-        with self._get_session() as session:
-            record = session.get(AceStreamDBEntry, xc_id)
-            if record:
-                return record.content_id
-            return None
+        return get_xc_stream_db_handler().get_content_id_by_xc_id(xc_id)
 
     def get_xc_id_by_content_id(self, content_id: str) -> int | None:
         """Get xc_id by content_id."""
-        with self._get_session() as session:
-            statement = select(AceStreamDBEntry).where(AceStreamDBEntry.content_id == content_id)
-            result = session.exec(statement).first()
-            if result:
-                return result.id
-            return None
+        return get_xc_stream_db_handler().get_or_create_xc_id(content_id)
 
     # region GET IPTV
     def get_streams_as_iptv(self, token: str) -> str:
@@ -172,7 +167,8 @@ class AceStreamDBHandler(BaseDatabaseHandler):
         token: str = "",
     ) -> list[XCStream]:
         """Get the found streams as a list of XCStream objects."""
-        handler = get_xc_category_db_handler()
+        category_handler = get_xc_category_db_handler()
+        xc_stream_handler = get_xc_stream_db_handler()
         result_streams: list[XCStream] = []
 
         token_str = "" if token == "" else f"?token={token}"
@@ -181,8 +177,8 @@ class AceStreamDBHandler(BaseDatabaseHandler):
 
         current_stream_number = 1
         for stream in streams:
-            xc_id = stream.id
-            xc_category_id = handler.get_xc_category_id(stream.group_title)
+            xc_id = xc_stream_handler.get_or_create_xc_id(stream.content_id)
+            xc_category_id = category_handler.get_xc_category_id(stream.group_title)
             if xc_category_filter is None or xc_category_id == xc_category_filter:
                 result_streams.append(
                     XCStream(

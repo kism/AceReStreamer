@@ -6,6 +6,7 @@ from pydantic import HttpUrl
 from sqlmodel import create_engine
 
 from acere.database.handlers.acestreams import AceStreamDBHandler
+from acere.database.handlers.content_id_xc_id import ContentIdXcIdDatabaseHandler
 from acere.database.models import AceStreamDBEntry
 from acere.services.scraper.models import FoundAceStream
 from tests.test_utils.ace import get_random_content_id
@@ -17,9 +18,12 @@ else:
 
 
 @pytest.fixture
-def acestream_db_handler(tmp_path: Path) -> AceStreamDBHandler:
+def acestream_db_handler(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> AceStreamDBHandler:
     """Fixture for AceStreamDBHandler."""
     test_engine = create_engine(f"sqlite:///{tmp_path / 'test_acestreams.db'}", echo=False)
+
+    xc_stream_handler = ContentIdXcIdDatabaseHandler(test_engine=test_engine)
+    monkeypatch.setattr("acere.database.handlers.acestreams.get_xc_stream_db_handler", lambda: xc_stream_handler)
 
     return AceStreamDBHandler(test_engine=test_engine)
 
@@ -41,7 +45,7 @@ def test_init(acestream_db_handler: AceStreamDBHandler, monkeypatch: pytest.Monk
     assert handler.get_streams_cached() == []
     assert handler.get_content_id_by_tvg_id("nonexistent") is None
     assert handler.get_content_id_by_xc_id(1) is None
-    assert handler.get_xc_id_by_content_id("nonexistent") is None
+    assert isinstance(handler.get_xc_id_by_content_id("nonexistent"), int)  # Creates mapping on demand
     assert "#EXTM3U" in handler.get_streams_as_iptv(token="")
     assert len(handler.get_streams_as_iptv_xc(xc_category_filter=None)) == 0
     handler._mark_alternate_streams([])
