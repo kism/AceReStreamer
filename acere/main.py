@@ -68,6 +68,9 @@ External URL: {settings.EXTERNAL_URL}
 
     logger.info(msg)
 
+    if settings.AUTH_DISABLED:
+        logger.warning("Authentication is DISABLED. All endpoints are accessible without credentials.")
+
 
 def custom_generate_unique_id(route: APIRoute) -> str:
     return f"{route.tags[0]}-{route.name}"

@@ -8,7 +8,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from pydantic import ValidationError
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from acere.constants import API_V1_STR
 from acere.core import security
@@ -19,7 +19,7 @@ from acere.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=f"{API_V1_STR}/login/access-token")
+reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=f"{API_V1_STR}/login/access-token", auto_error=False)
 
 
 def get_db() -> Generator[Session]:
@@ -28,10 +28,27 @@ def get_db() -> Generator[Session]:
 
 
 SessionDep = Annotated[Session, Depends(get_db)]
-TokenDep = Annotated[str, Depends(reusable_oauth2)]
+TokenDep = Annotated[str | None, Depends(reusable_oauth2)]
+
+
+def _get_first_superuser(session: Session) -> User:
+    """Get the first superuser from the database for no-auth mode."""
+    user = session.exec(select(User).where(User.is_superuser)).first()
+    if not user:
+        raise HTTPException(status_code=500, detail="No superuser found in database")
+    return user
 
 
 def get_current_user(session: SessionDep, token: TokenDep) -> User:
+    if settings.AUTH_DISABLED:
+        return _get_first_superuser(session)
+
+    if token is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authenticated",
+        )
+
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[security.ALGORITHM])
         token_data = TokenPayload(**payload)
