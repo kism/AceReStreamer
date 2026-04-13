@@ -38,7 +38,7 @@ REVERSE_PROXY_TIMEOUT = 10  # Very high but alas
 
 
 # region /hls/
-@router.get("/hls/{path}", response_class=Response)
+@router.api_route("/hls/{path}", methods=["GET", "HEAD"], response_class=Response)
 async def hls(
     path: str,
     token: str = "",

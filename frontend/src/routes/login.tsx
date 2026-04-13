@@ -1,5 +1,5 @@
 import { Container, Input, Text } from "@chakra-ui/react"
-import { createFileRoute, redirect } from "@tanstack/react-router"
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router"
 import { type SubmitHandler, useForm } from "react-hook-form"
 import { FiLock, FiUser } from "react-icons/fi"
 import {
@@ -14,6 +14,7 @@ import useAuth, { isLoggedIn } from "@/hooks/useAuth"
 import { passwordRules, usernamePattern } from "../utils"
 import "@fontsource/fira-code/700.css"
 import { useQuery } from "@tanstack/react-query"
+import { useEffect } from "react"
 import useCustomToast from "../hooks/useCustomToast"
 
 export const Route = createFileRoute("/login")({
@@ -42,12 +43,20 @@ function Login() {
     },
   })
 
-  const { data: _healthData, error: healthError } = useQuery({
+  const { data: healthData, error: healthError } = useQuery({
     queryKey: ["health"],
     queryFn: HealthService.health,
   })
 
+  const navigate = useNavigate()
   const { showErrorToast } = useCustomToast()
+
+  useEffect(() => {
+    if (healthData?.auth_disabled) {
+      localStorage.setItem("access_token", "no-auth")
+      navigate({ to: "/" })
+    }
+  }, [healthData, navigate])
 
   if (healthError) {
     const errorMessage =

@@ -255,6 +255,7 @@ export type HealthResponseModel = {
     time_zone: string;
     threads: Array<ThreadHealthModel>;
     memory_usage_mb: string;
+    auth_disabled: boolean;
 };
 
 /**
@@ -519,27 +520,7 @@ export type EpgTvgEpgMappingsResponse = (TVGEPGMappingsResponse);
 
 export type FrontendFrontendIndexHtmlResponse = (string);
 
-export type FrontendFrontendResponse = (string);
-
-export type FrontendFrontendAdminResponse = (string);
-
-export type FrontendFrontendEpgResponse = (string);
-
-export type FrontendFrontendInfoResponse = (string);
-
-export type FrontendFrontendInfoIptvResponse = (string);
-
-export type FrontendFrontendInfoPlaybackResponse = (string);
-
-export type FrontendFrontendLoginResponse = (string);
-
-export type FrontendFrontendSettingsResponse = (string);
-
-export type FrontendFrontendCatchAllData = {
-    fullPath: string;
-};
-
-export type FrontendFrontendCatchAllResponse = (unknown);
+export type FrontendFrontendIndexResponse = (string);
 
 export type HealthHealthResponse = (HealthResponseModel);
 

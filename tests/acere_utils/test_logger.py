@@ -57,6 +57,6 @@ def test_verbosity_cli() -> None:
 
 
 def test_path_wraps_to_none() -> None:
-    conf = LoggingConf(path="")  # type: ignore[arg-type]
+    conf = LoggingConf(path="")  # type: ignore[arg-type]  # ty:ignore[invalid-argument-type]
 
     assert conf.path is None

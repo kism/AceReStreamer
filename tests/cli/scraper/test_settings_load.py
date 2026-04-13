@@ -53,7 +53,7 @@ async def test_async_main_with_app_config(tmp_path: Path) -> None:
     }
 
     def fake_client_session(*_: Any, **__: Any) -> FakeSession:
-        return FakeSession(fake_responses)  # type: ignore[arg-type]
+        return FakeSession(fake_responses)  # type: ignore[arg-type]  # ty:ignore[invalid-argument-type]
 
     # Mock aiohttp.ClientSession to return our fake session in the scraper module
     # Also need to patch the global settings object that the scrapers use

@@ -40,3 +40,6 @@ ENV_PREFIX = "ACERE_"
 
 # EPG Related but used everywhere
 SUPPORTED_TVG_LOGO_EXTENSIONS = ["png", "jpg", "jpeg", "webp", "svg"]
+
+
+XC_USER_AGENT = "TiviMate/5.1.6 (Android 12)"

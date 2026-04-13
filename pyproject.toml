@@ -1,6 +1,6 @@
 [project]
 name = "acere"
-version = "1.2.7.dev1"
+version = "1.2.8rc1"
 description = ""
 requires-python = ">=3.14,<4.0"
 readme = "README.md"
@@ -67,7 +67,8 @@ module-root = ""
 [project.scripts]
 acerestreamer-scrape = "acere.cli.scraper:__main__.main"
 acerestreamer-password-reset = "acere.cli.password_reset:__main__.main"
-acerestreamer-get-xc-server-response = "acere.cli.get_xc_server_response:__main__.main"
+acerestreamer-debug-get-xc-server-response = "acere.cli.get_xc_server_response:__main__.main"
+acerestreamer-debug-epg-now-playing = "acere.cli.epg_now_playing:__main__.main"
 acerestreamer-migrate = "acere.cli.db_migrate:__main__.main"
 
 [tool.ruff]
@@ -206,7 +207,7 @@ include = ["acere/main.py", "tests/core/config/test_ace_scrape_conf.py"]
 
 [[tool.ty.overrides]]
 # Not sure what ty is upset about here
-include = ["acere/database/handlers/category_xc.py"]
+include = ["acere/database/handlers/category_xc.py", "acere/database/handlers/content_id_xc_id.py"]
 [tool.ty.overrides.rules]
 "missing-argument" = "ignore"
 

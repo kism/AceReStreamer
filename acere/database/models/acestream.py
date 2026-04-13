@@ -11,7 +11,7 @@ class AceStreamDBEntry(SQLModel, table=True):
     """Database model for ace streams."""
 
     __tablename__ = "ace_streams"
-    id: int = Field(primary_key=True, index=True)  # This is also the XC id
+    id: int = Field(primary_key=True, index=True)
     title: str = Field(default="", max_length=255)
     content_id: str = Field(max_length=40, unique=True, nullable=False, index=True)
     infohash: str | None = Field(default=None, max_length=40)

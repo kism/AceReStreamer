@@ -933,10 +933,14 @@ export const HealthResponseModelSchema = {
         memory_usage_mb: {
             type: 'string',
             title: 'Memory Usage Mb'
+        },
+        auth_disabled: {
+            type: 'boolean',
+            title: 'Auth Disabled'
         }
     },
     type: 'object',
-    required: ['version', 'version_full', 'time_zone', 'threads', 'memory_usage_mb'],
+    required: ['version', 'version_full', 'time_zone', 'threads', 'memory_usage_mb', 'auth_disabled'],
     title: 'HealthResponseModel'
 } as const;
 

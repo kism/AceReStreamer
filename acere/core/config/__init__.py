@@ -82,6 +82,7 @@ class AceReStreamerConf(BaseSettings):
     SECRET_KEY: str = ""
     FIRST_SUPERUSER: str = "admin"
     FIRST_SUPERUSER_PASSWORD: str = ""
+    AUTH_DISABLED: bool = False
     BACKEND_CORS_ORIGINS: Annotated[list[AnyUrl] | str, BeforeValidator(parse_cors)] = []
 
     @classmethod
