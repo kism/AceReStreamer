@@ -7,7 +7,7 @@ from pathlib import Path
 import aiohttp
 import anyio
 
-from acere.constants import DEFAULT_INSTANCE_PATH
+from acere.constants import DEFAULT_INSTANCE_PATH, XC_USER_AGENT
 from acere.utils.cli import console
 from acere.utils.helpers import slugify
 
@@ -36,7 +36,7 @@ async def fetch_all_endpoints(base_url: str, username: str, password: str, outpu
     get_url = base + "/get.php"
     auth_params = {"username": username, "password": password}
 
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(headers={"User-Agent": XC_USER_AGENT}) as session:
         # player_api.php — base info and action endpoints
         for label, filename, params in [
             ("base info", "player_api.json", auth_params),
@@ -46,6 +46,7 @@ async def fetch_all_endpoints(base_url: str, username: str, password: str, outpu
             out_file = output_dir / filename
             try:
                 async with session.get(player_api_url, params=params) as response:
+                    console.print(f"  [cyan]URL:[/cyan] {response.url}")
                     response.raise_for_status()
                     await _stream_to_file(response, out_file)
                 console.print(f"  [green]Saved[/green] {out_file}")
@@ -78,7 +79,7 @@ def main() -> None:
     args = parser.parse_args()
 
     server_slug = slugify(args.url)
-    output_dir: Path = args.instance_dir / server_slug
+    output_dir: Path = args.instance_dir / "cli_xc_response" / server_slug
     output_dir.mkdir(parents=True, exist_ok=True)
 
     console.print(f"Server: [cyan]{args.url}[/cyan]")

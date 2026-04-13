@@ -55,7 +55,7 @@ def test_get_current_revision(engine: Engine) -> None:
     assert runner.get_current_revision(engine) == "0001"
 
     runner.upgrade(engine)
-    assert runner.get_current_revision(engine) == "0002"
+    assert runner.get_current_revision(engine) == "0003"
 
     runner.downgrade(engine, "0001")
     assert runner.get_current_revision(engine) == "0001"

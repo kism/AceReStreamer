@@ -6,6 +6,7 @@ from datetime import UTC
 from fastapi import APIRouter
 from psutil import Process
 
+from acere.instances.config import settings
 from acere.utils.health import HealthResponseModel, ThreadHealthModel
 from acere.utils.logger import get_logger
 from acere.version import VERSION_FULL, __version__
@@ -31,4 +32,5 @@ def health() -> HealthResponseModel:
         time_zone=str(UTC.tzname(None)),
         threads=thread_list,
         memory_usage_mb=memory,
+        auth_disabled=settings.AUTH_DISABLED,
     )

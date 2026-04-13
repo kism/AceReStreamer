@@ -9,6 +9,7 @@ from sqlmodel import Session
 
 from acere.crud import authenticate_stream_token
 from acere.database.init import engine
+from acere.instances.config import settings
 
 if TYPE_CHECKING:
     from pydantic import HttpUrl
@@ -39,6 +40,9 @@ def get_port_and_protocol_from_external_url(
 
 def check_xc_auth(username: str, stream_token: str) -> str:
     """Check if the provided username and password are valid, return stream token if valid."""
+    if settings.AUTH_DISABLED:
+        return stream_token or "noauth"
+
     with Session(engine) as session:
         result = authenticate_stream_token(session=session, username=username, stream_token=stream_token)
     if result is not None:

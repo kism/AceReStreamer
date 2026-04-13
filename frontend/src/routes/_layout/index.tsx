@@ -10,22 +10,27 @@ import {
 } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { lazy, Suspense, useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { FiMaximize2, FiMinimize2, FiRefreshCw } from "react-icons/fi"
 import { StreamsService } from "@/client"
 import { AcePoolSection } from "@/components/Index/AcePoolSection"
 import { NowPlayingTable } from "@/components/Index/NowPlayingTable"
 import { StreamTable } from "@/components/Index/StreamTable"
+import { VideoPlayer } from "@/components/Index/VideoPlayer"
 import { usePageTitle } from "@/hooks/usePageTitle"
 
-const VideoPlayer = lazy(() =>
-  import("@/components/Index/VideoPlayer").then((module) => ({
-    default: module.VideoPlayer,
-  })),
-)
-
-// Lazy load video player functions to avoid loading hls.js on initial page load
+// Dynamic import for shaka-player module - preloaded after render, instantly available on click
 const loadVideoPlayerModule = () => import("@/hooks/useVideoPlayer")
+
+// Preload shaka-player in the background after the page is idle
+if (typeof window !== "undefined") {
+  const preload = () => loadVideoPlayerModule()
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(preload)
+  } else {
+    setTimeout(preload, 200)
+  }
+}
 
 export const Route = createFileRoute("/_layout/")({
   component: WebPlayer,
@@ -43,7 +48,7 @@ function ProgramDescription({
   return (
     <Box>
       <Heading size="sm" py={1}>
-        <HStack px={1}>
+        <HStack>
           <Text>Now Playing: </Text> {title ? title : "No Program Information"}
         </HStack>
       </Heading>
@@ -126,8 +131,11 @@ function WebPlayer() {
   })
   usePageTitle(streamData?.title || "Home")
 
+  const hasLoadedRef = useRef(false)
   useEffect(() => {
+    if (hasLoadedRef.current) return
     if (window.location.hash) {
+      hasLoadedRef.current = true
       loadVideoPlayerModule().then((module) => {
         module.loadStream(window.location.hash.substring(1))
       })
@@ -142,32 +150,17 @@ function WebPlayer() {
     >
       {/* Left pane - Video Player */}
       <Flex direction="column" flex="1" minW="0" gap={2}>
-        <Suspense
-          fallback={
-            <Box
-              w="100%"
-              aspectRatio={16 / 9}
-              bg="bg.muted"
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-            >
-              Loading player...
-            </Box>
-          }
-        >
-          <VideoPlayer />
-        </Suspense>
+        <VideoPlayer />
         <PlayerControls
           isExpanded={isExpanded}
           onToggleExpand={() => setIsExpanded(!isExpanded)}
         />
         <VStack align="stretch" gap={4}>
-          <NowPlayingTable />
           <ProgramDescription
             description={streamData?.program_description ?? ""}
             title={streamData?.program_title ?? ""}
           />
+          <NowPlayingTable />
           <AcePoolSection />
           <Box flexShrink={0} h={4} /> {/* Bit of a hack */}
         </VStack>

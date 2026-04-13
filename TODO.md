@@ -1,5 +1,3 @@
 # TODO
 
-- oddball casts
-- old stream culling
-- cookie duration
+Implement HEAD method to hls endpoints.

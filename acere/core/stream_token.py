@@ -3,6 +3,7 @@ from sqlmodel import Session, select
 
 from acere.database.init import engine
 from acere.database.models.user import User
+from acere.instances.config import settings
 from acere.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -32,6 +33,9 @@ _stream_token_manager = StreamTokenManager()
 
 def verify_stream_token(token: str) -> bool:
     """Will raise HTTPException if the stream token is invalid."""
+    if settings.AUTH_DISABLED:
+        return True
+
     can_proceed = _stream_token_manager.verify_stream_token(token)
 
     if not can_proceed:
