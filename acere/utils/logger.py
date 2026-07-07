@@ -92,7 +92,7 @@ class LoggingConf(BaseModel):
 
 
 class CustomLogger(logging.Logger):
-    """Custom logger to appease mypy."""
+    """Custom logger to appease ty."""
 
     def trace(self, message: Any, *args: Any, **kws: Any) -> None:  # noqa: ANN401 Logging handles this
         """Create logger level for trace."""

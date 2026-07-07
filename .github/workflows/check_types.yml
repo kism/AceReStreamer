@@ -31,7 +31,7 @@ jobs:
       - name: Install the project
         run: uv sync --extra type --extra test --extra docs
 
-      - name: Check types with mypy
+      - name: Check types with ty
         run: uv run ty check .
 
   ts:

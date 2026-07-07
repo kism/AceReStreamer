@@ -31,7 +31,6 @@ dependencies = [
 
 [project.optional-dependencies]
 type = [
-    "mypy",
     "ty",
     "types-passlib>=1.7.7",
     "lxml-stubs>=0.5.1",
