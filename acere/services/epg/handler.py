@@ -12,7 +12,7 @@ from lxml import etree
 from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger
-from acere.version import PROGRAM_NAME, URL
+from acere.version import PROGRAM_NAME, PROGRAM_REPO_URL
 
 from .candidate import EPGCandidateHandler
 from .epg import EPG, EPG_LIFESPAN
@@ -53,7 +53,7 @@ class EPGHandler:
         """Create a base XML element for the EPG data."""
         tv_tag = etree.Element("tv")
         tv_tag.set("generator-info-name", PROGRAM_NAME)
-        tv_tag.set("generator-info-url", URL)
+        tv_tag.set("generator-info-url", PROGRAM_REPO_URL)
         return tv_tag
 
     # region Condense & Merge

@@ -9,7 +9,7 @@ from psutil import Process
 from acere.instances.config import settings
 from acere.utils.health import HealthResponseModel, ThreadHealthModel
 from acere.utils.logger import get_logger
-from acere.version import VERSION_FULL, __version__
+from acere.version import PROGRAM_NAME_WITH_FULL_VERSION, PROGRAM_VERSION
 
 logger = get_logger(__name__)
 
@@ -27,8 +27,8 @@ def health() -> HealthResponseModel:
     memory = str(PROCESS.memory_info().rss / (1024 * 1024))
 
     return HealthResponseModel(
-        version=__version__,
-        version_full=VERSION_FULL,
+        version=PROGRAM_VERSION,
+        version_full=PROGRAM_NAME_WITH_FULL_VERSION,
         time_zone=str(UTC.tzname(None)),
         threads=thread_list,
         memory_usage_mb=memory,

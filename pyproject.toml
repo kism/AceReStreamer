@@ -1,6 +1,6 @@
 [project]
 name = "acere"
-version = "1.2.8"
+version = "1.2.9.dev1"
 description = ""
 requires-python = ">=3.14,<4.0"
 readme = "README.md"
@@ -53,6 +53,7 @@ docs = ["sphinx", "myst-parser", "sphinx-rtd-theme"]
 
 [project.urls]
 homepage = "https://github.com/kism/AceReStreamer"
+Repository = "https://github.com/kism/AceReStreamer"
 Documentation = "https://acerestreamer.readthedocs.io/"
 Source = "https://github.com/kism/AceReStreamer"
 
@@ -170,34 +171,6 @@ addopts = [
     "--asyncio-mode=auto",
 ]
 
-[tool.mypy]
-strict = true
-files = ["acere", "tests", "docs"]
-exclude = ["venv", ".venv"]
-show_error_codes = true
-enable_error_code = [
-    "ignore-without-code",
-    "redundant-expr",
-    "truthy-bool",
-    "type-arg",
-    "unused-awaitable",
-    "possibly-undefined",
-    "redundant-self",
-]
-disable_error_code = [
-    "prop-decorator", # Conflicts with pydantic computed_field
-]
-[[tool.mypy.overrides]]
-module = "acere.database.models.user"
-disable_error_code = [
-    "override",   # SqlModel handles the None
-    "assignment", # Classmethod is fine
-]
-[[tool.mypy.overrides]]
-module = "tests.core.config.test_ace_scrape_conf"
-disable_error_code = [
-    "arg-type", # Pydantic needs to process and correct incorrect urls
-]
 
 [[tool.ty.overrides]]
 # Not sure what ty is upset about here
@@ -207,7 +180,9 @@ include = ["acere/main.py", "tests/core/config/test_ace_scrape_conf.py"]
 
 [[tool.ty.overrides]]
 # Not sure what ty is upset about here
-include = ["acere/database/handlers/category_xc.py", "acere/database/handlers/content_id_xc_id.py"]
+include = [
+    "acere/database/handlers/category_xc.py",
+    "acere/database/handlers/content_id_xc_id.py",
+]
 [tool.ty.overrides.rules]
 "missing-argument" = "ignore"
-

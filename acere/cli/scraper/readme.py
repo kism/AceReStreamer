@@ -7,7 +7,7 @@ from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel, HttpUrl
 
 from acere.instances.paths import get_app_path_handler
-from acere.version import PROGRAM_NAME, __version__
+from acere.version import PROGRAM_NAME, PROGRAM_VERSION
 
 from .constants import M3U_URI_SCHEMES
 
@@ -51,7 +51,7 @@ def generate_readme(external_base_url: HttpUrl | None) -> None:
     readme_content = template.render(
         playlists=result_playlists,
         program_name=PROGRAM_NAME,
-        version=__version__,
+        version=PROGRAM_VERSION,
         time_generated=datetime.now(tz=UTC),
     )
     readme_content += "\n"
