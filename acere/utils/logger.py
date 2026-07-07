@@ -199,21 +199,8 @@ def _set_log_level(
     settings: LoggingConf,
     in_logger: logging.Logger,
 ) -> None:
-    """Set the log level of the logger."""
-    log_level = settings.level
-    if isinstance(log_level, str):
-        log_level = log_level.upper()
-        if log_level not in LOG_LEVELS:
-            in_logger.setLevel("INFO")
-            logger.warning(
-                "❗ Invalid logging level: %s, defaulting to INFO",
-                log_level,
-            )
-        else:
-            in_logger.setLevel(log_level)
-            logger.debug("Set log level: %s", log_level)
-    else:
-        in_logger.setLevel(log_level)
+    """Set the log level of the logger, level is already validated by LoggingConf."""
+    in_logger.setLevel(_get_log_level_int(settings.level))
 
 
 def _add_file_handler(in_logger: logging.Logger, log_path: Path) -> None:

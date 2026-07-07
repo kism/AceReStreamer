@@ -20,7 +20,6 @@ dependencies = [
     "jinja2>=3.1.6",
     "lxml>=6.0.2",
     "psutil>=7.1.0",
-    "pytz>=2025.2",
     "aiohttp[speedups]>=3.13.0", # Requires python 3.14+ for zstd support
     "rich>=14.1.0",
     "argon2-cffi>=25.1.0",
@@ -37,7 +36,6 @@ type = [
     "types-passlib>=1.7.7",
     "lxml-stubs>=0.5.1",
     "types-psutil>=7.0.0.20250601",
-    "types-pytz>=2025.2.0.20250516",
 ]
 lint = ["ruff", "memray"]
 test = [
@@ -116,9 +114,6 @@ ignore = [
     "INP",
     "D",
     "A",
-]
-"acere/instances/*.py" = [
-    "PLW0603", # Allow globals here, this is the place
 ]
 "acere/database/types.py" = [
     "ARG002", # Empty args since we are just defining types here, no logic
