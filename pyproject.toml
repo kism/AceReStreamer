@@ -48,6 +48,7 @@ test = [
     "detect-test-pollution",
     "pytest-asyncio",
     "pytest-socket>=0.7.0",
+    "httpx2",
 ]
 docs = ["sphinx", "myst-parser", "sphinx-rtd-theme"]
 
@@ -167,7 +168,7 @@ show_contexts = true
 testpaths = ["tests"]
 addopts = [
     "--disable-socket",
-    "--allow-hosts=127.0.0.1,127.0.1.1",
+    "--allow-hosts=127.0.0.1,127.0.1.1,::1",
     "--asyncio-mode=auto",
 ]
 
