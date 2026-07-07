@@ -5,7 +5,7 @@ export default defineConfig({
   output: "./src/client",
 
   plugins: [
-    "legacy/axios",
+    "legacy/fetch",
     {
       name: "@hey-api/sdk",
       // NOTE: this doesn't allow tree-shaking

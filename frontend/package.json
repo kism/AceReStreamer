@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "biome check --write --unsafe --no-errors-on-unmatched --files-ignore-unknown=true ./",
     "generate-client": "openapi-ts",
-    "generate-frontend-paths": "vite-node scripts/generate_frontend_route_list.ts",
+    "generate-frontend-paths": "bun scripts/generate_frontend_route_list.ts",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
@@ -24,11 +24,8 @@
     "@tanstack/react-query": "^5.101.2",
     "@tanstack/react-query-devtools": "^5.101.2",
     "@tanstack/react-router": "^1.170.17",
-    "axios": "^1.18.1",
-    "form-data": "4.0.5",
     "next-themes": "^0.4.6",
     "react": "^19.2.7",
-    "react-copy-to-clipboard-ts": "^1.3.1",
     "react-dom": "^19.2.7",
     "react-error-boundary": "^6.1.2",
     "react-hook-form": "7.71.1",
@@ -47,7 +44,6 @@
     "@vitejs/plugin-react-swc": "^4.3.1",
     "dotenv": "^17.4.2",
     "typescript": "^5.9.3",
-    "vite": "^7.3.6",
-    "vite-node": "^5.3.0"
+    "vite": "^7.3.6"
   }
 }
