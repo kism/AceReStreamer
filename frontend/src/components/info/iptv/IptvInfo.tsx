@@ -77,7 +77,9 @@ export function IptvInfo({ credentials, isLoading, error }: IptvInfoProps) {
   return (
     <VStack gap={6} align="stretch">
       <VStack gap={2} align="stretch">
-        <Heading>Xtream IPTV</Heading>
+        <Heading size="sm" py={1}>
+          Xtream IPTV
+        </Heading>
         <Text>
           Add a playlist/source with your IPTV app, use the XC/Xtream setting
           when adding.
@@ -90,7 +92,9 @@ export function IptvInfo({ credentials, isLoading, error }: IptvInfoProps) {
       </VStack>
 
       <VStack gap={2} align="stretch">
-        <Heading>IPTV</Heading>
+        <Heading size="sm" py={1}>
+          IPTV
+        </Heading>
         <Text>
           Depending on the app, you might need to use an alternate Playlist url.
         </Text>

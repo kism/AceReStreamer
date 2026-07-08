@@ -1,4 +1,4 @@
-import { Box, VStack } from "@chakra-ui/react"
+import { Box, Heading, VStack } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { XtreamCodesService } from "@/client"
@@ -7,11 +7,11 @@ import { IptvInfo } from "@/components/info/iptv/IptvInfo"
 import { usePageTitle } from "@/hooks/usePageTitle"
 
 export const Route = createFileRoute("/_layout/")({
-  component: Status,
+  component: Info,
 })
 
-function Status() {
-  usePageTitle("Status")
+function Info() {
+  usePageTitle("Info")
 
   const {
     data: credentials,
@@ -24,13 +24,19 @@ function Status() {
 
   return (
     <Box maxW="800px">
-      <AcePoolSection />
-      <VStack gap={6} align="stretch" mt={6}>
-        <IptvInfo
-          credentials={credentials || null}
-          isLoading={isLoading}
-          error={error}
-        />
+      <VStack gap={6} align="stretch">
+        <VStack gap={2} align="stretch">
+          <Heading size="md">Status</Heading>
+          <AcePoolSection />
+        </VStack>
+        <VStack gap={2} align="stretch">
+          <Heading size="md">IPTV Info</Heading>
+          <IptvInfo
+            credentials={credentials || null}
+            isLoading={isLoading}
+            error={error}
+          />
+        </VStack>
       </VStack>
     </Box>
   )

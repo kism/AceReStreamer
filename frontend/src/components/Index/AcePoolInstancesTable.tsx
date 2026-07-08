@@ -12,6 +12,18 @@ import {
 } from "@/components/ui/table"
 import { QualityCell } from "./QualityCell"
 
+function EmptyInstancesRow() {
+  return (
+    <TableRow opacity={0.5}>
+      <TableCell textAlign="center">-</TableCell>
+      <TableCell textAlign="center">-</TableCell>
+      <QualityCell quality={-1} />
+      <TableCell textAlign="center">-</TableCell>
+      <TableCell textAlign="center">-</TableCell>
+    </TableRow>
+  )
+}
+
 function getStreamQueryOptions(content_id: string) {
   return {
     queryFn: () => StreamsService.byContentId({ contentId: content_id }),
@@ -61,7 +73,7 @@ export function AcePoolInstancesTable({
   return (
     <Box>
       <Heading size="sm" py={1}>
-        AceStream Instances
+        Active AceStream Streams
       </Heading>
       <AppTableRoot preset="outlineSm" maxW="fit-content">
         <TableHeader>
@@ -74,32 +86,36 @@ export function AcePoolInstancesTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {acePoolData.ace_instances.map((instance, index: number) => (
-            <TableRow key={index}>
-              <TableCell textAlign={"center"}>{instance.ace_pid}</TableCell>
-              <TableCell textAlign={"center"}>
-                {instance.locked_in
-                  ? `🔒 Locked for (${Math.floor((instance.time_until_unlock ?? 0) / 60)}:${((instance.time_until_unlock ?? 0) % 60).toString().padStart(2, "0")})`
-                  : "Available"}
-              </TableCell>
-              <InstanceQuality contentId={instance.content_id} />
-              <TableCell textAlign={"center"}>
-                {instance.locked_in ? (
-                  <Link
-                    colorPalette="red"
-                    onClick={() =>
-                      deleteStreamMutation.mutate(instance.content_id)
-                    }
-                    cursor="pointer"
-                  >
-                    🔓 Unlock Instance
-                  </Link>
-                ) : (
-                  "-"
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
+          {acePoolData.ace_instances.length === 0 ? (
+            <EmptyInstancesRow />
+          ) : (
+            acePoolData.ace_instances.map((instance, index: number) => (
+              <TableRow key={index}>
+                <TableCell textAlign={"center"}>{instance.ace_pid}</TableCell>
+                <TableCell textAlign={"center"}>
+                  {instance.locked_in
+                    ? `🔒 Locked for (${Math.floor((instance.time_until_unlock ?? 0) / 60)}:${((instance.time_until_unlock ?? 0) % 60).toString().padStart(2, "0")})`
+                    : "Available"}
+                </TableCell>
+                <InstanceQuality contentId={instance.content_id} />
+                <TableCell textAlign={"center"}>
+                  {instance.locked_in ? (
+                    <Link
+                      colorPalette="red"
+                      onClick={() =>
+                        deleteStreamMutation.mutate(instance.content_id)
+                      }
+                      cursor="pointer"
+                    >
+                      🔓 Unlock Instance
+                    </Link>
+                  ) : (
+                    "-"
+                  )}
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </AppTableRoot>
     </Box>

@@ -15,7 +15,7 @@ import baseURL from "@/helpers"
 const VITE_API_URL = baseURL()
 
 const items = [
-  { icon: FiActivity, title: "Status", path: "/" },
+  { icon: FiActivity, title: "Info", path: "/" },
   { icon: FiTv, title: "Channels", path: "/channels" },
   { icon: FiSearch, title: "Scrapers", path: "/scrapers" },
   { icon: FiSettings, title: "System", path: "/system" },
