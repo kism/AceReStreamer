@@ -1,11 +1,5 @@
 from acere.database.handlers.acestreams import AceStreamDBHandler
+from acere.instances import GlobalInstance
 
-_ace_streams_handler: AceStreamDBHandler | None = None
-
-
-def get_ace_streams_db_handler() -> AceStreamDBHandler:
-    """Get the global AceStreamsDBHandler instance."""
-    global _ace_streams_handler
-    if _ace_streams_handler is None:
-        _ace_streams_handler = AceStreamDBHandler()
-    return _ace_streams_handler
+_ace_streams_handler = GlobalInstance("AceStreamDBHandler", factory=AceStreamDBHandler)
+get_ace_streams_db_handler = _ace_streams_handler.get

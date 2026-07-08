@@ -25,7 +25,7 @@ from acere.services.epg import EPGHandler
 from acere.services.remote_settings import RemoteSettingsFetcher
 from acere.services.scraper import AceScraper
 from acere.utils.logger import get_logger, setup_logger
-from acere.version import PROGRAM_NAME, __version__
+from acere.version import PROGRAM_NAME, PROGRAM_VERSION
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
@@ -59,7 +59,7 @@ if not IN_OPEN_API_MODE:
     msg = f""">>>
 -------------------------------------------------------------------------------
 {PROGRAM_NAME}
-Version: {__version__}
+Version: {PROGRAM_VERSION}
 Config file: {path_handler.settings_file.absolute()}
 Environment: {settings.ENVIRONMENT.capitalize()}
 Frontend: {FRONTEND_INFO}

@@ -1,22 +1,12 @@
 from typing import TYPE_CHECKING
 
+from acere.instances import GlobalInstance
+
 if TYPE_CHECKING:
     from acere.services.ace_pool.pool import AcePool
 else:
     AcePool = object
 
-_ace_pool: AcePool | None = None
-
-
-def set_ace_pool(pool: AcePool) -> None:
-    """Set the global AcePool instance."""
-    global _ace_pool
-    _ace_pool = pool
-
-
-def get_ace_pool() -> AcePool:
-    """Get the global AcePool instance."""
-    if _ace_pool is None:
-        msg = "AcePool instance is not set."
-        raise ValueError(msg)
-    return _ace_pool
+_ace_pool: GlobalInstance[AcePool] = GlobalInstance("AcePool")
+set_ace_pool = _ace_pool.set
+get_ace_pool = _ace_pool.get

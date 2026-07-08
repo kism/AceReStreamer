@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 
+from acere.instances import GlobalInstance
 from acere.services.app_paths_helper import AppPathsHelper
 
 if TYPE_CHECKING:
@@ -7,18 +8,10 @@ if TYPE_CHECKING:
 else:
     Path = object
 
-_instance_paths: AppPathsHelper | None = None
-
-
-def get_app_path_handler() -> AppPathsHelper:
-    """Get the current instance path."""
-    if _instance_paths is None:
-        msg = "Instance path not set up yet."
-        raise RuntimeError(msg)
-    return _instance_paths
+_instance_paths: GlobalInstance[AppPathsHelper] = GlobalInstance("AppPathsHelper")
+get_app_path_handler = _instance_paths.get
 
 
 def setup_app_path_handler(instance_path: Path) -> None:
     """Set up the instance path for the application."""
-    global _instance_paths
-    _instance_paths = AppPathsHelper(instance_path=instance_path)
+    _instance_paths.set(AppPathsHelper(instance_path=instance_path))

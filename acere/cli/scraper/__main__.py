@@ -10,7 +10,7 @@ from acere.core.config import AceReStreamerConf
 from acere.instances.config import settings
 from acere.instances.paths import setup_app_path_handler
 from acere.utils.logger import get_logger, setup_logger
-from acere.version import __version__
+from acere.version import PROGRAM_VERSION
 
 from .playlist import PlaylistCreator
 from .readme import generate_readme
@@ -21,7 +21,7 @@ logger = get_logger(__name__)
 
 async def async_main() -> None:
     """Cli for adhoc scrape mode."""
-    msg = f"Acestream Scrape CLI {__version__}"
+    msg = f"Acestream Scrape CLI {PROGRAM_VERSION}"
     parser = argparse.ArgumentParser(description=msg)
     parser.add_argument(
         "--app-config",

@@ -6,12 +6,12 @@ from acere.database.init import engine
 from acere.database.models.user import User, UserUpdate
 from acere.instances.paths import get_app_path_handler, setup_app_path_handler
 from acere.utils.cli import console, prompt
-from acere.version import PROGRAM_NAME, __version__
+from acere.version import PROGRAM_NAME, PROGRAM_VERSION
 
 
 def main() -> None:
     """CLI for password reset."""
-    console.print(f"{PROGRAM_NAME} Password Reset Tool v{__version__}")
+    console.print(f"{PROGRAM_NAME} Password Reset Tool v{PROGRAM_VERSION}")
     setup_app_path_handler(DEFAULT_INSTANCE_PATH)
     path_handler = get_app_path_handler()
 
