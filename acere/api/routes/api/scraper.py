@@ -89,6 +89,28 @@ def add_source(  # noqa: C901 Revisit once I have some tests
     return MessageResponseModel(message=msg)
 
 
+@router.put("/source/{slug}")
+def update_source(slug: str, body_json: AceScraperSourceApi) -> MessageResponseModel:
+    """API endpoint to update (replace) an existing scraper source."""
+    new_site: ScrapeSiteHTML | ScrapeSiteIPTV | ScrapeSiteAPI
+    if body_json.type == "iptv":
+        new_site = ScrapeSiteIPTV(**body_json.model_dump())
+    elif body_json.type == "api":
+        new_site = ScrapeSiteAPI(**body_json.model_dump())
+    else:
+        new_site = ScrapeSiteHTML(**body_json.model_dump())
+
+    success, msg = settings.scraper.update_source(slug, new_site)
+    if not success:
+        status = HTTPStatus.NOT_FOUND if "not found" in msg.lower() else HTTPStatus.BAD_REQUEST
+        raise HTTPException(status_code=status, detail=msg)
+
+    settings.write_config()
+    get_ace_scraper().start_scrape_thread()
+
+    return MessageResponseModel(message=msg)
+
+
 @router.delete("/source/{slug}")
 def remove_source(slug: str) -> MessageResponseModel:
     """API endpoint to remove a scraper source."""

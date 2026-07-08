@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { AcePoolPoolResponse, AcePoolGetByContentIdData, AcePoolGetByContentIdResponse, AcePoolDeleteByContentIdData, AcePoolDeleteByContentIdResponse, AcePoolGetByPidData, AcePoolGetByPidResponse, AcePoolStatsResponse, AcePoolStatsByContentIdData, AcePoolStatsByContentIdResponse, AcePoolStatsByPidData, AcePoolStatsByPidResponse, ConfigGetConfigResponse, ConfigUpdateConfigData, ConfigUpdateConfigResponse, ConfigFetchRemoteSettingsResponse, ConfigTriggerFetchRemoteSettingsData, ConfigTriggerFetchRemoteSettingsResponse, ConfigReloadConfigResponse, FrontendFrontendIndexHtmlResponse, FrontendFrontendIndexResponse, HealthHealthResponse, MediaIptvIptvM3U83Response, MediaIptvIptvM3U2Response, MediaIptvIptvM3U81Response, ScraperSourcesResponse, ScraperAddSourceData, ScraperAddSourceResponse, ScraperSourceData, ScraperSourceResponse, ScraperRemoveSourceData, ScraperRemoveSourceResponse, ScraperGetNameOverridesResponse, ScraperDeleteNameOverrideData, ScraperDeleteNameOverrideResponse, ScraperAddNameOverrideData, ScraperAddNameOverrideResponse, StreamsByContentIdData, StreamsByContentIdResponse, StreamsDeleteByContentIdData, StreamsDeleteByContentIdResponse, StreamsStreamsResponse, StreamsAddStreamData, StreamsAddStreamResponse, StreamsCheckResponse, XtreamCodesGetXcCredentialsResponse, XtreamCodesXcIptvRouterData, XtreamCodesXcIptvRouterResponse, XtreamCodesXcGetData, XtreamCodesXcGetResponse } from './types.gen';
+import type { AcePoolPoolResponse, AcePoolGetByContentIdData, AcePoolGetByContentIdResponse, AcePoolDeleteByContentIdData, AcePoolDeleteByContentIdResponse, AcePoolGetByPidData, AcePoolGetByPidResponse, AcePoolStatsResponse, AcePoolStatsByContentIdData, AcePoolStatsByContentIdResponse, AcePoolStatsByPidData, AcePoolStatsByPidResponse, ConfigGetConfigResponse, ConfigUpdateConfigData, ConfigUpdateConfigResponse, ConfigFetchRemoteSettingsResponse, ConfigTriggerFetchRemoteSettingsData, ConfigTriggerFetchRemoteSettingsResponse, ConfigReloadConfigResponse, FrontendFrontendIndexHtmlResponse, FrontendFrontendIndexResponse, HealthHealthResponse, MediaIptvIptvM3U83Response, MediaIptvIptvM3U2Response, MediaIptvIptvM3U81Response, ScraperSourcesResponse, ScraperAddSourceData, ScraperAddSourceResponse, ScraperSourceData, ScraperSourceResponse, ScraperUpdateSourceData, ScraperUpdateSourceResponse, ScraperRemoveSourceData, ScraperRemoveSourceResponse, ScraperGetNameOverridesResponse, ScraperDeleteNameOverrideData, ScraperDeleteNameOverrideResponse, ScraperAddNameOverrideData, ScraperAddNameOverrideResponse, StreamsByContentIdData, StreamsByContentIdResponse, StreamsDeleteByContentIdData, StreamsDeleteByContentIdResponse, StreamsStreamsResponse, StreamsAddStreamData, StreamsAddStreamResponse, StreamsCheckResponse, XtreamCodesGetXcCredentialsResponse, XtreamCodesXcIptvRouterData, XtreamCodesXcIptvRouterResponse, XtreamCodesXcGetData, XtreamCodesXcGetResponse } from './types.gen';
 
 export class AcePoolService {
     /**
@@ -358,6 +358,30 @@ export class ScraperService {
     }
     
     /**
+     * Update Source
+     * API endpoint to update (replace) an existing scraper source.
+     * @param data The data for the request.
+     * @param data.slug
+     * @param data.requestBody
+     * @returns MessageResponseModel Successful Response
+     * @throws ApiError
+     */
+    public static updateSource(data: ScraperUpdateSourceData): CancelablePromise<ScraperUpdateSourceResponse> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/v1/scraper/source/{slug}',
+            path: {
+                slug: data.slug
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
      * Remove Source
      * API endpoint to remove a scraper source.
      * @param data The data for the request.
@@ -414,7 +438,7 @@ export class ScraperService {
     
     /**
      * Add Name Override
-     * API endpoint to add a scraper name override.
+     * API endpoint to add a scraper name override, key can be a content_id or infohash.
      * @param data The data for the request.
      * @param data.contentId
      * @param data.name

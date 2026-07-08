@@ -288,6 +288,46 @@ class AceScrapeConf(BaseModel):
 
         return True, "Source added"
 
+    def update_source(
+        self,
+        site_name: str,
+        new_site: ScrapeSiteHTML | ScrapeSiteIPTV | ScrapeSiteAPI,
+    ) -> tuple[bool, str]:
+        """Replace the source named site_name with new_site, handles renames and type changes."""
+        logger.info("Updating source '%s'", site_name)
+
+        new_html = [site for site in self.html if site.name != site_name]
+        new_iptv = [site for site in self.iptv_m3u8 if site.name != site_name]
+        new_api = [site for site in self.api if site.name != site_name]
+
+        found = (len(new_html) + len(new_iptv) + len(new_api)) != (len(self.html) + len(self.iptv_m3u8) + len(self.api))
+        if not found:
+            return False, f"Source not found: {site_name}"
+
+        if isinstance(new_site, ScrapeSiteHTML):
+            new_html.append(new_site)
+        elif isinstance(new_site, ScrapeSiteIPTV):
+            new_iptv.append(new_site)
+        else:
+            new_api.append(new_site)
+
+        try:
+            validated = self.model_validate(
+                {
+                    "html": new_html,
+                    "iptv_m3u8": new_iptv,
+                    "api": new_api,
+                }
+            )
+        except ValidationError as e:
+            return False, str(e)
+
+        self.html = validated.html
+        self.iptv_m3u8 = validated.iptv_m3u8
+        self.api = validated.api
+
+        return True, "Source updated"
+
     def remove_source(self, site_name: str) -> tuple[bool, str]:  # noqa: C901 Revisit once I have some tests
         """Remove a source via slug."""
         logger.info("Removing source '%s'", site_name)

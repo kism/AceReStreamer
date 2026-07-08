@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Code, CodeBlock } from "@/components/ui/code"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
+import ScraperFormDialog from "./ScraperFormDialog"
 
 function getScrapersQueryOptions() {
   return {
@@ -93,6 +94,14 @@ function ScraperTable() {
                 <CodeBlock whiteSpace="pre">
                   {JSON.stringify(scraper, null, 2)}
                 </CodeBlock>
+                <ScraperFormDialog
+                  existing={scraper}
+                  trigger={
+                    <Button m={2} size="xs" colorPalette="teal">
+                      Edit
+                    </Button>
+                  }
+                />
                 <Button
                   m={2}
                   size="xs"

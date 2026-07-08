@@ -358,6 +358,13 @@ export type ScraperSourceData = {
 
 export type ScraperSourceResponse = (AceScraperSourceApi);
 
+export type ScraperUpdateSourceData = {
+    requestBody: AceScraperSourceApi;
+    slug: string;
+};
+
+export type ScraperUpdateSourceResponse = (MessageResponseModel);
+
 export type ScraperRemoveSourceData = {
     slug: string;
 };

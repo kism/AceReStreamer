@@ -104,6 +104,65 @@ def test_remove_api_source() -> None:
     assert len(config.api) == initial_count - 1
 
 
+def test_update_source_rename() -> None:
+    """Test updating a source in place, including a rename."""
+    config = AceScrapeConf()
+
+    new_site = ScrapeSiteIPTV(type="iptv", name="test-update", url="http://ace.pytest.internal/playlist.m3u8")
+    config.add_iptv_source(new_site)
+
+    renamed = ScrapeSiteIPTV(type="iptv", name="test-renamed", url="http://ace.pytest.internal/other.m3u8")
+    success, message = config.update_source("test-update", renamed)
+
+    assert success is True
+    assert message == "Source updated"
+    assert [site.name for site in config.iptv_m3u8].count("test-update") == 0
+    assert [site.name for site in config.iptv_m3u8].count("test-renamed") == 1
+
+
+def test_update_source_type_change() -> None:
+    """Test updating a source to a different type moves it between lists."""
+    config = AceScrapeConf()
+
+    new_site = ScrapeSiteIPTV(type="iptv", name="test-type-change", url="http://ace.pytest.internal/playlist.m3u8")
+    config.add_iptv_source(new_site)
+    iptv_count = len(config.iptv_m3u8)
+    html_count = len(config.html)
+
+    as_html = ScrapeSiteHTML(type="html", name="test-type-change", url="http://ace.pytest.internal")
+    success, _ = config.update_source("test-type-change", as_html)
+
+    assert success is True
+    assert len(config.iptv_m3u8) == iptv_count - 1
+    assert len(config.html) == html_count + 1
+
+
+def test_update_nonexistent_source() -> None:
+    """Test updating a source that doesn't exist."""
+    config = AceScrapeConf()
+
+    new_site = ScrapeSiteIPTV(type="iptv", name="test-missing", url="http://ace.pytest.internal/playlist.m3u8")
+    success, message = config.update_source("test-missing", new_site)
+
+    assert success is False
+    assert "Source not found" in message
+
+
+def test_update_source_duplicate_name_fails() -> None:
+    """Test that renaming a source onto another existing name fails and changes nothing."""
+    config = AceScrapeConf()
+
+    config.add_iptv_source(ScrapeSiteIPTV(type="iptv", name="test-dup-a", url="http://ace.pytest.internal/a.m3u8"))
+    config.add_iptv_source(ScrapeSiteIPTV(type="iptv", name="test-dup-b", url="http://ace.pytest.internal/b.m3u8"))
+
+    clashing = ScrapeSiteIPTV(type="iptv", name="test-dup-b", url="http://ace.pytest.internal/c.m3u8")
+    success, message = config.update_source("test-dup-a", clashing)
+
+    assert success is False
+    assert "Duplicate" in message
+    assert [site.name for site in config.iptv_m3u8].count("test-dup-a") == 1
+
+
 def test_remove_nonexistent_source() -> None:
     """Test removing a source that doesn't exist."""
     config = AceScrapeConf()
