@@ -218,11 +218,15 @@ function StreamAdminTable() {
               <Flex flexWrap="wrap" gap={1} fontSize={"xs"} alignItems="center">
                 <Box flex="0 1 auto" bg="bg.muted" px={2} py={1}>
                   TVG ID:{" "}
-                  <Code backgroundColor="bg.emphasized">{item.tvg_id}</Code>
+                  <Code backgroundColor="bg.emphasized">
+                    {item.tvg_id || "-"}
+                  </Code>
                 </Box>
                 <Box flex="0 1 auto" bg="bg.muted" px={2} py={1}>
                   TVG Logo:{" "}
-                  <Code backgroundColor="bg.emphasized">{item.tvg_logo}</Code>
+                  <Code backgroundColor="bg.emphasized">
+                    {item.tvg_logo || "-"}
+                  </Code>
                 </Box>
               </Flex>
               <HStack bg="bg.muted" px={2} py={1} minWidth={0}>
