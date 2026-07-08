@@ -19,7 +19,7 @@ API_V1_STR = "/api/v1"
 ENV_PREFIX = "ACERE_"
 
 
-# EPG Related but used everywhere
+# TVG logo related, used everywhere
 SUPPORTED_TVG_LOGO_EXTENSIONS = ["png", "jpg", "jpeg", "webp", "svg"]
 
 

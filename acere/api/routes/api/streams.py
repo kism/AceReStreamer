@@ -6,7 +6,6 @@ from fastapi import APIRouter, HTTPException
 
 from acere.instances.ace_quality import get_quality_handler
 from acere.instances.ace_streams import get_ace_streams_db_handler
-from acere.instances.epg import get_epg_handler
 from acere.services.scraper.models import FoundAceStream, FoundAceStreamAPI, ManuallyAddedAceStream
 from acere.services.scraper.name_processor import get_tvg_id_from_title, populate_group_title
 from acere.utils.api_models import MessageResponseModel
@@ -30,9 +29,6 @@ def by_content_id(content_id: str) -> FoundAceStreamAPI:
     quality_handler = get_quality_handler()
     quality = quality_handler.get_quality(content_id)
 
-    epg_handler = get_epg_handler()
-    program_title, program_description = epg_handler.get_current_program(stream.tvg_id)
-
     return FoundAceStreamAPI(
         title=stream.title,
         content_id=stream.content_id,
@@ -42,8 +38,6 @@ def by_content_id(content_id: str) -> FoundAceStreamAPI:
         quality=quality.quality,
         has_ever_worked=quality.has_ever_worked,
         m3u_failures=quality.m3u_failures,
-        program_title=program_title,
-        program_description=program_description,
         last_scraped_time=stream.last_scraped_time,
     )
 
@@ -66,12 +60,9 @@ def streams() -> list[FoundAceStreamAPI]:
     streams = handler.get_streams_cached()
 
     streams_api: list[FoundAceStreamAPI] = []
-    epg_handler = get_epg_handler()
     quality_handler = get_quality_handler()
     for stream in streams:
         quality = quality_handler.get_quality(stream.content_id)
-
-        program_title, program_description = epg_handler.get_current_program(stream.tvg_id)
 
         streams_api.append(
             FoundAceStreamAPI(
@@ -83,8 +74,6 @@ def streams() -> list[FoundAceStreamAPI]:
                 quality=quality.quality,
                 has_ever_worked=quality.has_ever_worked,
                 m3u_failures=quality.m3u_failures,
-                program_title=program_title,
-                program_description=program_description,
                 last_scraped_time=stream.last_scraped_time,
             )
         )

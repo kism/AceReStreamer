@@ -8,7 +8,6 @@ from pydantic import HttpUrl, ValidationError
 
 from acere.core.config import AceReStreamerConf, ConfigExport
 from acere.instances.config import settings
-from acere.instances.epg import get_epg_handler
 from acere.instances.scraper import get_ace_scraper
 from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.logger import get_logger
@@ -39,10 +38,7 @@ class RemoteSettingsFetcher:
         )
 
     def get_export_config(self) -> ConfigExport:
-        return ConfigExport(
-            scraper=settings.scraper,
-            epgs=settings.epgs,
-        )
+        return ConfigExport(scraper=settings.scraper)
 
     # region POST
     def set_remote_settings_url(self, url: HttpUrl | None) -> None:
@@ -64,7 +60,6 @@ class RemoteSettingsFetcher:
             return current_config
 
         settings.scraper = config.scraper
-        settings.epgs = config.epgs
         settings.write_backup_config(
             config_path=None,
             existing_data=json.loads(settings.model_dump_json()),
@@ -72,16 +67,12 @@ class RemoteSettingsFetcher:
         )
         self.reload_config()
 
-        return ConfigExport(
-            scraper=settings.scraper,
-            epgs=settings.epgs,
-        )
+        return ConfigExport(scraper=settings.scraper)
 
     def reload_config(self) -> None:
         """Reload the current configuration."""
         settings.write_config()
         get_ace_scraper().start_scrape_thread()
-        get_epg_handler().update_epgs(settings.epgs)
 
     # region Fetch http
     async def fetch_settings(self) -> None:
@@ -118,12 +109,7 @@ class RemoteSettingsFetcher:
         self._status = "fetched"
         self._last_fetch_time = datetime.now(tz=UTC)
 
-        self.update_config_with_export(
-            ConfigExport(
-                scraper=new_settings.scraper,
-                epgs=new_settings.epgs,
-            )
-        )
+        self.update_config_with_export(ConfigExport(scraper=new_settings.scraper))
 
     # region Thread
     def fetch_settings_thread(self) -> None:

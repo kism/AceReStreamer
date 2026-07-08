@@ -29,7 +29,6 @@ from acere.instances.paths import get_app_path_handler, setup_app_path_handler
 from acere.utils.logger import LoggingConf, get_logger
 
 from .app import AppConf
-from .epg import EPGInstanceConf
 from .scraper import AceScrapeConf
 
 if TYPE_CHECKING:
@@ -43,7 +42,6 @@ __all__ = [
     "AceReStreamerConf",
     "AceScrapeConf",
     "AppConf",
-    "EPGInstanceConf",
 ]
 
 setup_app_path_handler(DEFAULT_INSTANCE_PATH)
@@ -74,7 +72,6 @@ class AceReStreamerConf(BaseSettings):
     app: AppConf = AppConf()
     logging: LoggingConf = LoggingConf()
     scraper: AceScrapeConf = AceScrapeConf()
-    epgs: list[EPGInstanceConf] = []
     REMOTE_SETTINGS_URL: HttpUrl | None = None
     FRONTEND_HOST: str = ""  # Set to http://localhost:5173 for local dev
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
@@ -132,28 +129,6 @@ class AceReStreamerConf(BaseSettings):
     @property
     def all_cors_origins(self) -> list[str]:
         return [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS] + [self.FRONTEND_HOST]
-
-    def add_epg(self, epg: EPGInstanceConf) -> None:
-        """Add an EPG instance to the config."""
-        matching_epg = next((existing_epg for existing_epg in self.epgs if existing_epg.url == epg.url), None)
-
-        if not matching_epg:
-            self.epgs.append(epg)
-            logger.info("Added new EPG source, total sources: %d", len(self.epgs))
-        else:
-            matching_epg = epg
-            logger.info("Updating existing EPG source: %s", epg.url)
-
-    def remove_epg(self, epg_url_slug: str) -> bool:
-        """Remove an EPG instance from the config via URL."""
-        matching_epg = next((existing_epg for existing_epg in self.epgs if existing_epg.slug == epg_url_slug), None)
-
-        if matching_epg:
-            self.epgs.remove(matching_epg)
-            logger.info("Removed EPG source, total sources: %d", len(self.epgs))
-            return True
-
-        return False
 
     def write_backup_config(
         self,
@@ -241,4 +216,3 @@ class ConfigExport(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     scraper: AceScrapeConf
-    epgs: list[EPGInstanceConf]

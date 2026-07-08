@@ -1,12 +1,6 @@
 import { Box, Flex, Icon, Text } from "@chakra-ui/react"
 import { Link as RouterLink } from "@tanstack/react-router"
-import {
-  FiCalendar,
-  FiExternalLink,
-  FiPlay,
-  FiSettings,
-  FiTv,
-} from "react-icons/fi"
+import { FiExternalLink, FiPlay, FiSettings, FiTv } from "react-icons/fi"
 import type { IconType } from "react-icons/lib"
 import "@fontsource/fira-code/700.css"
 import type { FlexProps } from "@chakra-ui/react"
@@ -17,7 +11,6 @@ const VITE_API_URL = baseURL()
 const items = [
   { icon: FiPlay, title: "Streams", path: "/" },
   { icon: FiTv, title: "IPTV", path: "/info/iptv" },
-  { icon: FiCalendar, title: "EPG", path: "/epg" },
   { icon: FiSettings, title: "Admin", path: "/admin" },
 ]
 

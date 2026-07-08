@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING
 from acere.core.config.scraper import HTMLScraperFilter
 from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.config import settings
-from acere.instances.epg import get_epg_handler
 from acere.utils.logger import get_logger
 
 from .api import APIStreamScraper
@@ -19,7 +18,6 @@ from .iptv import IPTVStreamScraper
 from .models import AceScraperSourceApi, FoundAceStream
 
 if TYPE_CHECKING:
-    from acere.core.config.epg import EPGInstanceConf
     from acere.core.config.scraper import (
         AceScrapeConf,
         ScrapeSiteHTML,
@@ -29,7 +27,6 @@ if TYPE_CHECKING:
 else:
     ScrapeSiteHTML = object
     ScrapeSiteIPTV = object
-    EPGInstanceConf = object
     AceScrapeConf = object
     Quality = object
 
@@ -172,11 +169,6 @@ class AceScraper:
         for stream in self._streams.values():
             handler.update_stream(stream=stream)
 
-    def _update_epg_with_streams(self) -> None:
-        """Update the EPG with the found streams."""
-        tvg_id_list = [stream.tvg_id for stream in self._streams.values()]
-        get_epg_handler().add_tvg_ids(tvg_ids=tvg_id_list)
-
     # region Thread
     def start_scrape_thread(self) -> None:  # noqa: C901
         """Run the scraper to find AceStreams."""
@@ -214,7 +206,6 @@ class AceScraper:
 
                 # Populate ourself
                 self._print_streams(found_streams)
-                self._update_epg_with_streams()
 
                 # For streams with only an infohash, populate the content_id using the api
                 for attempt in range(2):
@@ -245,8 +236,6 @@ class AceScraper:
                             "Still have %d streams with missing content_ids, retrying in 60 seconds", len(still_missing)
                         )
                         time.sleep(60)
-
-                self._update_epg_with_streams()
 
                 self._print_warnings()
                 if self._stop_event.wait(SCRAPE_INTERVAL):

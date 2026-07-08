@@ -16,12 +16,10 @@ from acere.database.init import engine, init_db
 from acere.instances.ace_pool import set_ace_pool
 from acere.instances.ace_quality import set_quality_handler
 from acere.instances.config import settings
-from acere.instances.epg import set_epg_handler
 from acere.instances.paths import get_app_path_handler, setup_app_path_handler
 from acere.instances.remote_settings import set_remote_settings_fetcher
 from acere.instances.scraper import set_ace_scraper
 from acere.services.ace_pool.pool import AcePool
-from acere.services.epg import EPGHandler
 from acere.services.remote_settings import RemoteSettingsFetcher
 from acere.services.scraper import AceScraper
 from acere.utils.logger import get_logger, setup_logger
@@ -84,10 +82,6 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
     instance_id = str(random.randbytes(4).hex())  # noqa: S311 Not crypto related
 
-    # EPG Handler, needs to be before the scraper
-    epg_handler = EPGHandler(instance_id=instance_id)
-    set_epg_handler(epg_handler)
-
     # Pool
     ace_pool = AcePool(instance_id=instance_id)
     set_ace_pool(ace_pool)
@@ -107,11 +101,10 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
     yield
 
-    handlers: list[AceScraper | AcePool | RemoteSettingsFetcher | EPGHandler | AceQualityCacheHandler] = [
+    handlers: list[AceScraper | AcePool | RemoteSettingsFetcher | AceQualityCacheHandler] = [
         ace_pool,
         ace_scraper,
         remote_settings_fetcher,
-        epg_handler,
         quality_handler,
     ]  # Can't do a sneaky one-liner due to type checking
     for handler in handlers:

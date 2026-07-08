@@ -82,8 +82,8 @@ function RemoteConfig() {
       <Box>
         <Heading size="md">Remote Configuration</Heading>
         <Text fontSize="sm" color="fg.muted">
-          Configure a remote URL to automatically fetch epg and scraper
-          configuration from.
+          Configure a remote URL to automatically fetch scraper configuration
+          from.
         </Text>
       </Box>
 

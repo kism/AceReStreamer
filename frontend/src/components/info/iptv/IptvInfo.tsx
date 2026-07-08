@@ -61,7 +61,6 @@ export function IptvInfo({ credentials, isLoading, error }: IptvInfoProps) {
   const playlistUrl = `${VITE_API_URL}/iptv`
   const playlistM3uUrl = `${VITE_API_URL}/iptv.m3u`
   const playlistM3u8Url = `${VITE_API_URL}/iptv.m3u8`
-  const epgXmlUrl = `${VITE_API_URL}/epg.xml`
 
   const xtreamItems = [
     { name: "Server / Portal URL", value: serverAddress },
@@ -73,7 +72,6 @@ export function IptvInfo({ credentials, isLoading, error }: IptvInfoProps) {
     { name: "Playlist URL", value: playlistUrl },
     { name: "Playlist URL (.m3u)", value: playlistM3uUrl },
     { name: "Playlist URL (.m3u8)", value: playlistM3u8Url },
-    { name: "EPG URL", value: epgXmlUrl },
   ]
 
   return (
@@ -82,8 +80,7 @@ export function IptvInfo({ credentials, isLoading, error }: IptvInfoProps) {
         <Heading>Xtream IPTV</Heading>
         <Text>
           Add a playlist/source with your IPTV app, use the XC/Xtream setting
-          when adding. EPG should work automatically. If its not available,
-          follow the regular IPTV instructions.
+          when adding.
         </Text>
         <Box maxW={{ base: "100%", sm: "450px" }}>
           <AppTableRoot preset="outlineSm" width="100%" maxWidth="100%">
@@ -95,8 +92,7 @@ export function IptvInfo({ credentials, isLoading, error }: IptvInfoProps) {
       <VStack gap={2} align="stretch">
         <Heading>IPTV</Heading>
         <Text>
-          Depending on the app, you might need to use an alternate Playlist or
-          EPG url.
+          Depending on the app, you might need to use an alternate Playlist url.
         </Text>
         <Text>Some apps will only work if this site is on https.</Text>
         <Box maxW={{ base: "100%", md: "700px" }}>

@@ -41,11 +41,7 @@ function NoDataVStack() {
   )
 }
 
-export function StreamTable({
-  showProgramInformation,
-}: {
-  showProgramInformation: boolean
-}) {
+export function StreamTable() {
   const { data, isLoading, isPlaceholderData } = useQuery({
     ...getStreamsQueryOptions(),
     placeholderData: (prevData) => prevData,
@@ -101,9 +97,6 @@ export function StreamTable({
               </Box>
             </TableColumnHeader>
             <TableColumnHeader>Stream</TableColumnHeader>
-            {showProgramInformation && (
-              <TableColumnHeader maxW="150px">Description</TableColumnHeader>
-            )}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -126,27 +119,7 @@ export function StreamTable({
                 >
                   {item.title}
                 </Box>
-                <Box
-                  color={item.program_description ? "fg.muted" : "fg.subtle"}
-                  whiteSpace="nowrap"
-                  overflow="hidden"
-                  textOverflow="ellipsis"
-                >
-                  {item.program_title || "<No Title>"}
-                </Box>
               </TableCell>
-              {showProgramInformation && (
-                <TableCell textAlign="left" maxW="150px" p={1} px={2}>
-                  <Box
-                    whiteSpace="normal"
-                    overflow="hidden"
-                    textOverflow="ellipsis"
-                    color={item.program_description ? undefined : "fg.subtle"}
-                  >
-                    {item.program_description || "<No Description>"}
-                  </Box>
-                </TableCell>
-              )}
             </TableRow>
           ))}
         </TableBody>

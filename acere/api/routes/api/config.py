@@ -10,15 +10,15 @@ router = APIRouter(prefix="/config", tags=["Config"])
 
 @router.get("/")
 def get_config() -> ConfigExport:
-    """API endpoint to get the current scraper and EPG configuration."""
+    """API endpoint to get the current scraper configuration."""
     return get_remote_settings_fetcher().get_export_config()
 
 
 @router.post("/")
 def update_config(config: ConfigExport) -> ConfigExport:
-    """API endpoint to update the current scraper and EPG configuration.
+    """API endpoint to update the current scraper configuration.
 
-    You can send this a full configuration and it will only replace the scraper and the EPGs parts.
+    You can send this a full configuration and it will only replace the scraper part.
     """
     return get_remote_settings_fetcher().update_config_with_export(config)
 

@@ -1,4 +1,4 @@
-import { Box, useBreakpointValue } from "@chakra-ui/react"
+import { Box } from "@chakra-ui/react"
 import { createFileRoute } from "@tanstack/react-router"
 import { AcePoolSection } from "@/components/Index/AcePoolSection"
 import { StreamTable } from "@/components/Index/StreamTable"
@@ -9,13 +9,12 @@ export const Route = createFileRoute("/_layout/")({
 })
 
 function Streams() {
-  const showProgramInformation = useBreakpointValue({ base: false, lg: true })
   usePageTitle("Streams")
 
   return (
     <Box maxW="800px">
       <AcePoolSection />
-      <StreamTable showProgramInformation={!!showProgramInformation} />
+      <StreamTable />
     </Box>
   )
 }

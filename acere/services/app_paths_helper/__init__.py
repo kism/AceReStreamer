@@ -20,7 +20,6 @@ class AppPathsHelper:
             self.scraper_cache_dir,
             self.tvg_logos_dir,
             self.playlists_dir,
-            self.epg_data_dir,
         ]
         for directory in dirs:
             directory.mkdir(parents=True, exist_ok=True)
@@ -40,10 +39,6 @@ class AppPathsHelper:
     @property
     def playlists_dir(self) -> Path:
         return self._instance_path / "playlists"
-
-    @property
-    def epg_data_dir(self) -> Path:
-        return self._instance_path / "epg_data"
 
     @property
     def settings_file(self) -> Path:

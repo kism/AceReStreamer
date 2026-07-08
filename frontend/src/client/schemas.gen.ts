@@ -470,154 +470,15 @@ export const AceVersionResultSchema = {
     title: 'AceVersionResult'
 } as const;
 
-export const ConfigExport_InputSchema = {
+export const ConfigExportSchema = {
     properties: {
         scraper: {
             '$ref': '#/components/schemas/AceScrapeConf'
-        },
-        epgs: {
-            items: {
-                '$ref': '#/components/schemas/EPGInstanceConf-Input'
-            },
-            type: 'array',
-            title: 'Epgs'
         }
     },
     type: 'object',
-    required: ['scraper', 'epgs'],
+    required: ['scraper'],
     title: 'ConfigExport'
-} as const;
-
-export const ConfigExport_OutputSchema = {
-    properties: {
-        scraper: {
-            '$ref': '#/components/schemas/AceScrapeConf'
-        },
-        epgs: {
-            items: {
-                '$ref': '#/components/schemas/EPGInstanceConf-Output'
-            },
-            type: 'array',
-            title: 'Epgs'
-        }
-    },
-    type: 'object',
-    required: ['scraper', 'epgs'],
-    title: 'ConfigExport'
-} as const;
-
-export const EPGApiHandlerHealthResponseSchema = {
-    properties: {
-        time_until_next_update: {
-            type: 'integer',
-            title: 'Time Until Next Update'
-        },
-        tvg_ids: {
-            items: {
-                type: 'string'
-            },
-            type: 'array',
-            title: 'Tvg Ids'
-        },
-        epgs: {
-            additionalProperties: {
-                '$ref': '#/components/schemas/EPGApiHealthResponse'
-            },
-            type: 'object',
-            title: 'Epgs'
-        }
-    },
-    type: 'object',
-    required: ['time_until_next_update', 'tvg_ids', 'epgs'],
-    title: 'EPGApiHandlerHealthResponse',
-    description: 'Model for EPG API handler response.'
-} as const;
-
-export const EPGApiHealthResponseSchema = {
-    properties: {
-        time_since_last_updated: {
-            type: 'integer',
-            title: 'Time Since Last Updated'
-        },
-        time_until_next_update: {
-            type: 'integer',
-            title: 'Time Until Next Update'
-        }
-    },
-    type: 'object',
-    required: ['time_since_last_updated', 'time_until_next_update'],
-    title: 'EPGApiHealthResponse',
-    description: 'Model for EPG API response.'
-} as const;
-
-export const EPGInstanceConf_InputSchema = {
-    properties: {
-        format: {
-            type: 'string',
-            enum: ['xml.gz', 'xml'],
-            title: 'Format',
-            default: 'xml.gz'
-        },
-        url: {
-            type: 'string',
-            maxLength: 2083,
-            minLength: 1,
-            format: 'uri',
-            title: 'Url'
-        },
-        tvg_id_overrides: {
-            additionalProperties: {
-                type: 'string'
-            },
-            type: 'object',
-            title: 'Tvg Id Overrides',
-            default: {}
-        }
-    },
-    type: 'object',
-    required: ['url'],
-    title: 'EPGInstanceConf',
-    description: `EPG (Electronic Program Guide) configuration definition.
-
-tvg_id_overrides is a str:str dict where you can override stream tvg_ids to match those in the EPG.`
-} as const;
-
-export const EPGInstanceConf_OutputSchema = {
-    properties: {
-        format: {
-            type: 'string',
-            enum: ['xml.gz', 'xml'],
-            title: 'Format',
-            default: 'xml.gz'
-        },
-        url: {
-            type: 'string',
-            maxLength: 2083,
-            minLength: 1,
-            format: 'uri',
-            title: 'Url'
-        },
-        tvg_id_overrides: {
-            additionalProperties: {
-                type: 'string'
-            },
-            type: 'object',
-            title: 'Tvg Id Overrides',
-            default: {}
-        },
-        slug: {
-            type: 'string',
-            title: 'Slug',
-            description: 'Generate a slug from the url.',
-            readOnly: true
-        }
-    },
-    type: 'object',
-    required: ['url', 'slug'],
-    title: 'EPGInstanceConf',
-    description: `EPG (Electronic Program Guide) configuration definition.
-
-tvg_id_overrides is a str:str dict where you can override stream tvg_ids to match those in the EPG.`
 } as const;
 
 export const ErrorDetailsSchema = {
@@ -703,14 +564,6 @@ export const FoundAceStreamAPISchema = {
             format: 'date-time',
             title: 'Last Scraped Time'
         },
-        program_title: {
-            type: 'string',
-            title: 'Program Title'
-        },
-        program_description: {
-            type: 'string',
-            title: 'Program Description'
-        },
         quality: {
             type: 'integer',
             title: 'Quality'
@@ -725,7 +578,7 @@ export const FoundAceStreamAPISchema = {
         }
     },
     type: 'object',
-    required: ['title', 'content_id', 'tvg_id', 'last_scraped_time', 'program_title', 'program_description', 'quality', 'has_ever_worked', 'm3u_failures'],
+    required: ['title', 'content_id', 'tvg_id', 'last_scraped_time', 'quality', 'has_ever_worked', 'm3u_failures'],
     title: 'FoundAceStreamAPI',
     description: 'Model for a found AceStream.'
 } as const;
@@ -1020,25 +873,6 @@ export const ScrapeSiteIPTVSchema = {
     required: ['name', 'url'],
     title: 'ScrapeSiteIPTV',
     description: 'Scraper for IPTV Sites.'
-} as const;
-
-export const TVGEPGMappingsResponseSchema = {
-    additionalProperties: {
-        anyOf: [
-            {
-                type: 'string',
-                maxLength: 2083,
-                minLength: 1,
-                format: 'uri'
-            },
-            {
-                type: 'null'
-            }
-        ]
-    },
-    type: 'object',
-    title: 'TVGEPGMappingsResponse',
-    description: 'Model for TVG EPG mappings response.'
 } as const;
 
 export const ThreadHealthModelSchema = {

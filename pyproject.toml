@@ -63,7 +63,6 @@ module-root = ""
 [project.scripts]
 acerestreamer-scrape = "acere.cli.scraper:__main__.main"
 acerestreamer-debug-get-xc-server-response = "acere.cli.get_xc_server_response:__main__.main"
-acerestreamer-debug-epg-now-playing = "acere.cli.epg_now_playing:__main__.main"
 acerestreamer-migrate = "acere.cli.db_migrate:__main__.main"
 
 [tool.ruff]
@@ -124,7 +123,6 @@ runtime-evaluated-base-classes = [
     "acere.services.ace_quality.Quality",
     "acere.services.scraper.models.FoundAceStreamAPI",
     "acere.services.scraper.models.AceScraperSourceApi",
-    "acere.services.epg.models.EPGApiHandlerHealthResponse",
 ] # These aren't for type checking only
 
 [tool.ruff.lint.pydocstyle]

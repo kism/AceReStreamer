@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { AcePoolPoolResponse, AcePoolGetByContentIdData, AcePoolGetByContentIdResponse, AcePoolDeleteByContentIdData, AcePoolDeleteByContentIdResponse, AcePoolGetByPidData, AcePoolGetByPidResponse, AcePoolStatsResponse, AcePoolStatsByContentIdData, AcePoolStatsByContentIdResponse, AcePoolStatsByPidData, AcePoolStatsByPidResponse, ConfigGetConfigResponse, ConfigUpdateConfigData, ConfigUpdateConfigResponse, ConfigFetchRemoteSettingsResponse, ConfigTriggerFetchRemoteSettingsData, ConfigTriggerFetchRemoteSettingsResponse, ConfigReloadConfigResponse, EpgEpgHealthResponse, EpgGetEpgsResponse, EpgAddEpgData, EpgAddEpgResponse, EpgGetEpgData, EpgGetEpgResponse, EpgDeleteEpgData, EpgDeleteEpgResponse, EpgTvgEpgMappingsResponse, FrontendFrontendIndexHtmlResponse, FrontendFrontendIndexResponse, HealthHealthResponse, MediaIptvIptvM3U83Response, MediaIptvIptvM3U2Response, MediaIptvIptvM3U81Response, MediaXmlEpgXmlResponse, MediaXmlEpgXml3Data, MediaXmlEpgXml3Response, ScraperSourcesResponse, ScraperAddSourceData, ScraperAddSourceResponse, ScraperSourceData, ScraperSourceResponse, ScraperRemoveSourceData, ScraperRemoveSourceResponse, ScraperGetNameOverridesResponse, ScraperDeleteNameOverrideData, ScraperDeleteNameOverrideResponse, ScraperAddNameOverrideData, ScraperAddNameOverrideResponse, StreamsByContentIdData, StreamsByContentIdResponse, StreamsDeleteByContentIdData, StreamsDeleteByContentIdResponse, StreamsStreamsResponse, StreamsAddStreamData, StreamsAddStreamResponse, StreamsCheckResponse, XtreamCodesGetXcCredentialsResponse, XtreamCodesXcIptvRouterData, XtreamCodesXcIptvRouterResponse, XtreamCodesXcGetData, XtreamCodesXcGetResponse } from './types.gen';
+import type { AcePoolPoolResponse, AcePoolGetByContentIdData, AcePoolGetByContentIdResponse, AcePoolDeleteByContentIdData, AcePoolDeleteByContentIdResponse, AcePoolGetByPidData, AcePoolGetByPidResponse, AcePoolStatsResponse, AcePoolStatsByContentIdData, AcePoolStatsByContentIdResponse, AcePoolStatsByPidData, AcePoolStatsByPidResponse, ConfigGetConfigResponse, ConfigUpdateConfigData, ConfigUpdateConfigResponse, ConfigFetchRemoteSettingsResponse, ConfigTriggerFetchRemoteSettingsData, ConfigTriggerFetchRemoteSettingsResponse, ConfigReloadConfigResponse, FrontendFrontendIndexHtmlResponse, FrontendFrontendIndexResponse, HealthHealthResponse, MediaIptvIptvM3U83Response, MediaIptvIptvM3U2Response, MediaIptvIptvM3U81Response, ScraperSourcesResponse, ScraperAddSourceData, ScraperAddSourceResponse, ScraperSourceData, ScraperSourceResponse, ScraperRemoveSourceData, ScraperRemoveSourceResponse, ScraperGetNameOverridesResponse, ScraperDeleteNameOverrideData, ScraperDeleteNameOverrideResponse, ScraperAddNameOverrideData, ScraperAddNameOverrideResponse, StreamsByContentIdData, StreamsByContentIdResponse, StreamsDeleteByContentIdData, StreamsDeleteByContentIdResponse, StreamsStreamsResponse, StreamsAddStreamData, StreamsAddStreamResponse, StreamsCheckResponse, XtreamCodesGetXcCredentialsResponse, XtreamCodesXcIptvRouterData, XtreamCodesXcIptvRouterResponse, XtreamCodesXcGetData, XtreamCodesXcGetResponse } from './types.gen';
 
 export class AcePoolService {
     /**
@@ -141,8 +141,8 @@ export class AcePoolService {
 export class ConfigService {
     /**
      * Get Config
-     * API endpoint to get the current scraper and EPG configuration.
-     * @returns ConfigExport_Output Successful Response
+     * API endpoint to get the current scraper configuration.
+     * @returns ConfigExport Successful Response
      * @throws ApiError
      */
     public static getConfig(): CancelablePromise<ConfigGetConfigResponse> {
@@ -154,12 +154,12 @@ export class ConfigService {
     
     /**
      * Update Config
-     * API endpoint to update the current scraper and EPG configuration.
+     * API endpoint to update the current scraper configuration.
      *
-     * You can send this a full configuration and it will only replace the scraper and the EPGs parts.
+     * You can send this a full configuration and it will only replace the scraper part.
      * @param data The data for the request.
      * @param data.requestBody
-     * @returns ConfigExport_Output Successful Response
+     * @returns ConfigExport Successful Response
      * @throws ApiError
      */
     public static updateConfig(data: ConfigUpdateConfigData): CancelablePromise<ConfigUpdateConfigResponse> {
@@ -217,109 +217,6 @@ export class ConfigService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/v1/config/reload'
-        });
-    }
-}
-
-export class EpgService {
-    /**
-     * Epg Health
-     * Get the list of EPGs w/health.
-     * @returns EPGApiHandlerHealthResponse Successful Response
-     * @throws ApiError
-     */
-    public static epgHealth(): CancelablePromise<EpgEpgHealthResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/v1/epg/health'
-        });
-    }
-    
-    /**
-     * Get Epgs
-     * Get the list of EPG configurations.
-     * @returns EPGInstanceConf_Output Successful Response
-     * @throws ApiError
-     */
-    public static getEpgs(): CancelablePromise<EpgGetEpgsResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/v1/epg/'
-        });
-    }
-    
-    /**
-     * Add Epg
-     * Add a new EPG source.
-     * @param data The data for the request.
-     * @param data.requestBody
-     * @returns unknown Successful Response
-     * @throws ApiError
-     */
-    public static addEpg(data: EpgAddEpgData): CancelablePromise<EpgAddEpgResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/epg/',
-            body: data.requestBody,
-            mediaType: 'application/json',
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Get Epg
-     * Get a specific EPG configuration by slug.
-     * @param data The data for the request.
-     * @param data.slug
-     * @returns EPGInstanceConf_Output Successful Response
-     * @throws ApiError
-     */
-    public static getEpg(data: EpgGetEpgData): CancelablePromise<EpgGetEpgResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/v1/epg/slug/{slug}',
-            path: {
-                slug: data.slug
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Delete Epg
-     * Delete an EPG source by slug.
-     * @param data The data for the request.
-     * @param data.slug
-     * @returns unknown Successful Response
-     * @throws ApiError
-     */
-    public static deleteEpg(data: EpgDeleteEpgData): CancelablePromise<EpgDeleteEpgResponse> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/v1/epg/slug/{slug}',
-            path: {
-                slug: data.slug
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Tvg Epg Mappings
-     * Get the mapping of TVG IDs to their source EPG URLs.
-     * @returns TVGEPGMappingsResponse Successful Response
-     * @throws ApiError
-     */
-    public static tvgEpgMappings(): CancelablePromise<EpgTvgEpgMappingsResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/v1/epg/tvg-ids'
         });
     }
 }
@@ -402,44 +299,6 @@ export class MediaIptvService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/iptv'
-        });
-    }
-}
-
-export class MediaXmlService {
-    /**
-     * Epg Xml
-     * Get the merged EPG data.
-     * @returns unknown Successful Response
-     * @throws ApiError
-     */
-    public static epgXml(): CancelablePromise<MediaXmlEpgXmlResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/epg.xml'
-        });
-    }
-    
-    /**
-     * Epg Xml 3
-     * Get the merged EPG data.
-     * @param data The data for the request.
-     * @param data.username
-     * @param data.password
-     * @returns unknown Successful Response
-     * @throws ApiError
-     */
-    public static epgXml3(data: MediaXmlEpgXml3Data = {}): CancelablePromise<MediaXmlEpgXml3Response> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/xmltv.php',
-            query: {
-                username: data.username,
-                password: data.password
-            },
-            errors: {
-                422: 'Validation Error'
-            }
         });
     }
 }

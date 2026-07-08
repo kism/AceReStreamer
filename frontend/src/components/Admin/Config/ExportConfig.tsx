@@ -63,8 +63,8 @@ function ExportConfig() {
     <VStack align="start" gap={4}>
       <Heading size="md">Export Configuration</Heading>
       <Text fontSize="sm">
-        Export your current scraper and EPG configuration to a JSON file or copy
-        it to the clipboard.
+        Export your current scraper configuration to a JSON file or copy it to
+        the clipboard.
       </Text>
 
       <HStack gap={4} width="full">

@@ -133,65 +133,8 @@ export type AceVersionResult = {
 
 export type platform = 'win32' | 'linux' | 'android';
 
-export type ConfigExport_Input = {
+export type ConfigExport = {
     scraper: AceScrapeConf;
-    epgs: Array<EPGInstanceConf_Input>;
-};
-
-export type ConfigExport_Output = {
-    scraper: AceScrapeConf;
-    epgs: Array<EPGInstanceConf_Output>;
-};
-
-/**
- * Model for EPG API handler response.
- */
-export type EPGApiHandlerHealthResponse = {
-    time_until_next_update: number;
-    tvg_ids: Array<(string)>;
-    epgs: {
-        [key: string]: EPGApiHealthResponse;
-    };
-};
-
-/**
- * Model for EPG API response.
- */
-export type EPGApiHealthResponse = {
-    time_since_last_updated: number;
-    time_until_next_update: number;
-};
-
-/**
- * EPG (Electronic Program Guide) configuration definition.
- *
- * tvg_id_overrides is a str:str dict where you can override stream tvg_ids to match those in the EPG.
- */
-export type EPGInstanceConf_Input = {
-    format?: 'xml.gz' | 'xml';
-    url: string;
-    tvg_id_overrides?: {
-        [key: string]: (string);
-    };
-};
-
-export type format = 'xml.gz' | 'xml';
-
-/**
- * EPG (Electronic Program Guide) configuration definition.
- *
- * tvg_id_overrides is a str:str dict where you can override stream tvg_ids to match those in the EPG.
- */
-export type EPGInstanceConf_Output = {
-    format?: 'xml.gz' | 'xml';
-    url: string;
-    tvg_id_overrides?: {
-        [key: string]: (string);
-    };
-    /**
-     * Generate a slug from the url.
-     */
-    readonly slug: string;
 };
 
 export type ErrorDetails = {
@@ -215,8 +158,6 @@ export type FoundAceStreamAPI = {
     tvg_id: string;
     tvg_logo?: (string | null);
     last_scraped_time: string;
-    program_title: string;
-    program_description: string;
     quality: number;
     has_ever_worked: boolean;
     m3u_failures: number;
@@ -324,13 +265,6 @@ export type TitleFilter = {
     regex_postprocessing?: Array<(string)>;
 };
 
-/**
- * Model for TVG EPG mappings response.
- */
-export type TVGEPGMappingsResponse = {
-    [key: string]: (string | null);
-};
-
 export type ValidationError = {
     loc: Array<(string | number)>;
     msg: string;
@@ -380,13 +314,13 @@ export type AcePoolStatsByPidData = {
 
 export type AcePoolStatsByPidResponse = (AcePoolStat);
 
-export type ConfigGetConfigResponse = (ConfigExport_Output);
+export type ConfigGetConfigResponse = (ConfigExport);
 
 export type ConfigUpdateConfigData = {
-    requestBody: ConfigExport_Input;
+    requestBody: ConfigExport;
 };
 
-export type ConfigUpdateConfigResponse = (ConfigExport_Output);
+export type ConfigUpdateConfigResponse = (ConfigExport);
 
 export type ConfigFetchRemoteSettingsResponse = (RemoteSettingsURLGetModel);
 
@@ -397,30 +331,6 @@ export type ConfigTriggerFetchRemoteSettingsData = {
 export type ConfigTriggerFetchRemoteSettingsResponse = (MessageResponseModel);
 
 export type ConfigReloadConfigResponse = (MessageResponseModel);
-
-export type EpgEpgHealthResponse = (EPGApiHandlerHealthResponse);
-
-export type EpgGetEpgsResponse = (Array<EPGInstanceConf_Output>);
-
-export type EpgAddEpgData = {
-    requestBody: (EPGInstanceConf_Input | Array<EPGInstanceConf_Input>);
-};
-
-export type EpgAddEpgResponse = (unknown);
-
-export type EpgGetEpgData = {
-    slug: string;
-};
-
-export type EpgGetEpgResponse = (EPGInstanceConf_Output);
-
-export type EpgDeleteEpgData = {
-    slug: string;
-};
-
-export type EpgDeleteEpgResponse = (unknown);
-
-export type EpgTvgEpgMappingsResponse = (TVGEPGMappingsResponse);
 
 export type FrontendFrontendIndexHtmlResponse = (string);
 
@@ -433,15 +343,6 @@ export type MediaIptvIptvM3U83Response = (unknown);
 export type MediaIptvIptvM3U2Response = (unknown);
 
 export type MediaIptvIptvM3U81Response = (unknown);
-
-export type MediaXmlEpgXmlResponse = (unknown);
-
-export type MediaXmlEpgXml3Data = {
-    password?: string;
-    username?: string;
-};
-
-export type MediaXmlEpgXml3Response = (unknown);
 
 export type ScraperSourcesResponse = (Array<AceScraperSourceApi>);
 

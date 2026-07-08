@@ -12,7 +12,6 @@ import { FaAngleDown, FaAngleUp } from "react-icons/fa"
 import {
   AcePoolService,
   ConfigService,
-  EpgService,
   HealthService,
   StreamsService,
 } from "@/client"
@@ -30,11 +29,6 @@ function HealthManagement() {
   const { data: generalHealth, isLoading: isLoadingGeneral } = useQuery({
     queryKey: ["health", "general"],
     queryFn: () => HealthService.health(),
-  })
-
-  const { data: epgHealth, isLoading: isLoadingEpg } = useQuery({
-    queryKey: ["health", "epg"],
-    queryFn: () => EpgService.epgHealth(),
   })
 
   const { data: acePoolData, isLoading: isLoadingAcePool } = useQuery({
@@ -70,21 +64,12 @@ function HealthManagement() {
         isLoading: isLoadingAcePoolStats,
         queryKey: ["health", "acePoolStats"],
       },
-      {
-        key: "epg",
-        title: "EPG Health",
-        data: epgHealth,
-        isLoading: isLoadingEpg,
-        queryKey: ["health", "epg"],
-      },
     ],
     [
       generalHealth,
-      epgHealth,
       acePoolData,
       acePoolStats,
       isLoadingGeneral,
-      isLoadingEpg,
       isLoadingAcePool,
       isLoadingAcePoolStats,
     ],

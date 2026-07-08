@@ -151,18 +151,6 @@ function StreamAdminTable() {
                   TVG Logo:{" "}
                   <Code backgroundColor="bg.emphasized">{item.tvg_logo}</Code>
                 </Box>
-                <HStack flex="0 1 auto" bg="bg.muted" px={2} py={1}>
-                  Program:
-                  <Text
-                    maxW="200px"
-                    overflow="hidden"
-                    textOverflow="ellipsis"
-                    whiteSpace="nowrap"
-                    color={item.program_title !== "" ? "fg" : "fg.error"}
-                  >
-                    {item.program_title !== "" ? item.program_title : "???"}
-                  </Text>
-                </HStack>
               </Flex>
             </Flex>
           </Box>

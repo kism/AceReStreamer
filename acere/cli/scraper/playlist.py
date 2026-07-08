@@ -160,12 +160,7 @@ class PlaylistCreator:
         for uri_scheme, prefix in M3U_URI_SCHEMES.items():
             playlist_path = playlists_dir / f"{settings.scraper.playlist_name}-{uri_scheme}.m3u"
             with playlist_path.open("w", encoding="utf-8") as m3u_file:
-                epg_urls = [epg.url for epg in settings.epgs]
-                epg_str = ""
-                if epg_urls:
-                    epg_str = f'x-tvg-url="{",".join(epg_url.encoded_string() for epg_url in epg_urls)}"'
-
-                m3u_file.write(f"#EXTM3U {epg_str}\n")
+                m3u_file.write("#EXTM3U\n")
                 logger.debug("Creating playlist %s", playlist_path.name)
                 for stream in streams:
                     # This logic is for adhoc scraper not chaning playlists unless they are not found recently

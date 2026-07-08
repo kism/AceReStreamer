@@ -125,9 +125,7 @@ class AceStreamDBHandler(BaseDatabaseHandler):
         """Get the found streams as an IPTV M3U8 string."""
         external_url = settings.EXTERNAL_URL
 
-        # There are a few standards for the tag for the tvg url, most to least common x-tvg-url, url-tvg, tvg-url
-        epg_url = HttpUrl(f"{external_url}/epg.xml")
-        m3u8_content = f'#EXTM3U x-tvg-url="{epg_url}" url-tvg="{epg_url}" refresh="3600"\n'
+        m3u8_content = '#EXTM3U refresh="3600"\n'
 
         iptv_set = set()
 
