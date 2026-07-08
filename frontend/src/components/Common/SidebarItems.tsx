@@ -3,7 +3,6 @@ import { Link as RouterLink } from "@tanstack/react-router"
 import {
   FiCalendar,
   FiExternalLink,
-  FiMonitor,
   FiPlay,
   FiSettings,
   FiTv,
@@ -16,8 +15,7 @@ import baseURL from "@/helpers"
 const VITE_API_URL = baseURL()
 
 const items = [
-  { icon: FiPlay, title: "Webplayer", path: "/" },
-  { icon: FiMonitor, title: "Playback", path: "/info/playback" },
+  { icon: FiPlay, title: "Streams", path: "/" },
   { icon: FiTv, title: "IPTV", path: "/info/iptv" },
   { icon: FiCalendar, title: "EPG", path: "/epg" },
   { icon: FiSettings, title: "Admin", path: "/admin" },

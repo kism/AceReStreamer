@@ -44,11 +44,6 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // This will be lazy loaded
-          if (id.includes("shaka-player")) {
-            return "shaka-player"
-          }
-
           // TanStack
           if (id.includes("@tanstack/react-query")) {
             return "tanstack-query"

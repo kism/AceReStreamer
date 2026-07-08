@@ -10,11 +10,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "biome check --write --unsafe --no-errors-on-unmatched --files-ignore-unknown=true ./",
     "generate-client": "openapi-ts",
-    "generate-frontend-paths": "bun scripts/generate_frontend_route_list.ts",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "test:e2e:debug": "playwright test --debug",
-    "test:e2e:report": "playwright show-report"
+    "generate-frontend-paths": "bun scripts/generate_frontend_route_list.ts"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.36.0",
@@ -29,13 +25,11 @@
     "react-dom": "^19.2.7",
     "react-error-boundary": "^6.1.2",
     "react-hook-form": "7.71.1",
-    "react-icons": "^5.7.0",
-    "shaka-player": "^5.1.13"
+    "react-icons": "^5.7.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.2",
     "@hey-api/openapi-ts": "0.73.0",
-    "@playwright/test": "1.57.0",
     "@tanstack/react-router-devtools": "^1.167.0",
     "@tanstack/router-plugin": "^1.168.19",
     "@types/node": "^25.9.4",

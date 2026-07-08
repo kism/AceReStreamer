@@ -15,8 +15,6 @@
       "!**/.vite/**/*",
       "!**/src/routeTree.gen.ts",
       "!**/src/client/**/*",
-      "!**/playwright-report",
-      "!**/playwright.config.ts",
       "!**/public/**/*"
     ]
   },

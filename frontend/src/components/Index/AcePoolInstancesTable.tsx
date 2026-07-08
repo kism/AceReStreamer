@@ -12,8 +12,6 @@ import {
 } from "@/components/ui/table"
 import { QualityCell } from "./QualityCell"
 
-const loadVideoPlayerModule = () => import("@/hooks/useVideoPlayer")
-
 function getStreamQueryOptions(content_id: string) {
   return {
     queryFn: () => StreamsService.byContentId({ contentId: content_id }),
@@ -37,15 +35,7 @@ function InstanceQuality({ contentId }: { contentId: string }) {
         whiteSpace="nowrap"
         textAlign={"center"}
       >
-        <Link
-          onClick={() =>
-            loadVideoPlayerModule().then((module) => {
-              module.loadPlayStream(data?.content_id)
-            })
-          }
-        >
-          {data?.title || "N/A"}
-        </Link>
+        {data?.title || "N/A"}
       </TableCell>
     </>
   )

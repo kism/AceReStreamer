@@ -14,7 +14,6 @@ import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutEpgRouteImport } from './routes/_layout/epg'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
 import { Route as LayoutInfoIndexRouteImport } from './routes/_layout/info/index'
-import { Route as LayoutInfoPlaybackRouteImport } from './routes/_layout/info/playback'
 import { Route as LayoutInfoIptvRouteImport } from './routes/_layout/info/iptv'
 
 const LayoutRoute = LayoutRouteImport.update({
@@ -41,11 +40,6 @@ const LayoutInfoIndexRoute = LayoutInfoIndexRouteImport.update({
   path: '/info/',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutInfoPlaybackRoute = LayoutInfoPlaybackRouteImport.update({
-  id: '/info/playback',
-  path: '/info/playback',
-  getParentRoute: () => LayoutRoute,
-} as any)
 const LayoutInfoIptvRoute = LayoutInfoIptvRouteImport.update({
   id: '/info/iptv',
   path: '/info/iptv',
@@ -57,7 +51,6 @@ export interface FileRoutesByFullPath {
   '/admin': typeof LayoutAdminRoute
   '/epg': typeof LayoutEpgRoute
   '/info/iptv': typeof LayoutInfoIptvRoute
-  '/info/playback': typeof LayoutInfoPlaybackRoute
   '/info/': typeof LayoutInfoIndexRoute
 }
 export interface FileRoutesByTo {
@@ -65,7 +58,6 @@ export interface FileRoutesByTo {
   '/epg': typeof LayoutEpgRoute
   '/': typeof LayoutIndexRoute
   '/info/iptv': typeof LayoutInfoIptvRoute
-  '/info/playback': typeof LayoutInfoPlaybackRoute
   '/info': typeof LayoutInfoIndexRoute
 }
 export interface FileRoutesById {
@@ -75,20 +67,13 @@ export interface FileRoutesById {
   '/_layout/epg': typeof LayoutEpgRoute
   '/_layout/': typeof LayoutIndexRoute
   '/_layout/info/iptv': typeof LayoutInfoIptvRoute
-  '/_layout/info/playback': typeof LayoutInfoPlaybackRoute
   '/_layout/info/': typeof LayoutInfoIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/admin'
-    | '/epg'
-    | '/info/iptv'
-    | '/info/playback'
-    | '/info/'
+  fullPaths: '/' | '/admin' | '/epg' | '/info/iptv' | '/info/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/admin' | '/epg' | '/' | '/info/iptv' | '/info/playback' | '/info'
+  to: '/admin' | '/epg' | '/' | '/info/iptv' | '/info'
   id:
     | '__root__'
     | '/_layout'
@@ -96,7 +81,6 @@ export interface FileRouteTypes {
     | '/_layout/epg'
     | '/_layout/'
     | '/_layout/info/iptv'
-    | '/_layout/info/playback'
     | '/_layout/info/'
   fileRoutesById: FileRoutesById
 }
@@ -141,13 +125,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutInfoIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/info/playback': {
-      id: '/_layout/info/playback'
-      path: '/info/playback'
-      fullPath: '/info/playback'
-      preLoaderRoute: typeof LayoutInfoPlaybackRouteImport
-      parentRoute: typeof LayoutRoute
-    }
     '/_layout/info/iptv': {
       id: '/_layout/info/iptv'
       path: '/info/iptv'
@@ -163,7 +140,6 @@ interface LayoutRouteChildren {
   LayoutEpgRoute: typeof LayoutEpgRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
   LayoutInfoIptvRoute: typeof LayoutInfoIptvRoute
-  LayoutInfoPlaybackRoute: typeof LayoutInfoPlaybackRoute
   LayoutInfoIndexRoute: typeof LayoutInfoIndexRoute
 }
 
@@ -172,7 +148,6 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutEpgRoute: LayoutEpgRoute,
   LayoutIndexRoute: LayoutIndexRoute,
   LayoutInfoIptvRoute: LayoutInfoIptvRoute,
-  LayoutInfoPlaybackRoute: LayoutInfoPlaybackRoute,
   LayoutInfoIndexRoute: LayoutInfoIndexRoute,
 }
 

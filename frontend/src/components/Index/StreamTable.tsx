@@ -13,8 +13,6 @@ import {
 } from "@/components/ui/table"
 import { QualityCell } from "./QualityCell"
 
-const loadVideoPlayerModule = () => import("@/hooks/useVideoPlayer")
-
 function getStreamsQueryOptions() {
   return {
     queryFn: () => StreamsService.streams(),
@@ -110,26 +108,7 @@ export function StreamTable({
         </TableHeader>
         <TableBody>
           {items?.map((item) => (
-            <TableRow
-              key={item.title}
-              opacity={isPlaceholderData ? 0.5 : 1}
-              cursor={isPlaceholderData ? "default" : "pointer"}
-              color={
-                window.location.hash.substring(1) === item.content_id
-                  ? "white"
-                  : undefined
-              }
-              background={
-                window.location.hash.substring(1) === item.content_id
-                  ? "teal"
-                  : undefined
-              }
-              onClick={() => {
-                loadVideoPlayerModule().then((module) => {
-                  module.loadPlayStream(item.content_id)
-                })
-              }}
-            >
+            <TableRow key={item.title} opacity={isPlaceholderData ? 0.5 : 1}>
               <QualityCell
                 quality={item.quality}
                 p={1}
@@ -148,13 +127,7 @@ export function StreamTable({
                   {item.title}
                 </Box>
                 <Box
-                  color={
-                    window.location.hash.substring(1) === item.content_id
-                      ? "gray.300"
-                      : item.program_description
-                        ? "fg.muted"
-                        : "fg.subtle"
-                  }
+                  color={item.program_description ? "fg.muted" : "fg.subtle"}
                   whiteSpace="nowrap"
                   overflow="hidden"
                   textOverflow="ellipsis"
@@ -168,13 +141,7 @@ export function StreamTable({
                     whiteSpace="normal"
                     overflow="hidden"
                     textOverflow="ellipsis"
-                    color={
-                      window.location.hash.substring(1) === item.content_id
-                        ? "gray.300"
-                        : item.program_description
-                          ? undefined
-                          : "fg.subtle"
-                    }
+                    color={item.program_description ? undefined : "fg.subtle"}
                   >
                     {item.program_description || "<No Description>"}
                   </Box>
