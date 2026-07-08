@@ -9,6 +9,7 @@ dist
 dist-ssr
 *.local
 openapi.json
+.vite
 
 # Editor directories and files
 .vscode/*
