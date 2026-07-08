@@ -203,29 +203,3 @@ export function AppsInfo() {
     </VStack>
   )
 }
-
-export function OtherIptvSources() {
-  return (
-    <Box>
-      <Heading>More IPTV Sources</Heading>
-      <Text>
-        <Link
-          href="https://bugsfreeweb.github.io/LiveTVCollector/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Live TV Collector
-        </Link>
-      </Text>
-      <Text>
-        <Link
-          href="https://iptv-org.github.io/iptv/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          iptv-org collection
-        </Link>
-      </Text>
-    </Box>
-  )
-}
