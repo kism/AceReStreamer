@@ -5,6 +5,7 @@ from http import HTTPStatus
 from fastapi import APIRouter, HTTPException
 
 from acere.core.config.scraper import ScrapeSiteAPI, ScrapeSiteHTML, ScrapeSiteIPTV
+from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.config import settings
 from acere.instances.scraper import get_ace_scraper
 from acere.services.scraper.models import AceScraperSourceApi
@@ -127,8 +128,16 @@ def delete_name_override(content_id: str) -> MessageResponseModel:
 
 @router.post("/name-override/{content_id}")
 def add_name_override(content_id: str, name: str) -> MessageResponseModel:
-    """API endpoint to add a scraper name override."""
+    """API endpoint to add a scraper name override, key can be a content_id or infohash."""
     settings.scraper.add_content_id_name_override(content_id, name)
+
+    # Apply immediately to any existing stream, rather than waiting for the next scrape
+    handler = get_ace_streams_db_handler()
+    resolved_content_id = content_id
+    if not handler.get_by_content_id(resolved_content_id):
+        resolved_content_id = handler.get_content_id_from_infohash(content_id) or ""
+    if resolved_content_id:
+        handler.update_title(resolved_content_id, name)
 
     settings.write_config()
     get_ace_scraper().start_scrape_thread()

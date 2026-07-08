@@ -1,6 +1,12 @@
 import { Box, Flex, Icon, Text } from "@chakra-ui/react"
 import { Link as RouterLink } from "@tanstack/react-router"
-import { FiExternalLink, FiPlay, FiSettings, FiTv } from "react-icons/fi"
+import {
+  FiActivity,
+  FiExternalLink,
+  FiSearch,
+  FiSettings,
+  FiTv,
+} from "react-icons/fi"
 import type { IconType } from "react-icons/lib"
 import "@fontsource/fira-code/700.css"
 import type { FlexProps } from "@chakra-ui/react"
@@ -9,9 +15,10 @@ import baseURL from "@/helpers"
 const VITE_API_URL = baseURL()
 
 const items = [
-  { icon: FiPlay, title: "Streams", path: "/" },
-  { icon: FiTv, title: "IPTV", path: "/info/iptv" },
-  { icon: FiSettings, title: "Admin", path: "/admin" },
+  { icon: FiActivity, title: "Status", path: "/" },
+  { icon: FiTv, title: "Channels", path: "/channels" },
+  { icon: FiSearch, title: "Scrapers", path: "/scrapers" },
+  { icon: FiSettings, title: "System", path: "/system" },
 ]
 
 interface SidebarItemsProps {

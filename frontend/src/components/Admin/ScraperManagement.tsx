@@ -1,7 +1,6 @@
 import { Container } from "@chakra-ui/react"
 import { SectionSeparator } from "../ui/separator-section"
 import AddScraperJson from "./Scraper/AddScraper"
-import NameOverrides from "./Scraper/NameOverrides"
 import ScraperTable from "./Scraper/Table"
 
 function ScraperManagement() {
@@ -10,8 +9,6 @@ function ScraperManagement() {
       <AddScraperJson />
       <SectionSeparator />
       <ScraperTable />
-      <SectionSeparator />
-      <NameOverrides />
     </Container>
   )
 }

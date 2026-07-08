@@ -1,6 +1,7 @@
 import {
   Box,
   Code,
+  Editable,
   Flex,
   Heading,
   HStack,
@@ -9,9 +10,16 @@ import {
 } from "@chakra-ui/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useCallback } from "react"
-import { StreamsService } from "@/client"
+import {
+  type FoundAceStreamAPI,
+  ScraperService,
+  StreamsService,
+} from "@/client"
+import type { ApiError } from "@/client/core/ApiError"
 import { getQualityColor } from "@/components/Index/QualityCell"
 import { Button } from "@/components/ui/button"
+import useCustomToast from "@/hooks/useCustomToast"
+import { handleError } from "@/utils"
 
 function getStreamsQueryOptions() {
   return {
@@ -46,6 +54,7 @@ function GetRelativeTimeText(timestamp: string) {
 
 function StreamAdminTable() {
   const queryClient = useQueryClient()
+  const { showSuccessToast } = useCustomToast()
 
   const { data, isLoading } = useQuery({
     ...getStreamsQueryOptions(),
@@ -59,6 +68,50 @@ function StreamAdminTable() {
       queryClient.invalidateQueries({ queryKey: ["items"] })
     },
   })
+
+  const renameMutation = useMutation({
+    // Override both keys so the rename sticks whichever one a scraper finds
+    mutationFn: async (data: {
+      contentId: string
+      infohash: string | null | undefined
+      name: string
+    }) => {
+      await ScraperService.addNameOverride({
+        contentId: data.contentId,
+        name: data.name,
+      })
+      if (data.infohash) {
+        await ScraperService.addNameOverride({
+          contentId: data.infohash,
+          name: data.name,
+        })
+      }
+    },
+    onSuccess: () => {
+      showSuccessToast("Name override added successfully.")
+    },
+    onError: (err: ApiError) => {
+      handleError(err)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["items"] })
+    },
+  })
+
+  const handleRename = useCallback(
+    (item: FoundAceStreamAPI, name: string) => {
+      const trimmed = name.trim()
+      if (!trimmed || trimmed === item.title || renameMutation.isPending) {
+        return
+      }
+      renameMutation.mutate({
+        contentId: item.content_id,
+        infohash: item.infohash,
+        name: trimmed,
+      })
+    },
+    [renameMutation],
+  )
 
   const handleRemoveByContentId = useCallback(
     (slug: string) => {
@@ -93,9 +146,18 @@ function StreamAdminTable() {
           >
             <Flex width="full" flexDirection="column" gap={1}>
               <Flex justify="space-between" align="center" width="full">
-                <Heading size="sm" py={0}>
-                  {item.title}
-                </Heading>
+                <Editable.Root
+                  key={item.title}
+                  defaultValue={item.title}
+                  onValueCommit={(e) => handleRename(item, e.value)}
+                  size="sm"
+                  fontWeight="bold"
+                  flex="1"
+                  mr={2}
+                >
+                  <Editable.Preview />
+                  <Editable.Input />
+                </Editable.Root>
                 <Button
                   size="2xs"
                   colorPalette="red"

@@ -3,13 +3,9 @@ import { createFileRoute } from "@tanstack/react-router"
 import ConfigManagement from "@/components/Admin/ConfigManagement"
 import HealthManagement from "@/components/Admin/HealthManagement"
 import RemoteConfigManagement from "@/components/Admin/RemoteConfigManagement"
-import ScraperManagement from "@/components/Admin/ScraperManagement"
-import StreamManagement from "@/components/Admin/StreamManagement"
 import { usePageTitle } from "@/hooks/usePageTitle"
 
 const tabsConfig = [
-  { value: "streams", title: "Streams", component: StreamManagement },
-  { value: "scrapers", title: "Scrapers", component: ScraperManagement },
   { value: "config", title: "Config", component: ConfigManagement },
   {
     value: "remote-config",
@@ -19,16 +15,16 @@ const tabsConfig = [
   { value: "health", title: "Health", component: HealthManagement },
 ]
 
-export const Route = createFileRoute("/_layout/admin")({
-  component: AdminSettings,
+export const Route = createFileRoute("/_layout/system")({
+  component: SystemSettings,
 })
 
-function AdminSettings() {
-  usePageTitle("Admin Settings")
+function SystemSettings() {
+  usePageTitle("System")
 
   return (
     <VStack gap={6} align="stretch">
-      <Tabs.Root size="sm" defaultValue="streams" variant="subtle">
+      <Tabs.Root size="sm" defaultValue="config" variant="subtle">
         <Tabs.List>
           {tabsConfig.map((tab) => (
             <Tabs.Trigger key={tab.value} value={tab.value}>

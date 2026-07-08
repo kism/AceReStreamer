@@ -59,6 +59,19 @@ class AceStreamDBHandler(BaseDatabaseHandler):
         # Ensure persistent xc_id mapping exists
         get_xc_stream_db_handler().get_or_create_xc_id(stream.content_id)
 
+    def update_title(self, content_id: str, title: str) -> bool:
+        """Update only the title of an existing AceStreamDBEntry."""
+        with self._get_session() as session:
+            statement = select(AceStreamDBEntry).where(AceStreamDBEntry.content_id == content_id)
+            result = session.exec(statement).first()
+            if not result:
+                return False
+            result.title = title
+            session.add(result)
+            session.commit()
+            self._get_streams_cache = None  # Invalidate cache
+            return True
+
     # region DELETE API
     def delete_by_content_id(self, content_id: str) -> bool:
         """Delete AceStreamDBEntry by content_id."""
