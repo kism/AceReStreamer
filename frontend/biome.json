@@ -12,6 +12,7 @@
       "**",
       "!**/dist/**/*",
       "!**/node_modules/**/*",
+      "!**/.vite/**/*",
       "!**/src/routeTree.gen.ts",
       "!**/src/client/**/*",
       "!**/playwright-report",

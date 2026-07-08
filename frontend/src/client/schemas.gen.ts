@@ -314,97 +314,7 @@ export const AcePoolStatResponseLivePosSchema = {
     description: 'Matches the live position response from the AcePool API.'
 } as const;
 
-export const AceScrapeConf_InputSchema = {
-    properties: {
-        playlist_name: {
-            type: 'string',
-            title: 'Playlist Name',
-            default: 'acerestreamer'
-        },
-        adhoc_playlist_external_url: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 2083,
-                    minLength: 1,
-                    format: 'uri'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Adhoc Playlist External Url'
-        },
-        tvg_logo_external_url: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 2083,
-                    minLength: 1,
-                    format: 'uri'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Tvg Logo External Url'
-        },
-        html: {
-            items: {
-                '$ref': '#/components/schemas/ScrapeSiteHTML'
-            },
-            type: 'array',
-            title: 'Html',
-            default: []
-        },
-        iptv_m3u8: {
-            items: {
-                '$ref': '#/components/schemas/ScrapeSiteIPTV'
-            },
-            type: 'array',
-            title: 'Iptv M3U8',
-            default: []
-        },
-        api: {
-            items: {
-                '$ref': '#/components/schemas/ScrapeSiteAPI'
-            },
-            type: 'array',
-            title: 'Api',
-            default: []
-        },
-        content_id_infohash_name_overrides: {
-            additionalProperties: {
-                type: 'string'
-            },
-            type: 'object',
-            title: 'Content Id Infohash Name Overrides',
-            default: {}
-        },
-        category_mapping: {
-            additionalProperties: {
-                items: {
-                    type: 'string'
-                },
-                type: 'array'
-            },
-            type: 'object',
-            title: 'Category Mapping',
-            default: {
-                sports: ['football', 'soccer', 'basketball', 'nba', 'sport', 'tennis', 'moto', 'f1', 'hockey', 'cricket', 'rugby', 'golf'],
-                movies: ['movie', 'cinema', 'film'],
-                news: ['news'],
-                kids: ['kids', 'children'],
-                music: ['music', 'concert', 'radio']
-            }
-        }
-    },
-    type: 'object',
-    title: 'AceScrapeConf',
-    description: 'Settings for scraping AceStreams.'
-} as const;
-
-export const AceScrapeConf_OutputSchema = {
+export const AceScrapeConfSchema = {
     properties: {
         playlist_name: {
             type: 'string',
@@ -560,67 +470,10 @@ export const AceVersionResultSchema = {
     title: 'AceVersionResult'
 } as const;
 
-export const Body_Login_login_access_tokenSchema = {
-    properties: {
-        grant_type: {
-            anyOf: [
-                {
-                    type: 'string',
-                    pattern: '^password$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Grant Type'
-        },
-        username: {
-            type: 'string',
-            title: 'Username'
-        },
-        password: {
-            type: 'string',
-            format: 'password',
-            title: 'Password'
-        },
-        scope: {
-            type: 'string',
-            title: 'Scope',
-            default: ''
-        },
-        client_id: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Client Id'
-        },
-        client_secret: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            format: 'password',
-            title: 'Client Secret'
-        }
-    },
-    type: 'object',
-    required: ['username', 'password'],
-    title: 'Body_Login-login_access_token'
-} as const;
-
 export const ConfigExport_InputSchema = {
     properties: {
         scraper: {
-            '$ref': '#/components/schemas/AceScrapeConf-Input'
+            '$ref': '#/components/schemas/AceScrapeConf'
         },
         epgs: {
             items: {
@@ -638,7 +491,7 @@ export const ConfigExport_InputSchema = {
 export const ConfigExport_OutputSchema = {
     properties: {
         scraper: {
-            '$ref': '#/components/schemas/AceScrapeConf-Output'
+            '$ref': '#/components/schemas/AceScrapeConf'
         },
         epgs: {
             items: {
@@ -933,14 +786,10 @@ export const HealthResponseModelSchema = {
         memory_usage_mb: {
             type: 'string',
             title: 'Memory Usage Mb'
-        },
-        auth_disabled: {
-            type: 'boolean',
-            title: 'Auth Disabled'
         }
     },
     type: 'object',
-    required: ['version', 'version_full', 'time_zone', 'threads', 'memory_usage_mb', 'auth_disabled'],
+    required: ['version', 'version_full', 'time_zone', 'threads', 'memory_usage_mb'],
     title: 'HealthResponseModel'
 } as const;
 
@@ -963,18 +812,6 @@ export const ManuallyAddedAceStreamSchema = {
     required: ['title', 'content_id', 'group_title'],
     title: 'ManuallyAddedAceStream',
     description: 'Model for a manually added AceStream.'
-} as const;
-
-export const MessageSchema = {
-    properties: {
-        message: {
-            type: 'string',
-            title: 'Message'
-        }
-    },
-    type: 'object',
-    required: ['message'],
-    title: 'Message'
 } as const;
 
 export const MessageResponseModelSchema = {
@@ -1008,49 +845,6 @@ export const MessageResponseModelSchema = {
     required: ['message'],
     title: 'MessageResponseModel',
     description: 'Generic API response message model.'
-} as const;
-
-export const NewPasswordSchema = {
-    properties: {
-        token: {
-            type: 'string',
-            title: 'Token'
-        },
-        new_password: {
-            type: 'string',
-            maxLength: 40,
-            minLength: 8,
-            title: 'New Password'
-        }
-    },
-    type: 'object',
-    required: ['token', 'new_password'],
-    title: 'NewPassword'
-} as const;
-
-export const PrivateUserCreateSchema = {
-    properties: {
-        username: {
-            type: 'string',
-            title: 'Username'
-        },
-        password: {
-            type: 'string',
-            title: 'Password'
-        },
-        full_name: {
-            type: 'string',
-            title: 'Full Name'
-        },
-        is_verified: {
-            type: 'boolean',
-            title: 'Is Verified',
-            default: false
-        }
-    },
-    type: 'object',
-    required: ['username', 'password', 'full_name'],
-    title: 'PrivateUserCreate'
 } as const;
 
 export const RemoteSettingsURLGetModelSchema = {
@@ -1228,18 +1022,6 @@ export const ScrapeSiteIPTVSchema = {
     description: 'Scraper for IPTV Sites.'
 } as const;
 
-export const StreamTokenSchema = {
-    properties: {
-        stream_token: {
-            type: 'string',
-            title: 'Stream Token'
-        }
-    },
-    type: 'object',
-    required: ['stream_token'],
-    title: 'StreamToken'
-} as const;
-
 export const TVGEPGMappingsResponseSchema = {
     additionalProperties: {
         anyOf: [
@@ -1331,274 +1113,6 @@ The other lists will be evaluated in order:
 - include_words (if populated, otherwise allow any)`
 } as const;
 
-export const TokenSchema = {
-    properties: {
-        access_token: {
-            type: 'string',
-            title: 'Access Token'
-        },
-        token_type: {
-            type: 'string',
-            title: 'Token Type',
-            default: 'bearer'
-        }
-    },
-    type: 'object',
-    required: ['access_token'],
-    title: 'Token'
-} as const;
-
-export const UpdatePasswordSchema = {
-    properties: {
-        current_password: {
-            type: 'string',
-            maxLength: 40,
-            minLength: 8,
-            title: 'Current Password'
-        },
-        new_password: {
-            type: 'string',
-            maxLength: 40,
-            minLength: 8,
-            title: 'New Password'
-        }
-    },
-    type: 'object',
-    required: ['current_password', 'new_password'],
-    title: 'UpdatePassword'
-} as const;
-
-export const UserCreateSchema = {
-    properties: {
-        username: {
-            type: 'string',
-            maxLength: 255,
-            title: 'Username'
-        },
-        is_active: {
-            type: 'boolean',
-            title: 'Is Active',
-            default: true
-        },
-        is_superuser: {
-            type: 'boolean',
-            title: 'Is Superuser',
-            default: false
-        },
-        stream_token: {
-            type: 'string',
-            maxLength: 64,
-            title: 'Stream Token'
-        },
-        full_name: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 255
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Full Name'
-        },
-        password: {
-            type: 'string',
-            maxLength: 40,
-            minLength: 8,
-            title: 'Password'
-        }
-    },
-    type: 'object',
-    required: ['username', 'password'],
-    title: 'UserCreate'
-} as const;
-
-export const UserPublicSchema = {
-    properties: {
-        username: {
-            type: 'string',
-            maxLength: 255,
-            title: 'Username'
-        },
-        is_active: {
-            type: 'boolean',
-            title: 'Is Active',
-            default: true
-        },
-        is_superuser: {
-            type: 'boolean',
-            title: 'Is Superuser',
-            default: false
-        },
-        stream_token: {
-            type: 'string',
-            maxLength: 64,
-            title: 'Stream Token'
-        },
-        full_name: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 255
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Full Name'
-        },
-        id: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Id'
-        }
-    },
-    type: 'object',
-    required: ['username', 'id'],
-    title: 'UserPublic'
-} as const;
-
-export const UserRegisterSchema = {
-    properties: {
-        username: {
-            type: 'string',
-            maxLength: 255,
-            title: 'Username'
-        },
-        password: {
-            type: 'string',
-            maxLength: 40,
-            minLength: 8,
-            title: 'Password'
-        },
-        full_name: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 255
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Full Name'
-        }
-    },
-    type: 'object',
-    required: ['username', 'password'],
-    title: 'UserRegister'
-} as const;
-
-export const UserUpdateSchema = {
-    properties: {
-        username: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 255
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Username'
-        },
-        is_active: {
-            type: 'boolean',
-            title: 'Is Active',
-            default: true
-        },
-        is_superuser: {
-            type: 'boolean',
-            title: 'Is Superuser',
-            default: false
-        },
-        stream_token: {
-            type: 'string',
-            maxLength: 64,
-            title: 'Stream Token'
-        },
-        full_name: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 255
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Full Name'
-        },
-        password: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 40,
-                    minLength: 8
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Password'
-        }
-    },
-    type: 'object',
-    title: 'UserUpdate'
-} as const;
-
-export const UserUpdateMeSchema = {
-    properties: {
-        full_name: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 255
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Full Name'
-        },
-        username: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 255
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Username'
-        }
-    },
-    type: 'object',
-    title: 'UserUpdateMe'
-} as const;
-
-export const UsersPublicSchema = {
-    properties: {
-        data: {
-            items: {
-                '$ref': '#/components/schemas/UserPublic'
-            },
-            type: 'array',
-            title: 'Data'
-        },
-        count: {
-            type: 'integer',
-            title: 'Count'
-        }
-    },
-    type: 'object',
-    required: ['data', 'count'],
-    title: 'UsersPublic'
-} as const;
-
 export const ValidationErrorSchema = {
     properties: {
         loc: {
@@ -1634,4 +1148,20 @@ export const ValidationErrorSchema = {
     type: 'object',
     required: ['loc', 'msg', 'type'],
     title: 'ValidationError'
+} as const;
+
+export const XCCredentialsSchema = {
+    properties: {
+        username: {
+            type: 'string',
+            title: 'Username'
+        },
+        password: {
+            type: 'string',
+            title: 'Password'
+        }
+    },
+    type: 'object',
+    required: ['username', 'password'],
+    title: 'XCCredentials'
 } as const;

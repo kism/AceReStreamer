@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { AcePoolPoolResponse, AcePoolGetByContentIdData, AcePoolGetByContentIdResponse, AcePoolDeleteByContentIdData, AcePoolDeleteByContentIdResponse, AcePoolGetByPidData, AcePoolGetByPidResponse, AcePoolStatsResponse, AcePoolStatsByContentIdData, AcePoolStatsByContentIdResponse, AcePoolStatsByPidData, AcePoolStatsByPidResponse, ConfigGetConfigResponse, ConfigUpdateConfigData, ConfigUpdateConfigResponse, ConfigFetchRemoteSettingsResponse, ConfigTriggerFetchRemoteSettingsData, ConfigTriggerFetchRemoteSettingsResponse, ConfigReloadConfigResponse, EpgEpgHealthResponse, EpgGetEpgsResponse, EpgAddEpgData, EpgAddEpgResponse, EpgGetEpgData, EpgGetEpgResponse, EpgDeleteEpgData, EpgDeleteEpgResponse, EpgTvgEpgMappingsResponse, FrontendFrontendIndexHtmlResponse, FrontendFrontendIndexResponse, HealthHealthResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginResetPasswordData, LoginResetPasswordResponse, MediaIptvIptvM3U83Data, MediaIptvIptvM3U83Response, MediaIptvIptvM3U2Data, MediaIptvIptvM3U2Response, MediaIptvIptvM3U81Data, MediaIptvIptvM3U81Response, MediaXmlEpgXmlData, MediaXmlEpgXmlResponse, MediaXmlEpgXml3Data, MediaXmlEpgXml3Response, PrivateCreateUserData, PrivateCreateUserResponse, ScraperSourcesResponse, ScraperAddSourceData, ScraperAddSourceResponse, ScraperSourceData, ScraperSourceResponse, ScraperRemoveSourceData, ScraperRemoveSourceResponse, ScraperGetNameOverridesResponse, ScraperDeleteNameOverrideData, ScraperDeleteNameOverrideResponse, ScraperAddNameOverrideData, ScraperAddNameOverrideResponse, StreamsByContentIdData, StreamsByContentIdResponse, StreamsDeleteByContentIdData, StreamsDeleteByContentIdResponse, StreamsStreamsResponse, StreamsAddStreamData, StreamsAddStreamResponse, StreamsCheckResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersReadStreamTokenMeResponse, UsersRegenerateStreamTokenMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, XtreamCodesXcIptvRouterData, XtreamCodesXcIptvRouterResponse, XtreamCodesXcGetData, XtreamCodesXcGetResponse } from './types.gen';
+import type { AcePoolPoolResponse, AcePoolGetByContentIdData, AcePoolGetByContentIdResponse, AcePoolDeleteByContentIdData, AcePoolDeleteByContentIdResponse, AcePoolGetByPidData, AcePoolGetByPidResponse, AcePoolStatsResponse, AcePoolStatsByContentIdData, AcePoolStatsByContentIdResponse, AcePoolStatsByPidData, AcePoolStatsByPidResponse, ConfigGetConfigResponse, ConfigUpdateConfigData, ConfigUpdateConfigResponse, ConfigFetchRemoteSettingsResponse, ConfigTriggerFetchRemoteSettingsData, ConfigTriggerFetchRemoteSettingsResponse, ConfigReloadConfigResponse, EpgEpgHealthResponse, EpgGetEpgsResponse, EpgAddEpgData, EpgAddEpgResponse, EpgGetEpgData, EpgGetEpgResponse, EpgDeleteEpgData, EpgDeleteEpgResponse, EpgTvgEpgMappingsResponse, FrontendFrontendIndexHtmlResponse, FrontendFrontendIndexResponse, HealthHealthResponse, MediaIptvIptvM3U83Response, MediaIptvIptvM3U2Response, MediaIptvIptvM3U81Response, MediaXmlEpgXmlResponse, MediaXmlEpgXml3Data, MediaXmlEpgXml3Response, ScraperSourcesResponse, ScraperAddSourceData, ScraperAddSourceResponse, ScraperSourceData, ScraperSourceResponse, ScraperRemoveSourceData, ScraperRemoveSourceResponse, ScraperGetNameOverridesResponse, ScraperDeleteNameOverrideData, ScraperDeleteNameOverrideResponse, ScraperAddNameOverrideData, ScraperAddNameOverrideResponse, StreamsByContentIdData, StreamsByContentIdResponse, StreamsDeleteByContentIdData, StreamsDeleteByContentIdResponse, StreamsStreamsResponse, StreamsAddStreamData, StreamsAddStreamResponse, StreamsCheckResponse, XtreamCodesGetXcCredentialsResponse, XtreamCodesXcIptvRouterData, XtreamCodesXcIptvRouterResponse, XtreamCodesXcGetData, XtreamCodesXcGetResponse } from './types.gen';
 
 export class AcePoolService {
     /**
@@ -365,122 +365,43 @@ export class HealthService {
     }
 }
 
-export class LoginService {
-    /**
-     * Login Access Token
-     * OAuth2 compatible token login, get an access token for future requests.
-     * @param data The data for the request.
-     * @param data.formData
-     * @returns Token Successful Response
-     * @throws ApiError
-     */
-    public static loginAccessToken(data: LoginLoginAccessTokenData): CancelablePromise<LoginLoginAccessTokenResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/login/access-token',
-            formData: data.formData,
-            mediaType: 'application/x-www-form-urlencoded',
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Test Token
-     * Test access token.
-     * @returns UserPublic Successful Response
-     * @throws ApiError
-     */
-    public static testToken(): CancelablePromise<LoginTestTokenResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/login/test-token'
-        });
-    }
-    
-    /**
-     * Reset Password
-     * Reset password.
-     * @param data The data for the request.
-     * @param data.requestBody
-     * @returns Message Successful Response
-     * @throws ApiError
-     */
-    public static resetPassword(data: LoginResetPasswordData): CancelablePromise<LoginResetPasswordResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/reset-password/',
-            body: data.requestBody,
-            mediaType: 'application/json',
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-}
-
 export class MediaIptvService {
     /**
      * Iptv M3U8 3
      * Render the IPTV M3U8 Playlist.
-     * @param data The data for the request.
-     * @param data.token
      * @returns unknown Successful Response
      * @throws ApiError
      */
-    public static iptvM3U83(data: MediaIptvIptvM3U83Data = {}): CancelablePromise<MediaIptvIptvM3U83Response> {
+    public static iptvM3U83(): CancelablePromise<MediaIptvIptvM3U83Response> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/iptv.m3u8',
-            query: {
-                token: data.token
-            },
-            errors: {
-                422: 'Validation Error'
-            }
+            url: '/iptv.m3u8'
         });
     }
     
     /**
      * Iptv M3U 2
      * Render the IPTV M3U8 Playlist.
-     * @param data The data for the request.
-     * @param data.token
      * @returns unknown Successful Response
      * @throws ApiError
      */
-    public static iptvM3u2(data: MediaIptvIptvM3U2Data = {}): CancelablePromise<MediaIptvIptvM3U2Response> {
+    public static iptvM3u2(): CancelablePromise<MediaIptvIptvM3U2Response> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/iptv.m3u',
-            query: {
-                token: data.token
-            },
-            errors: {
-                422: 'Validation Error'
-            }
+            url: '/iptv.m3u'
         });
     }
     
     /**
      * Iptv M3U8 1
      * Render the IPTV M3U8 Playlist.
-     * @param data The data for the request.
-     * @param data.token
      * @returns unknown Successful Response
      * @throws ApiError
      */
-    public static iptvM3U81(data: MediaIptvIptvM3U81Data = {}): CancelablePromise<MediaIptvIptvM3U81Response> {
+    public static iptvM3U81(): CancelablePromise<MediaIptvIptvM3U81Response> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/iptv',
-            query: {
-                token: data.token
-            },
-            errors: {
-                422: 'Validation Error'
-            }
+            url: '/iptv'
         });
     }
 }
@@ -489,21 +410,13 @@ export class MediaXmlService {
     /**
      * Epg Xml
      * Get the merged EPG data.
-     * @param data The data for the request.
-     * @param data.token
      * @returns unknown Successful Response
      * @throws ApiError
      */
-    public static epgXml(data: MediaXmlEpgXmlData = {}): CancelablePromise<MediaXmlEpgXmlResponse> {
+    public static epgXml(): CancelablePromise<MediaXmlEpgXmlResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/epg.xml',
-            query: {
-                token: data.token
-            },
-            errors: {
-                422: 'Validation Error'
-            }
+            url: '/epg.xml'
         });
     }
     
@@ -524,28 +437,6 @@ export class MediaXmlService {
                 username: data.username,
                 password: data.password
             },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-}
-
-export class PrivateService {
-    /**
-     * Create User
-     * Create a new user.
-     * @param data The data for the request.
-     * @param data.requestBody
-     * @returns UserPublic Successful Response
-     * @throws ApiError
-     */
-    public static createUser(data: PrivateCreateUserData): CancelablePromise<PrivateCreateUserResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/private/users/',
-            body: data.requestBody,
-            mediaType: 'application/json',
             errors: {
                 422: 'Validation Error'
             }
@@ -778,230 +669,20 @@ export class StreamsService {
     }
 }
 
-export class UsersService {
-    /**
-     * Read Users
-     * Retrieve users.
-     * @param data The data for the request.
-     * @param data.skip
-     * @param data.limit
-     * @returns UsersPublic Successful Response
-     * @throws ApiError
-     */
-    public static readUsers(data: UsersReadUsersData = {}): CancelablePromise<UsersReadUsersResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/v1/users/',
-            query: {
-                skip: data.skip,
-                limit: data.limit
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Create User
-     * Create new user.
-     * @param data The data for the request.
-     * @param data.requestBody
-     * @returns UserPublic Successful Response
-     * @throws ApiError
-     */
-    public static createUser(data: UsersCreateUserData): CancelablePromise<UsersCreateUserResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/users/',
-            body: data.requestBody,
-            mediaType: 'application/json',
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Read User Me
-     * Get current user.
-     * @returns UserPublic Successful Response
-     * @throws ApiError
-     */
-    public static readUserMe(): CancelablePromise<UsersReadUserMeResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/v1/users/me'
-        });
-    }
-    
-    /**
-     * Delete User Me
-     * Delete own user.
-     * @returns Message Successful Response
-     * @throws ApiError
-     */
-    public static deleteUserMe(): CancelablePromise<UsersDeleteUserMeResponse> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/v1/users/me'
-        });
-    }
-    
-    /**
-     * Update User Me
-     * Update own user.
-     * @param data The data for the request.
-     * @param data.requestBody
-     * @returns UserPublic Successful Response
-     * @throws ApiError
-     */
-    public static updateUserMe(data: UsersUpdateUserMeData): CancelablePromise<UsersUpdateUserMeResponse> {
-        return __request(OpenAPI, {
-            method: 'PATCH',
-            url: '/api/v1/users/me',
-            body: data.requestBody,
-            mediaType: 'application/json',
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Update Password Me
-     * Update own password.
-     * @param data The data for the request.
-     * @param data.requestBody
-     * @returns Message Successful Response
-     * @throws ApiError
-     */
-    public static updatePasswordMe(data: UsersUpdatePasswordMeData): CancelablePromise<UsersUpdatePasswordMeResponse> {
-        return __request(OpenAPI, {
-            method: 'PATCH',
-            url: '/api/v1/users/me/password',
-            body: data.requestBody,
-            mediaType: 'application/json',
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Read Stream Token Me
-     * Get current user's stream token.
-     * @returns StreamToken Successful Response
-     * @throws ApiError
-     */
-    public static readStreamTokenMe(): CancelablePromise<UsersReadStreamTokenMeResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/v1/users/me/stream-token'
-        });
-    }
-    
-    /**
-     * Regenerate Stream Token Me
-     * Regenerate own stream token.
-     * @returns StreamToken Successful Response
-     * @throws ApiError
-     */
-    public static regenerateStreamTokenMe(): CancelablePromise<UsersRegenerateStreamTokenMeResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/users/me/stream-token'
-        });
-    }
-    
-    /**
-     * Register User
-     * Create new user without the need to be logged in.
-     * @param data The data for the request.
-     * @param data.requestBody
-     * @returns UserPublic Successful Response
-     * @throws ApiError
-     */
-    public static registerUser(data: UsersRegisterUserData): CancelablePromise<UsersRegisterUserResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/users/signup',
-            body: data.requestBody,
-            mediaType: 'application/json',
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Read User By Id
-     * Get a specific user by id.
-     * @param data The data for the request.
-     * @param data.userId
-     * @returns UserPublic Successful Response
-     * @throws ApiError
-     */
-    public static readUserById(data: UsersReadUserByIdData): CancelablePromise<UsersReadUserByIdResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/v1/users/{user_id}',
-            path: {
-                user_id: data.userId
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Update User
-     * Update a user.
-     * @param data The data for the request.
-     * @param data.userId
-     * @param data.requestBody
-     * @returns UserPublic Successful Response
-     * @throws ApiError
-     */
-    public static updateUser(data: UsersUpdateUserData): CancelablePromise<UsersUpdateUserResponse> {
-        return __request(OpenAPI, {
-            method: 'PATCH',
-            url: '/api/v1/users/{user_id}',
-            path: {
-                user_id: data.userId
-            },
-            body: data.requestBody,
-            mediaType: 'application/json',
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Delete User
-     * Delete a user.
-     * @param data The data for the request.
-     * @param data.userId
-     * @returns Message Successful Response
-     * @throws ApiError
-     */
-    public static deleteUser(data: UsersDeleteUserData): CancelablePromise<UsersDeleteUserResponse> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/v1/users/{user_id}',
-            path: {
-                user_id: data.userId
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-}
-
 export class XtreamCodesService {
+    /**
+     * Get Xc Credentials
+     * Get the XC credentials for IPTV clients.
+     * @returns XCCredentials Successful Response
+     * @throws ApiError
+     */
+    public static getXcCredentials(): CancelablePromise<XtreamCodesGetXcCredentialsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/xc/credentials'
+        });
+    }
+    
     /**
      * Xc Iptv Router
      * Route XC API requests to appropriate handlers.

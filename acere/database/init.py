@@ -1,11 +1,6 @@
-import secrets
+from sqlmodel import SQLModel, create_engine
 
-from sqlmodel import Session, SQLModel, create_engine, select
-
-from acere import crud
 from acere.database.migration import runner
-from acere.database.models.user import User, UserCreate
-from acere.instances.config import settings
 from acere.instances.paths import get_app_path_handler
 from acere.utils.logger import get_logger
 
@@ -21,34 +16,6 @@ engine = create_engine(
 # for more details: https://github.com/fastapi/full-stack-fastapi-template/issues/28
 
 
-def _create_first_superuser(session: Session) -> None:
-    user = session.exec(select(User).where(User.username == settings.FIRST_SUPERUSER)).first()
-    if not user:
-        password_clear = settings.FIRST_SUPERUSER_PASSWORD
-        if not password_clear or password_clear.strip() == "":
-            password_clear = secrets.token_urlsafe(20)
-            msg = f""" Important >>>
--------------------------------------------------------------------------------
-The superuser password is not set, generating a random one, this will be printed only once.
-Username: {settings.FIRST_SUPERUSER}
-Password: {password_clear}
--------------------------------------------------------------------------------"""
-            logger.warning(msg)
-        else:
-            msg = "Setting the superuser password from the environment variable."
-            logger.warning(msg)
-            settings.FIRST_SUPERUSER_PASSWORD = ""
-            settings.write_config()
-
-        user_in = UserCreate(
-            username=settings.FIRST_SUPERUSER,
-            password=password_clear,
-            is_superuser=True,
-        )
-        user = crud.create_user(session=session, user_create=user_in)
-
-
-def init_db(session: Session) -> None:
+def init_db() -> None:
     SQLModel.metadata.create_all(engine)
     runner.upgrade(engine)
-    _create_first_superuser(session=session)

@@ -2,7 +2,6 @@ import shaka from "shaka-player/dist/shaka-player.ui"
 import "shaka-player/dist/controls.css"
 import "./videoPlayer.css"
 
-import { UsersService } from "@/client"
 import baseURL from "@/helpers"
 
 import { updateStreamStatus } from "./useStreamStatus"
@@ -58,7 +57,6 @@ function friendlyResolution(width: number, height: number): string {
 
 let overlay: shaka.ui.Overlay | null = null
 let player: shaka.Player | null = null
-let cachedToken: string | null = null
 let statsInterval: ReturnType<typeof setInterval> | null = null
 
 const STATS_POLL_INTERVAL_MS = 5000
@@ -88,18 +86,8 @@ function stopStatsPolling() {
   }
 }
 
-async function getAuthToken() {
-  if (cachedToken !== null) {
-    return cachedToken
-  }
-  const result = await UsersService.readStreamTokenMe()
-  cachedToken = result?.stream_token || ""
-  return cachedToken
-}
-
-export async function getStreamURL(content_id: string) {
-  const token = await getAuthToken()
-  return `${baseHLSURL}/${content_id}?token=${token}`
+export function getStreamURL(content_id: string) {
+  return `${baseHLSURL}/${content_id}`
 }
 
 export async function loadStream(content_id?: string) {
@@ -138,7 +126,7 @@ export async function loadStream(content_id?: string) {
     }
   }
 
-  const fullUrl = await getStreamURL(actualContentId)
+  const fullUrl = getStreamURL(actualContentId)
   updateStreamStatus({ streamURL: fullUrl })
 
   if (shaka.Player.isBrowserSupported()) {

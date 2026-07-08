@@ -1,28 +1,21 @@
 import { Box, Flex, HStack, Text, VStack } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
-import type { UserPublic } from "@/client"
 import { MediaXmlService } from "@/client"
 import { Checkbox } from "../ui/checkbox"
 import { ChannelSelector } from "./ChannelSelector"
 import { EPGTable } from "./EPGTable"
 import { parseEPGXML, parseXmltvDate } from "./utils"
 
-interface EPGViewerProps {
-  user: UserPublic | null
-}
-
-export function EPGViewer({ user }: EPGViewerProps) {
+export function EPGViewer() {
   const [selectedChannel, setSelectedChannel] = useState<string>("")
   const [hidePastPrograms, setHidePastPrograms] = useState<boolean>(true)
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["epgXml", user?.stream_token],
+    queryKey: ["epgXml"],
     queryFn: async () => {
       try {
-        const response = await MediaXmlService.epgXml({
-          token: user?.stream_token ?? "",
-        })
+        const response = await MediaXmlService.epgXml()
         return parseEPGXML(response as string)
       } catch (err) {
         console.error("Error fetching EPG:", err)
@@ -30,7 +23,6 @@ export function EPGViewer({ user }: EPGViewerProps) {
       }
     },
     retry: false,
-    enabled: !!user?.stream_token,
   })
 
   const channels = data?.channels || []

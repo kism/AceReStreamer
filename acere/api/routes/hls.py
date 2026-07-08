@@ -9,7 +9,6 @@ from fastapi.responses import FileResponse
 from pydantic import HttpUrl
 
 from acere.constants import STATIC_DIR
-from acere.core.stream_token import verify_stream_token
 from acere.instances.ace_pool import get_ace_pool
 from acere.instances.ace_quality import get_quality_handler
 from acere.instances.ace_streams import get_ace_streams_db_handler
@@ -39,16 +38,8 @@ REVERSE_PROXY_TIMEOUT = 10  # Very high but alas
 
 # region /hls/
 @router.api_route("/hls/{path}", methods=["GET", "HEAD"], response_class=Response)
-async def hls(
-    path: str,
-    token: str = "",
-    *,
-    authentication_override: bool = False,
-) -> Response:
+async def hls(path: str) -> Response:
     """Reverse proxy the HLS from Ace."""
-    if not authentication_override:
-        verify_stream_token(token)
-
     ace_pool = get_ace_pool()
 
     if not check_valid_content_id_or_infohash(path):
@@ -115,7 +106,6 @@ async def hls(
         m3u_content=content_str,
         ace_address=settings.app.ace_address,
         server_name=HttpUrl(settings.EXTERNAL_URL),
-        token=token,
     )
 
     get_quality_handler().increment_quality(path, m3u_playlist=content_str)
@@ -130,10 +120,8 @@ async def hls(
 # region /hls/m/
 # Taking the easy route and capturing the full following path
 @router.get("/hls/m/{path:path}", response_class=Response)
-async def hls_multi(path: str, token: str = "") -> Response:
+async def hls_multi(path: str) -> Response:
     """Reverse proxy the HLS multistream from Ace."""
-    verify_stream_token(token)
-
     ace_pool = get_ace_pool()
 
     content_id = ace_pool.get_instance_by_multistream_path(path)
@@ -172,7 +160,6 @@ async def hls_multi(path: str, token: str = "") -> Response:
         m3u_content=content_str,
         ace_address=settings.app.ace_address,
         server_name=HttpUrl(settings.EXTERNAL_URL),
-        token=token,
     )
 
     get_quality_handler().increment_quality(content_id, m3u_playlist=content_str)
@@ -203,7 +190,7 @@ async def xc_m3u8(
     username = _path_username or username
     password = _path_password or password
 
-    stream_token = check_xc_auth(username=username, stream_token=password)
+    check_xc_auth(username=username, password=password)
 
     content_id: str | None = None
 
@@ -235,17 +222,15 @@ async def xc_m3u8(
             detail="Content ID not found for the given XC ID",
         )
 
-    return await hls(content_id, stream_token)
+    return await hls(content_id)
 
 
 # region /ace/c/ and /hls/c/ Content paths for regular and multistream
 # Do a full path capture here, since ace puts a bunch of stuff following
 @router.get("/ace/c/{path:path}", response_class=Response, name="ace_content_1")
 @router.get("/hls/c/{path:path}", response_class=Response, name="ace_content_2")
-async def ace_content(path: str, request: Request, token: str = "") -> Response:
+async def ace_content(path: str, request: Request) -> Response:
     """Reverse proxy the Ace content."""
-    verify_stream_token(token)
-
     # Determine the correct URL based on the request path
     if "/hls/c/" in request.url.path:
         url = HttpUrl(f"{settings.app.ace_address}hls/c/{path}").encoded_string()
@@ -293,12 +278,10 @@ async def ace_content(path: str, request: Request, token: str = "") -> Response:
 
 # region /tvg-logo/
 @router.get("/tvg-logo/{path}", response_class=FileResponse)
-def tvg_logo(path: str, token: str = "") -> FileResponse:
+def tvg_logo(path: str) -> FileResponse:
     """Serve the TVG logo from the local filesystem."""
     # You'll need to define where static_folder and instance_path come from
     # This might be from settings or app configuration
-    verify_stream_token(token)
-
     # Not sure if this check is needed
     if STATIC_DIR is None:
         raise HTTPException(

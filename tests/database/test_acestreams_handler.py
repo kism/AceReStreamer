@@ -46,7 +46,7 @@ def test_init(acestream_db_handler: AceStreamDBHandler, monkeypatch: pytest.Monk
     assert handler.get_content_id_by_tvg_id("nonexistent") is None
     assert handler.get_content_id_by_xc_id(1) is None
     assert isinstance(handler.get_xc_id_by_content_id("nonexistent"), int)  # Creates mapping on demand
-    assert "#EXTM3U" in handler.get_streams_as_iptv(token="")
+    assert "#EXTM3U" in handler.get_streams_as_iptv()
     assert len(handler.get_streams_as_iptv_xc(xc_category_filter=None)) == 0
     handler._mark_alternate_streams([])
 
@@ -83,7 +83,7 @@ def test_add_and_delete(acestream_db_handler: AceStreamDBHandler) -> None:
     assert handler.get_content_id_by_tvg_id("test.tvg.id") is not None
     assert handler.get_content_id_by_xc_id(1) == content_id
     assert handler.get_xc_id_by_content_id(content_id) == 1
-    assert "#EXTM3U" in handler.get_streams_as_iptv(token="")
+    assert "#EXTM3U" in handler.get_streams_as_iptv()
     assert len(handler.get_streams_as_iptv_xc(xc_category_filter=None)) == 1
     handler._mark_alternate_streams([])
 
@@ -155,8 +155,7 @@ def test_get_streams_as_iptv_url_validation(
     )
     handler.update_stream(stream_2)
 
-    # Get IPTV without token
-    m3u8_content = handler.get_streams_as_iptv(token="")
+    m3u8_content = handler.get_streams_as_iptv()
 
     # Verify M3U8 header exists
     assert m3u8_content.startswith("#EXTM3U")
@@ -182,20 +181,15 @@ def test_get_streams_as_iptv_url_validation(
     assert str(hls_url_1) == f"http://192.168.100.130:5100/hls/{content_id_1}"
     assert str(hls_url_2) == f"http://192.168.100.130:5100/hls/{content_id_2}"
 
-    # Test with token
-    m3u8_with_token = handler.get_streams_as_iptv(token="test_token")
-    assert f"http://192.168.100.130:5100/hls/{content_id_1}?token=test_token" in m3u8_with_token
-    assert f"http://192.168.100.130:5100/hls/{content_id_2}?token=test_token" in m3u8_with_token
-
     # Test with different EXTERNAL_URL formats
     # URL without port
     monkeypatch.setattr("acere.instances.config.settings.EXTERNAL_URL", "http://ace.pytest.internal")
-    m3u8_no_port = handler.get_streams_as_iptv(token="")
+    m3u8_no_port = handler.get_streams_as_iptv()
     assert "http://ace.pytest.internal/epg.xml" in m3u8_no_port
     assert f"http://ace.pytest.internal/hls/{content_id_1}" in m3u8_no_port
 
     # HTTPS URL with port
     monkeypatch.setattr("acere.instances.config.settings.EXTERNAL_URL", "https://secure.ace.pytest.internal:8443")
-    m3u8_https = handler.get_streams_as_iptv(token="")
+    m3u8_https = handler.get_streams_as_iptv()
     assert "https://secure.ace.pytest.internal:8443/epg.xml" in m3u8_https
     assert f"https://secure.ace.pytest.internal:8443/hls/{content_id_1}" in m3u8_https

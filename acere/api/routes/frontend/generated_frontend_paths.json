@@ -10,7 +10,5 @@
   "/epg",
   "/info/",
   "/info/iptv",
-  "/info/playback",
-  "/login",
-  "/settings"
+  "/info/playback"
 ]

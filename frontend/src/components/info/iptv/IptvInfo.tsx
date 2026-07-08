@@ -12,9 +12,9 @@ import baseURL from "@/helpers"
 const VITE_API_URL = baseURL()
 
 interface IptvInfoProps {
-  user: {
-    username?: string
-    stream_token?: string
+  credentials: {
+    username: string
+    password: string
   } | null
   isLoading: boolean
   error: Error | null
@@ -48,22 +48,20 @@ function renderTableRows(items: Array<{ name: string; value: string }>) {
   ))
 }
 
-export function IptvInfo({ user, isLoading, error }: IptvInfoProps) {
+export function IptvInfo({ credentials, isLoading, error }: IptvInfoProps) {
   if (isLoading) return <Text>Loading...</Text>
   if (error)
     return (
       <Text color="red">Cannot Load IPTV information: {error.message}</Text>
     )
 
-  const tokenString = user?.stream_token ? `?token=${user.stream_token}` : ""
-
   const serverAddress = VITE_API_URL
-  const username = user?.username || "any"
-  const password = user?.stream_token || "any"
-  const playlistUrl = `${VITE_API_URL}/iptv${tokenString}`
-  const playlistM3uUrl = `${VITE_API_URL}/iptv.m3u${tokenString}`
-  const playlistM3u8Url = `${VITE_API_URL}/iptv.m3u8${tokenString}`
-  const epgXmlUrl = `${VITE_API_URL}/epg.xml${tokenString}`
+  const username = credentials?.username || "any"
+  const password = credentials?.password || "any"
+  const playlistUrl = `${VITE_API_URL}/iptv`
+  const playlistM3uUrl = `${VITE_API_URL}/iptv.m3u`
+  const playlistM3u8Url = `${VITE_API_URL}/iptv.m3u8`
+  const epgXmlUrl = `${VITE_API_URL}/epg.xml`
 
   const xtreamItems = [
     { name: "Server / Portal URL", value: serverAddress },

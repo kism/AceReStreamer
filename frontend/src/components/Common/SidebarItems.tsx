@@ -1,22 +1,17 @@
 import { Box, Flex, Icon, Text } from "@chakra-ui/react"
-import { useQueryClient } from "@tanstack/react-query"
 import { Link as RouterLink } from "@tanstack/react-router"
 import {
   FiCalendar,
   FiExternalLink,
-  FiLogOut,
   FiMonitor,
   FiPlay,
   FiSettings,
   FiTv,
-  FiUsers,
 } from "react-icons/fi"
 import type { IconType } from "react-icons/lib"
 import "@fontsource/fira-code/700.css"
 import type { FlexProps } from "@chakra-ui/react"
-import type { UserPublic } from "@/client"
 import baseURL from "@/helpers"
-import useAuth from "@/hooks/useAuth"
 
 const VITE_API_URL = baseURL()
 
@@ -25,7 +20,7 @@ const items = [
   { icon: FiMonitor, title: "Playback", path: "/info/playback" },
   { icon: FiTv, title: "IPTV", path: "/info/iptv" },
   { icon: FiCalendar, title: "EPG", path: "/epg" },
-  { icon: FiSettings, title: "User Settings", path: "/settings" },
+  { icon: FiSettings, title: "Admin", path: "/admin" },
 ]
 
 interface SidebarItemsProps {
@@ -55,15 +50,7 @@ const FlexMenuItem: React.FC<FlexProps> = ({ children, ...rest }) => {
 }
 
 const SidebarItems = ({ onClose }: SidebarItemsProps) => {
-  const queryClient = useQueryClient()
-  const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"])
-  const { logout } = useAuth()
-
-  const finalItems: Item[] = currentUser?.is_superuser
-    ? [...items, { icon: FiUsers, title: "Admin", path: "/admin" }]
-    : items
-
-  const listItems = finalItems.map(({ icon, title, path }) => (
+  const listItems = items.map(({ icon, title, path }: Item) => (
     <RouterLink key={title} to={path} onClick={onClose}>
       <FlexMenuItem>
         <Icon as={icon} alignSelf="center" />
@@ -81,16 +68,6 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
       >
         <FiExternalLink />
         <Text ml={2}>API</Text>
-      </FlexMenuItem>
-
-      <FlexMenuItem
-        onClick={() => {
-          logout()
-        }}
-        cursor="pointer"
-      >
-        <FiLogOut />
-        <Text ml={2}>Log Out</Text>
       </FlexMenuItem>
     </Box>
   )

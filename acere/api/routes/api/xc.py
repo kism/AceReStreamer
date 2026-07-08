@@ -5,11 +5,12 @@ from http import HTTPStatus
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Query, Response
-from pydantic import HttpUrl
+from pydantic import BaseModel, HttpUrl
 
 from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.config import settings
 from acere.services.xc.helpers import (
+    XC_USERNAME,
     check_xc_auth,
     get_expiry_date,
     get_port_and_protocol_from_external_url,
@@ -27,6 +28,18 @@ from acere.utils.logger import get_logger
 logger = get_logger(__name__)
 
 router = APIRouter(tags=["Xtream Codes"])
+credentials_router = APIRouter(tags=["Xtream Codes"])
+
+
+class XCCredentials(BaseModel):
+    username: str
+    password: str
+
+
+@credentials_router.get("/xc/credentials", response_model=XCCredentials)
+def get_xc_credentials() -> XCCredentials:
+    """Get the XC credentials for IPTV clients."""
+    return XCCredentials(username=XC_USERNAME, password=settings.XC_PASSWORD)
 
 
 def _populate_xc_api_response(
@@ -75,12 +88,12 @@ def xc_iptv_router(
 
     Actions: get_live_categories, get_live_streams, get_vod_categories, get_vod_streams, get_series_categories, get_series.
     """  # noqa: E501
-    check_xc_auth(username=username, stream_token=password)
+    check_xc_auth(username=username, password=password)
 
     if action == "get_live_categories":
         return _get_live_categories()
     if action == "get_live_streams":
-        return _get_live_streams(category_id, token=password)
+        return _get_live_streams(category_id)
     if action in [
         "get_vod_categories",
         "get_vod_streams",
@@ -106,11 +119,11 @@ def _get_live_categories() -> list[XCCategory]:
     return get_ace_streams_db_handler().get_xc_categories()
 
 
-def _get_live_streams(category_id: str, token: str) -> list[XCStream]:
+def _get_live_streams(category_id: str) -> list[XCStream]:
     """Get live TV streams."""
     handler = get_ace_streams_db_handler()
     xc_category = int(category_id) if category_id and category_id.isdigit() else None
-    return handler.get_streams_as_iptv_xc(xc_category, token=token)
+    return handler.get_streams_as_iptv_xc(xc_category)
 
 
 # region /status.php
@@ -121,18 +134,18 @@ def xc_get(
     type_: Annotated[str, Query(alias="type")] = "",  # Fastapi fixes this as type is a reserved word
 ) -> Response | MessageResponseModel:
     """Emulate an XC /get.php endpoint."""
-    stream_token = check_xc_auth(username=username, stream_token=password)
+    check_xc_auth(username=username, password=password)
 
     if type_ == "m3u_plus":
-        return _get_m3u_plus(token=stream_token)
+        return _get_m3u_plus()
 
     return _get_invalid_request_type()
 
 
-def _get_m3u_plus(token: str) -> Response:
+def _get_m3u_plus() -> Response:
     """Get M3U playlist."""
     handler = get_ace_streams_db_handler()
-    m3u8 = handler.get_streams_as_iptv(token=token)
+    m3u8 = handler.get_streams_as_iptv()
     return Response(
         content=m3u8,
         status_code=HTTPStatus.OK,

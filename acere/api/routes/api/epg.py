@@ -2,12 +2,8 @@
 
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 
-from acere.api.deps import (
-    get_current_active_superuser,
-    get_current_user,
-)
 from acere.core.config import EPGInstanceConf
 from acere.instances.config import settings
 from acere.instances.epg import get_epg_handler
@@ -17,7 +13,6 @@ from acere.utils.helpers import slugify
 router = APIRouter(
     prefix="/epg",
     tags=["EPG"],
-    dependencies=[Depends(get_current_user)],
 )
 
 
@@ -45,7 +40,7 @@ def get_epg(slug: str) -> EPGInstanceConf:
     return epg
 
 
-@router.post("/", dependencies=[Depends(get_current_active_superuser)])
+@router.post("/")
 def add_epg(body_json: EPGInstanceConf | list[EPGInstanceConf]) -> None:
     """Add a new EPG source."""
     if not body_json:
@@ -66,7 +61,7 @@ def add_epg(body_json: EPGInstanceConf | list[EPGInstanceConf]) -> None:
     epg_handler.update_epgs(settings.epgs)
 
 
-@router.delete("/slug/{slug}", dependencies=[Depends(get_current_active_superuser)])
+@router.delete("/slug/{slug}")
 def delete_epg(slug: str) -> None:
     """Delete an EPG source by slug."""
     epg_handler = get_epg_handler()

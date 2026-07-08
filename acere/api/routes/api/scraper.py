@@ -2,12 +2,8 @@
 
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 
-from acere.api.deps import (
-    get_current_active_superuser,
-    get_current_user,
-)
 from acere.core.config.scraper import ScrapeSiteAPI, ScrapeSiteHTML, ScrapeSiteIPTV
 from acere.instances.config import settings
 from acere.instances.scraper import get_ace_scraper
@@ -20,14 +16,14 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/scraper", tags=["Scraper"])
 
 
-@router.get("/source", dependencies=[Depends(get_current_user)])
+@router.get("/source")
 def sources() -> list[AceScraperSourceApi]:
     """API endpoint to get the flat streams sources."""
     ace_scraper = get_ace_scraper()
     return ace_scraper.get_scraper_sources_flat_api()
 
 
-@router.get("/source/{source_slug}", dependencies=[Depends(get_current_user)])
+@router.get("/source/{source_slug}")
 def source(source_slug: str) -> AceScraperSourceApi:
     """API endpoint to get a single stream source by its slug."""
     ace_scraper = get_ace_scraper()
@@ -39,7 +35,7 @@ def source(source_slug: str) -> AceScraperSourceApi:
     raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
 
 
-@router.post("/source", dependencies=[Depends(get_current_active_superuser)])
+@router.post("/source")
 def add_source(  # noqa: C901 Revisit once I have some tests
     body_json: AceScraperSourceApi | list[AceScraperSourceApi],
 ) -> MessageResponseModel:
@@ -92,7 +88,7 @@ def add_source(  # noqa: C901 Revisit once I have some tests
     return MessageResponseModel(message=msg)
 
 
-@router.delete("/source/{slug}", dependencies=[Depends(get_current_active_superuser)])
+@router.delete("/source/{slug}")
 def remove_source(slug: str) -> MessageResponseModel:
     """API endpoint to remove a scraper source."""
     success, msg = settings.scraper.remove_source(slug)
@@ -108,13 +104,13 @@ def remove_source(slug: str) -> MessageResponseModel:
     return MessageResponseModel(message=msg)
 
 
-@router.get("/name-override", dependencies=[Depends(get_current_active_superuser)])
+@router.get("/name-override")
 def get_name_overrides() -> dict[str, str]:
     """API endpoint to get the scraper name overrides."""
     return settings.scraper.content_id_infohash_name_overrides
 
 
-@router.delete("/name-override/{content_id}", dependencies=[Depends(get_current_active_superuser)])
+@router.delete("/name-override/{content_id}")
 def delete_name_override(content_id: str) -> MessageResponseModel:
     """API endpoint to delete a scraper name override."""
     success = settings.scraper.delete_content_id_name_override(content_id)
@@ -129,7 +125,7 @@ def delete_name_override(content_id: str) -> MessageResponseModel:
     return MessageResponseModel(message="Content ID name override deleted successfully")
 
 
-@router.post("/name-override/{content_id}", dependencies=[Depends(get_current_active_superuser)])
+@router.post("/name-override/{content_id}")
 def add_name_override(content_id: str, name: str) -> MessageResponseModel:
     """API endpoint to add a scraper name override."""
     settings.scraper.add_content_id_name_override(content_id, name)

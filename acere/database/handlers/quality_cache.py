@@ -174,7 +174,7 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
                                 asyncio.TimeoutError,
                                 fastapi.exceptions.HTTPException,
                             ):
-                                await hls(path=stream.content_id, authentication_override=True)
+                                await hls(path=stream.content_id)
                             await asyncio.sleep(attempt_delay)
 
                         await asyncio.sleep(stream_delay)

@@ -12,4 +12,3 @@ class HealthResponseModel(BaseModel):
     time_zone: str
     threads: list[ThreadHealthModel]
     memory_usage_mb: str
-    auth_disabled: bool

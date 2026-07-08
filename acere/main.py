@@ -68,9 +68,6 @@ External URL: {settings.EXTERNAL_URL}
 
     logger.info(msg)
 
-    if settings.AUTH_DISABLED:
-        logger.warning("Authentication is DISABLED. All endpoints are accessible without credentials.")
-
 
 def custom_generate_unique_id(route: APIRoute) -> str:
     return f"{route.tags[0]}-{route.name}"
@@ -83,7 +80,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     # Initialize database
     with Session(engine) as session:
         session.exec(select(1))
-        init_db(session)
+    init_db()
 
     instance_id = str(random.randbytes(4).hex())  # noqa: S311 Not crypto related
 

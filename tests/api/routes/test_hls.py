@@ -12,10 +12,10 @@ from acere.instances.config import settings
 from acere.instances.paths import get_app_path_handler
 from acere.services.epg.handler import EPGHandler
 from acere.services.scraper import main as scraper_main_module
+from acere.services.xc.helpers import XC_USERNAME
 from tests.test_utils.ace import get_random_content_id
 from tests.test_utils.aiohttp import FakeSession
 from tests.test_utils.hls import generate_hls_m3u8
-from tests.test_utils.user import create_random_user
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -56,36 +56,12 @@ def valid_content_id() -> str:
     return get_random_content_id()
 
 
-@pytest.fixture
-def normal_user_stream_token(client: TestClient, db: Session) -> str:
-    """Get a valid stream token for a normal user."""
-    user = create_random_user(db)
-    return user.stream_token
-
-
-def test_hls_without_token(client: TestClient, valid_content_id: str) -> None:
-    """Test HLS endpoint without authentication token."""
-    response = client.get(f"/hls/{valid_content_id}")
-
-    assert response.status_code == HTTPStatus.FORBIDDEN
-    assert "Invalid or missing stream token" in response.json()["detail"]
-
-
-def test_hls_with_invalid_token(client: TestClient, valid_content_id: str) -> None:
-    """Test HLS endpoint with invalid authentication token."""
-    response = client.get(f"/hls/{valid_content_id}?token=invalid_token")
-
-    assert response.status_code == HTTPStatus.FORBIDDEN
-    assert "Invalid or missing stream token" in response.json()["detail"]
-
-
 def test_hls_with_invalid_content_id(
     client: TestClient,
-    normal_user_stream_token: str,
 ) -> None:
     """Test HLS endpoint with invalid content ID format."""
     invalid_content_id = "invalid_id"
-    response = client.get(f"/hls/{invalid_content_id}?token={normal_user_stream_token}")
+    response = client.get(f"/hls/{invalid_content_id}")
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert "Invalid content ID or infohash" in response.json()["detail"]
@@ -94,7 +70,6 @@ def test_hls_with_invalid_content_id(
 @pytest.mark.asyncio
 async def test_hls_success(
     client: TestClient,
-    normal_user_stream_token: str,
     valid_content_id: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -124,7 +99,7 @@ async def test_hls_success(
         type("MockPool", (), {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url}),
     )
 
-    response = client.get(f"/hls/{valid_content_id}?token={normal_user_stream_token}")
+    response = client.get(f"/hls/{valid_content_id}")
 
     assert response.status_code == HTTPStatus.OK
     assert "#EXTM3U" in response.text
@@ -135,7 +110,6 @@ async def test_hls_success(
 @pytest.mark.asyncio
 async def test_hls_pool_full(
     client: TestClient,
-    normal_user_stream_token: str,
     valid_content_id: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -150,7 +124,7 @@ async def test_hls_pool_full(
         type("MockPool", (), {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url_none}),
     )
 
-    response = client.get(f"/hls/{valid_content_id}?token={normal_user_stream_token}")
+    response = client.get(f"/hls/{valid_content_id}")
 
     assert response.status_code == HTTPStatus.SERVICE_UNAVAILABLE
     assert "Ace pool is full" in response.json()["detail"]
@@ -159,7 +133,6 @@ async def test_hls_pool_full(
 @pytest.mark.asyncio
 async def test_hls_invalid_response_from_ace(
     client: TestClient,
-    normal_user_stream_token: str,
     valid_content_id: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -186,7 +159,7 @@ async def test_hls_invalid_response_from_ace(
         type("MockPool", (), {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url}),
     )
 
-    response = client.get(f"/hls/{valid_content_id}?token={normal_user_stream_token}")
+    response = client.get(f"/hls/{valid_content_id}")
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert "Invalid HLS stream" in response.json()["detail"]
@@ -195,7 +168,6 @@ async def test_hls_invalid_response_from_ace(
 @pytest.mark.asyncio
 async def test_hls_multi_success(
     client: TestClient,
-    normal_user_stream_token: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test HLS multistream endpoint."""
@@ -221,7 +193,7 @@ async def test_hls_multi_success(
         type("MockPool", (), {"get_instance_by_multistream_path": lambda self, path: mock_content_id}),
     )
 
-    response = client.get(f"/hls/m/{multistream_path}?token={normal_user_stream_token}")
+    response = client.get(f"/hls/m/{multistream_path}")
 
     assert response.status_code == HTTPStatus.OK
     assert "#EXTM3U" in response.text
@@ -230,7 +202,6 @@ async def test_hls_multi_success(
 @pytest.mark.asyncio
 async def test_ace_content_success(
     client: TestClient,
-    normal_user_stream_token: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test Ace content proxy endpoint."""
@@ -250,7 +221,7 @@ async def test_ace_content_success(
 
     monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
 
-    response = client.get(f"/ace/c/{content_path}?token={normal_user_stream_token}")
+    response = client.get(f"/ace/c/{content_path}")
 
     assert response.status_code == HTTPStatus.OK
     assert response.content == mock_ts_data
@@ -260,7 +231,6 @@ async def test_ace_content_success(
 @pytest.mark.asyncio
 async def test_hls_content_success(
     client: TestClient,
-    normal_user_stream_token: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test HLS content proxy endpoint."""
@@ -280,7 +250,7 @@ async def test_hls_content_success(
 
     monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
 
-    response = client.get(f"/hls/c/{content_path}?token={normal_user_stream_token}")
+    response = client.get(f"/hls/c/{content_path}")
 
     assert response.status_code == HTTPStatus.OK
     assert response.content == mock_ts_data
@@ -288,7 +258,6 @@ async def test_hls_content_success(
 
 def test_tvg_logo_with_existing_file(
     client: TestClient,
-    normal_user_stream_token: str,
     temp_instance_dir: Path,
 ) -> None:
     """Test TVG logo endpoint with existing logo file."""
@@ -298,7 +267,7 @@ def test_tvg_logo_with_existing_file(
     logo_path.parent.mkdir(parents=True, exist_ok=True)
     logo_path.write_bytes(b"FAKE PNG DATA")
 
-    response = client.get(f"/tvg-logo/{logo_filename}?token={normal_user_stream_token}")
+    response = client.get(f"/tvg-logo/{logo_filename}")
 
     assert response.status_code == HTTPStatus.OK
     assert response.content == b"FAKE PNG DATA"
@@ -309,7 +278,6 @@ def test_tvg_logo_with_existing_file(
 
 def test_tvg_logo_fallback_to_default(
     client: TestClient,
-    normal_user_stream_token: str,
     temp_instance_dir: Path,
 ) -> None:
     """Test TVG logo endpoint falls back to default logo when file doesn't exist."""
@@ -320,7 +288,7 @@ def test_tvg_logo_fallback_to_default(
 
     non_existent_logo = "non_existent_logo.png"
 
-    response = client.get(f"/tvg-logo/{non_existent_logo}?token={normal_user_stream_token}")
+    response = client.get(f"/tvg-logo/{non_existent_logo}")
 
     assert response.status_code == HTTPStatus.OK
     # Should serve default logo
@@ -334,11 +302,9 @@ def test_tvg_logo_fallback_to_default(
 @pytest.mark.asyncio
 async def test_xc_m3u8_success(
     client: TestClient,
-    db: Session,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test XC API m3u8 endpoint with valid credentials."""
-    user = create_random_user(db)
     xc_id = 12345
     mock_content_id = get_random_content_id()
 
@@ -370,7 +336,7 @@ async def test_xc_m3u8_success(
     )
 
     # Test with path parameters
-    response = client.get(f"/{user.username}/{user.stream_token}/{xc_id}.m3u8")
+    response = client.get(f"/{XC_USERNAME}/{settings.XC_PASSWORD}/{xc_id}.m3u8")
 
     assert response.status_code == HTTPStatus.OK
     assert "#EXTM3U" in response.text
@@ -378,13 +344,9 @@ async def test_xc_m3u8_success(
 
 def test_xc_m3u8_invalid_xc_id(
     client: TestClient,
-    normal_user_stream_token: str,
-    db: Session,
 ) -> None:
     """Test XC API m3u8 endpoint with invalid XC ID format."""
-    user = create_random_user(db)
-
-    response = client.get(f"/{user.username}/{user.stream_token}/invalid_id.m3u8")
+    response = client.get(f"/{XC_USERNAME}/{settings.XC_PASSWORD}/invalid_id.m3u8")
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert "invalid XC ID" in response.json()["detail"]
@@ -393,6 +355,14 @@ def test_xc_m3u8_invalid_xc_id(
 def test_xc_m3u8_invalid_credentials(client: TestClient) -> None:
     """Test XC API m3u8 endpoint with invalid credentials."""
     response = client.get("/invalid_user/invalid_token/12345.m3u8")
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert "Invalid username or password" in response.json()["detail"]
+
+
+def test_xc_m3u8_wrong_password(client: TestClient) -> None:
+    """Test XC API m3u8 endpoint with the right username but wrong password."""
+    response = client.get(f"/{XC_USERNAME}/wrongpassword/12345.m3u8")
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert "Invalid username or password" in response.json()["detail"]

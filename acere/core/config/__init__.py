@@ -3,6 +3,7 @@
 import json
 import os
 import secrets
+import string
 import typing
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Annotated, Any, Literal, Self
@@ -78,11 +79,7 @@ class AceReStreamerConf(BaseSettings):
     FRONTEND_HOST: str = ""  # Set to http://localhost:5173 for local dev
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
     EXTERNAL_URL: str = "http://localhost:5100"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 90  # 90 days, this is not a high security app.
-    SECRET_KEY: str = ""
-    FIRST_SUPERUSER: str = "admin"
-    FIRST_SUPERUSER_PASSWORD: str = ""
-    AUTH_DISABLED: bool = False
+    XC_PASSWORD: str = ""  # Generated on first run, see validator
     BACKEND_CORS_ORIGINS: Annotated[list[AnyUrl] | str, BeforeValidator(parse_cors)] = []
 
     @classmethod
@@ -115,12 +112,12 @@ class AceReStreamerConf(BaseSettings):
         """Ensure EXTERNAL_URL does not end with a slash."""
         return value.rstrip("/")
 
-    @field_validator("SECRET_KEY", mode="before")
+    @field_validator("XC_PASSWORD", mode="before")
     @classmethod
-    def validate_secret_key(cls, value: str) -> str:
-        """Validate the secret key, generate one if not set."""
+    def validate_xc_password(cls, value: str) -> str:
+        """Validate the XC password, generate one if not set."""
         if not value or value.strip() == "":
-            value = secrets.token_urlsafe(32)
+            value = "".join(secrets.choice(string.ascii_letters + string.digits) for _ in range(20))
         return value
 
     @field_validator("REMOTE_SETTINGS_URL", mode="before")

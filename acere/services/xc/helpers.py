@@ -1,20 +1,20 @@
 """Helpers for XC API response population."""
 
+import secrets
 from datetime import UTC, datetime, timedelta
 from http import HTTPStatus
 from typing import TYPE_CHECKING
 
 from fastapi import HTTPException
-from sqlmodel import Session
 
-from acere.crud import authenticate_stream_token
-from acere.database.init import engine
 from acere.instances.config import settings
 
 if TYPE_CHECKING:
     from pydantic import HttpUrl
 else:
     HttpUrl = object
+
+XC_USERNAME = "acerestreamer"
 
 
 def get_expiry_date() -> str:
@@ -38,15 +38,10 @@ def get_port_and_protocol_from_external_url(
     return http_port, https_port, protocol
 
 
-def check_xc_auth(username: str, stream_token: str) -> str:
-    """Check if the provided username and password are valid, return stream token if valid."""
-    if settings.AUTH_DISABLED:
-        return stream_token or "noauth"
-
-    with Session(engine) as session:
-        result = authenticate_stream_token(session=session, username=username, stream_token=stream_token)
-    if result is not None:
-        return result.stream_token
+def check_xc_auth(username: str, password: str) -> str:
+    """Check if the provided username and password are valid, return the password if valid."""
+    if username == XC_USERNAME and secrets.compare_digest(password, settings.XC_PASSWORD):
+        return password
 
     raise HTTPException(
         status_code=HTTPStatus.UNAUTHORIZED,

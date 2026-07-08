@@ -35,8 +35,9 @@ def upgrade() -> None:
             if needs_drop:
                 batch_op.drop_column("has_ever_worked")
 
+    # Empty user_columns means no user table (fresh DB after 1.3.0 removed users), nothing to alter
     user_columns = {row[1] for row in bind.execute(sa.text("PRAGMA table_info(user)")).fetchall()}
-    if "password_changed_at" not in user_columns:
+    if user_columns and "password_changed_at" not in user_columns:
         with op.batch_alter_table("user") as batch_op:
             batch_op.add_column(sa.Column("password_changed_at", sa.DateTime(), nullable=True))
 
@@ -55,6 +56,6 @@ def downgrade() -> None:
                 batch_op.drop_column("last_quality_success_time")
 
     user_columns = {row[1] for row in bind.execute(sa.text("PRAGMA table_info(user)")).fetchall()}
-    if "password_changed_at" in user_columns:
+    if user_columns and "password_changed_at" in user_columns:
         with op.batch_alter_table("user") as batch_op:
             batch_op.drop_column("password_changed_at")

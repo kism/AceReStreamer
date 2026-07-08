@@ -1,18 +1,13 @@
 from fastapi import APIRouter
 
-from acere.instances.config import settings
-
 from .routes import frontend, hls
 from .routes.api import (
     ace_pool,
     config,
     epg,
     health,
-    login,
-    private,
     scraper,
     streams,
-    users,
     xc,
 )
 from .routes.iptv import (
@@ -26,14 +21,10 @@ api_router = APIRouter()
 api_router.include_router(ace_pool.router)
 api_router.include_router(epg.router)
 api_router.include_router(health.router)
-api_router.include_router(login.router)
 api_router.include_router(scraper.router)
 api_router.include_router(streams.router)
-api_router.include_router(users.router)
 api_router.include_router(config.router)
-
-if settings.ENVIRONMENT == "local":
-    api_router.include_router(private.router)
+api_router.include_router(xc.credentials_router)
 
 api_router_xc = APIRouter()
 api_router_xc.include_router(xc.router)

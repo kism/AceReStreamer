@@ -23,7 +23,7 @@ os.environ["INSTANCE_DIR"] = str(_test_instance_dir)
 setup_app_path_handler(instance_path=_test_instance_dir)
 path_handler = get_app_path_handler()
 
-# Create a minimal test config with test superuser password
+# Create a minimal test config
 config_file = path_handler.settings_file
 shutil.copyfile(
     Path(__file__).parent / "configs" / "test_valid.json",
@@ -35,23 +35,15 @@ from typing import TYPE_CHECKING
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlmodel import Session, delete
 
 from acere.database.handlers.quality_cache import AceQualityCacheHandler
-from acere.database.init import engine, init_db
-from acere.database.models.user import User
-from acere.instances.config import settings
+from acere.database.init import init_db
 from acere.main import app
-from tests.test_utils.user import authentication_token_from_username
-from tests.test_utils.user_utils import get_superuser_token_headers
 
 if TYPE_CHECKING:
     from collections.abc import Generator
 else:
     Generator = object
-
-# Store the test password before init_db clears it
-TEST_SUPERUSER_PASSWORD = "pytestpassword123"
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -65,31 +57,14 @@ def temp_instance_dir() -> Generator[Path]:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def db(temp_instance_dir: Path) -> Generator[Session]:
-    with Session(engine) as session:
-        init_db(session)
-        # After init_db, restore the password for tests to use
-        settings.FIRST_SUPERUSER_PASSWORD = TEST_SUPERUSER_PASSWORD
-        yield session
-        statement = delete(User)
-        session.exec(statement)
-        session.commit()
+def db(temp_instance_dir: Path) -> None:
+    init_db()
 
 
 @pytest.fixture(scope="module")
 def client() -> Generator[TestClient]:
     with TestClient(app) as c:
         yield c
-
-
-@pytest.fixture
-def superuser_token_headers(client: TestClient) -> dict[str, str]:
-    return get_superuser_token_headers(client)
-
-
-@pytest.fixture
-def normal_user_token_headers(client: TestClient, db: Session) -> dict[str, str]:
-    return authentication_token_from_username(client=client, username="pytestuser", db=db)
 
 
 @pytest.fixture

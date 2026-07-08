@@ -121,15 +121,12 @@ class AceStreamDBHandler(BaseDatabaseHandler):
         return get_xc_stream_db_handler().get_or_create_xc_id(content_id)
 
     # region GET IPTV
-    def get_streams_as_iptv(self, token: str) -> str:
+    def get_streams_as_iptv(self) -> str:
         """Get the found streams as an IPTV M3U8 string."""
         external_url = settings.EXTERNAL_URL
 
         # There are a few standards for the tag for the tvg url, most to least common x-tvg-url, url-tvg, tvg-url
-        epg_url_str = f"{external_url}/epg.xml"
-        if token:
-            epg_url_str += f"?token={token}"
-        epg_url = HttpUrl(epg_url_str)
+        epg_url = HttpUrl(f"{external_url}/epg.xml")
         m3u8_content = f'#EXTM3U x-tvg-url="{epg_url}" url-tvg="{epg_url}" refresh="3600"\n'
 
         iptv_set = set()
@@ -142,12 +139,9 @@ class AceStreamDBHandler(BaseDatabaseHandler):
             external_url_tvg = HttpUrl(f"{external_url}/tvg-logo/")
 
             line_one = create_extinf_line(
-                stream, tvg_url_base=external_url_tvg, token=token, last_found=int(stream.last_scraped_time.timestamp())
+                stream, tvg_url_base=external_url_tvg, last_found=int(stream.last_scraped_time.timestamp())
             )
-            line_two_url = HttpUrl(f"{external_url}/hls/{stream.content_id}")
-            line_two = str(line_two_url)
-            if token:
-                line_two += f"?token={token}"
+            line_two = str(HttpUrl(f"{external_url}/hls/{stream.content_id}"))
 
             iptv_set.add(line_one + line_two)
 
@@ -164,14 +158,11 @@ class AceStreamDBHandler(BaseDatabaseHandler):
     def get_streams_as_iptv_xc(
         self,
         xc_category_filter: int | None,
-        token: str = "",
     ) -> list[XCStream]:
         """Get the found streams as a list of XCStream objects."""
         category_handler = get_xc_category_db_handler()
         xc_stream_handler = get_xc_stream_db_handler()
         result_streams: list[XCStream] = []
-
-        token_str = "" if token == "" else f"?token={token}"
 
         streams = self.get_streams_cached()
 
@@ -185,9 +176,7 @@ class AceStreamDBHandler(BaseDatabaseHandler):
                         num=current_stream_number,
                         name=stream.title,
                         stream_id=xc_id,
-                        stream_icon=f"{settings.EXTERNAL_URL}/tvg-logo/{stream.tvg_logo}{token_str}"
-                        if stream.tvg_logo
-                        else "",
+                        stream_icon=f"{settings.EXTERNAL_URL}/tvg-logo/{stream.tvg_logo}" if stream.tvg_logo else "",
                         epg_channel_id=stream.tvg_id,
                         category_id=str(xc_category_id),
                     )

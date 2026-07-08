@@ -2,12 +2,8 @@
 
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 
-from acere.api.deps import (
-    get_current_active_superuser,
-    get_current_user,
-)
 from acere.instances.ace_quality import get_quality_handler
 from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.epg import get_epg_handler
@@ -19,7 +15,7 @@ from acere.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-router = APIRouter(prefix="/streams", tags=["Streams"], dependencies=[Depends(get_current_user)])
+router = APIRouter(prefix="/streams", tags=["Streams"])
 
 
 # region /api/stream(s)
@@ -52,7 +48,7 @@ def by_content_id(content_id: str) -> FoundAceStreamAPI:
     )
 
 
-@router.delete("/content_id/{content_id}", dependencies=[Depends(get_current_active_superuser)])
+@router.delete("/content_id/{content_id}")
 def delete_by_content_id(content_id: str) -> MessageResponseModel:
     """API endpoint to delete a specific stream by Ace ID."""
     handler = get_ace_streams_db_handler()
@@ -96,7 +92,7 @@ def streams() -> list[FoundAceStreamAPI]:
     return streams_api
 
 
-@router.post("/", dependencies=[Depends(get_current_active_superuser)])
+@router.post("/")
 def add_stream(
     stream: ManuallyAddedAceStream,
 ) -> MessageResponseModel:
@@ -119,7 +115,7 @@ def add_stream(
     return MessageResponseModel(message="Stream added successfully")
 
 
-@router.post("/check", dependencies=[Depends(get_current_active_superuser)])
+@router.post("/check")
 async def check() -> MessageResponseModel:
     """API endpoint to attempt to check all streams health."""
     handler = get_quality_handler()
