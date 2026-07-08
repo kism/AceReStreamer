@@ -10,6 +10,7 @@ import {
 } from "@chakra-ui/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useCallback } from "react"
+import { FaPencilAlt } from "react-icons/fa"
 import {
   type FoundAceStreamAPI,
   ScraperService,
@@ -150,6 +151,7 @@ function StreamAdminTable() {
                   key={item.title}
                   defaultValue={item.title}
                   onValueCommit={(e) => handleRename(item, e.value)}
+                  activationMode="dblclick"
                   size="sm"
                   fontWeight="bold"
                   flex="1"
@@ -157,6 +159,13 @@ function StreamAdminTable() {
                 >
                   <Editable.Preview />
                   <Editable.Input />
+                  <Editable.Control>
+                    <Editable.EditTrigger asChild>
+                      <Button size="2xs" variant="ghost">
+                        <FaPencilAlt />
+                      </Button>
+                    </Editable.EditTrigger>
+                  </Editable.Control>
                 </Editable.Root>
                 <Button
                   size="2xs"
