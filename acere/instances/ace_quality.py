@@ -1,19 +1,8 @@
 """Global instance for the quality cache handler."""
 
 from acere.database.handlers.quality_cache import AceQualityCacheHandler
+from acere.instances import GlobalInstance
 
-_quality_handler: AceQualityCacheHandler | None = None
-
-
-def get_quality_handler() -> AceQualityCacheHandler:
-    """Get the global AceQualityCacheHandler instance."""
-    if _quality_handler is None:
-        msg = "AceQualityCacheHandler instance is not set."
-        raise ValueError(msg)
-    return _quality_handler
-
-
-def set_quality_handler(handler: AceQualityCacheHandler) -> None:
-    """Set the global AceQualityCacheHandler instance."""
-    global _quality_handler
-    _quality_handler = handler
+_quality_handler: GlobalInstance[AceQualityCacheHandler] = GlobalInstance("AceQualityCacheHandler")
+set_quality_handler = _quality_handler.set
+get_quality_handler = _quality_handler.get

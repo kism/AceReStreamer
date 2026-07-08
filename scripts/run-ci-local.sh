@@ -10,9 +10,6 @@ function print_heading() {
 
 source .venv/bin/activate
 
-print_heading "mypy"
-mypy
-
 print_heading "ty"
 ty check
 

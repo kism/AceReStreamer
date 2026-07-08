@@ -1,6 +1,6 @@
 [project]
 name = "acere"
-version = "1.2.8rc1"
+version = "1.2.9"
 description = ""
 requires-python = ">=3.14,<4.0"
 readme = "README.md"
@@ -20,7 +20,6 @@ dependencies = [
     "jinja2>=3.1.6",
     "lxml>=6.0.2",
     "psutil>=7.1.0",
-    "pytz>=2025.2",
     "aiohttp[speedups]>=3.13.0", # Requires python 3.14+ for zstd support
     "rich>=14.1.0",
     "argon2-cffi>=25.1.0",
@@ -32,12 +31,10 @@ dependencies = [
 
 [project.optional-dependencies]
 type = [
-    "mypy",
     "ty",
     "types-passlib>=1.7.7",
     "lxml-stubs>=0.5.1",
     "types-psutil>=7.0.0.20250601",
-    "types-pytz>=2025.2.0.20250516",
 ]
 lint = ["ruff", "memray"]
 test = [
@@ -48,11 +45,13 @@ test = [
     "detect-test-pollution",
     "pytest-asyncio",
     "pytest-socket>=0.7.0",
+    "httpx2",
 ]
 docs = ["sphinx", "myst-parser", "sphinx-rtd-theme"]
 
 [project.urls]
 homepage = "https://github.com/kism/AceReStreamer"
+Repository = "https://github.com/kism/AceReStreamer"
 Documentation = "https://acerestreamer.readthedocs.io/"
 Source = "https://github.com/kism/AceReStreamer"
 
@@ -115,9 +114,6 @@ ignore = [
     "D",
     "A",
 ]
-"acere/instances/*.py" = [
-    "PLW0603", # Allow globals here, this is the place
-]
 "acere/database/types.py" = [
     "ARG002", # Empty args since we are just defining types here, no logic
 ]
@@ -166,38 +162,10 @@ show_contexts = true
 testpaths = ["tests"]
 addopts = [
     "--disable-socket",
-    "--allow-hosts=127.0.0.1,127.0.1.1",
+    "--allow-hosts=127.0.0.1,127.0.1.1,::1",
     "--asyncio-mode=auto",
 ]
 
-[tool.mypy]
-strict = true
-files = ["acere", "tests", "docs"]
-exclude = ["venv", ".venv"]
-show_error_codes = true
-enable_error_code = [
-    "ignore-without-code",
-    "redundant-expr",
-    "truthy-bool",
-    "type-arg",
-    "unused-awaitable",
-    "possibly-undefined",
-    "redundant-self",
-]
-disable_error_code = [
-    "prop-decorator", # Conflicts with pydantic computed_field
-]
-[[tool.mypy.overrides]]
-module = "acere.database.models.user"
-disable_error_code = [
-    "override",   # SqlModel handles the None
-    "assignment", # Classmethod is fine
-]
-[[tool.mypy.overrides]]
-module = "tests.core.config.test_ace_scrape_conf"
-disable_error_code = [
-    "arg-type", # Pydantic needs to process and correct incorrect urls
-]
 
 [[tool.ty.overrides]]
 # Not sure what ty is upset about here
@@ -207,7 +175,9 @@ include = ["acere/main.py", "tests/core/config/test_ace_scrape_conf.py"]
 
 [[tool.ty.overrides]]
 # Not sure what ty is upset about here
-include = ["acere/database/handlers/category_xc.py", "acere/database/handlers/content_id_xc_id.py"]
+include = [
+    "acere/database/handlers/category_xc.py",
+    "acere/database/handlers/content_id_xc_id.py",
+]
 [tool.ty.overrides.rules]
 "missing-argument" = "ignore"
-

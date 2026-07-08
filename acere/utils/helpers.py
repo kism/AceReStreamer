@@ -1,17 +1,18 @@
 """Generic helper functions for AceReStreamer."""
 
 import re
+import string
 
 from acere.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
 ACE_ID_LENGTH = 40
+_HEX_DIGITS = frozenset(string.hexdigits)
 
 # Compiled regex
 _NON_ALPHANUMERIC_PATTERN = re.compile(r"[^a-zA-Z0-9-]")
 _DOUBLE_SPACE_PATTERN = re.compile(r"\s{2,}")
-_HEX_PATTERN = re.compile(r"^[0-9a-fA-F]+$")
 
 
 def slugify(slug_input: str | bytes | None) -> str:
@@ -37,10 +38,4 @@ def slugify(slug_input: str | bytes | None) -> str:
 
 def check_valid_content_id_or_infohash(content_id: str) -> bool:
     """Check if the AceStream content_id or infohash is valid."""
-    if len(content_id) != ACE_ID_LENGTH:
-        return False
-
-    if not _HEX_PATTERN.match(content_id):  # noqa: SIM103 eh
-        return False
-
-    return True
+    return len(content_id) == ACE_ID_LENGTH and _HEX_DIGITS.issuperset(content_id)

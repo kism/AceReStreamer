@@ -71,27 +71,12 @@ export function IptvInfo({ user, isLoading, error }: IptvInfoProps) {
     { name: "Password", value: password },
   ]
 
-  const longestxtreamItemValue = Math.max(
-    ...xtreamItems.map((item) => item.value.length),
-  )
-
   const iptvItems = [
     { name: "Playlist URL", value: playlistUrl },
     { name: "Playlist URL (.m3u)", value: playlistM3uUrl },
     { name: "Playlist URL (.m3u8)", value: playlistM3u8Url },
     { name: "EPG URL", value: epgXmlUrl },
   ]
-
-  const longestiptvItemValue = Math.max(
-    ...iptvItems.map((item) => item.value.length),
-  )
-
-  console.log(
-    "xtream len: ",
-    longestxtreamItemValue,
-    " iptv len: ",
-    longestiptvItemValue,
-  )
 
   return (
     <VStack gap={6} align="stretch">

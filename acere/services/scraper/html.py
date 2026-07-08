@@ -67,9 +67,6 @@ class HTMLStreamScraper(ScraperCommon):
         soup = BeautifulSoup(scraped_site_str, "html.parser")
 
         for link in soup.find_all("a", href=True):
-            # Appease mypy
-            if not isinstance(link, Tag):
-                continue
             link_href = link.get("href", None)
             if not link_href or not isinstance(link_href, str):
                 continue

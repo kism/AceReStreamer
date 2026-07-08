@@ -2,7 +2,7 @@ import { VStack } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { UsersService } from "@/client"
-import { AppsInfo, OtherIptvSources } from "@/components/info/iptv/AppsInfo"
+import { AppsInfo } from "@/components/info/iptv/AppsInfo"
 import { IptvInfo } from "@/components/info/iptv/IptvInfo"
 import { usePageTitle } from "@/hooks/usePageTitle"
 
@@ -26,7 +26,6 @@ function InfoIptv() {
     <VStack gap={6} align="stretch">
       <IptvInfo user={user || null} isLoading={isLoading} error={error} />
       <AppsInfo />
-      <OtherIptvSources />
     </VStack>
   )
 }

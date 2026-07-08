@@ -2,24 +2,18 @@
 
 from typing import TYPE_CHECKING
 
+from acere.instances import GlobalInstance
+
 if TYPE_CHECKING:
     from acere.services.scraper import AceScraper
 else:
     AceScraper = object
 
-_ace_scraper: AceScraper | None = None
+_ace_scraper: GlobalInstance[AceScraper] = GlobalInstance("AceScraper")
+get_ace_scraper = _ace_scraper.get
 
 
 def set_ace_scraper(scraper: AceScraper) -> None:
-    """Set the global AceScraper instance."""
-    global _ace_scraper
-    _ace_scraper = scraper
-    _ace_scraper.start_scrape_thread()
-
-
-def get_ace_scraper() -> AceScraper:
-    """Get the global AceScraper instance."""
-    if _ace_scraper is None:
-        msg = "AceScraper instance is not set."
-        raise ValueError(msg)
-    return _ace_scraper
+    """Set the global AceScraper instance and start its scrape thread."""
+    _ace_scraper.set(scraper)
+    scraper.start_scrape_thread()
