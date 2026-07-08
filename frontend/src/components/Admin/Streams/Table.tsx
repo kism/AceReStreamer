@@ -19,6 +19,8 @@ import {
 import type { ApiError } from "@/client/core/ApiError"
 import { getQualityColor } from "@/components/Index/QualityCell"
 import { Button } from "@/components/ui/button"
+import { CopyButton } from "@/components/ui/copy-button"
+import baseURL from "@/helpers"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
 
@@ -161,7 +163,7 @@ function StreamAdminTable() {
                   <Editable.Input />
                   <Editable.Control>
                     <Editable.EditTrigger asChild>
-                      <Button size="2xs" variant="ghost">
+                      <Button size="2xs" variant="ghost" color="ui.main">
                         <FaPencilAlt />
                       </Button>
                     </Editable.EditTrigger>
@@ -223,6 +225,20 @@ function StreamAdminTable() {
                   <Code backgroundColor="bg.emphasized">{item.tvg_logo}</Code>
                 </Box>
               </Flex>
+              <HStack bg="bg.muted" px={2} py={1} minWidth={0}>
+                <Text flexShrink={0}>Stream URL:</Text>
+                <Code
+                  backgroundColor="bg.emphasized"
+                  overflowX="auto"
+                  whiteSpace="nowrap"
+                  display="block"
+                  flex={1}
+                  minWidth={0}
+                >
+                  {`${baseURL()}/hls/${item.content_id}`}
+                </Code>
+                <CopyButton text={`${baseURL()}/hls/${item.content_id}`} />
+              </HStack>
             </Flex>
           </Box>
         ))}

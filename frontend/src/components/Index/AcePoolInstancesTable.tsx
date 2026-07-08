@@ -58,10 +58,6 @@ export function AcePoolInstancesTable({
     },
   })
 
-  if (acePoolData.ace_instances.length === 0) {
-    return null
-  }
-
   return (
     <Box>
       <Heading size="sm" py={1}>
