@@ -39,7 +39,7 @@ bun install
 Run development server, you can use a `.env` file if desired. The variable will affect builds, not just the dev server.
 
 ```bash
-export VITE_BACKEND_URL="http://localhost:5100"  # Adjust if your backend is running elsewhere
+export VITE_API_URL="http://localhost:5100"  # Adjust if your backend is running elsewhere
 bun run dev
 ```
 
