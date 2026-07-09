@@ -221,70 +221,37 @@ class AceScrapeConf(BaseModel):
     def _slugify(cls, value: str) -> str:
         return slugify(value)
 
-    def _print_results(self, source_type: str) -> None:
-        total_scraper_count = len(self.html) + len(self.iptv_m3u8) + len(self.api)
-        logger.info("Added new %s source, total sources: %d", source_type, total_scraper_count)
+    def add_source(self, new_site: ScrapeSiteHTML | ScrapeSiteIPTV | ScrapeSiteAPI) -> tuple[bool, str]:
+        """Add a scraper source, dispatching on its type."""
+        logger.info("Adding new %s source", new_site.type)
+        new_html = list(self.html)
+        new_iptv = list(self.iptv_m3u8)
+        new_api = list(self.api)
 
-    def add_iptv_source(self, new_site: ScrapeSiteIPTV) -> tuple[bool, str]:
-        """Add an IPTV source, no options."""
-        logger.info("Adding new IPTV source")
-        new_iptv = [*self.iptv_m3u8, new_site]
-
-        try:
-            validated = self.model_validate(
-                {
-                    "html": self.html,
-                    "iptv_m3u8": new_iptv,
-                    "api": self.api,
-                }
-            )
-        except ValueError as e:
-            return False, str(e)
-
-        self.iptv_m3u8 = validated.iptv_m3u8
-        self._print_results("iptv")
-
-        return True, "Source added"
-
-    def add_html_source(self, new_site: ScrapeSiteHTML) -> tuple[bool, str]:
-        """Add an HTML source, no options."""
-        logger.info("Adding new HTML source")
-        new_html = [*self.html, new_site]
+        if isinstance(new_site, ScrapeSiteHTML):
+            new_html.append(new_site)
+        elif isinstance(new_site, ScrapeSiteIPTV):
+            new_iptv.append(new_site)
+        else:
+            new_api.append(new_site)
 
         try:
             validated = self.model_validate(
                 {
                     "html": new_html,
-                    "iptv_m3u8": self.iptv_m3u8,
-                    "api": self.api,
-                }
-            )
-        except ValueError as e:
-            return False, str(e)
-
-        self.html = validated.html
-        self._print_results("html")
-
-        return True, "Source added"
-
-    def add_api_source(self, new_site: ScrapeSiteAPI) -> tuple[bool, str]:
-        """Add an API source, no options."""
-        logger.info("Adding new API source")
-        new_api = [*self.api, new_site]
-
-        try:
-            validated = self.model_validate(
-                {
-                    "html": self.html,
-                    "iptv_m3u8": self.iptv_m3u8,
+                    "iptv_m3u8": new_iptv,
                     "api": new_api,
                 }
             )
         except ValueError as e:
             return False, str(e)
 
+        self.html = validated.html
+        self.iptv_m3u8 = validated.iptv_m3u8
         self.api = validated.api
-        self._print_results("iptv")
+
+        total_scraper_count = len(self.html) + len(self.iptv_m3u8) + len(self.api)
+        logger.info("Added new %s source, total sources: %d", new_site.type, total_scraper_count)
 
         return True, "Source added"
 
@@ -328,7 +295,7 @@ class AceScrapeConf(BaseModel):
 
         return True, "Source updated"
 
-    def remove_source(self, site_name: str) -> tuple[bool, str]:  # noqa: C901 Revisit once I have some tests
+    def remove_source(self, site_name: str) -> tuple[bool, str]:
         """Remove a source via slug."""
         logger.info("Removing source '%s'", site_name)
 
@@ -353,13 +320,7 @@ class AceScrapeConf(BaseModel):
         else:  # Shouldn't get here
             return False, f"Source not found: {site_name}"
 
-        for site in sites:
-            logger.warning(site.name)
-
         without_source_to_remove = [site for site in sites if site.name != site_name]
-
-        for site in without_source_to_remove:
-            logger.warning(site.name)
 
         try:
             validated = self.model_validate({model_to_validate: without_source_to_remove})

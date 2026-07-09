@@ -171,12 +171,8 @@ class AceReStreamerConf(BaseSettings):
         if existing_data != config_data:  # The new object will be valid, so we back up the old one
             self.write_backup_config(config_path, existing_data)
 
+        logger.info("Writing config to %s", config_path)
         with config_path.open("w") as f:
-            f.write(json.dumps(config_data))
-
-        config_path_json = config_path.with_suffix(".json")
-        logger.info("Writing config to %s", config_path_json)
-        with config_path_json.open("w") as f:
             f.write(self.model_dump_json(indent=2, exclude_none=False))
 
         logger.info("Config write complete")

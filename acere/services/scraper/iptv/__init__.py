@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 import aiohttp
 
-from acere.services.scraper.common import ScraperCommon
+from acere.services.scraper import cache
 from acere.services.scraper.iptv.parser import M3UParser
 from acere.services.scraper.models import FoundAceStream
 from acere.utils.exception_handling import log_aiohttp_exception
@@ -19,12 +19,11 @@ else:
 logger = get_logger(__name__)
 
 
-class IPTVStreamScraper(ScraperCommon):
+class IPTVStreamScraper:
     """Scraper for IPTV sites to find AceStream streams."""
 
     def __init__(self) -> None:
         """Initialize the IPTVStreamScraper with parser."""
-        super().__init__()
         self._parser = M3UParser()
 
     async def scrape_iptv_playlists(self, sites: list[ScrapeSiteIPTV]) -> list[FoundAceStream]:
@@ -56,9 +55,9 @@ class IPTVStreamScraper(ScraperCommon):
 
     async def _get_site_content(self, site: ScrapeSiteIPTV) -> str | None:
         """Get site content from cache or by scraping."""
-        if self.scraper_cache.is_cache_valid(site.url):
+        if cache.is_cache_valid(site.url):
             logger.debug("Loaded IPTV site content from cache for: %s", site.name)
-            return self.scraper_cache.load_from_cache(site.url)
+            return cache.load_from_cache(site.url)
 
         logger.info("Scraping streams from IPTV site: %s", site.name)
         try:
@@ -71,7 +70,7 @@ class IPTVStreamScraper(ScraperCommon):
             return None
 
         logger.debug("Caching IPTV site content for: %s", site.name)
-        self.scraper_cache.save_to_cache(site.url, content)
+        cache.save_to_cache(site.url, content)
 
         return content
 

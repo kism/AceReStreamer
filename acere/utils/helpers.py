@@ -2,8 +2,12 @@
 
 import re
 import string
+from typing import TYPE_CHECKING
 
 from acere.utils.logger import get_logger
+
+if TYPE_CHECKING:
+    import threading
 
 logger = get_logger(__name__)
 
@@ -39,3 +43,21 @@ def slugify(slug_input: str | bytes | None) -> str:
 def check_valid_content_id_or_infohash(content_id: str) -> bool:
     """Check if the AceStream content_id or infohash is valid."""
     return len(content_id) == ACE_ID_LENGTH and _HEX_DIGITS.issuperset(content_id)
+
+
+def stop_threads(threads: list[threading.Thread], stop_event: threading.Event, name: str) -> None:
+    """Signal the stop event and join the given threads, pruning those that stop in time."""
+    if not threads:
+        return
+
+    logger.info("Stopping all %s threads", name)
+    stop_event.set()
+    for thread in threads.copy():
+        if thread.is_alive():
+            thread.join(timeout=60)
+            if not thread.is_alive():
+                threads.remove(thread)
+            else:
+                logger.warning("Thread %s did not stop in time.", thread.name)
+
+    stop_event.clear()

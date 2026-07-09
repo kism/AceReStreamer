@@ -10,7 +10,6 @@ from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.logger import get_logger
 
 from . import name_processor
-from .common import ScraperCommon
 from .models import FoundAceStream
 
 if TYPE_CHECKING:
@@ -34,7 +33,7 @@ class APISiteResponseItem(BaseModel):
     categories: list[str] | None = None
 
 
-class APIStreamScraper(ScraperCommon):
+class APIStreamScraper:
     """API Scraper object."""
 
     async def scrape_api_endpoints(self, sites: list[ScrapeSiteAPI]) -> list[FoundAceStream]:

@@ -18,7 +18,7 @@ from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.config import settings
 from acere.services.ace_quality import Quality
 from acere.utils.ace import ace_id_short
-from acere.utils.helpers import check_valid_content_id_or_infohash
+from acere.utils.helpers import check_valid_content_id_or_infohash, stop_threads
 from acere.utils.logger import get_logger
 
 from .base import BaseDatabaseHandler
@@ -261,20 +261,7 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
 
     def stop_all_threads(self) -> None:
         """Stop all threads managed by this handler."""
-        if not self._threads:
-            return
-
-        logger.info("Stopping all %s threads", self.__class__.__name__)
-        self._stop_event.set()
-        for thread in self._threads.copy():
-            if thread.is_alive():
-                thread.join(timeout=60)
-                if not thread.is_alive():
-                    self._threads.remove(thread)
-                else:
-                    logger.warning("Thread %s did not stop in time.", thread.name)
-
-        self._stop_event.clear()
+        stop_threads(self._threads, self._stop_event, self.__class__.__name__)
 
     # region Helpers
     def clean_table(self) -> None:

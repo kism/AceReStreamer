@@ -11,8 +11,7 @@ from acere.utils.exception_handling import log_aiohttp_exception
 from acere.utils.helpers import check_valid_content_id_or_infohash
 from acere.utils.logger import get_logger
 
-from . import name_processor
-from .common import ScraperCommon
+from . import cache, name_processor
 from .models import CandidateAceStream, FoundAceStream
 
 if TYPE_CHECKING:
@@ -25,7 +24,7 @@ logger = get_logger(__name__)
 _HTML_CACHE_MAX_AGE = timedelta(hours=1)  # HTML Sources we need to scrape more often
 
 
-class HTMLStreamScraper(ScraperCommon):
+class HTMLStreamScraper:
     """Scraper for websites to find AceStream streams."""
 
     async def scrape_sites(self, sites: list[ScrapeSiteHTML]) -> list[FoundAceStream]:
@@ -44,9 +43,9 @@ class HTMLStreamScraper(ScraperCommon):
         streams_candidates: list[CandidateAceStream] = []
         cache_max_age = _HTML_CACHE_MAX_AGE
 
-        scraped_site_str = self.scraper_cache.load_from_cache(site.url)
+        scraped_site_str = cache.load_from_cache(site.url)
 
-        if not self.scraper_cache.is_cache_valid(site.url, cache_max_age):
+        if not cache.is_cache_valid(site.url, cache_max_age):
             logger.info("Scraping streams from HTML site: %s", site.name)
             try:
                 async with aiohttp.ClientSession() as session:
@@ -61,7 +60,7 @@ class HTMLStreamScraper(ScraperCommon):
             logger.debug("Loaded HTML site content from cache for: %s", site.name)
 
         logger.debug("Caching HTML site content for: %s", site.name)
-        self.scraper_cache.save_to_cache(site.url, scraped_site_str)
+        cache.save_to_cache(site.url, scraped_site_str)
 
         logger.debug("Parsing HTML for site: %s", site.name)
         soup = BeautifulSoup(scraped_site_str, "html.parser")

@@ -141,14 +141,11 @@ class AceStreamDBHandler(BaseDatabaseHandler):
         m3u8_content = '#EXTM3U refresh="3600"\n'
 
         iptv_set = set()
+        external_url_tvg = HttpUrl(f"{external_url}/tvg-logo/")
 
         # I used to filter this for whether the stream has ever worked,
         # but sometimes sites change the id of their stream often...
         for stream in self.get_streams_cached():
-            logger.debug(stream)
-
-            external_url_tvg = HttpUrl(f"{external_url}/tvg-logo/")
-
             line_one = create_extinf_line(
                 stream, tvg_url_base=external_url_tvg, last_found=int(stream.last_scraped_time.timestamp())
             )
@@ -207,14 +204,12 @@ class AceStreamDBHandler(BaseDatabaseHandler):
     def _mark_alternate_streams(self, streams: list[AceStreamDBEntry]) -> None:
         """Iterates through streams and for any identical title, for duplicates mark the titles with a stream number."""
         results: dict[str, list[AceStreamDBEntry]] = {}  # Title, list of streams with that title
-        streams_to_return: list[AceStreamDBEntry] = []
 
         for stream in streams:
             results[stream.title] = [*results.get(stream.title, []), stream]
 
         for streams_results in results.values():
             if len(streams_results) <= 1:
-                streams_to_return.extend(streams_results)
                 continue
 
             # Sort by xc_id, will approximatly be by date discovered

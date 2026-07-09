@@ -1,10 +1,9 @@
 """Pydantic models for the AcePool service."""
 
 from datetime import datetime, timedelta
-from typing import Literal
+from typing import Literal, TypedDict
 
 from pydantic import BaseModel, HttpUrl, field_serializer
-from typing_extensions import TypedDict
 
 
 # region Ace Middleware

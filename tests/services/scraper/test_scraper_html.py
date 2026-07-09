@@ -4,6 +4,7 @@ import pytest
 from pydantic import HttpUrl
 
 from acere.core.config.scraper import HTMLScraperFilter, ScrapeSiteHTML, TitleFilter
+from acere.services.scraper import cache
 from acere.services.scraper.html import HTMLStreamScraper
 
 from . import SCRAPER_TEST_SITES
@@ -73,7 +74,7 @@ async def test_site1(scraper: HTMLStreamScraper, caplog: pytest.LogCaptureFixtur
     """Test HTML scraper with site1.html - basic scraping with column_title class."""
     site = _get_test_sites()["site1.html"]
     site_html_str = (SCRAPER_TEST_SITES / "site1.html").read_text(encoding="utf-8")
-    scraper.scraper_cache.save_to_cache(site.url, site_html_str)
+    cache.save_to_cache(site.url, site_html_str)
 
     with caplog.at_level("DEBUG"):
         results = await scraper._scrape_site(site)
@@ -93,7 +94,7 @@ async def test_site2(scraper: HTMLStreamScraper, caplog: pytest.LogCaptureFixtur
     """Test HTML scraper with site2.html - includes regex postprocessing to remove 'Server X: ' prefix."""
     site = _get_test_sites()["site2.html"]
     site_html_str = (SCRAPER_TEST_SITES / "site2.html").read_text(encoding="utf-8")
-    scraper.scraper_cache.save_to_cache(site.url, site_html_str)
+    cache.save_to_cache(site.url, site_html_str)
 
     with caplog.at_level("DEBUG"):
         results = await scraper._scrape_site(site)
@@ -115,7 +116,7 @@ async def test_site3(scraper: HTMLStreamScraper, caplog: pytest.LogCaptureFixtur
     """Test HTML scraper with site3.html - includes exclude_words filter and name truncation."""
     site = _get_test_sites()["site3.html"]
     site_html_str = (SCRAPER_TEST_SITES / "site3.html").read_text(encoding="utf-8")
-    scraper.scraper_cache.save_to_cache(site.url, site_html_str)
+    cache.save_to_cache(site.url, site_html_str)
 
     with caplog.at_level("DEBUG"):
         results = await scraper._scrape_site(site)
@@ -137,7 +138,7 @@ async def test_site4(scraper: HTMLStreamScraper, caplog: pytest.LogCaptureFixtur
     """Test HTML scraper with site4.html - streamtext2 class with regex postprocessing."""
     site = _get_test_sites()["site4.html"]
     site_html_str = (SCRAPER_TEST_SITES / "site4.html").read_text(encoding="utf-8")
-    scraper.scraper_cache.save_to_cache(site.url, site_html_str)
+    cache.save_to_cache(site.url, site_html_str)
 
     with caplog.at_level("TRACE"):
         results = await scraper._scrape_site(site)
@@ -158,7 +159,7 @@ async def test_all_for_duplicates(scraper: HTMLStreamScraper) -> None:
 
     for site_name, site in test_sites.items():
         site_html_str = (SCRAPER_TEST_SITES / site_name).read_text(encoding="utf-8")
-        scraper.scraper_cache.save_to_cache(site.url, site_html_str)
+        cache.save_to_cache(site.url, site_html_str)
 
         results = await scraper._scrape_site(site)
         all_titles.update(result.title for result in results)

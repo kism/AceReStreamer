@@ -20,43 +20,43 @@ logger = get_logger(__name__)
 DEFAULT_CACHE_MAX_AGE = timedelta(hours=2)
 
 
-class ScraperCache:
-    """Cache management for the AceReStreamer scraper."""
+def load_from_cache(url: HttpUrl) -> str:
+    """Load the content from cache if available."""
+    load_path = _get_cache_file_path(url)
+    if load_path.exists():
+        with load_path.open("r", encoding="utf-8") as file:
+            return file.read()
+    return ""
 
-    def load_from_cache(self, url: HttpUrl) -> str:
-        """Load the content from cache if available."""
-        load_path = self._get_cache_file_path(url)
-        if load_path.exists():
-            with load_path.open("r", encoding="utf-8") as file:
-                return file.read()
-        return ""
 
-    def is_cache_valid(self, url: HttpUrl, cache_max_age: timedelta = DEFAULT_CACHE_MAX_AGE) -> bool:
-        """Check if the cache for the given URL is valid."""
-        cache_path = self._get_cache_file_path(url)
-        if cache_path.exists():
-            time_now = datetime.now(tz=UTC)
-            file_mod_time = datetime.fromtimestamp(cache_path.stat().st_mtime, tz=UTC)
+def is_cache_valid(url: HttpUrl, cache_max_age: timedelta = DEFAULT_CACHE_MAX_AGE) -> bool:
+    """Check if the cache for the given URL is valid."""
+    cache_path = _get_cache_file_path(url)
+    if cache_path.exists():
+        time_now = datetime.now(tz=UTC)
+        file_mod_time = datetime.fromtimestamp(cache_path.stat().st_mtime, tz=UTC)
 
-            time_since_mod = time_now - file_mod_time
+        time_since_mod = time_now - file_mod_time
 
-            if time_since_mod < cache_max_age:
-                logger.debug("Cache file is valid: %s [mod time %s < max age %s]", url, time_since_mod, cache_max_age)
-                return True
+        if time_since_mod < cache_max_age:
+            logger.debug("Cache file is valid: %s [mod time %s < max age %s]", url, time_since_mod, cache_max_age)
+            return True
 
-            logger.debug("Cache file is outdated: %s [mod time %s >= max age %s]", url, time_since_mod, cache_max_age)
-        else:
-            logger.debug("Cache file does not exist: %s", url)
+        logger.debug("Cache file is outdated: %s [mod time %s >= max age %s]", url, time_since_mod, cache_max_age)
+    else:
+        logger.debug("Cache file does not exist: %s", url)
 
-        return False
+    return False
 
-    def save_to_cache(self, url: HttpUrl, content: str) -> None:
-        """Save the content to cache."""
-        save_path = self._get_cache_file_path(url)
-        with save_path.open("w", encoding="utf-8") as file:
-            file.write(content)
 
-    def _get_cache_file_path(self, url: HttpUrl) -> Path:
-        """Get the cache file path for a given URL."""
-        cache_dir = get_app_path_handler().scraper_cache_dir
-        return cache_dir / f"{slugify(url.encoded_string())}.txt"
+def save_to_cache(url: HttpUrl, content: str) -> None:
+    """Save the content to cache."""
+    save_path = _get_cache_file_path(url)
+    with save_path.open("w", encoding="utf-8") as file:
+        file.write(content)
+
+
+def _get_cache_file_path(url: HttpUrl) -> Path:
+    """Get the cache file path for a given URL."""
+    cache_dir = get_app_path_handler().scraper_cache_dir
+    return cache_dir / f"{slugify(url.encoded_string())}.txt"

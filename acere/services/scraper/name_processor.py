@@ -38,8 +38,6 @@ ACE_URL_PREFIXES_INFOHASH = [
 ACE_ID_PATTERN = re.compile(r"\b[0-9a-fA-F]{40}\b")
 COUNTRY_CODE_PATTERN = re.compile(r"\[([A-Z]{2})\]")
 
-COMPILED_REGEX_CACHE: dict[str, re.Pattern[str]] = {}
-
 
 def cleanup_candidate_title(title: str) -> str:
     """Cleanup the candidate title."""
@@ -64,11 +62,8 @@ def candidates_regex_cleanup(candidate_titles: list[str], regex_list: list[str])
     for title in candidate_titles:
         wip_title = title
         for regex_str in regex_list:
-            if regex_str not in COMPILED_REGEX_CACHE:
-                COMPILED_REGEX_CACHE[regex_str] = re.compile(regex_str)
-
-            compiled_regex = COMPILED_REGEX_CACHE[regex_str]
-            wip_title = compiled_regex.sub("", wip_title).strip()
+            # ponytail: re caches compiled patterns internally, no need for our own cache
+            wip_title = re.sub(regex_str, "", wip_title).strip()
 
         # If name is not empty or only non-alphanumeric characters, add it
         if wip_title and not all(not c.isalnum() for c in wip_title):
@@ -144,9 +139,7 @@ def check_title_allowed(title: str, title_filter: TitleFilter) -> bool:
 
     if title_filter.include_words:
         allowed = any(word.lower() in title for word in title_filter.include_words)
-        if not allowed:
-            pass
-        else:
+        if allowed:
             logger.trace("Title '%s' is allowed due to include_words", title)
 
         return allowed
@@ -157,7 +150,7 @@ def check_title_allowed(title: str, title_filter: TitleFilter) -> bool:
 
 def trim_title(title: str) -> str:
     """Trim the title to a maximum length, only really needs to be used for HTML titles."""
-    return title[:STREAM_TITLE_MAX_LENGTH].strip() if len(title) > STREAM_TITLE_MAX_LENGTH else title.strip()
+    return title[:STREAM_TITLE_MAX_LENGTH].strip()
 
 
 def find_tvg_logo_image(title: str) -> str:

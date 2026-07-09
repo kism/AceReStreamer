@@ -37,7 +37,7 @@ def source(source_slug: str) -> AceScraperSourceApi:
 
 
 @router.post("/source")
-def add_source(  # noqa: C901 Revisit once I have some tests
+def add_source(
     body_json: AceScraperSourceApi | list[AceScraperSourceApi],
 ) -> MessageResponseModel:
     errors: list[str] = []
@@ -51,22 +51,15 @@ def add_source(  # noqa: C901 Revisit once I have some tests
         body_json = [body_json]
 
     for n, item in enumerate(body_json):
-        item_msg = ""
-        item_success = True
-
+        new_site: ScrapeSiteHTML | ScrapeSiteIPTV | ScrapeSiteAPI
         if item.type == "iptv":
-            iptv = ScrapeSiteIPTV(**item.model_dump())
-            item_success, item_msg = settings.scraper.add_iptv_source(iptv)
+            new_site = ScrapeSiteIPTV(**item.model_dump())
         elif item.type == "api":
-            api = ScrapeSiteAPI(**item.model_dump())
-            item_success, item_msg = settings.scraper.add_api_source(api)
-        elif item.type == "html":
-            html = ScrapeSiteHTML(**item.model_dump())
-            item_success, item_msg = settings.scraper.add_html_source(html)
+            new_site = ScrapeSiteAPI(**item.model_dump())
         else:
-            item_success = False
-            item_msg = "Invalid source type"
+            new_site = ScrapeSiteHTML(**item.model_dump())
 
+        item_success, item_msg = settings.scraper.add_source(new_site)
         if not item_success:
             errors.append(f"Item {n}: {item_msg}")
 
