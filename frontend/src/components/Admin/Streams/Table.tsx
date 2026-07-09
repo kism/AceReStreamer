@@ -20,16 +20,10 @@ import type { ApiError } from "@/client/core/ApiError"
 import { getQualityColor } from "@/components/Index/QualityCell"
 import { Button } from "@/components/ui/button"
 import { CopyButton } from "@/components/ui/copy-button"
+import { Loading } from "@/components/ui/loading"
 import baseURL from "@/helpers"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
-
-function getStreamsQueryOptions() {
-  return {
-    queryFn: () => StreamsService.streams(),
-    queryKey: ["items"],
-  }
-}
 
 function GetRelativeTimeText(timestamp: string) {
   const time = new Date(timestamp)
@@ -60,7 +54,8 @@ function StreamAdminTable() {
   const { showSuccessToast } = useCustomToast()
 
   const { data, isLoading } = useQuery({
-    ...getStreamsQueryOptions(),
+    queryFn: () => StreamsService.streams(),
+    queryKey: ["items"],
     placeholderData: (prevData) => prevData,
   })
 
@@ -128,7 +123,7 @@ function StreamAdminTable() {
   )
 
   if (isLoading) {
-    return <Box>Loading...</Box>
+    return <Loading />
   }
 
   const items = data ?? []

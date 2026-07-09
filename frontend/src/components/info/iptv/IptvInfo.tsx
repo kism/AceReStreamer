@@ -1,6 +1,7 @@
 import { Box, Heading, HStack, Text, VStack } from "@chakra-ui/react"
 import { Code } from "@/components/ui/code"
 import { CopyButton } from "@/components/ui/copy-button"
+import { Loading } from "@/components/ui/loading"
 import {
   AppTableRoot,
   TableBody,
@@ -49,7 +50,7 @@ function renderTableRows(items: Array<{ name: string; value: string }>) {
 }
 
 export function IptvInfo({ credentials, isLoading, error }: IptvInfoProps) {
-  if (isLoading) return <Text>Loading...</Text>
+  if (isLoading) return <Loading />
   if (error)
     return (
       <Text color="red">Cannot Load IPTV information: {error.message}</Text>

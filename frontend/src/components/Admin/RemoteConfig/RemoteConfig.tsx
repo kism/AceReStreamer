@@ -14,15 +14,9 @@ import type { ApiError } from "@/client/core/ApiError"
 import { Button } from "@/components/ui/button"
 import { CodeBlock } from "@/components/ui/code"
 import { Field } from "@/components/ui/field"
+import { Loading } from "@/components/ui/loading"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
-
-function getRemoteConfigQueryOptions() {
-  return {
-    queryFn: () => ConfigService.fetchRemoteSettings(),
-    queryKey: ["remoteConfig"],
-  }
-}
 
 function RemoteConfig() {
   const queryClient = useQueryClient()
@@ -30,7 +24,8 @@ function RemoteConfig() {
   const [urlInput, setUrlInput] = useState("")
 
   const { data, isLoading } = useQuery({
-    ...getRemoteConfigQueryOptions(),
+    queryFn: () => ConfigService.fetchRemoteSettings(),
+    queryKey: ["remoteConfig"],
     placeholderData: (prevData) => prevData,
   })
 
@@ -74,7 +69,7 @@ function RemoteConfig() {
   }
 
   if (isLoading) {
-    return <Box>Loading...</Box>
+    return <Loading />
   }
 
   return (

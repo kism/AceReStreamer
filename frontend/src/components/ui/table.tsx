@@ -30,30 +30,6 @@ export const AppTableRoot = React.forwardRef<
   return <Table.Root ref={ref} {...baseProps} {...rest} />
 })
 
-export type TableScrollAreaPreset = "fullscreen"
-
-const presetScrollAreaProps: Record<
-  TableScrollAreaPreset,
-  Partial<React.ComponentProps<typeof Table.ScrollArea>>
-> = {
-  fullscreen: {
-    borderWidth: "1px",
-    height: "100vh",
-  },
-}
-
-export interface AppTableScrollAreaProps
-  extends React.ComponentProps<typeof Table.ScrollArea> {
-  preset?: TableScrollAreaPreset
-}
-
-export function AppTableScrollArea(props: AppTableScrollAreaProps) {
-  const { preset, ...rest } = props
-  const baseProps = preset ? presetScrollAreaProps[preset] : undefined
-
-  return <Table.ScrollArea {...baseProps} {...rest} />
-}
-
 // Export the additional Table components
 export const TableHeader = React.forwardRef<
   React.ComponentRef<typeof Table.Header>,
@@ -94,24 +70,6 @@ export const TableColumnHeader = React.forwardRef<
       px={2}
       py={1}
       fontWeight={"bold"}
-      {...props}
-    />
-  )
-})
-
-export const TableRowHeader = React.forwardRef<
-  React.ComponentRef<typeof Table.Cell>,
-  React.ComponentProps<typeof Table.Cell>
->(function TableRowHeader(props, ref) {
-  return (
-    <Table.Cell
-      fontWeight={"bold"}
-      bg="bg.subtle"
-      whiteSpace="nowrap"
-      width="1%"
-      px={2}
-      py={1}
-      ref={ref}
       {...props}
     />
   )

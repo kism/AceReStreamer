@@ -24,16 +24,10 @@ function EmptyInstancesRow() {
   )
 }
 
-function getStreamQueryOptions(content_id: string) {
-  return {
-    queryFn: () => StreamsService.byContentId({ contentId: content_id }),
-    queryKey: ["content_id", content_id],
-  }
-}
-
 function InstanceQuality({ contentId }: { contentId: string }) {
   const { data } = useQuery({
-    ...getStreamQueryOptions(contentId),
+    queryFn: () => StreamsService.byContentId({ contentId }),
+    queryKey: ["content_id", contentId],
     enabled: !!contentId,
     refetchInterval: 30000, // Refetch every 30 seconds
   })

@@ -2,20 +2,15 @@ import { Heading, HStack, Text, VStack } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { ConfigService } from "@/client"
 import { Button } from "@/components/ui/button"
+import { Loading } from "@/components/ui/loading"
 import useCustomToast from "@/hooks/useCustomToast"
-
-function getConfigQueryOptions() {
-  return {
-    queryFn: () => ConfigService.getConfig(),
-    queryKey: ["config"],
-  }
-}
 
 function ExportConfig() {
   const { showSuccessToast, showErrorToast } = useCustomToast()
 
   const { data, isLoading } = useQuery({
-    ...getConfigQueryOptions(),
+    queryFn: () => ConfigService.getConfig(),
+    queryKey: ["config"],
     placeholderData: (prevData) => prevData,
   })
 
@@ -56,7 +51,7 @@ function ExportConfig() {
   }
 
   if (isLoading) {
-    return <Text>Loading...</Text>
+    return <Loading />
   }
 
   return (

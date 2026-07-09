@@ -1,29 +1,23 @@
-import { Box, Collapsible, Flex, Heading, VStack } from "@chakra-ui/react"
+import { Heading, VStack } from "@chakra-ui/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useCallback, useState } from "react"
-import { FaAngleDown, FaAngleUp } from "react-icons/fa"
+import { useCallback } from "react"
 import { ScraperService } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
 import { Button } from "@/components/ui/button"
 import { Code, CodeBlock } from "@/components/ui/code"
+import { CollapsibleSection } from "@/components/ui/collapsible-section"
+import { Loading } from "@/components/ui/loading"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
 import ScraperFormDialog from "./ScraperFormDialog"
 
-function getScrapersQueryOptions() {
-  return {
-    queryFn: () => ScraperService.sources(),
-    queryKey: ["scrapers"],
-  }
-}
-
 function ScraperTable() {
   const queryClient = useQueryClient()
   const { showSuccessToast } = useCustomToast()
-  const [openItems, setOpenItems] = useState<Record<string, boolean>>({})
 
   const { data, isLoading } = useQuery({
-    ...getScrapersQueryOptions(),
+    queryFn: () => ScraperService.sources(),
+    queryKey: ["scrapers"],
     placeholderData: (prevData) => prevData,
   })
 
@@ -50,15 +44,8 @@ function ScraperTable() {
     [mutation],
   )
 
-  const toggleCollapsible = useCallback((name: string) => {
-    setOpenItems((prev) => ({
-      ...prev,
-      [name]: !prev[name],
-    }))
-  }, [])
-
   if (isLoading) {
-    return <Box>Loading...</Box>
+    return <Loading />
   }
 
   return (
@@ -68,51 +55,31 @@ function ScraperTable() {
       </Heading>
       <VStack align="start">
         {data?.map((scraper) => (
-          <Flex
+          <CollapsibleSection
             key={scraper.name}
-            direction="column"
-            p={2}
-            borderWidth="1px"
-            w="full"
+            title={scraper.name}
+            headerExtra={() => <Code>{scraper.type}</Code>}
           >
-            <Collapsible.Root open={openItems[scraper.name] || false}>
-              <Collapsible.Trigger
-                cursor="pointer"
-                onClick={() => toggleCollapsible(scraper.name)}
-              >
-                <Flex align="center" justify="space-between">
-                  <Box p="1">
-                    {openItems[scraper.name] ? <FaAngleUp /> : <FaAngleDown />}
-                  </Box>
-                  <Heading size="sm" mr={2}>
-                    {scraper.name}
-                  </Heading>
-                  <Code>{scraper.type}</Code>
-                </Flex>
-              </Collapsible.Trigger>
-              <Collapsible.Content>
-                <CodeBlock whiteSpace="pre">
-                  {JSON.stringify(scraper, null, 2)}
-                </CodeBlock>
-                <ScraperFormDialog
-                  existing={scraper}
-                  trigger={
-                    <Button m={2} size="xs" colorPalette="teal">
-                      Edit
-                    </Button>
-                  }
-                />
-                <Button
-                  m={2}
-                  size="xs"
-                  colorPalette="red"
-                  onClick={() => handleRemoveBySlug(scraper.name)}
-                >
-                  Delete
+            <CodeBlock whiteSpace="pre">
+              {JSON.stringify(scraper, null, 2)}
+            </CodeBlock>
+            <ScraperFormDialog
+              existing={scraper}
+              trigger={
+                <Button m={2} size="xs" colorPalette="teal">
+                  Edit
                 </Button>
-              </Collapsible.Content>
-            </Collapsible.Root>
-          </Flex>
+              }
+            />
+            <Button
+              m={2}
+              size="xs"
+              colorPalette="red"
+              onClick={() => handleRemoveBySlug(scraper.name)}
+            >
+              Delete
+            </Button>
+          </CollapsibleSection>
         ))}
       </VStack>
     </>
