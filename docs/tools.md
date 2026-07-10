@@ -1,19 +1,5 @@
 # CLI Tools
 
-## Reset password
-
-`acerestreamer-password-reset` / `python -m acere.cli.password_reset` is an interactive cli tool to reset user passwords. If you are running in docker you can run it in the container, in the /app directory.
-
-If you are running in docker, you can access it like this:
-
-```bash
-docker exec -it acerestreamer acerestreamer-password-reset
-```
-
-## EPG Get Now Playing
-
-`python -m acere.cli.epg_now_playing --tvg-id 'Channel 1.au'` is a tool to see what each epg thinks is currently playing on a channel, useful if some epgs are not showing the expected program.
-
 ## Scraper Mode
 
 `acerestreamer-scrape` / `python -m acere.cli.scraper` is a tool that will scrape streams and provide them in m3u8 format for use with Horus and other Ace Stream clients.
@@ -54,9 +40,6 @@ jobs:
         run: uvx --from "git+https://github.com/kism/acerestreamer" acerestreamer-scrape --app-config config.json
         env:
           UV_GIT_LFS: 1
-
-      - name: Clear the secret key from config.json # Does nothing in adhoc mode
-        run: python -c "import json; config=json.load(open('config.json')); config['SECRET_KEY']=''; json.dump(config, open('config.json', 'w'), indent=2, ensure_ascii=False)"
 
       - name: Configure git
         run: |

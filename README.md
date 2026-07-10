@@ -11,13 +11,15 @@ A webapp that scraps AceStream links from various sources and re-streams them vi
 
 - Scrape HTML, IPTV (m3u8) and API sources for ace streams.
 - Re-streams via HLS.
+  - Intended to be used with Dispatcharr or m3u-editor
   - IPTV Clients (UHF, Tivimate, IPTV Smarters, etc) via Xtream Code or m3u8
-    - Including EPG support
   - VLC, IINA, MPV
-  - Web player (hls.js, some issues)
 - Web interface for browsing streams.
 - FastAPI backend, React frontend, type checking enforced.
-- User management
+
+EPG support, user management and the webplayer have been remove as Dispatcharr supports all of these much better.
+
+This can either be used as a AceStream to IPTV bridge in your home network, or as a source for Dispatcharr or m3u-editor.
 
 ## Run
 

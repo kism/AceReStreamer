@@ -4,11 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-AceReStreamer (package name `acere`) scrapes AceStream links from various sources (HTML pages, IPTV m3u8 playlists, JSON APIs) and re-streams them via HLS. Clients connect via IPTV apps (Xtream Codes or m3u8), VLC/IINA/MPV, or the bundled web player. Backend is FastAPI/Python; frontend is a separate React app — see [frontend/CLAUDE.md](frontend/CLAUDE.md) for frontend-specific guidance (that file is authoritative for anything under `frontend/`).
+AceReStreamer (package name `acere`) scrapes AceStream links from various sources (HTML pages, IPTV m3u8 playlists, JSON APIs) and re-streams them via HLS. Clients connect via IPTV apps (Xtream Codes or m3u8) or VLC/IINA/MPV — the bundled web player was removed in the 1.3.0 refactor. Backend is FastAPI/Python; frontend is a separate React app — see [frontend/CLAUDE.md](frontend/CLAUDE.md) for frontend-specific guidance (that file is authoritative for anything under `frontend/`).
 
 The repo is based on the [FastAPI fullstack template](https://github.com/fastapi/full-stack-fastapi-template) but has diverged significantly (see `docs/development.md`).
-
-Note: the top-level `README.md` mentions EPG support and user management — both have been fully removed (see Architecture notes below). Don't rely on the README for current feature scope.
 
 ## Commands
 
