@@ -74,6 +74,8 @@ export default defineConfig({
         },
       },
     },
-    chunkSizeWarningLimit: 500,
+    // ponytail: react-chakra vendor chunk is ~660 kB minified (~188 kB gzip) and can't
+    // shrink without dropping Chakra; raise limit so real regressions still warn
+    chunkSizeWarningLimit: 700,
   },
 })
