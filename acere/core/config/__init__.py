@@ -6,15 +6,12 @@ import secrets
 import string
 import typing
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Annotated, Any, Literal, Self
+from typing import TYPE_CHECKING, Literal, Self
 
 from pydantic import (
-    AnyUrl,
     BaseModel,
-    BeforeValidator,
     ConfigDict,
     HttpUrl,
-    computed_field,
     field_validator,
 )
 from pydantic_settings import (
@@ -47,14 +44,6 @@ __all__ = [
 setup_app_path_handler(DEFAULT_INSTANCE_PATH)
 
 
-def parse_cors(v: Any) -> list[str] | str:  # noqa: ANN401 JSON things
-    if isinstance(v, str) and not v.startswith("["):
-        return [i.strip() for i in v.split(",")]
-    if isinstance(v, list | str):
-        return v
-    raise ValueError(v)
-
-
 class AceReStreamerConf(BaseSettings):
     """Settings Definition."""
 
@@ -77,7 +66,6 @@ class AceReStreamerConf(BaseSettings):
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
     EXTERNAL_URL: str = "http://localhost:5100"
     XC_PASSWORD: str = ""  # Generated on first run, see validator
-    BACKEND_CORS_ORIGINS: Annotated[list[AnyUrl] | str, BeforeValidator(parse_cors)] = []
 
     @classmethod
     def settings_customise_sources(
@@ -124,11 +112,6 @@ class AceReStreamerConf(BaseSettings):
         if value == "" or value is None:
             return None
         return value
-
-    @computed_field
-    @property
-    def all_cors_origins(self) -> list[str]:
-        return [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS] + [self.FRONTEND_HOST]
 
     def write_backup_config(
         self,

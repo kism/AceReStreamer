@@ -11,8 +11,8 @@ React 19 + TypeScript frontend for AceReStreamer (an AceStream-to-HLS re-streame
 - `bun run dev` — start the Vite dev server
 - `bun run typecheck` — `tsc --noEmit`
 - `bun run lint` — Biome check with `--write --unsafe` (auto-fixes)
-- `bun run build` — typecheck + `vite build`
-- `bun run build-aio` — typecheck + build, output straight into `../acere/dist` (the "all-in-one" mode where FastAPI serves the built frontend directly)
+- `bun run build` — typecheck + `vite build` into `dist/` (used by `docker/Dockerfile.combined`'s build stage, which copies the output into the backend image)
+- `bun run build-aio` — typecheck + build, output straight into `../acere/dist` (the "all-in-one" mode where FastAPI serves the built frontend directly). This is the only production deployment — a separately hosted frontend is dev-only via `bun run dev`.
 - `bun run generate-client` — regenerates `src/client/` from `./openapi.json` via `@hey-api/openapi-ts` (see `openapi-ts.config.ts`). Don't run this directly to get fresh types — use `../scripts/generate-client.sh` from the repo root inside the backend's venv, which first dumps the live OpenAPI schema from the FastAPI app into `openapi.json` and then runs this.
 - `bun run generate-frontend-paths` — walks `routeTree.gen.ts` and `public/` to emit a JSON list of every frontend route/asset path, used by the backend to know which paths to hand off to the SPA in all-in-one mode.
 

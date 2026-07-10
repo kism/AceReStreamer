@@ -51,15 +51,6 @@ Build a combined container with both frontend and backend:
 docker buildx build --network=host --file docker/Dockerfile.combined . -t acerestreamer
 ```
 
-### Separate Frontend and Backend Container
-
-Build the backend and frontend containers separately:
-
-```bash
-docker buildx build --file docker/Dockerfile.backend . -t acerestreamer-backend
-docker buildx build --build-arg VITE_API_URL="https://api.example.com" --file docker/Dockerfile.frontend ./frontend -t acerestreamer-frontend
-```
-
 ## XC (Xtream Codes) API Reference
 
 God I hate this.

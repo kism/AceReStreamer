@@ -131,11 +131,11 @@ hls_app.include_router(hls_router)
 app.mount("/", hls_app)
 
 
-# Set all CORS enabled origins
-if settings.all_cors_origins:
+# CORS is only needed in dev, where the vite dev server hosts the frontend on another origin
+if settings.FRONTEND_HOST:
     app.add_middleware(
         middleware_class=CORSMiddleware,
-        allow_origins=settings.all_cors_origins,
+        allow_origins=[settings.FRONTEND_HOST],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
