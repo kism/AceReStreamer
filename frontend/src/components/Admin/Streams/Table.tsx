@@ -9,14 +9,16 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useCallback } from "react"
+import { useCallback, useState } from "react"
 import { FaPencilAlt } from "react-icons/fa"
+import { FiPlay } from "react-icons/fi"
 import {
   type FoundAceStreamAPI,
   ScraperService,
   StreamsService,
 } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
+import { PreviewDialog } from "@/components/Admin/Streams/PreviewDialog"
 import { getQualityColor } from "@/components/Index/QualityCell"
 import { Button } from "@/components/ui/button"
 import { CopyButton } from "@/components/ui/copy-button"
@@ -52,6 +54,9 @@ function GetRelativeTimeText(timestamp: string) {
 function StreamAdminTable() {
   const queryClient = useQueryClient()
   const { showSuccessToast } = useCustomToast()
+  const [previewStream, setPreviewStream] = useState<FoundAceStreamAPI | null>(
+    null,
+  )
 
   const { data, isLoading } = useQuery({
     queryFn: () => StreamsService.streams(),
@@ -237,11 +242,25 @@ function StreamAdminTable() {
                   {`${baseURL()}/hls/${item.content_id}`}
                 </Code>
                 <CopyButton text={`${baseURL()}/hls/${item.content_id}`} />
+                <Button
+                  size="2xs"
+                  p="0"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  onClick={() => setPreviewStream(item)}
+                >
+                  <FiPlay />
+                </Button>
               </HStack>
             </Flex>
           </Box>
         ))}
       </VStack>
+      <PreviewDialog
+        stream={previewStream}
+        onClose={() => setPreviewStream(null)}
+      />
     </>
   )
 }

@@ -25,7 +25,8 @@
     "react-dom": "^19.2.7",
     "react-error-boundary": "^6.1.2",
     "react-hook-form": "7.71.1",
-    "react-icons": "^5.7.0"
+    "react-icons": "^5.7.0",
+    "shaka-player": "^5.2.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.2",

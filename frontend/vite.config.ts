@@ -44,6 +44,11 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
+          // This will be lazy loaded
+          if (id.includes("shaka-player")) {
+            return "shaka-player"
+          }
+
           // TanStack
           if (id.includes("@tanstack/react-query")) {
             return "tanstack-query"
@@ -75,7 +80,8 @@ export default defineConfig({
       },
     },
     // ponytail: react-chakra vendor chunk is ~660 kB minified (~188 kB gzip) and can't
-    // shrink without dropping Chakra; raise limit so real regressions still warn
-    chunkSizeWarningLimit: 700,
+    // shrink without dropping Chakra; shaka-player is ~1 MB but lazy-loaded only when
+    // the preview dialog opens; raise limit so real regressions still warn
+    chunkSizeWarningLimit: 1100,
   },
 })
