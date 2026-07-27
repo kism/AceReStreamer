@@ -58,6 +58,9 @@ export function PreviewPlayer() {
   if (!stream) return null
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    // Pointer capture would retarget the click to this handle, so never start a
+    // drag from the close button
+    if (e.target instanceof Element && e.target.closest("button")) return
     const rect = panelRef.current?.getBoundingClientRect()
     if (!rect) return
     dragOffset.current = { dx: e.clientX - rect.left, dy: e.clientY - rect.top }
