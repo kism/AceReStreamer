@@ -160,7 +160,7 @@ class AceStreamDBHandler(BaseDatabaseHandler):
         with self._get_session() as session:
             statement = select(AceStreamDBEntry.tvg_id).distinct()
             results = session.exec(statement).all()
-            return set(results)
+            return {str(tvg_id) for tvg_id in results}
 
     # region GET IPTV XC
     def get_streams_as_iptv_xc(
