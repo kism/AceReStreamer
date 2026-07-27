@@ -1,6 +1,7 @@
 import { Flex } from "@chakra-ui/react"
 import { createFileRoute, Outlet } from "@tanstack/react-router"
 import { useState } from "react"
+import { PreviewPlayer } from "@/components/Admin/Streams/PreviewPlayer"
 import PageHeader from "@/components/Common/Header"
 import Sidebar from "@/components/Common/Sidebar"
 import { PageTitleContext, usePageTitleState } from "@/hooks/usePageTitle"
@@ -42,6 +43,7 @@ function Layout() {
           </Flex>
         </Flex>
       </Flex>
+      <PreviewPlayer />
     </PageTitleContext.Provider>
   )
 }

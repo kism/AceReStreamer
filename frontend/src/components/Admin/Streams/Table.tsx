@@ -9,7 +9,7 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useCallback, useState } from "react"
+import { useCallback } from "react"
 import { FaPencilAlt } from "react-icons/fa"
 import { FiPlay } from "react-icons/fi"
 import {
@@ -18,13 +18,13 @@ import {
   StreamsService,
 } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
-import { PreviewDialog } from "@/components/Admin/Streams/PreviewDialog"
 import { getQualityColor } from "@/components/Index/QualityCell"
 import { Button } from "@/components/ui/button"
 import { CopyButton } from "@/components/ui/copy-button"
 import { Loading } from "@/components/ui/loading"
 import baseURL from "@/helpers"
 import useCustomToast from "@/hooks/useCustomToast"
+import { setPreviewStream } from "@/hooks/usePreviewStream"
 import { handleError } from "@/utils"
 
 function GetRelativeTimeText(timestamp: string) {
@@ -54,9 +54,6 @@ function GetRelativeTimeText(timestamp: string) {
 function StreamAdminTable() {
   const queryClient = useQueryClient()
   const { showSuccessToast } = useCustomToast()
-  const [previewStream, setPreviewStream] = useState<FoundAceStreamAPI | null>(
-    null,
-  )
 
   const { data, isLoading } = useQuery({
     queryFn: () => StreamsService.streams(),
@@ -257,10 +254,6 @@ function StreamAdminTable() {
           </Box>
         ))}
       </VStack>
-      <PreviewDialog
-        stream={previewStream}
-        onClose={() => setPreviewStream(null)}
-      />
     </>
   )
 }
