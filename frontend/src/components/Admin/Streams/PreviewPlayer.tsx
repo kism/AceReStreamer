@@ -2,8 +2,6 @@ import { AspectRatio, Box, HStack, Text } from "@chakra-ui/react"
 import { useEffect, useRef, useState } from "react"
 import { FiX } from "react-icons/fi"
 import { Button } from "@/components/ui/button"
-import { Code } from "@/components/ui/code"
-import { CopyButton } from "@/components/ui/copy-button"
 import {
   AppTableRoot,
   TableBody,
@@ -32,25 +30,6 @@ function StreamStatusTable() {
             <TableCell>{streamStatus.videoStats}</TableCell>
           </TableRow>
         )}
-        <TableRow>
-          <TableCell fontWeight="semibold">Direct URL</TableCell>
-          <TableCell maxWidth={0}>
-            <HStack gap={2} minWidth={0}>
-              <Code
-                overflowX="auto"
-                whiteSpace="nowrap"
-                display="block"
-                flex={1}
-                minWidth={0}
-              >
-                {streamStatus.streamURL}
-              </Code>
-              {streamStatus.streamURL.startsWith("http") && (
-                <CopyButton text={streamStatus.streamURL} />
-              )}
-            </HStack>
-          </TableCell>
-        </TableRow>
       </TableBody>
     </AppTableRoot>
   )
@@ -115,12 +94,14 @@ export function PreviewPlayer() {
       w="400px"
       minW="320px"
       maxW="90vw"
-      maxH="90vh"
+      maxH="95vh"
       bg="bg.panel"
       borderWidth="1px"
       borderRadius="md"
       boxShadow="lg"
-      css={{ resize: "both", overflow: "auto" }}
+      // ponytail: horizontal-only resize keeps height content-driven, so the
+      // 16:9 AspectRatio sets it and no dead space can be dragged in
+      css={{ resize: "horizontal", overflow: "auto" }}
     >
       <HStack
         px={2}
