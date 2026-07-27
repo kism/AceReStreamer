@@ -11,9 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
-import { Route as LayoutSystemRouteImport } from './routes/_layout/system'
-import { Route as LayoutScrapersRouteImport } from './routes/_layout/scrapers'
 import { Route as LayoutChannelsRouteImport } from './routes/_layout/channels'
+import { Route as LayoutScrapersRouteImport } from './routes/_layout/scrapers'
+import { Route as LayoutSystemRouteImport } from './routes/_layout/system'
 
 const LayoutRoute = LayoutRouteImport.update({
   id: '/_layout',
@@ -24,9 +24,9 @@ const LayoutIndexRoute = LayoutIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutSystemRoute = LayoutSystemRouteImport.update({
-  id: '/system',
-  path: '/system',
+const LayoutChannelsRoute = LayoutChannelsRouteImport.update({
+  id: '/channels',
+  path: '/channels',
   getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutScrapersRoute = LayoutScrapersRouteImport.update({
@@ -34,9 +34,9 @@ const LayoutScrapersRoute = LayoutScrapersRouteImport.update({
   path: '/scrapers',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutChannelsRoute = LayoutChannelsRouteImport.update({
-  id: '/channels',
-  path: '/channels',
+const LayoutSystemRoute = LayoutSystemRouteImport.update({
+  id: '/system',
+  path: '/system',
   getParentRoute: () => LayoutRoute,
 } as any)
 
@@ -94,11 +94,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/system': {
-      id: '/_layout/system'
-      path: '/system'
-      fullPath: '/system'
-      preLoaderRoute: typeof LayoutSystemRouteImport
+    '/_layout/channels': {
+      id: '/_layout/channels'
+      path: '/channels'
+      fullPath: '/channels'
+      preLoaderRoute: typeof LayoutChannelsRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/scrapers': {
@@ -108,11 +108,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutScrapersRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/channels': {
-      id: '/_layout/channels'
-      path: '/channels'
-      fullPath: '/channels'
-      preLoaderRoute: typeof LayoutChannelsRouteImport
+    '/_layout/system': {
+      id: '/_layout/system'
+      path: '/system'
+      fullPath: '/system'
+      preLoaderRoute: typeof LayoutSystemRouteImport
       parentRoute: typeof LayoutRoute
     }
   }
