@@ -26,10 +26,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-type = [
-    "ty",
-    "types-psutil>=7.0.0.20250601",
-]
+type = ["ty", "types-psutil>=7.0.0.20250601"]
 lint = ["ruff", "memray"]
 test = [
     "pytest >=9.0",
@@ -83,7 +80,7 @@ ignore = [
     "SIM117", # Double 'with' is more readable with async
     "D1",     # Not going to document everything, we have good type checking
     "TC001",  # Breaks Pydantic completely
-    # "ERA001", # WIP Commented Out Code
+    "CPY",    # Copyright
     # "FIX",    # WIP FIXME
 ]
 

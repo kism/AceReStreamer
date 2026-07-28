@@ -21,12 +21,12 @@ XC_ACTIONS = [
 
 
 async def _stream_to_file(response: aiohttp.ClientResponse, out_file: Path) -> None:
-    # ponytail: buffered sync write, these are small JSON/m3u debug dumps
-    out_file.write_bytes(await response.read())
+    # ponytail: blocking write of a small JSON/m3u debug dump, not worth an anyio dependency
+    out_file.write_bytes(await response.read())  # noqa: ASYNC240
 
 
 async def fetch_all_endpoints(base_url: str, username: str, password: str, output_dir: Path) -> None:
-    """Fetch all standard XC endpoints, streaming each response directly to disk."""
+    """Fetch all standard XC endpoints, saving each response to disk."""
     base = base_url.rstrip("/")
     player_api_url = base + "/player_api.php"
     get_url = base + "/get.php"
