@@ -7,6 +7,7 @@ import pytest
 from pydantic import HttpUrl
 
 from acere.constants import STATIC_DIR
+from acere.instances.ace_quality import get_quality_handler
 from acere.instances.config import settings
 from acere.instances.paths import get_app_path_handler
 from acere.services.xc.helpers import XC_USERNAME
@@ -336,6 +337,9 @@ async def test_ts_success(
     assert response.status_code == HTTPStatus.OK
     assert response.content == SAMPLE_TS_DATA
     assert response.headers["Content-Type"] == "video/MP2T"
+
+    # The fake stream EOFs, which scores as a death signal
+    assert get_quality_handler().get_quality(valid_content_id).last_message == "TS stream ended"
 
 
 @pytest.mark.asyncio

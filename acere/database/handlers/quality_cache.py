@@ -117,6 +117,18 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
 
         self.set_quality(content_id, entry)
 
+    def increment_quality_raw(self, content_id: str, rating: int, message: str) -> None:
+        """Increment the quality of a stream directly, for transports with no m3u8 to parse (MPEG-TS)."""
+        if not check_valid_content_id_or_infohash(content_id):
+            return
+
+        entry = self.get_quality(content_id)
+        entry.update_quality_raw(rating, message)
+
+        logger.debug("Stream quality %s: %s [%s]", ace_id_short(content_id), entry.quality, entry.last_message)
+
+        self.set_quality(content_id, entry)
+
     # region Quality
     async def check_missing_quality(self, attempt_delay: float = 1, stream_delay: float = 10) -> bool:
         """Check the quality of all streams.

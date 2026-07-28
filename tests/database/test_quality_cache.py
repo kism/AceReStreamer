@@ -52,6 +52,30 @@ def test_init(quality_cache_handler: AceQualityCacheHandler) -> None:
     assert handler.get_quality(content_id).quality == override_quality + 4
 
 
+def test_increment_quality_raw(quality_cache_handler: AceQualityCacheHandler) -> None:
+    """Test the raw quality increment used by the MPEG-TS proxy."""
+    handler = quality_cache_handler
+    content_id = get_random_content_id()
+
+    # Positive rating floors quality at first-success minimum and marks it working
+    handler.increment_quality_raw(content_id, 1, "TS stream flowing")
+    quality = handler.get_quality(content_id)
+    assert quality.quality >= 20  # QUALITY_ON_FIRST_SUCCESS
+    assert quality.has_ever_worked is True
+    assert quality.last_message == "TS stream flowing"
+
+    # Negative ratings clamp at MIN_QUALITY
+    for _ in range(50):
+        handler.increment_quality_raw(content_id, -4, "TS stream stalled")
+    quality = handler.get_quality(content_id)
+    assert quality.quality == 0  # MIN_QUALITY
+    assert quality.last_message == "TS stream stalled"
+
+    # Invalid content_id is a no-op
+    handler.increment_quality_raw("invalid", 1, "nope")
+    assert "invalid" not in handler._cache
+
+
 def test_clean_table(
     quality_cache_handler: AceQualityCacheHandler,
     caplog: pytest.LogCaptureFixture,

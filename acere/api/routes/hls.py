@@ -14,6 +14,7 @@ from acere.instances.ace_quality import get_quality_handler
 from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.config import settings
 from acere.instances.paths import get_app_path_handler
+from acere.services.ace_quality import LATE_SEGMENT_PUNISHMENT
 from acere.services.xc.helpers import check_xc_auth
 from acere.utils.api_models import MessageResponseModel
 from acere.utils.exception_handling import log_aiohttp_exception
@@ -209,6 +210,8 @@ async def ts(content_id: str) -> StreamingResponse:
     except (aiohttp.ClientError, TimeoutError) as e:
         await session.close()
         log_aiohttp_exception(logger, f"[ace ts {content_id}]", e)
+        if isinstance(e, TimeoutError):
+            get_quality_handler().increment_quality(content_id, "")
         raise HTTPException(
             status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
             detail="Cannot connect to Ace",
@@ -223,9 +226,13 @@ async def ts(content_id: str) -> StreamingResponse:
                 chunk_n += 1
                 if chunk_n % TS_TOUCH_EVERY == 0:
                     ace_pool.touch(content_id)
+                    get_quality_handler().increment_quality_raw(content_id, 1, "TS stream flowing")
+            # A live stream ending on its own is a death signal, client disconnects never reach here
+            get_quality_handler().increment_quality_raw(content_id, LATE_SEGMENT_PUNISHMENT, "TS stream ended")
         except (aiohttp.ClientError, TimeoutError) as e:
             # Headers already sent as 200, log and end the stream, the player will retry
             log_aiohttp_exception(logger, f"[ace ts {content_id}]", e)
+            get_quality_handler().increment_quality_raw(content_id, LATE_SEGMENT_PUNISHMENT, "TS stream stalled")
         finally:
             ace_resp.close()
             await session.close()
