@@ -132,20 +132,22 @@ def xc_get(
     username: Annotated[str, Query(alias="username")] = "",
     password: Annotated[str, Query(alias="password")] = "",
     type_: Annotated[str, Query(alias="type")] = "",  # Fastapi fixes this as type is a reserved word
+    output: Annotated[str, Query(alias="output")] = "",
 ) -> Response | MessageResponseModel:
     """Emulate an XC /get.php endpoint."""
     check_xc_auth(username=username, password=password)
 
     if type_ == "m3u_plus":
-        return _get_m3u_plus()
+        return _get_m3u_plus(username=username, password=password, output=output)
 
     return _get_invalid_request_type()
 
 
-def _get_m3u_plus() -> Response:
+def _get_m3u_plus(username: str, password: str, output: str) -> Response:
     """Get M3U playlist."""
     handler = get_ace_streams_db_handler()
-    m3u8 = handler.get_streams_as_iptv()
+    ts_url_prefix = f"{settings.EXTERNAL_URL}/live/{username}/{password}" if output == "ts" else None
+    m3u8 = handler.get_streams_as_iptv(ts_url_prefix=ts_url_prefix)
     return Response(
         content=m3u8,
         status_code=HTTPStatus.OK,

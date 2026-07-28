@@ -1,11 +1,11 @@
 """Stream Handling Blueprint."""
 
 from http import HTTPStatus
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 
 import aiohttp
 from fastapi import APIRouter, HTTPException, Query, Request, Response
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import HttpUrl
 
 from acere.constants import STATIC_DIR
@@ -23,6 +23,11 @@ from acere.utils.hls import (
 )
 from acere.utils.logger import get_logger
 
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+else:
+    AsyncGenerator = object
+
 logger = get_logger(__name__)
 router = APIRouter(tags=["Media/Stream"])
 
@@ -34,6 +39,8 @@ REVERSE_PROXY_EXCLUDED_HEADERS = [
     "keep-alive",
 ]
 REVERSE_PROXY_TIMEOUT = 10  # Very high but alas
+TS_CHUNK_SIZE = 64 * 1024
+TS_TOUCH_EVERY = 100  # Chunks between update_last_used calls (~6MB), protects long watches from LRU reclaim
 
 
 # region /hls/
@@ -167,11 +174,70 @@ async def hls_multi(path: str) -> Response:
     return Response(content_str, status_code)
 
 
+# region /ts/
+@router.get("/ts/{content_id}")
+async def ts(content_id: str) -> StreamingResponse:
+    """Reverse proxy the MPEG-TS stream from Ace."""
+    ace_pool = get_ace_pool()
+
+    if not check_valid_content_id_or_infohash(content_id):
+        msg = f"Invalid content ID or infohash: {content_id}"
+        logger.error("TS stream error: %s", msg)
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail=msg,
+        )
+
+    ts_url = await ace_pool.get_instance_ts_url_by_content_id(content_id)
+
+    if not ts_url:
+        msg = f"Can't serve ts_stream, Ace pool is full or invalid stream: {content_id}"
+        logger.error("TS stream error: %s", msg)
+        raise HTTPException(
+            status_code=HTTPStatus.SERVICE_UNAVAILABLE,
+            detail=msg,
+        )
+
+    logger.trace("TS stream requested for url: %s", ts_url)
+
+    # No total timeout, a live TS stream never ends
+    timeout = aiohttp.ClientTimeout(total=None, sock_connect=REVERSE_PROXY_TIMEOUT, sock_read=REVERSE_PROXY_TIMEOUT)
+    session = aiohttp.ClientSession(timeout=timeout)
+    try:
+        ace_resp = await session.get(ts_url.encoded_string())
+        ace_resp.raise_for_status()
+    except (aiohttp.ClientError, TimeoutError) as e:
+        await session.close()
+        log_aiohttp_exception(logger, f"[ace ts {content_id}]", e)
+        raise HTTPException(
+            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            detail="Cannot connect to Ace",
+        ) from e
+
+    async def stream() -> AsyncGenerator[bytes]:
+        # Client disconnect -> Starlette closes the generator -> finally releases the engine connection
+        try:
+            chunk_n = 0
+            async for chunk in ace_resp.content.iter_chunked(TS_CHUNK_SIZE):
+                yield chunk
+                chunk_n += 1
+                if chunk_n % TS_TOUCH_EVERY == 0:
+                    ace_pool.touch(content_id)
+        except (aiohttp.ClientError, TimeoutError) as e:
+            # Headers already sent as 200, log and end the stream, the player will retry
+            log_aiohttp_exception(logger, f"[ace ts {content_id}]", e)
+        finally:
+            ace_resp.close()
+            await session.close()
+
+    return StreamingResponse(stream(), media_type="video/MP2T")
+
+
 # region XC
 # Depending on the Client, it will either be:
 # /live/u/p/<xc_id>.m3u8  | UHF, M3UAndroid, IPTV Smarters Pro
 # /u/p/<xc_id>            | Smarters Player Lite (iOS), iMPlayer Android
-# /u/p/<xc_id>.ts         | iMPlayer iOS, TiViMate, Purple Simple (okay that m3u8 is the response)
+# /u/p/<xc_id>.ts         | iMPlayer iOS, TiViMate, Purple Simple (real MPEG-TS)
 # /u/p/<xc_id>.m3u8      | SparkleTV
 @router.get("/{_path_username}/{_path_password}/{xc_stream}", response_class=Response)
 @router.get("/live/{_path_username}/{_path_password}/{xc_stream}", response_class=Response)
@@ -221,6 +287,9 @@ async def xc_m3u8(
             status_code=HTTPStatus.NOT_FOUND,
             detail="Content ID not found for the given XC ID",
         )
+
+    if xc_stream.endswith(".ts"):
+        return await ts(content_id)
 
     return await hls(content_id)
 

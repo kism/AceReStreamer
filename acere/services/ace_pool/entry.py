@@ -53,6 +53,13 @@ class AcePoolEntry:
             ace_pid=self.ace_pid,
             transcode_audio=transcode_audio,
         )
+        self.ace_ts_middleware_url = get_middleware_url(
+            ace_url=self.ace_address,
+            content_id=self.content_id,
+            ace_pid=self.ace_pid,
+            transcode_audio=transcode_audio,
+            endpoint="ace/getstream",
+        )
 
         self._middleware_info: AceMiddlewareResponse | None = None
 
@@ -75,22 +82,22 @@ class AcePoolEntry:
         await instance.populate_urls()
         return instance
 
-    async def populate_urls(self) -> None:
-        """Populate the AceStream URLs for this instance."""
+    async def _fetch_middleware(self, url: str) -> AceMiddlewareResponse | None:
+        """Fetch and parse an AceStream middleware handshake response."""
         try:
             timeout = aiohttp.ClientTimeout(total=ACESTREAM_API_TIMEOUT)
             async with aiohttp.ClientSession(timeout=timeout) as session:
-                async with session.get(self.ace_middleware_url) as resp:
+                async with session.get(url) as resp:
                     resp.raise_for_status()
                     response_json = await resp.json()
                     middleware_response = AceMiddlewareResponseFull(**response_json)
         except (aiohttp.ClientError, ValueError) as e:
             logger.warning(
                 "Failed to fetch AceStream URLs for content_id %s: %s",
-                self.ace_middleware_url,
+                url,
                 str(e),
             )
-            return
+            return None
 
         if middleware_response.error:
             logger.error(
@@ -98,9 +105,15 @@ class AcePoolEntry:
                 self.content_id,
                 middleware_response.error,
             )
-            return
+            return None
 
-        self._middleware_info = middleware_response.response
+        return middleware_response.response
+
+    async def populate_urls(self) -> None:
+        """Populate the AceStream URLs for this instance."""
+        middleware_info = await self._fetch_middleware(self.ace_middleware_url)
+        if middleware_info:
+            self._middleware_info = middleware_info
 
     def update_last_used(self) -> None:
         """Update the last used timestamp."""
@@ -117,6 +130,12 @@ class AcePoolEntry:
             return None
 
         return self._middleware_info.playback_url
+
+    async def get_ts_url(self) -> HttpUrl | None:
+        """Get the direct MPEG-TS playback URL (fresh handshake each call)."""
+        # ponytail: re-handshake per call; cache if new-connection rate ever matters
+        middleware_info = await self._fetch_middleware(self.ace_ts_middleware_url)
+        return middleware_info.playback_url if middleware_info else None
 
     async def get_ace_stat(self) -> AcePoolStat | None:
         """Get the AceStream statistics for this instance."""

@@ -134,8 +134,12 @@ class AceStreamDBHandler(BaseDatabaseHandler):
         return get_xc_stream_db_handler().get_or_create_xc_id(content_id)
 
     # region GET IPTV
-    def get_streams_as_iptv(self) -> str:
-        """Get the found streams as an IPTV M3U8 string."""
+    def get_streams_as_iptv(self, ts_url_prefix: str | None = None) -> str:
+        """Get the found streams as an IPTV M3U8 string.
+
+        If ts_url_prefix is set (e.g. "<external_url>/live/<user>/<pass>"), entries point at
+        XC-style MPEG-TS URLs instead of HLS.
+        """
         external_url = settings.EXTERNAL_URL
 
         m3u8_content = '#EXTM3U refresh="3600"\n'
@@ -149,7 +153,11 @@ class AceStreamDBHandler(BaseDatabaseHandler):
             line_one = create_extinf_line(
                 stream, tvg_url_base=external_url_tvg, last_found=int(stream.last_scraped_time.timestamp())
             )
-            line_two = str(HttpUrl(f"{external_url}/hls/{stream.content_id}"))
+            if ts_url_prefix:
+                xc_id = self.get_xc_id_by_content_id(stream.content_id)
+                line_two = str(HttpUrl(f"{ts_url_prefix}/{xc_id}.ts"))
+            else:
+                line_two = str(HttpUrl(f"{external_url}/hls/{stream.content_id}"))
 
             iptv_set.add(line_one + line_two)
 

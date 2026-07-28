@@ -602,6 +602,7 @@ export class XtreamCodesService {
      * @param data.username
      * @param data.password
      * @param data.type
+     * @param data.output
      * @returns unknown Successful Response
      * @throws ApiError
      */
@@ -612,7 +613,8 @@ export class XtreamCodesService {
             query: {
                 username: data.username,
                 password: data.password,
-                type: data.type
+                type: data.type,
+                output: data.output
             },
             errors: {
                 422: 'Validation Error'

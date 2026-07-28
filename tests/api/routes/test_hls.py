@@ -282,6 +282,132 @@ def test_tvg_logo_fallback_to_default(
     default_logo.unlink()
 
 
+# region /ts/
+SAMPLE_TS_DATA = b"\x47" + b"FAKE MPEGTS DATA" * 100
+
+
+def test_ts_with_invalid_content_id(
+    client: TestClient,
+) -> None:
+    """Test TS endpoint with invalid content ID format."""
+    response = client.get("/ts/invalid_id")
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert "Invalid content ID or infohash" in response.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_ts_success(
+    client: TestClient,
+    valid_content_id: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test successful TS stream retrieval."""
+    mock_ts_url = HttpUrl(f"http://localhost:6878/ace/r/{valid_content_id}/stream")
+
+    fake_session = FakeSession(
+        {
+            mock_ts_url.encoded_string(): {
+                "status": 200,
+                "data": SAMPLE_TS_DATA,
+            }
+        }
+    )
+
+    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
+
+    async def mock_get_instance_ts_url(self: Any, content_id: str) -> HttpUrl:
+        return mock_ts_url
+
+    monkeypatch.setattr(
+        "acere.api.routes.hls.get_ace_pool",
+        type(
+            "MockPool",
+            (),
+            {
+                "get_instance_ts_url_by_content_id": mock_get_instance_ts_url,
+                "touch": lambda self, content_id: None,
+            },
+        ),
+    )
+
+    response = client.get(f"/ts/{valid_content_id}")
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.content == SAMPLE_TS_DATA
+    assert response.headers["Content-Type"] == "video/MP2T"
+
+
+@pytest.mark.asyncio
+async def test_ts_pool_full(
+    client: TestClient,
+    valid_content_id: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test TS endpoint when Ace pool is full."""
+
+    async def mock_get_instance_ts_url_none(self: Any, content_id: str) -> None:
+        return None
+
+    monkeypatch.setattr(
+        "acere.api.routes.hls.get_ace_pool",
+        type("MockPool", (), {"get_instance_ts_url_by_content_id": mock_get_instance_ts_url_none}),
+    )
+
+    response = client.get(f"/ts/{valid_content_id}")
+
+    assert response.status_code == HTTPStatus.SERVICE_UNAVAILABLE
+    assert "Ace pool is full" in response.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_xc_ts_success(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test XC stream route with a .ts extension returns real MPEG-TS."""
+    xc_id = 12345
+    mock_content_id = get_random_content_id()
+
+    monkeypatch.setattr(
+        "acere.api.routes.hls.get_ace_streams_db_handler",
+        type("MockHandler", (), {"get_content_id_by_xc_id": lambda self, xc_id: mock_content_id}),
+    )
+
+    mock_ts_url = HttpUrl(f"http://localhost:6878/ace/r/{mock_content_id}/stream")
+    fake_session = FakeSession(
+        {
+            mock_ts_url.encoded_string(): {
+                "status": 200,
+                "data": SAMPLE_TS_DATA,
+            }
+        }
+    )
+
+    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
+
+    async def mock_get_instance_ts_url(self: Any, content_id: str) -> HttpUrl:
+        return mock_ts_url
+
+    monkeypatch.setattr(
+        "acere.api.routes.hls.get_ace_pool",
+        type(
+            "MockPool",
+            (),
+            {
+                "get_instance_ts_url_by_content_id": mock_get_instance_ts_url,
+                "touch": lambda self, content_id: None,
+            },
+        ),
+    )
+
+    response = client.get(f"/live/{XC_USERNAME}/{settings.XC_PASSWORD}/{xc_id}.ts")
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.content == SAMPLE_TS_DATA
+    assert response.headers["Content-Type"] == "video/MP2T"
+
+
 @pytest.mark.asyncio
 async def test_xc_m3u8_success(
     client: TestClient,

@@ -29,7 +29,7 @@ class XCUserInfo(BaseModel):
     active_cons: str = "1"
     created_at: str = "5000000000"
     max_connections: str = "100"
-    allowed_output_formats: list[str] = ["m3u8"]
+    allowed_output_formats: list[str] = ["m3u8", "ts"]
 
 
 class XCServerInfo(BaseModel):

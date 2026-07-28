@@ -6,11 +6,19 @@ else:
     HttpUrl = object
 
 
-def get_middleware_url(ace_url: HttpUrl, content_id: str, ace_pid: int, *, transcode_audio: bool) -> str:
+def get_middleware_url(
+    ace_url: HttpUrl,
+    content_id: str,
+    ace_pid: int,
+    *,
+    transcode_audio: bool,
+    endpoint: str = "ace/manifest.m3u8",
+) -> str:
     """Get the middleware URL from the AceStream URL."""
     # https://docs.acestream.net/developers/start-playback/
+    # endpoint="ace/getstream" gives a direct MPEG-TS playback_url instead of HLS
     return (
-        f"{ace_url}ace/manifest.m3u8"
+        f"{ace_url}{endpoint}"
         "?format=json"
         f"&content_id={content_id}"
         f"&transcode_ac3={str(transcode_audio).lower()}"

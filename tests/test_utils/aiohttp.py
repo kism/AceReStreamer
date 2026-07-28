@@ -7,11 +7,15 @@ from multidict import CIMultiDict, CIMultiDictProxy
 from yarl import URL
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncIterator, Generator
+
     from aiohttp.pytest_plugin import AiohttpServer
     from pytest_mock import MockerFixture  # pragma: no cover
 else:
     MockerFixture = object
     AiohttpServer = object
+    AsyncIterator = object
+    Generator = object
 
 
 class FakeResponseDef(TypedDict):
@@ -32,6 +36,10 @@ class FakeContent:
         result = self._data[self._position : self._position + size]
         self._position += size
         return result
+
+    async def iter_chunked(self, n: int) -> AsyncIterator[bytes]:
+        while chunk := await self.read(n):
+            yield chunk
 
 
 class FakeResponse:
@@ -76,6 +84,16 @@ class FakeResponse:
         return self
 
     async def __aexit__(self, *args: object) -> None:
+        pass
+
+    def __await__(self) -> Generator[Any, None, Self]:
+        # aiohttp's session.get() is both awaitable and an async context manager
+        async def _coro() -> Self:
+            return self
+
+        return _coro().__await__()
+
+    def close(self) -> None:
         pass
 
 

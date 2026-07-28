@@ -422,6 +422,7 @@ export type XtreamCodesXcIptvRouterData = {
 export type XtreamCodesXcIptvRouterResponse = (unknown);
 
 export type XtreamCodesXcGetData = {
+    output?: string;
     password?: string;
     type?: string;
     username?: string;
