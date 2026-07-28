@@ -9,7 +9,6 @@ source = { editable = "." }
 dependencies = [
     { name = "aiohttp", extra = ["speedups"] },
     { name = "alembic" },
-    { name = "anyio" },
     { name = "beautifulsoup4" },
     { name = "fastapi", extra = ["standard-no-fastapi-cloud-cli"] },
     { name = "jinja2" },
@@ -52,7 +51,6 @@ type = [
 requires-dist = [
     { name = "aiohttp", extras = ["speedups"], specifier = ">=3.13.0" },
     { name = "alembic", specifier = ">=1.18.0" },
-    { name = "anyio", specifier = ">=4.12.1" },
     { name = "beautifulsoup4", specifier = ">=4.14.2" },
     { name = "detect-test-pollution", marker = "extra == 'test'" },
     { name = "fastapi", extras = ["standard-no-fastapi-cloud-cli"], specifier = ">=0.118.0" },

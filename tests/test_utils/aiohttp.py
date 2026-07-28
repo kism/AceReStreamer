@@ -8,12 +8,7 @@ from yarl import URL
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Generator
-
-    from aiohttp.pytest_plugin import AiohttpServer
-    from pytest_mock import MockerFixture  # pragma: no cover
 else:
-    MockerFixture = object
-    AiohttpServer = object
     AsyncIterator = object
     Generator = object
 
@@ -77,9 +72,6 @@ class FakeResponse:
     async def read(self) -> bytes:
         return self._data
 
-    async def raw_headers(self) -> bytes:
-        return b""
-
     async def __aenter__(self) -> Self:
         return self
 
@@ -108,16 +100,6 @@ class FakeSession:
             return FakeResponse(data=b"", status=404, url=url)
 
         return FakeResponse(data=response_def["data"], status=response_def["status"], url=url)
-
-    async def request(self, method: str, url: str, **kwargs: Any) -> FakeResponse:
-        response_def = self.responses.get(url)
-        if response_def is None:
-            return FakeResponse(data=b"", status=404, url=url)
-
-        return FakeResponse(data=response_def["data"], status=response_def["status"], url=url)
-
-    async def send(self, *args: object, **kwargs: object) -> FakeResponse:
-        return FakeResponse(data=b"", status=404)
 
     async def __aenter__(self) -> Self:
         self.closed = False

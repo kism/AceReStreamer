@@ -16,16 +16,12 @@ from tests.test_utils.aiohttp import FakeSession
 from tests.test_utils.hls import generate_hls_m3u8
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
     from pathlib import Path
 
     from fastapi.testclient import TestClient
-    from sqlmodel import Session
 else:
     TestClient = object
-    Session = object
     Path = object
-    Generator = object
 
 
 # Sample HLS M3U8 content

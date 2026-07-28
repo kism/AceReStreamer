@@ -5,7 +5,6 @@ import asyncio
 from pathlib import Path
 
 import aiohttp
-import anyio
 
 from acere.constants import DEFAULT_INSTANCE_PATH, XC_USER_AGENT
 from acere.utils.cli import console
@@ -20,13 +19,10 @@ XC_ACTIONS = [
     "get_series",
 ]
 
-_CHUNK_SIZE = 65536
-
 
 async def _stream_to_file(response: aiohttp.ClientResponse, out_file: Path) -> None:
-    async with await anyio.Path(out_file).open("wb") as f:
-        async for chunk in response.content.iter_chunked(_CHUNK_SIZE):
-            await f.write(chunk)
+    # ponytail: buffered sync write, these are small JSON/m3u debug dumps
+    out_file.write_bytes(await response.read())
 
 
 async def fetch_all_endpoints(base_url: str, username: str, password: str, output_dir: Path) -> None:

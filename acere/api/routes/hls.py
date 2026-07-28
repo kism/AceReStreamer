@@ -82,20 +82,14 @@ async def hls(path: str) -> Response:
         log_aiohttp_exception(logger, f"[ace hls {path}]", e)
 
         # Determine error type and response
-        if isinstance(e, (TimeoutError)):
+        if isinstance(e, TimeoutError):
             error_msg, status = "HLS stream timeout", HTTPStatus.REQUEST_TIMEOUT
             get_quality_handler().increment_quality(path, "")
-        elif isinstance(e, aiohttp.ClientError):
+        else:
             error_msg, status = (
                 "Cannot connect to Ace",
                 HTTPStatus.INTERNAL_SERVER_ERROR,
             )
-        else:
-            error_msg, status = (
-                "Failed to fetch HLS stream",
-                HTTPStatus.INTERNAL_SERVER_ERROR,
-            )
-            get_quality_handler().increment_quality(path, "")
 
         raise HTTPException(status_code=status, detail=error_msg) from e
 

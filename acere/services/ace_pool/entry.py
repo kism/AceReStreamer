@@ -31,7 +31,6 @@ class AcePoolEntry:
         ace_pid: int,
         ace_address: HttpUrl,
         content_id: str,
-        infohash: str = "",
         *,
         transcode_audio: bool,
     ) -> None:
@@ -44,7 +43,6 @@ class AcePoolEntry:
 
         self.ace_pid = ace_pid
         self.content_id = content_id
-        self.infohash = infohash
         self.ace_address = ace_address
 
         self.ace_middleware_url = get_middleware_url(
@@ -73,12 +71,11 @@ class AcePoolEntry:
         ace_pid: int,
         ace_address: HttpUrl,
         content_id: str,
-        infohash: str = "",
         *,
         transcode_audio: bool,
     ) -> AcePoolEntry:
         """Create and initialize an AceStream pool entry asynchronously, populating URLs."""
-        instance = cls(ace_pid, ace_address, content_id, infohash, transcode_audio=transcode_audio)
+        instance = cls(ace_pid, ace_address, content_id, transcode_audio=transcode_audio)
         await instance.populate_urls()
         return instance
 
