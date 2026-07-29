@@ -61,7 +61,7 @@ To scrape this, your config will look something like this:
 :language: json
 ```
 
-When get scraped, the scraper will need to use ace to convert the infohash to a content_id.
+This source gives infohashes rather than content_ids. When running as a server, the scraper converts each one via a running Ace instance (`server/api?method=get_content_id`), caching the result in the database so it only asks once per infohash. The `acerestreamer-scrape` CLI does no conversion — it emits infohash streams into their own `-infohash-main.m3u` playlist and needs no Ace instance at all.
 
 ### Title Filter
 
