@@ -409,6 +409,104 @@ async def test_xc_ts_success(
 
 
 @pytest.mark.asyncio
+async def test_xc_extensionless_returns_ts(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test XC stream route without an extension returns MPEG-TS, like a real XC server."""
+    xc_id = 12345
+    mock_content_id = get_random_content_id()
+
+    monkeypatch.setattr(
+        "acere.api.routes.hls.get_ace_streams_db_handler",
+        type("MockHandler", (), {"get_content_id_by_xc_id": lambda self, xc_id: mock_content_id}),
+    )
+
+    mock_ts_url = HttpUrl(f"http://localhost:6878/ace/r/{mock_content_id}/stream")
+    fake_session = FakeSession(
+        {
+            mock_ts_url.encoded_string(): {
+                "status": 200,
+                "data": SAMPLE_TS_DATA,
+            }
+        }
+    )
+
+    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
+
+    async def mock_get_instance_ts_url(self: Any, content_id: str) -> HttpUrl:
+        return mock_ts_url
+
+    monkeypatch.setattr(
+        "acere.api.routes.hls.get_ace_pool",
+        type(
+            "MockPool",
+            (),
+            {
+                "get_instance_ts_url_by_content_id": mock_get_instance_ts_url,
+                "touch": lambda self, content_id: None,
+            },
+        ),
+    )
+
+    response = client.get(f"/{XC_USERNAME}/{settings.XC_PASSWORD}/{xc_id}")
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.content == SAMPLE_TS_DATA
+    assert response.headers["Content-Type"] == "video/MP2T"
+
+
+def test_ts_head_does_not_touch_engine(
+    client: TestClient,
+    valid_content_id: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test HEAD on /ts/ answers without contacting the Ace pool for a stream."""
+    # A pool with no URL getter: any engine contact would AttributeError -> 500
+    monkeypatch.setattr("acere.api.routes.hls.get_ace_pool", type("MockPool", (), {}))
+
+    response = client.head(f"/ts/{valid_content_id}")
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.headers["Content-Type"] == "video/MP2T"
+
+
+@pytest.mark.asyncio
+async def test_ts_timeout_returns_408(
+    client: TestClient,
+    valid_content_id: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test /ts/ returns 408 when Ace times out."""
+    mock_ts_url = HttpUrl(f"http://localhost:6878/ace/r/{valid_content_id}/stream")
+
+    class TimeoutSession:
+        def __init__(self, **kwargs: Any) -> None:
+            pass
+
+        async def get(self, url: str, **kwargs: Any) -> None:
+            raise TimeoutError
+
+        async def close(self) -> None:
+            pass
+
+    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", TimeoutSession)
+
+    async def mock_get_instance_ts_url(self: Any, content_id: str) -> HttpUrl:
+        return mock_ts_url
+
+    monkeypatch.setattr(
+        "acere.api.routes.hls.get_ace_pool",
+        type("MockPool", (), {"get_instance_ts_url_by_content_id": mock_get_instance_ts_url}),
+    )
+
+    response = client.get(f"/ts/{valid_content_id}")
+
+    assert response.status_code == HTTPStatus.REQUEST_TIMEOUT
+    assert "timeout" in response.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
 async def test_xc_m3u8_success(
     client: TestClient,
     monkeypatch: pytest.MonkeyPatch,

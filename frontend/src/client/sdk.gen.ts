@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { AcePoolPoolResponse, AcePoolGetByContentIdData, AcePoolGetByContentIdResponse, AcePoolDeleteByContentIdData, AcePoolDeleteByContentIdResponse, AcePoolGetByPidData, AcePoolGetByPidResponse, AcePoolStatsResponse, AcePoolStatsByContentIdData, AcePoolStatsByContentIdResponse, AcePoolStatsByPidData, AcePoolStatsByPidResponse, ConfigGetConfigResponse, ConfigUpdateConfigData, ConfigUpdateConfigResponse, ConfigFetchRemoteSettingsResponse, ConfigTriggerFetchRemoteSettingsData, ConfigTriggerFetchRemoteSettingsResponse, ConfigReloadConfigResponse, FrontendFrontendIndexHtmlResponse, FrontendFrontendIndexResponse, HealthHealthResponse, MediaIptvIptvM3U83Response, MediaIptvIptvM3U2Response, MediaIptvIptvM3U81Response, ScraperSourcesResponse, ScraperAddSourceData, ScraperAddSourceResponse, ScraperSourceData, ScraperSourceResponse, ScraperUpdateSourceData, ScraperUpdateSourceResponse, ScraperRemoveSourceData, ScraperRemoveSourceResponse, ScraperGetNameOverridesResponse, ScraperDeleteNameOverrideData, ScraperDeleteNameOverrideResponse, ScraperAddNameOverrideData, ScraperAddNameOverrideResponse, StreamsByContentIdData, StreamsByContentIdResponse, StreamsDeleteByContentIdData, StreamsDeleteByContentIdResponse, StreamsStreamsResponse, StreamsAddStreamData, StreamsAddStreamResponse, StreamsCheckResponse, XtreamCodesGetXcCredentialsResponse, XtreamCodesXcIptvRouterData, XtreamCodesXcIptvRouterResponse, XtreamCodesXcGetData, XtreamCodesXcGetResponse } from './types.gen';
+import type { AcePoolPoolResponse, AcePoolGetByContentIdData, AcePoolGetByContentIdResponse, AcePoolDeleteByContentIdData, AcePoolDeleteByContentIdResponse, AcePoolGetByPidData, AcePoolGetByPidResponse, AcePoolStatsResponse, AcePoolStatsByContentIdData, AcePoolStatsByContentIdResponse, AcePoolStatsByPidData, AcePoolStatsByPidResponse, ConfigGetConfigResponse, ConfigUpdateConfigData, ConfigUpdateConfigResponse, ConfigFetchRemoteSettingsResponse, ConfigTriggerFetchRemoteSettingsData, ConfigTriggerFetchRemoteSettingsResponse, ConfigReloadConfigResponse, FrontendFrontendIndexHtmlResponse, FrontendFrontendIndexResponse, HealthHealthResponse, MediaIptvIptvM3U83Response, MediaIptvIptvM3U2Response, MediaIptvIptvM3U81Response, MediaIptvIptvTsM3U83Response, MediaIptvIptvTsM3U2Response, MediaIptvIptvTsM3U81Response, ScraperSourcesResponse, ScraperAddSourceData, ScraperAddSourceResponse, ScraperSourceData, ScraperSourceResponse, ScraperUpdateSourceData, ScraperUpdateSourceResponse, ScraperRemoveSourceData, ScraperRemoveSourceResponse, ScraperGetNameOverridesResponse, ScraperDeleteNameOverrideData, ScraperDeleteNameOverrideResponse, ScraperAddNameOverrideData, ScraperAddNameOverrideResponse, StreamsByContentIdData, StreamsByContentIdResponse, StreamsDeleteByContentIdData, StreamsDeleteByContentIdResponse, StreamsStreamsResponse, StreamsAddStreamData, StreamsAddStreamResponse, StreamsCheckResponse, XtreamCodesGetXcCredentialsResponse, XtreamCodesXcIptvRouterData, XtreamCodesXcIptvRouterResponse, XtreamCodesXcGetData, XtreamCodesXcGetResponse } from './types.gen';
 
 export class AcePoolService {
     /**
@@ -265,7 +265,7 @@ export class HealthService {
 export class MediaIptvService {
     /**
      * Iptv M3U8 3
-     * Render the IPTV M3U8 Playlist.
+     * Render the IPTV M3U8 Playlist with HLS streams.
      * @returns unknown Successful Response
      * @throws ApiError
      */
@@ -278,7 +278,7 @@ export class MediaIptvService {
     
     /**
      * Iptv M3U 2
-     * Render the IPTV M3U8 Playlist.
+     * Render the IPTV M3U8 Playlist with HLS streams.
      * @returns unknown Successful Response
      * @throws ApiError
      */
@@ -291,7 +291,7 @@ export class MediaIptvService {
     
     /**
      * Iptv M3U8 1
-     * Render the IPTV M3U8 Playlist.
+     * Render the IPTV M3U8 Playlist with HLS streams.
      * @returns unknown Successful Response
      * @throws ApiError
      */
@@ -299,6 +299,45 @@ export class MediaIptvService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/iptv'
+        });
+    }
+    
+    /**
+     * Iptv Ts M3U8 3
+     * Render the IPTV M3U8 Playlist with MPEG-TS streams.
+     * @returns unknown Successful Response
+     * @throws ApiError
+     */
+    public static iptvTsM3U83(): CancelablePromise<MediaIptvIptvTsM3U83Response> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/iptv-ts.m3u8'
+        });
+    }
+    
+    /**
+     * Iptv Ts M3U 2
+     * Render the IPTV M3U8 Playlist with MPEG-TS streams.
+     * @returns unknown Successful Response
+     * @throws ApiError
+     */
+    public static iptvTsM3u2(): CancelablePromise<MediaIptvIptvTsM3U2Response> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/iptv-ts.m3u'
+        });
+    }
+    
+    /**
+     * Iptv Ts M3U8 1
+     * Render the IPTV M3U8 Playlist with MPEG-TS streams.
+     * @returns unknown Successful Response
+     * @throws ApiError
+     */
+    public static iptvTsM3U81(): CancelablePromise<MediaIptvIptvTsM3U81Response> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/iptv-ts'
         });
     }
 }

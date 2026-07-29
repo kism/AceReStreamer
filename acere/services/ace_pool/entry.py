@@ -20,6 +20,9 @@ logger = get_logger(__name__)
 
 LOCK_IN_TIME: timedelta = timedelta(minutes=5)
 LOCK_IN_RESET_MAX: timedelta = timedelta(minutes=15)
+# An instance used this recently has a client keeping the engine alive itself
+# (HLS clients poll the manifest through us, TS clients touch() every ~6.4MB)
+KEEP_ALIVE_ACTIVE_SKIP: timedelta = timedelta(seconds=60)
 
 
 class AcePoolEntry:
@@ -237,6 +240,11 @@ class AcePoolEntry:
     # region Health
     async def keep_alive(self) -> None:
         """The keep_alive method, should be called by poolboy thread."""
+        # An actively watched stream doesn't need us, skip the manifest+segment fetch
+        if datetime.now(tz=UTC) - self.date_last_used < KEEP_ALIVE_ACTIVE_SKIP:
+            logger.trace("Not keeping alive %s, actively in use", self.content_id)
+            return
+
         # If we are locked in, we keep the stream alive
         # Also check if the content_id is valid, as a failsafe
         await self.populate_urls()

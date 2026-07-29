@@ -62,6 +62,9 @@ export function IptvInfo({ credentials, isLoading, error }: IptvInfoProps) {
   const playlistUrl = `${VITE_API_URL}/iptv`
   const playlistM3uUrl = `${VITE_API_URL}/iptv.m3u`
   const playlistM3u8Url = `${VITE_API_URL}/iptv.m3u8`
+  const playlistTsUrl = `${VITE_API_URL}/iptv-ts`
+  const playlistTsM3uUrl = `${VITE_API_URL}/iptv-ts.m3u`
+  const playlistTsM3u8Url = `${VITE_API_URL}/iptv-ts.m3u8`
 
   const xtreamItems = [
     { name: "Server / Portal URL", value: serverAddress },
@@ -73,6 +76,12 @@ export function IptvInfo({ credentials, isLoading, error }: IptvInfoProps) {
     { name: "Playlist URL", value: playlistUrl },
     { name: "Playlist URL (.m3u)", value: playlistM3uUrl },
     { name: "Playlist URL (.m3u8)", value: playlistM3u8Url },
+  ]
+
+  const iptvTsItems = [
+    { name: "Playlist URL", value: playlistTsUrl },
+    { name: "Playlist URL (.m3u)", value: playlistTsM3uUrl },
+    { name: "Playlist URL (.m3u8)", value: playlistTsM3u8Url },
   ]
 
   return (
@@ -103,6 +112,21 @@ export function IptvInfo({ credentials, isLoading, error }: IptvInfoProps) {
         <Box maxW={{ base: "100%", md: "700px" }}>
           <AppTableRoot preset="outlineSm" width="100%" maxWidth="100%">
             <TableBody>{renderTableRows(iptvItems)}</TableBody>
+          </AppTableRoot>
+        </Box>
+      </VStack>
+
+      <VStack gap={2} align="stretch">
+        <Heading size="sm" py={1}>
+          M3U8 IPTV (MPEG-TS streams)
+        </Heading>
+        <Text>
+          Same playlist, but the streams are MPEG-TS instead of HLS. Try this if
+          a stream won't play from the playlists above.
+        </Text>
+        <Box maxW={{ base: "100%", md: "700px" }}>
+          <AppTableRoot preset="outlineSm" width="100%" maxWidth="100%">
+            <TableBody>{renderTableRows(iptvTsItems)}</TableBody>
           </AppTableRoot>
         </Box>
       </VStack>

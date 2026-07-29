@@ -319,6 +319,27 @@ async def test_get_ts_url(monkeypatch: pytest.MonkeyPatch) -> None:
     assert instance.date_last_used >= before
 
 
+async def test_keep_alive_skips_actively_watched(mocker: MockerFixture) -> None:
+    """Test keep_alive returns early when a client is actively watching."""
+    entry = AcePoolEntry(
+        ace_pid=1,
+        ace_address=HttpUrl("http://localhost:6878/"),
+        content_id=get_random_content_id(),
+        transcode_audio=False,
+    )
+    mock_populate = mocker.patch.object(entry, "populate_urls")
+
+    # Just used -> skip entirely
+    entry.update_last_used()
+    await entry.keep_alive()
+    mock_populate.assert_not_called()
+
+    # Idle past the active window -> keep_alive proceeds
+    entry.date_last_used = datetime.now(tz=UTC) - timedelta(minutes=2)
+    await entry.keep_alive()
+    mock_populate.assert_called_once()
+
+
 async def test_when_not_healthy() -> None:
     pool = AcePool(instance_id="test")
     fill_pool(pool)

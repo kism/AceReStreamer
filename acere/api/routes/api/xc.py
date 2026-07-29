@@ -146,8 +146,12 @@ def xc_get(
 def _get_m3u_plus(username: str, password: str, output: str) -> Response:
     """Get M3U playlist."""
     handler = get_ace_streams_db_handler()
-    ts_url_prefix = f"{settings.EXTERNAL_URL}/live/{username}/{password}" if output == "ts" else None
-    m3u8 = handler.get_streams_as_iptv(ts_url_prefix=ts_url_prefix)
+    if output == "ts":
+        m3u8 = handler.get_streams_as_iptv(
+            output="ts", ts_url_prefix=f"{settings.EXTERNAL_URL}/live/{username}/{password}"
+        )
+    else:
+        m3u8 = handler.get_streams_as_iptv(output="hls")
     return Response(
         content=m3u8,
         status_code=HTTPStatus.OK,

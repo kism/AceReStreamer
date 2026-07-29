@@ -170,8 +170,8 @@ async def hls_multi(path: str) -> Response:
 
 
 # region /ts/
-@router.get("/ts/{content_id}")
-async def ts(content_id: str) -> StreamingResponse:
+@router.api_route("/ts/{content_id}", methods=["GET", "HEAD"])
+async def ts(content_id: str, request: Request) -> Response:
     """Reverse proxy the MPEG-TS stream from Ace."""
     ace_pool = get_ace_pool()
 
@@ -182,6 +182,10 @@ async def ts(content_id: str) -> StreamingResponse:
             status_code=HTTPStatus.BAD_REQUEST,
             detail=msg,
         )
+
+    # Some clients probe with HEAD, answer without tying up an engine slot
+    if request.method == "HEAD":
+        return Response(media_type="video/MP2T")
 
     ts_url = await ace_pool.get_instance_ts_url_by_content_id(content_id)
 
@@ -206,10 +210,10 @@ async def ts(content_id: str) -> StreamingResponse:
         log_aiohttp_exception(logger, f"[ace ts {content_id}]", e)
         if isinstance(e, TimeoutError):
             get_quality_handler().increment_quality(content_id, "")
-        raise HTTPException(
-            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
-            detail="Cannot connect to Ace",
-        ) from e
+            error_msg, status = "TS stream timeout", HTTPStatus.REQUEST_TIMEOUT
+        else:
+            error_msg, status = "Cannot connect to Ace", HTTPStatus.INTERNAL_SERVER_ERROR
+        raise HTTPException(status_code=status, detail=error_msg) from e
 
     async def stream() -> AsyncGenerator[bytes]:
         # Client disconnect -> Starlette closes the generator -> finally releases the engine connection
@@ -235,14 +239,15 @@ async def ts(content_id: str) -> StreamingResponse:
 
 
 # region XC
+# Only .m3u8 gets HLS, everything else (.ts, extensionless) gets MPEG-TS like a real XC server.
 # Depending on the Client, it will either be:
 # /live/u/p/<xc_id>.m3u8  | UHF, M3UAndroid, IPTV Smarters Pro
-# /u/p/<xc_id>            | Smarters Player Lite (iOS), iMPlayer Android
+# /u/p/<xc_id>            | Smarters Player Lite (iOS), iMPlayer Android (TODO: re-test on MPEG-TS)
 # /u/p/<xc_id>.ts         | iMPlayer iOS, TiViMate, Purple Simple (real MPEG-TS)
 # /u/p/<xc_id>.m3u8      | SparkleTV
 @router.get("/{_path_username}/{_path_password}/{xc_stream}", response_class=Response)
 @router.get("/live/{_path_username}/{_path_password}/{xc_stream}", response_class=Response)
-async def xc_m3u8(
+async def xc_live_stream(
     request: Request,
     _path_username: str = "",
     _path_password: str = "",
@@ -259,10 +264,8 @@ async def xc_m3u8(
 
     check_xc_auth(username=username, password=password)
 
-    content_id: str | None = None
-
     logger.trace(
-        "XC HLS: path='%s' args='%s' ua='%s'",
+        "XC stream: path='%s' args='%s' ua='%s'",
         str(request.url) if request else xc_stream,
         f"username={username},password={password}",
         request.headers.get("User-Agent", "") if request else "",
@@ -280,19 +283,16 @@ async def xc_m3u8(
 
     content_id = get_ace_streams_db_handler().get_content_id_by_xc_id(xc_id_int)
 
-    if content_id is None:
-        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="Invalid XC ID format")
-
     if not content_id:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
             detail="Content ID not found for the given XC ID",
         )
 
-    if xc_stream.endswith(".ts"):
-        return await ts(content_id)
+    if xc_stream.endswith(".m3u8"):
+        return await hls(content_id)
 
-    return await hls(content_id)
+    return await ts(content_id, request)
 
 
 # region /ace/c/ and /hls/c/ Content paths for regular and multistream

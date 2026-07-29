@@ -1,6 +1,6 @@
 """Handler for content_id to xc_id mapping."""
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from pydantic import HttpUrl
 from sqlmodel import select
@@ -134,11 +134,11 @@ class AceStreamDBHandler(BaseDatabaseHandler):
         return get_xc_stream_db_handler().get_or_create_xc_id(content_id)
 
     # region GET IPTV
-    def get_streams_as_iptv(self, ts_url_prefix: str | None = None) -> str:
+    def get_streams_as_iptv(self, output: Literal["hls", "ts"] = "hls", ts_url_prefix: str | None = None) -> str:
         """Get the found streams as an IPTV M3U8 string.
 
-        If ts_url_prefix is set (e.g. "<external_url>/live/<user>/<pass>"), entries point at
-        XC-style MPEG-TS URLs instead of HLS.
+        output="ts" points entries at MPEG-TS URLs: XC-style "{ts_url_prefix}/{xc_id}.ts" when
+        ts_url_prefix is set (e.g. "<external_url>/live/<user>/<pass>"), plain "/ts/{content_id}" otherwise.
         """
         external_url = settings.EXTERNAL_URL
 
@@ -153,9 +153,11 @@ class AceStreamDBHandler(BaseDatabaseHandler):
             line_one = create_extinf_line(
                 stream, tvg_url_base=external_url_tvg, last_found=int(stream.last_scraped_time.timestamp())
             )
-            if ts_url_prefix:
+            if output == "ts" and ts_url_prefix:
                 xc_id = self.get_xc_id_by_content_id(stream.content_id)
                 line_two = str(HttpUrl(f"{ts_url_prefix}/{xc_id}.ts"))
+            elif output == "ts":
+                line_two = str(HttpUrl(f"{external_url}/ts/{stream.content_id}"))
             else:
                 line_two = str(HttpUrl(f"{external_url}/hls/{stream.content_id}"))
 

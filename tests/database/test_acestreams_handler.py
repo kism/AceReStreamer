@@ -200,8 +200,29 @@ def test_get_streams_as_iptv_ts_url_prefix(acestream_db_handler: AceStreamDBHand
         )
     )
 
-    m3u8_content = handler.get_streams_as_iptv(ts_url_prefix="http://localhost:8000/live/user/pass")
+    m3u8_content = handler.get_streams_as_iptv(output="ts", ts_url_prefix="http://localhost:8000/live/user/pass")
 
     xc_id = handler.get_xc_id_by_content_id(content_id)
     assert f"http://localhost:8000/live/user/pass/{xc_id}.ts" in m3u8_content
+    assert f"/hls/{content_id}" not in m3u8_content
+
+
+def test_get_streams_as_iptv_ts_plain(acestream_db_handler: AceStreamDBHandler) -> None:
+    """Test that get_streams_as_iptv output="ts" without a prefix emits plain /ts/ URLs."""
+    handler = acestream_db_handler
+
+    content_id = get_random_content_id()
+    handler.update_stream(
+        FoundAceStream(
+            content_id=content_id,
+            title="Test Stream",
+            tvg_id="test.stream",
+            sites_found_on=["TestSite"],
+            last_scraped_time=datetime.now(tz=UTC),
+        )
+    )
+
+    m3u8_content = handler.get_streams_as_iptv(output="ts")
+
+    assert f"/ts/{content_id}" in m3u8_content
     assert f"/hls/{content_id}" not in m3u8_content

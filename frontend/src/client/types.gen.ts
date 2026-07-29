@@ -344,6 +344,12 @@ export type MediaIptvIptvM3U2Response = (unknown);
 
 export type MediaIptvIptvM3U81Response = (unknown);
 
+export type MediaIptvIptvTsM3U83Response = (unknown);
+
+export type MediaIptvIptvTsM3U2Response = (unknown);
+
+export type MediaIptvIptvTsM3U81Response = (unknown);
+
 export type ScraperSourcesResponse = (Array<AceScraperSourceApi>);
 
 export type ScraperAddSourceData = {
