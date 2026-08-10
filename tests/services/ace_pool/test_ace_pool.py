@@ -82,7 +82,10 @@ async def test_check_ace_running_healthy(monkeypatch: pytest.MonkeyPatch) -> Non
     )
 
     # Mock aiohttp.ClientSession in the pool module
-    monkeypatch.setattr("acere.services.ace_pool.pool.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr(
+        "acere.services.ace_pool.pool.aiohttp.ClientSession",
+        lambda **kwargs: fake_session,
+    )
 
     pool = AcePool(instance_id="test")
     result = await pool.check_ace_running()
@@ -100,7 +103,10 @@ async def test_check_ace_running_unhealthy(monkeypatch: pytest.MonkeyPatch) -> N
     fake_session = FakeSession({})  # Empty dict means all URLs return 404
 
     # Mock aiohttp.ClientSession
-    monkeypatch.setattr("acere.services.ace_pool.pool.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr(
+        "acere.services.ace_pool.pool.aiohttp.ClientSession",
+        lambda **kwargs: fake_session,
+    )
 
     pool = AcePool(instance_id="test")
     result = await pool.check_ace_running()
@@ -198,8 +204,14 @@ async def test_get_set_valid(monkeypatch: pytest.MonkeyPatch) -> None:
         }
     )
 
-    monkeypatch.setattr("acere.services.ace_pool.pool.aiohttp.ClientSession", lambda **kwargs: fake_session)
-    monkeypatch.setattr("acere.services.ace_pool.entry.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr(
+        "acere.services.ace_pool.pool.aiohttp.ClientSession",
+        lambda **kwargs: fake_session,
+    )
+    monkeypatch.setattr(
+        "acere.services.ace_pool.entry.aiohttp.ClientSession",
+        lambda **kwargs: fake_session,
+    )
 
     # Mark pool as healthy so stats queries work
     pool._healthy = True
@@ -297,8 +309,14 @@ async def test_get_ts_url(monkeypatch: pytest.MonkeyPatch) -> None:
         }
     )
 
-    monkeypatch.setattr("acere.services.ace_pool.pool.aiohttp.ClientSession", lambda **kwargs: fake_session)
-    monkeypatch.setattr("acere.services.ace_pool.entry.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr(
+        "acere.services.ace_pool.pool.aiohttp.ClientSession",
+        lambda **kwargs: fake_session,
+    )
+    monkeypatch.setattr(
+        "acere.services.ace_pool.entry.aiohttp.ClientSession",
+        lambda **kwargs: fake_session,
+    )
 
     url_1 = await pool.get_instance_ts_url_by_content_id(content_id)
     url_2 = await pool.get_instance_ts_url_by_content_id(content_id)

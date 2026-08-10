@@ -212,7 +212,10 @@ async def ts(content_id: str, request: Request) -> Response:
             get_quality_handler().increment_quality(content_id, "")
             error_msg, status = "TS stream timeout", HTTPStatus.REQUEST_TIMEOUT
         else:
-            error_msg, status = "Cannot connect to Ace", HTTPStatus.INTERNAL_SERVER_ERROR
+            error_msg, status = (
+                "Cannot connect to Ace",
+                HTTPStatus.INTERNAL_SERVER_ERROR,
+            )
         raise HTTPException(status_code=status, detail=error_msg) from e
 
     async def stream() -> AsyncGenerator[bytes]:

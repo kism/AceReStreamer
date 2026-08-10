@@ -36,7 +36,12 @@ def upgrade() -> None:
         sa.Column("xc_id", sa.Integer(), primary_key=True),
         sa.Column("content_id", sa.String(40), nullable=False),
     )
-    op.create_index("ix_content_id_xc_id_content_id", "content_id_xc_id", ["content_id"], unique=True)
+    op.create_index(
+        "ix_content_id_xc_id_content_id",
+        "content_id_xc_id",
+        ["content_id"],
+        unique=True,
+    )
 
     # Seed from existing ace_streams to preserve current IDs
     if "ace_streams" in existing_tables:

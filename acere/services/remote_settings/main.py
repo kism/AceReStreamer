@@ -78,17 +78,28 @@ class RemoteSettingsFetcher:
     # region Fetch http
     async def fetch_settings(self) -> None:
         if settings.REMOTE_SETTINGS_URL is None:
-            logger.trace("Remote settings URL is not set; skipping fetch. id: %s", self._instance_id)
+            logger.trace(
+                "Remote settings URL is not set; skipping fetch. id: %s",
+                self._instance_id,
+            )
             return
 
-        logger.info("Fetching remote settings from %s", settings.REMOTE_SETTINGS_URL.encoded_string())
+        logger.info(
+            "Fetching remote settings from %s",
+            settings.REMOTE_SETTINGS_URL.encoded_string(),
+        )
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.get(settings.REMOTE_SETTINGS_URL.encoded_string()) as resp:
                     resp.raise_for_status()
                     data = await resp.text()
             except (aiohttp.ClientError, TimeoutError) as e:
-                log_aiohttp_exception(logger, settings.REMOTE_SETTINGS_URL, e, "Failed to fetch remote settings")
+                log_aiohttp_exception(
+                    logger,
+                    settings.REMOTE_SETTINGS_URL,
+                    e,
+                    "Failed to fetch remote settings",
+                )
                 return
             except Exception as e:
                 self._status = e.__class__.__name__
@@ -124,11 +135,17 @@ class RemoteSettingsFetcher:
     def start_fetching(self) -> None:
         self.stop_all_threads()
         thread = threading.Thread(
-            target=self.fetch_settings_thread, name="RemoteSettingsFetcher: fetch_settings", daemon=True
+            target=self.fetch_settings_thread,
+            name="RemoteSettingsFetcher: fetch_settings",
+            daemon=True,
         )
         self._threads.append(thread)
         thread.start()
 
     def stop_all_threads(self) -> None:
         """Stop all threads in the RemoteSettingsFetcher."""
-        stop_threads(self._threads, self._stop_event, f"{self.__class__.__name__} [{self._instance_id}]")
+        stop_threads(
+            self._threads,
+            self._stop_event,
+            f"{self.__class__.__name__} [{self._instance_id}]",
+        )

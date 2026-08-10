@@ -339,4 +339,8 @@ class AcePool:
 
     def stop_all_threads(self) -> None:
         """Stop all threads in the AcePool."""
-        stop_threads(self._threads, self._stop_event, f"{self.__class__.__name__} [{self._instance_id}]")
+        stop_threads(
+            self._threads,
+            self._stop_event,
+            f"{self.__class__.__name__} [{self._instance_id}]",
+        )

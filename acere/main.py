@@ -9,7 +9,13 @@ from sqlmodel import Session, select
 from starlette.middleware.cors import CORSMiddleware
 from starlette_compress import CompressMiddleware
 
-from acere.api.main import api_router, api_router_xc, frontend_router, hls_router, iptv_router
+from acere.api.main import (
+    api_router,
+    api_router_xc,
+    frontend_router,
+    hls_router,
+    iptv_router,
+)
 from acere.constants import API_V1_STR, DEFAULT_INSTANCE_PATH
 from acere.database.handlers.quality_cache import AceQualityCacheHandler
 from acere.database.init import engine, init_db

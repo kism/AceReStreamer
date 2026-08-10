@@ -40,7 +40,11 @@ class IPTVStreamScraper:
     async def _scrape_iptv_playlist(self, site: ScrapeSiteIPTV) -> list[FoundAceStream]:
         """Scrape the streams from the configured IPTV sites."""
         content = await self._get_site_content(site)
-        logger.trace("Scraping content for IPTV site %s: len=%d", site.name, len(content) if content else 0)
+        logger.trace(
+            "Scraping content for IPTV site %s: len=%d",
+            site.name,
+            len(content) if content else 0,
+        )
         if not content:
             return []
 

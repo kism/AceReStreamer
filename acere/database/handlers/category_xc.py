@@ -26,7 +26,11 @@ class CategoryXCCategoryIDDatabaseHandler(BaseDatabaseHandler):
             new_mapping = CategoryXCCategoryID(category=category_name)
             session.add(new_mapping)
             session.commit()
-            logger.trace("Created new XC category ID mapping: %s -> %d", category_name, new_mapping.xc_category_id)
+            logger.trace(
+                "Created new XC category ID mapping: %s -> %d",
+                category_name,
+                new_mapping.xc_category_id,
+            )
             return new_mapping.xc_category_id
 
     def get_category_name(self, xc_category_id: int) -> str | None:

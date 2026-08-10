@@ -49,7 +49,11 @@ def test_add_duplicate_source_fails() -> None:
     """Test that adding a duplicate source fails."""
     config = AceScrapeConf()
 
-    new_site = ScrapeSiteIPTV(type="iptv", name="test-duplicate", url="http://ace.pytest.internal/playlist.m3u8")
+    new_site = ScrapeSiteIPTV(
+        type="iptv",
+        name="test-duplicate",
+        url="http://ace.pytest.internal/playlist.m3u8",
+    )
     success, _ = config.add_source(new_site)
     assert success is True
 
@@ -63,7 +67,11 @@ def test_remove_iptv_source() -> None:
     """Test removing an IPTV source."""
     config = AceScrapeConf()
 
-    new_site = ScrapeSiteIPTV(type="iptv", name="test-remove-iptv", url="http://ace.pytest.internal/playlist.m3u8")
+    new_site = ScrapeSiteIPTV(
+        type="iptv",
+        name="test-remove-iptv",
+        url="http://ace.pytest.internal/playlist.m3u8",
+    )
     config.add_source(new_site)
     initial_count = len(config.iptv_m3u8)
 
@@ -124,7 +132,11 @@ def test_update_source_type_change() -> None:
     """Test updating a source to a different type moves it between lists."""
     config = AceScrapeConf()
 
-    new_site = ScrapeSiteIPTV(type="iptv", name="test-type-change", url="http://ace.pytest.internal/playlist.m3u8")
+    new_site = ScrapeSiteIPTV(
+        type="iptv",
+        name="test-type-change",
+        url="http://ace.pytest.internal/playlist.m3u8",
+    )
     config.add_source(new_site)
     iptv_count = len(config.iptv_m3u8)
     html_count = len(config.html)

@@ -168,7 +168,9 @@ class PlaylistCreator:
                     last_scraped_time = 0 if scraped_within_minute else int(stream.last_scraped_time.timestamp())
 
                     top_line = create_extinf_line(
-                        stream, tvg_url_base=settings.scraper.tvg_logo_external_url, last_found=last_scraped_time
+                        stream,
+                        tvg_url_base=settings.scraper.tvg_logo_external_url,
+                        last_found=last_scraped_time,
                     )
                     if uri_scheme == infohash_scheme and stream.infohash is not None:
                         m3u_file.write(top_line)

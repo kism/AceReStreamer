@@ -68,7 +68,9 @@ def client() -> Generator[TestClient]:
 
 
 @pytest.fixture
-def quality_cache_handler(tmp_path: Path) -> Generator[AceQualityCacheHandler, None, None]:
+def quality_cache_handler(
+    tmp_path: Path,
+) -> Generator[AceQualityCacheHandler, None, None]:
     """Fixture for AceQualityCacheHandler."""
     db_path = tmp_path / "test_quality_cache.db"
     test_engine = create_engine(f"sqlite:///{db_path}", echo=False)

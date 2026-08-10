@@ -148,7 +148,8 @@ def _get_m3u_plus(username: str, password: str, output: str) -> Response:
     handler = get_ace_streams_db_handler()
     if output == "ts":
         m3u8 = handler.get_streams_as_iptv(
-            output="ts", ts_url_prefix=f"{settings.EXTERNAL_URL}/live/{username}/{password}"
+            output="ts",
+            ts_url_prefix=f"{settings.EXTERNAL_URL}/live/{username}/{password}",
         )
     else:
         m3u8 = handler.get_streams_as_iptv(output="hls")

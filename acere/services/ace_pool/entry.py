@@ -280,7 +280,10 @@ class AcePoolEntry:
 
                     if last_segment_url:
                         async with session.get(last_segment_url) as resp_segment:
-                            logger.trace("Keep alive ts segment, response: %s", resp_segment.status)
+                            logger.trace(
+                                "Keep alive ts segment, response: %s",
+                                resp_segment.status,
+                            )
 
         else:
             logger.trace("Not keeping alive %s, not locked in", self.ace_address)

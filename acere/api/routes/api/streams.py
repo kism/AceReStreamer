@@ -6,8 +6,15 @@ from fastapi import APIRouter, HTTPException
 
 from acere.instances.ace_quality import get_quality_handler
 from acere.instances.ace_streams import get_ace_streams_db_handler
-from acere.services.scraper.models import FoundAceStream, FoundAceStreamAPI, ManuallyAddedAceStream
-from acere.services.scraper.name_processor import get_tvg_id_from_title, populate_group_title
+from acere.services.scraper.models import (
+    FoundAceStream,
+    FoundAceStreamAPI,
+    ManuallyAddedAceStream,
+)
+from acere.services.scraper.name_processor import (
+    get_tvg_id_from_title,
+    populate_group_title,
+)
 from acere.utils.api_models import MessageResponseModel
 from acere.utils.helpers import slugify
 from acere.utils.logger import get_logger

@@ -258,7 +258,10 @@ class M3UParser:
 
         if original_title != title:
             logger.trace(
-                "Extracted TVG ID: %s from line, updated title from: %s to: %s", wip_tvg_id, original_title, title
+                "Extracted TVG ID: %s from line, updated title from: %s to: %s",
+                wip_tvg_id,
+                original_title,
+                title,
             )
         else:
             logger.trace("Extracted TVG ID: %s from line for title: %s", wip_tvg_id, title)

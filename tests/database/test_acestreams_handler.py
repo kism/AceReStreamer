@@ -23,7 +23,10 @@ def acestream_db_handler(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Ace
     test_engine = create_engine(f"sqlite:///{tmp_path / 'test_acestreams.db'}", echo=False)
 
     xc_stream_handler = ContentIdXcIdDatabaseHandler(test_engine=test_engine)
-    monkeypatch.setattr("acere.database.handlers.acestreams.get_xc_stream_db_handler", lambda: xc_stream_handler)
+    monkeypatch.setattr(
+        "acere.database.handlers.acestreams.get_xc_stream_db_handler",
+        lambda: xc_stream_handler,
+    )
 
     return AceStreamDBHandler(test_engine=test_engine)
 
@@ -180,12 +183,17 @@ def test_get_streams_as_iptv_url_validation(
     assert f"http://ace.pytest.internal/hls/{content_id_1}" in m3u8_no_port
 
     # HTTPS URL with port
-    monkeypatch.setattr("acere.instances.config.settings.EXTERNAL_URL", "https://secure.ace.pytest.internal:8443")
+    monkeypatch.setattr(
+        "acere.instances.config.settings.EXTERNAL_URL",
+        "https://secure.ace.pytest.internal:8443",
+    )
     m3u8_https = handler.get_streams_as_iptv()
     assert f"https://secure.ace.pytest.internal:8443/hls/{content_id_1}" in m3u8_https
 
 
-def test_get_streams_as_iptv_ts_url_prefix(acestream_db_handler: AceStreamDBHandler) -> None:
+def test_get_streams_as_iptv_ts_url_prefix(
+    acestream_db_handler: AceStreamDBHandler,
+) -> None:
     """Test that get_streams_as_iptv with ts_url_prefix emits XC-style .ts URLs."""
     handler = acestream_db_handler
 

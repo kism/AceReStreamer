@@ -3,7 +3,12 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from acere.utils.logger import TRACE_LEVEL_NUM, LoggingConf, _add_file_handler, get_logger
+from acere.utils.logger import (
+    TRACE_LEVEL_NUM,
+    LoggingConf,
+    _add_file_handler,
+    get_logger,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path

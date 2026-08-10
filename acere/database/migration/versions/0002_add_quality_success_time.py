@@ -51,7 +51,14 @@ def downgrade() -> None:
     if needs_add or needs_drop:
         with op.batch_alter_table("ace_quality_cache") as batch_op:
             if needs_add:
-                batch_op.add_column(sa.Column("has_ever_worked", sa.Boolean(), nullable=False, server_default="0"))
+                batch_op.add_column(
+                    sa.Column(
+                        "has_ever_worked",
+                        sa.Boolean(),
+                        nullable=False,
+                        server_default="0",
+                    )
+                )
             if needs_drop:
                 batch_op.drop_column("last_quality_success_time")
 

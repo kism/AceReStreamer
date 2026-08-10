@@ -12,7 +12,10 @@ from acere.utils.helpers import stop_threads
 from acere.utils.logger import get_logger
 
 from .api import APIStreamScraper
-from .helpers import create_unique_stream_list, get_content_id_from_infohash_acestream_api
+from .helpers import (
+    create_unique_stream_list,
+    get_content_id_from_infohash_acestream_api,
+)
 from .html import HTMLStreamScraper
 from .iptv import IPTVStreamScraper
 from .models import AceScraperSourceApi, FoundAceStream
@@ -42,7 +45,11 @@ class AceScraper:
     # region GET API Scraper
     def get_scraper_sources_flat_api(self) -> list[AceScraperSourceApi]:
         """Get the sources for the scraper, as a flat list."""
-        all_sites = [*settings.scraper.html, *settings.scraper.iptv_m3u8, *settings.scraper.api]
+        all_sites = [
+            *settings.scraper.html,
+            *settings.scraper.iptv_m3u8,
+            *settings.scraper.api,
+        ]
         return [
             AceScraperSourceApi(
                 name=site.name,
@@ -192,7 +199,8 @@ class AceScraper:
                     # Only sleep if we're going to retry
                     if attempt < 1:
                         logger.info(
-                            "Still have %d streams with missing content_ids, retrying in 60 seconds", len(still_missing)
+                            "Still have %d streams with missing content_ids, retrying in 60 seconds",
+                            len(still_missing),
                         )
                         time.sleep(60)
 
@@ -208,4 +216,8 @@ class AceScraper:
 
     def stop_all_threads(self) -> None:
         """Stop all threads in the AceScraper."""
-        stop_threads(self._threads, self._stop_event, f"{self.__class__.__name__} [{self._instance_id}]")
+        stop_threads(
+            self._threads,
+            self._stop_event,
+            f"{self.__class__.__name__} [{self._instance_id}]",
+        )

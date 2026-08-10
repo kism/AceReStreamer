@@ -44,7 +44,9 @@ class AceStreamDBHandler(BaseDatabaseHandler):
                 session.add(result)
                 session.commit()
                 logger.trace(
-                    "Updated AceStreamDBEntry for content_id/infohash: %s/%s", stream.content_id, stream.infohash
+                    "Updated AceStreamDBEntry for content_id/infohash: %s/%s",
+                    stream.content_id,
+                    stream.infohash,
                 )
                 self._get_streams_cache = None  # Invalidate cache
             else:
@@ -53,7 +55,9 @@ class AceStreamDBHandler(BaseDatabaseHandler):
                 session.add(new_entry)
                 session.commit()
                 logger.debug(
-                    "Created new AceStreamDBEntry for content_id/infohash: %s/%s", stream.content_id, stream.infohash
+                    "Created new AceStreamDBEntry for content_id/infohash: %s/%s",
+                    stream.content_id,
+                    stream.infohash,
                 )
 
         # Ensure persistent xc_id mapping exists
@@ -151,7 +155,9 @@ class AceStreamDBHandler(BaseDatabaseHandler):
         # but sometimes sites change the id of their stream often...
         for stream in self.get_streams_cached():
             line_one = create_extinf_line(
-                stream, tvg_url_base=external_url_tvg, last_found=int(stream.last_scraped_time.timestamp())
+                stream,
+                tvg_url_base=external_url_tvg,
+                last_found=int(stream.last_scraped_time.timestamp()),
             )
             if output == "ts" and ts_url_prefix:
                 xc_id = self.get_xc_id_by_content_id(stream.content_id)

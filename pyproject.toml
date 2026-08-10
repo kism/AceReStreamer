@@ -29,7 +29,7 @@ dependencies = [
 type = ["ty", "types-psutil>=7.0.0.20250601"]
 lint = ["ruff", "memray"]
 test = [
-    "pytest >=9.0",
+    "pytest >=9.1",
     "pytest-cov",
     "pytest-mock",
     "pytest-random-order",
@@ -60,7 +60,7 @@ acerestreamer-debug-get-xc-server-response = "acere.cli.get_xc_server_response:_
 acerestreamer-migrate = "acere.cli.db_migrate:__main__.main"
 
 [tool.ruff]
-target-version = "py314"
+cache-dir = "~/.cache/ruff"
 line-length = 120
 
 [tool.ruff.lint]
@@ -133,7 +133,7 @@ docstring-code-line-length = 40
 
 
 [tool.coverage.run]
-command_line = ".venv/bin/pytest"
+command_line = ".venv/bin/pytest -q"
 source = ["acere"]
 context = "test"
 

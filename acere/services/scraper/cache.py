@@ -39,10 +39,20 @@ def is_cache_valid(url: HttpUrl, cache_max_age: timedelta = DEFAULT_CACHE_MAX_AG
         time_since_mod = time_now - file_mod_time
 
         if time_since_mod < cache_max_age:
-            logger.debug("Cache file is valid: %s [mod time %s < max age %s]", url, time_since_mod, cache_max_age)
+            logger.debug(
+                "Cache file is valid: %s [mod time %s < max age %s]",
+                url,
+                time_since_mod,
+                cache_max_age,
+            )
             return True
 
-        logger.debug("Cache file is outdated: %s [mod time %s >= max age %s]", url, time_since_mod, cache_max_age)
+        logger.debug(
+            "Cache file is outdated: %s [mod time %s >= max age %s]",
+            url,
+            time_since_mod,
+            cache_max_age,
+        )
     else:
         logger.debug("Cache file does not exist: %s", url)
 

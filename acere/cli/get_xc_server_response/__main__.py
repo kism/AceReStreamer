@@ -63,7 +63,11 @@ async def fetch_all_endpoints(base_url: str, username: str, password: str, outpu
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Fetch all standard XC API endpoints and save responses to disk.")
-    parser.add_argument("url", type=str, help="Base URL of the XC server (e.g. http://myserver.com:8080)")
+    parser.add_argument(
+        "url",
+        type=str,
+        help="Base URL of the XC server (e.g. http://myserver.com:8080)",
+    )
     parser.add_argument("username", type=str, help="XC server username")
     parser.add_argument("password", type=str, help="XC server password")
     parser.add_argument(

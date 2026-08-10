@@ -83,7 +83,11 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
         if not quality.time_to_write_to_db():
             return
 
-        logger.trace("Writing quality cache to DB for content_id %s: %s", content_id, ace_id_short(content_id))
+        logger.trace(
+            "Writing quality cache to DB for content_id %s: %s",
+            content_id,
+            ace_id_short(content_id),
+        )
         with self._get_session() as session:
             result = session.exec(select(AceQualityCache).where(AceQualityCache.content_id == content_id)).first()
             if not result:
@@ -113,7 +117,12 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
         entry = self.get_quality(content_id)
         entry.update_quality(m3u_playlist)
 
-        logger.debug("Stream quality %s: %s [%s]", ace_id_short(content_id), entry.quality, entry.last_message)
+        logger.debug(
+            "Stream quality %s: %s [%s]",
+            ace_id_short(content_id),
+            entry.quality,
+            entry.last_message,
+        )
 
         self.set_quality(content_id, entry)
 
@@ -125,7 +134,12 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
         entry = self.get_quality(content_id)
         entry.update_quality_raw(rating, message)
 
-        logger.debug("Stream quality %s: %s [%s]", ace_id_short(content_id), entry.quality, entry.last_message)
+        logger.debug(
+            "Stream quality %s: %s [%s]",
+            ace_id_short(content_id),
+            entry.quality,
+            entry.last_message,
+        )
 
         self.set_quality(content_id, entry)
 
@@ -196,7 +210,10 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
             except Exception as e:  # This is a background task so it won't crash the app
                 exception_name = e.__class__.__name__
                 logger.exception("")
-                logger.error("Unhandled exception occurred during quality check: %s", exception_name)
+                logger.error(
+                    "Unhandled exception occurred during quality check: %s",
+                    exception_name,
+                )
 
             AceQualityCacheHandler._currently_checking_quality.clear()
 

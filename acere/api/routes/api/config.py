@@ -2,7 +2,10 @@ from fastapi import APIRouter
 
 from acere.core.config import ConfigExport
 from acere.instances.remote_settings import get_remote_settings_fetcher
-from acere.services.remote_settings.models import RemoteSettingsURLGetModel, RemoteSettingsURLSetModel
+from acere.services.remote_settings.models import (
+    RemoteSettingsURLGetModel,
+    RemoteSettingsURLSetModel,
+)
 from acere.utils.api_models import MessageResponseModel
 
 router = APIRouter(prefix="/config", tags=["Config"])
@@ -30,7 +33,9 @@ def fetch_remote_settings() -> RemoteSettingsURLGetModel:
 
 
 @router.post("/remote")
-def trigger_fetch_remote_settings(url_model: RemoteSettingsURLSetModel) -> MessageResponseModel:
+def trigger_fetch_remote_settings(
+    url_model: RemoteSettingsURLSetModel,
+) -> MessageResponseModel:
     """API endpoint to set the remote settings URL."""
     get_remote_settings_fetcher().set_remote_settings_url(url_model.url)
     return MessageResponseModel(message="Remote settings URL updated and fetching started.")

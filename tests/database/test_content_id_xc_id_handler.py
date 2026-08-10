@@ -27,7 +27,9 @@ def test_get_or_create_assigns_stable_id(handler: ContentIdXcIdDatabaseHandler) 
     assert xc_id_1 == xc_id_2
 
 
-def test_different_content_ids_get_different_xc_ids(handler: ContentIdXcIdDatabaseHandler) -> None:
+def test_different_content_ids_get_different_xc_ids(
+    handler: ContentIdXcIdDatabaseHandler,
+) -> None:
     """Different content_ids get different xc_ids."""
     cid_a = get_random_content_id()
     cid_b = get_random_content_id()
@@ -48,7 +50,9 @@ def test_reverse_lookup_missing(handler: ContentIdXcIdDatabaseHandler) -> None:
     assert handler.get_content_id_by_xc_id(99999) is None
 
 
-def test_mapping_survives_independent_of_stream_table(handler: ContentIdXcIdDatabaseHandler) -> None:
+def test_mapping_survives_independent_of_stream_table(
+    handler: ContentIdXcIdDatabaseHandler,
+) -> None:
     """Mapping persists — xc_id stays same even if called again later."""
     cid = get_random_content_id()
     xc_id_first = handler.get_or_create_xc_id(cid)

@@ -67,6 +67,9 @@ def test_add_name_override_renames_by_infohash(client: TestClient) -> None:
 
 def test_add_name_override_without_matching_stream(client: TestClient) -> None:
     """Overrides for unknown keys still save without error."""
-    response = client.post(f"/api/v1/scraper/name-override/{get_random_content_id()}", params={"name": "Ghost"})
+    response = client.post(
+        f"/api/v1/scraper/name-override/{get_random_content_id()}",
+        params={"name": "Ghost"},
+    )
 
     assert response.status_code == HTTPStatus.OK
