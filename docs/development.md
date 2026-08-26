@@ -57,7 +57,7 @@ God I hate this.
 
 ### Live Stream URLs
 
-Depending on the IPTV client, any of these will be hit when requesting a stream. All four forms are handled by `xc_live_stream()` in `acere/api/routes/hls.py`, which picks the transport from the file extension — only `.m3u8` gets HLS, everything else (including no extension) gets MPEG-TS, matching what a real XC server does.
+Depending on the IPTV client, any of these will be hit when requesting a stream. All four forms are handled by `xc_live_stream()` in `src/acere/api/routes/hls.py`, which picks the transport from the file extension — only `.m3u8` gets HLS, everything else (including no extension) gets MPEG-TS, matching what a real XC server does.
 
 | Request | Transport | Seen from |
 | --- | --- | --- |
@@ -76,7 +76,7 @@ Note the route pattern `/{u}/{p}/{stream}` is mounted at the server root, so it 
 
 ### XC Listings
 
-The JSON below is what a **real** XC server returns, kept here as protocol reference. Our emulation in `acere/services/xc/models.py` is deliberately narrower: `allowed_output_formats` is `["m3u8", "ts"]` (no rtmp), `rtmp_port` is omitted entirely, and the timezone is always UTC. Only `get_live_categories` and `get_live_streams` are implemented — the VOD and series actions return 501, and there is no EPG (removed in 1.3.0), so `epg_channel_id` is populated from `tvg_id` but nothing serves an XMLTV document.
+The JSON below is what a **real** XC server returns, kept here as protocol reference. Our emulation in `src/acere/services/xc/models.py` is deliberately narrower: `allowed_output_formats` is `["m3u8", "ts"]` (no rtmp), `rtmp_port` is omitted entirely, and the timezone is always UTC. Only `get_live_categories` and `get_live_streams` are implemented — the VOD and series actions return 501, and there is no EPG (removed in 1.3.0), so `epg_channel_id` is populated from `tvg_id` but nothing serves an XMLTV document.
 
 `player_api.php?username=a&password=b`
 

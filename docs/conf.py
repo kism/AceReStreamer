@@ -14,8 +14,8 @@ author = "Kieran Gee"
 # Add the docs/_ext directory to the path so Sphinx can find our custom extension
 sys.path.insert(0, str(Path(__file__).parent / "_ext"))
 
-# Add the project root to the path so we can import acere modules
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add the src dir to the path so we can import acere modules
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 extensions = [
     "myst_parser",

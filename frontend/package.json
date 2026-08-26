@@ -1,12 +1,13 @@
 {
   "name": "frontend",
+  "packageManager": "bun@1.4.0",
   "private": true,
-  "version": "1.3.0.dev1",
+  "version": "1.3.0.dev2",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -p tsconfig.build.json && vite build",
-    "build-aio": "tsc -p tsconfig.build.json && vite build --emptyOutDir --outDir ../acere/dist",
+    "build-aio": "tsc -p tsconfig.build.json && vite build --emptyOutDir --outDir ../src/acere/dist",
     "typecheck": "tsc --noEmit",
     "lint": "biome check --write --unsafe --no-errors-on-unmatched --files-ignore-unknown=true ./",
     "generate-client": "openapi-ts",

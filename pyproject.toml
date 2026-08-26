@@ -50,10 +50,6 @@ Source = "https://github.com/kism/AceReStreamer"
 requires = ["uv_build>=0.12.5,<0.13.0"]
 build-backend = "uv_build"
 
-[tool.uv.build-backend]
-module-name = ["acere"]
-module-root = ""
-
 [project.scripts]
 acerestreamer-scrape = "acere.cli.scraper:__main__.main"
 acerestreamer-debug-get-xc-server-response = "acere.cli.get_xc_server_response:__main__.main"
@@ -103,7 +99,7 @@ ignore = [
     "D",
     "A",
 ]
-"acere/database/types.py" = [
+"src/acere/database/types.py" = [
     "ARG002", # Empty args since we are just defining types here, no logic
 ]
 
@@ -157,15 +153,15 @@ addopts = [
 
 [[tool.ty.overrides]]
 # Not sure what ty is upset about here
-include = ["acere/main.py", "tests/core/config/test_ace_scrape_conf.py"]
+include = ["src/acere/main.py", "tests/core/config/test_ace_scrape_conf.py"]
 [tool.ty.overrides.rules]
 "invalid-argument-type" = "ignore"
 
 [[tool.ty.overrides]]
 # Not sure what ty is upset about here
 include = [
-    "acere/database/handlers/category_xc.py",
-    "acere/database/handlers/content_id_xc_id.py",
+    "src/acere/database/handlers/category_xc.py",
+    "src/acere/database/handlers/content_id_xc_id.py",
 ]
 [tool.ty.overrides.rules]
 "missing-argument" = "ignore"

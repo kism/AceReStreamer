@@ -6,7 +6,9 @@ from pathlib import Path
 # Directories
 ## Directories Instance
 _env_instance_dir = os.getenv("INSTANCE_DIR")
-DEFAULT_INSTANCE_PATH = Path(_env_instance_dir) if _env_instance_dir else Path(__file__).parent.parent / "instance"
+DEFAULT_INSTANCE_PATH = (
+    Path(_env_instance_dir) if _env_instance_dir else Path(__file__).parent.parent.parent / "instance"
+)
 
 ## Directories Internal
 DEV_BACKEND_DIR = Path(__file__).parent
