@@ -7,27 +7,21 @@ import pytest
 from pydantic import HttpUrl
 
 from acere.constants import STATIC_DIR
-from acere.instances import epg as epg_instance_module
+from acere.instances.ace_quality import get_quality_handler
 from acere.instances.config import settings
 from acere.instances.paths import get_app_path_handler
-from acere.services.epg.handler import EPGHandler
-from acere.services.scraper import main as scraper_main_module
+from acere.services.xc.helpers import XC_USERNAME
 from tests.test_utils.ace import get_random_content_id
 from tests.test_utils.aiohttp import FakeSession
 from tests.test_utils.hls import generate_hls_m3u8
-from tests.test_utils.user import create_random_user
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
     from pathlib import Path
 
     from fastapi.testclient import TestClient
-    from sqlmodel import Session
 else:
     TestClient = object
-    Session = object
     Path = object
-    Generator = object
 
 
 # Sample HLS M3U8 content
@@ -36,56 +30,18 @@ SAMPLE_HLS_M3U8 = generate_hls_m3u8(5)
 INVALID_HLS_RESPONSE = "ERROR: Something went wrong"
 
 
-@pytest.fixture(autouse=True)
-def setup_epg_handler(monkeypatch: pytest.MonkeyPatch) -> Generator[None, None, None]:
-    """Setup EPG handler before tests."""
-    epg_handler = EPGHandler(instance_id="test_epg_handler")
-    monkeypatch.setattr(epg_instance_module, "get_epg_handler", lambda: epg_handler)
-    monkeypatch.setattr(scraper_main_module, "get_epg_handler", lambda: epg_handler)
-
-    assert epg_instance_module.get_epg_handler() is epg_handler
-
-    yield
-
-    epg_handler.stop_all_threads()
-
-
 @pytest.fixture
 def valid_content_id() -> str:
     """Generate a valid content ID for testing."""
     return get_random_content_id()
 
 
-@pytest.fixture
-def normal_user_stream_token(client: TestClient, db: Session) -> str:
-    """Get a valid stream token for a normal user."""
-    user = create_random_user(db)
-    return user.stream_token
-
-
-def test_hls_without_token(client: TestClient, valid_content_id: str) -> None:
-    """Test HLS endpoint without authentication token."""
-    response = client.get(f"/hls/{valid_content_id}")
-
-    assert response.status_code == HTTPStatus.FORBIDDEN
-    assert "Invalid or missing stream token" in response.json()["detail"]
-
-
-def test_hls_with_invalid_token(client: TestClient, valid_content_id: str) -> None:
-    """Test HLS endpoint with invalid authentication token."""
-    response = client.get(f"/hls/{valid_content_id}?token=invalid_token")
-
-    assert response.status_code == HTTPStatus.FORBIDDEN
-    assert "Invalid or missing stream token" in response.json()["detail"]
-
-
 def test_hls_with_invalid_content_id(
     client: TestClient,
-    normal_user_stream_token: str,
 ) -> None:
     """Test HLS endpoint with invalid content ID format."""
     invalid_content_id = "invalid_id"
-    response = client.get(f"/hls/{invalid_content_id}?token={normal_user_stream_token}")
+    response = client.get(f"/hls/{invalid_content_id}")
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert "Invalid content ID or infohash" in response.json()["detail"]
@@ -94,7 +50,6 @@ def test_hls_with_invalid_content_id(
 @pytest.mark.asyncio
 async def test_hls_success(
     client: TestClient,
-    normal_user_stream_token: str,
     valid_content_id: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -121,10 +76,14 @@ async def test_hls_success(
 
     monkeypatch.setattr(
         "acere.api.routes.hls.get_ace_pool",
-        type("MockPool", (), {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url}),
+        type(
+            "MockPool",
+            (),
+            {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url},
+        ),
     )
 
-    response = client.get(f"/hls/{valid_content_id}?token={normal_user_stream_token}")
+    response = client.get(f"/hls/{valid_content_id}")
 
     assert response.status_code == HTTPStatus.OK
     assert "#EXTM3U" in response.text
@@ -135,7 +94,6 @@ async def test_hls_success(
 @pytest.mark.asyncio
 async def test_hls_pool_full(
     client: TestClient,
-    normal_user_stream_token: str,
     valid_content_id: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -147,10 +105,14 @@ async def test_hls_pool_full(
 
     monkeypatch.setattr(
         "acere.api.routes.hls.get_ace_pool",
-        type("MockPool", (), {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url_none}),
+        type(
+            "MockPool",
+            (),
+            {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url_none},
+        ),
     )
 
-    response = client.get(f"/hls/{valid_content_id}?token={normal_user_stream_token}")
+    response = client.get(f"/hls/{valid_content_id}")
 
     assert response.status_code == HTTPStatus.SERVICE_UNAVAILABLE
     assert "Ace pool is full" in response.json()["detail"]
@@ -159,7 +121,6 @@ async def test_hls_pool_full(
 @pytest.mark.asyncio
 async def test_hls_invalid_response_from_ace(
     client: TestClient,
-    normal_user_stream_token: str,
     valid_content_id: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -183,10 +144,14 @@ async def test_hls_invalid_response_from_ace(
 
     monkeypatch.setattr(
         "acere.api.routes.hls.get_ace_pool",
-        type("MockPool", (), {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url}),
+        type(
+            "MockPool",
+            (),
+            {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url},
+        ),
     )
 
-    response = client.get(f"/hls/{valid_content_id}?token={normal_user_stream_token}")
+    response = client.get(f"/hls/{valid_content_id}")
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert "Invalid HLS stream" in response.json()["detail"]
@@ -195,7 +160,6 @@ async def test_hls_invalid_response_from_ace(
 @pytest.mark.asyncio
 async def test_hls_multi_success(
     client: TestClient,
-    normal_user_stream_token: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test HLS multistream endpoint."""
@@ -218,10 +182,14 @@ async def test_hls_multi_success(
     # Mock ace pool
     monkeypatch.setattr(
         "acere.api.routes.hls.get_ace_pool",
-        type("MockPool", (), {"get_instance_by_multistream_path": lambda self, path: mock_content_id}),
+        type(
+            "MockPool",
+            (),
+            {"get_instance_by_multistream_path": lambda self, path: mock_content_id},
+        ),
     )
 
-    response = client.get(f"/hls/m/{multistream_path}?token={normal_user_stream_token}")
+    response = client.get(f"/hls/m/{multistream_path}")
 
     assert response.status_code == HTTPStatus.OK
     assert "#EXTM3U" in response.text
@@ -230,7 +198,6 @@ async def test_hls_multi_success(
 @pytest.mark.asyncio
 async def test_ace_content_success(
     client: TestClient,
-    normal_user_stream_token: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test Ace content proxy endpoint."""
@@ -250,7 +217,7 @@ async def test_ace_content_success(
 
     monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
 
-    response = client.get(f"/ace/c/{content_path}?token={normal_user_stream_token}")
+    response = client.get(f"/ace/c/{content_path}")
 
     assert response.status_code == HTTPStatus.OK
     assert response.content == mock_ts_data
@@ -260,7 +227,6 @@ async def test_ace_content_success(
 @pytest.mark.asyncio
 async def test_hls_content_success(
     client: TestClient,
-    normal_user_stream_token: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test HLS content proxy endpoint."""
@@ -280,7 +246,7 @@ async def test_hls_content_success(
 
     monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
 
-    response = client.get(f"/hls/c/{content_path}?token={normal_user_stream_token}")
+    response = client.get(f"/hls/c/{content_path}")
 
     assert response.status_code == HTTPStatus.OK
     assert response.content == mock_ts_data
@@ -288,7 +254,6 @@ async def test_hls_content_success(
 
 def test_tvg_logo_with_existing_file(
     client: TestClient,
-    normal_user_stream_token: str,
     temp_instance_dir: Path,
 ) -> None:
     """Test TVG logo endpoint with existing logo file."""
@@ -298,7 +263,7 @@ def test_tvg_logo_with_existing_file(
     logo_path.parent.mkdir(parents=True, exist_ok=True)
     logo_path.write_bytes(b"FAKE PNG DATA")
 
-    response = client.get(f"/tvg-logo/{logo_filename}?token={normal_user_stream_token}")
+    response = client.get(f"/tvg-logo/{logo_filename}")
 
     assert response.status_code == HTTPStatus.OK
     assert response.content == b"FAKE PNG DATA"
@@ -309,7 +274,6 @@ def test_tvg_logo_with_existing_file(
 
 def test_tvg_logo_fallback_to_default(
     client: TestClient,
-    normal_user_stream_token: str,
     temp_instance_dir: Path,
 ) -> None:
     """Test TVG logo endpoint falls back to default logo when file doesn't exist."""
@@ -320,7 +284,7 @@ def test_tvg_logo_fallback_to_default(
 
     non_existent_logo = "non_existent_logo.png"
 
-    response = client.get(f"/tvg-logo/{non_existent_logo}?token={normal_user_stream_token}")
+    response = client.get(f"/tvg-logo/{non_existent_logo}")
 
     assert response.status_code == HTTPStatus.OK
     # Should serve default logo
@@ -331,21 +295,266 @@ def test_tvg_logo_fallback_to_default(
     default_logo.unlink()
 
 
+# region /ts/
+SAMPLE_TS_DATA = b"\x47" + b"FAKE MPEGTS DATA" * 100
+
+
+def test_ts_with_invalid_content_id(
+    client: TestClient,
+) -> None:
+    """Test TS endpoint with invalid content ID format."""
+    response = client.get("/ts/invalid_id")
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert "Invalid content ID or infohash" in response.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_ts_success(
+    client: TestClient,
+    valid_content_id: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test successful TS stream retrieval."""
+    mock_ts_url = HttpUrl(f"http://localhost:6878/ace/r/{valid_content_id}/stream")
+
+    fake_session = FakeSession(
+        {
+            mock_ts_url.encoded_string(): {
+                "status": 200,
+                "data": SAMPLE_TS_DATA,
+            }
+        }
+    )
+
+    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
+
+    async def mock_get_instance_ts_url(self: Any, content_id: str) -> HttpUrl:
+        return mock_ts_url
+
+    monkeypatch.setattr(
+        "acere.api.routes.hls.get_ace_pool",
+        type(
+            "MockPool",
+            (),
+            {
+                "get_instance_ts_url_by_content_id": mock_get_instance_ts_url,
+                "touch": lambda self, content_id: None,
+            },
+        ),
+    )
+
+    response = client.get(f"/ts/{valid_content_id}")
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.content == SAMPLE_TS_DATA
+    assert response.headers["Content-Type"] == "video/MP2T"
+
+    # The fake stream EOFs, which scores as a death signal
+    assert get_quality_handler().get_quality(valid_content_id).last_message == "TS stream ended"
+
+
+@pytest.mark.asyncio
+async def test_ts_pool_full(
+    client: TestClient,
+    valid_content_id: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test TS endpoint when Ace pool is full."""
+
+    async def mock_get_instance_ts_url_none(self: Any, content_id: str) -> None:
+        return None
+
+    monkeypatch.setattr(
+        "acere.api.routes.hls.get_ace_pool",
+        type(
+            "MockPool",
+            (),
+            {"get_instance_ts_url_by_content_id": mock_get_instance_ts_url_none},
+        ),
+    )
+
+    response = client.get(f"/ts/{valid_content_id}")
+
+    assert response.status_code == HTTPStatus.SERVICE_UNAVAILABLE
+    assert "Ace pool is full" in response.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_xc_ts_success(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test XC stream route with a .ts extension returns real MPEG-TS."""
+    xc_id = 12345
+    mock_content_id = get_random_content_id()
+
+    monkeypatch.setattr(
+        "acere.api.routes.hls.get_ace_streams_db_handler",
+        type(
+            "MockHandler",
+            (),
+            {"get_content_id_by_xc_id": lambda self, xc_id: mock_content_id},
+        ),
+    )
+
+    mock_ts_url = HttpUrl(f"http://localhost:6878/ace/r/{mock_content_id}/stream")
+    fake_session = FakeSession(
+        {
+            mock_ts_url.encoded_string(): {
+                "status": 200,
+                "data": SAMPLE_TS_DATA,
+            }
+        }
+    )
+
+    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
+
+    async def mock_get_instance_ts_url(self: Any, content_id: str) -> HttpUrl:
+        return mock_ts_url
+
+    monkeypatch.setattr(
+        "acere.api.routes.hls.get_ace_pool",
+        type(
+            "MockPool",
+            (),
+            {
+                "get_instance_ts_url_by_content_id": mock_get_instance_ts_url,
+                "touch": lambda self, content_id: None,
+            },
+        ),
+    )
+
+    response = client.get(f"/live/{XC_USERNAME}/{settings.XC_PASSWORD}/{xc_id}.ts")
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.content == SAMPLE_TS_DATA
+    assert response.headers["Content-Type"] == "video/MP2T"
+
+
+@pytest.mark.asyncio
+async def test_xc_extensionless_returns_ts(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test XC stream route without an extension returns MPEG-TS, like a real XC server."""
+    xc_id = 12345
+    mock_content_id = get_random_content_id()
+
+    monkeypatch.setattr(
+        "acere.api.routes.hls.get_ace_streams_db_handler",
+        type(
+            "MockHandler",
+            (),
+            {"get_content_id_by_xc_id": lambda self, xc_id: mock_content_id},
+        ),
+    )
+
+    mock_ts_url = HttpUrl(f"http://localhost:6878/ace/r/{mock_content_id}/stream")
+    fake_session = FakeSession(
+        {
+            mock_ts_url.encoded_string(): {
+                "status": 200,
+                "data": SAMPLE_TS_DATA,
+            }
+        }
+    )
+
+    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
+
+    async def mock_get_instance_ts_url(self: Any, content_id: str) -> HttpUrl:
+        return mock_ts_url
+
+    monkeypatch.setattr(
+        "acere.api.routes.hls.get_ace_pool",
+        type(
+            "MockPool",
+            (),
+            {
+                "get_instance_ts_url_by_content_id": mock_get_instance_ts_url,
+                "touch": lambda self, content_id: None,
+            },
+        ),
+    )
+
+    response = client.get(f"/{XC_USERNAME}/{settings.XC_PASSWORD}/{xc_id}")
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.content == SAMPLE_TS_DATA
+    assert response.headers["Content-Type"] == "video/MP2T"
+
+
+def test_ts_head_does_not_touch_engine(
+    client: TestClient,
+    valid_content_id: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test HEAD on /ts/ answers without contacting the Ace pool for a stream."""
+    # A pool with no URL getter: any engine contact would AttributeError -> 500
+    monkeypatch.setattr("acere.api.routes.hls.get_ace_pool", type("MockPool", (), {}))
+
+    response = client.head(f"/ts/{valid_content_id}")
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.headers["Content-Type"] == "video/MP2T"
+
+
+@pytest.mark.asyncio
+async def test_ts_timeout_returns_408(
+    client: TestClient,
+    valid_content_id: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test /ts/ returns 408 when Ace times out."""
+    mock_ts_url = HttpUrl(f"http://localhost:6878/ace/r/{valid_content_id}/stream")
+
+    class TimeoutSession:
+        def __init__(self, **kwargs: Any) -> None:
+            pass
+
+        async def get(self, url: str, **kwargs: Any) -> None:
+            raise TimeoutError
+
+        async def close(self) -> None:
+            pass
+
+    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", TimeoutSession)
+
+    async def mock_get_instance_ts_url(self: Any, content_id: str) -> HttpUrl:
+        return mock_ts_url
+
+    monkeypatch.setattr(
+        "acere.api.routes.hls.get_ace_pool",
+        type(
+            "MockPool",
+            (),
+            {"get_instance_ts_url_by_content_id": mock_get_instance_ts_url},
+        ),
+    )
+
+    response = client.get(f"/ts/{valid_content_id}")
+
+    assert response.status_code == HTTPStatus.REQUEST_TIMEOUT
+    assert "timeout" in response.json()["detail"].lower()
+
+
 @pytest.mark.asyncio
 async def test_xc_m3u8_success(
     client: TestClient,
-    db: Session,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test XC API m3u8 endpoint with valid credentials."""
-    user = create_random_user(db)
     xc_id = 12345
     mock_content_id = get_random_content_id()
 
     # Mock the database handler to return our content_id
     monkeypatch.setattr(
         "acere.api.routes.hls.get_ace_streams_db_handler",
-        type("MockHandler", (), {"get_content_id_by_xc_id": lambda self, xc_id: mock_content_id}),
+        type(
+            "MockHandler",
+            (),
+            {"get_content_id_by_xc_id": lambda self, xc_id: mock_content_id},
+        ),
     )
 
     # Mock the HLS URL retrieval
@@ -366,11 +575,15 @@ async def test_xc_m3u8_success(
 
     monkeypatch.setattr(
         "acere.api.routes.hls.get_ace_pool",
-        type("MockPool", (), {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url}),
+        type(
+            "MockPool",
+            (),
+            {"get_instance_hls_url_by_content_id": mock_get_instance_hls_url},
+        ),
     )
 
     # Test with path parameters
-    response = client.get(f"/{user.username}/{user.stream_token}/{xc_id}.m3u8")
+    response = client.get(f"/{XC_USERNAME}/{settings.XC_PASSWORD}/{xc_id}.m3u8")
 
     assert response.status_code == HTTPStatus.OK
     assert "#EXTM3U" in response.text
@@ -378,13 +591,9 @@ async def test_xc_m3u8_success(
 
 def test_xc_m3u8_invalid_xc_id(
     client: TestClient,
-    normal_user_stream_token: str,
-    db: Session,
 ) -> None:
     """Test XC API m3u8 endpoint with invalid XC ID format."""
-    user = create_random_user(db)
-
-    response = client.get(f"/{user.username}/{user.stream_token}/invalid_id.m3u8")
+    response = client.get(f"/{XC_USERNAME}/{settings.XC_PASSWORD}/invalid_id.m3u8")
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert "invalid XC ID" in response.json()["detail"]
@@ -393,6 +602,14 @@ def test_xc_m3u8_invalid_xc_id(
 def test_xc_m3u8_invalid_credentials(client: TestClient) -> None:
     """Test XC API m3u8 endpoint with invalid credentials."""
     response = client.get("/invalid_user/invalid_token/12345.m3u8")
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert "Invalid username or password" in response.json()["detail"]
+
+
+def test_xc_m3u8_wrong_password(client: TestClient) -> None:
+    """Test XC API m3u8 endpoint with the right username but wrong password."""
+    response = client.get(f"/{XC_USERNAME}/wrongpassword/12345.m3u8")
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert "Invalid username or password" in response.json()["detail"]

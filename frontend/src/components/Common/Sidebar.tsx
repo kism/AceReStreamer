@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query"
 import "@fontsource/fira-code/700.css"
 
 import { type HealthHealthResponse, HealthService } from "@/client"
-import useAuth from "@/hooks/useAuth"
 import packageJson from "../../../package.json"
 import {
   DrawerBackdrop,
@@ -78,7 +77,6 @@ const Sidebar = ({
   onMobileOpenChange,
   desktopOpen,
 }: SidebarProps) => {
-  const { user: currentUser } = useAuth()
   const { data: healthData } = useQuery({
     queryKey: ["health"],
     queryFn: HealthService.health,
@@ -103,14 +101,7 @@ const Sidebar = ({
                   <SidebarItems onClose={() => onMobileOpenChange(false)} />
                 </VStack>
               </Box>
-              {currentUser?.username && (
-                <Box>
-                  <Text fontSize="sm" p={2} truncate maxW="sm">
-                    Logged in as: {currentUser.username}
-                  </Text>
-                  <VersionBlock healthData={healthData ?? null} />
-                </Box>
-              )}
+              <VersionBlock healthData={healthData ?? null} />
             </Flex>
           </DrawerBody>
           <DrawerCloseTrigger />
@@ -146,14 +137,7 @@ const Sidebar = ({
                 <Box>
                   <SidebarItems />
                 </Box>
-                {currentUser?.username && (
-                  <Box>
-                    <Text fontSize="sm" p={2} truncate maxW="sm">
-                      Logged in as: {currentUser.username}
-                    </Text>
-                    <VersionBlock healthData={healthData ?? null} />
-                  </Box>
-                )}
+                <VersionBlock healthData={healthData ?? null} />
               </Flex>
             </Box>
           )}

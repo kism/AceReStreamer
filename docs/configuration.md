@@ -1,7 +1,5 @@
 # Configuration
 
-There are two things you will need to configure, Scrapers and EPG sources.
-
 ## Scraper Configuration
 
 Scrapers are what look for AceStream links, they can scrape web pages, IPTV playlists or use a mysterious API site I found but won't provide.
@@ -63,7 +61,7 @@ To scrape this, your config will look something like this:
 :language: json
 ```
 
-When get scraped, the scraper will need to use ace to convert the infohash to a content_id.
+This source gives infohashes rather than content_ids. When running as a server, the scraper converts each one via a running Ace instance (`server/api?method=get_content_id`), caching the result in the database so it only asks once per infohash. The `acerestreamer-scrape` CLI does no conversion — it emits infohash streams into their own `-infohash-main.m3u` playlist and needs no Ace instance at all.
 
 ### Title Filter
 
@@ -89,7 +87,3 @@ In this example, i'm looking for English language IPTV streams, and excluding an
 There is a section in the config and web interface for name overrides. This lets you map a content_id or infohash to a specific title, this is useful for streams that have bad or no titles.
 
 The best practice for titles is channel name, followed by the two character country code in brackets. Example: `Channel 1 [AU]`
-
-## EPG Configuration
-
-Load the example in the web interface. The program will normalise the channel ids to `Channel 1.au` format, which is what open-epg uses. You can use the tvg_id_overrides section to map channel ids in the EPG to match your stream's tvg ids.

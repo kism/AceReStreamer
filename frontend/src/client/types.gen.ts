@@ -97,25 +97,7 @@ export type AcePoolStatResponseLivePos = {
 /**
  * Settings for scraping AceStreams.
  */
-export type AceScrapeConf_Input = {
-    playlist_name?: string;
-    adhoc_playlist_external_url?: (string | null);
-    tvg_logo_external_url?: (string | null);
-    html?: Array<ScrapeSiteHTML>;
-    iptv_m3u8?: Array<ScrapeSiteIPTV>;
-    api?: Array<ScrapeSiteAPI>;
-    content_id_infohash_name_overrides?: {
-        [key: string]: (string);
-    };
-    category_mapping?: {
-        [key: string]: Array<(string)>;
-    };
-};
-
-/**
- * Settings for scraping AceStreams.
- */
-export type AceScrapeConf_Output = {
+export type AceScrapeConf = {
     playlist_name?: string;
     adhoc_playlist_external_url?: (string | null);
     tvg_logo_external_url?: (string | null);
@@ -151,74 +133,8 @@ export type AceVersionResult = {
 
 export type platform = 'win32' | 'linux' | 'android';
 
-export type Body_Login_login_access_token = {
-    grant_type?: (string | null);
-    username: string;
-    password: string;
-    scope?: string;
-    client_id?: (string | null);
-    client_secret?: (string | null);
-};
-
-export type ConfigExport_Input = {
-    scraper: AceScrapeConf_Input;
-    epgs: Array<EPGInstanceConf_Input>;
-};
-
-export type ConfigExport_Output = {
-    scraper: AceScrapeConf_Output;
-    epgs: Array<EPGInstanceConf_Output>;
-};
-
-/**
- * Model for EPG API handler response.
- */
-export type EPGApiHandlerHealthResponse = {
-    time_until_next_update: number;
-    tvg_ids: Array<(string)>;
-    epgs: {
-        [key: string]: EPGApiHealthResponse;
-    };
-};
-
-/**
- * Model for EPG API response.
- */
-export type EPGApiHealthResponse = {
-    time_since_last_updated: number;
-    time_until_next_update: number;
-};
-
-/**
- * EPG (Electronic Program Guide) configuration definition.
- *
- * tvg_id_overrides is a str:str dict where you can override stream tvg_ids to match those in the EPG.
- */
-export type EPGInstanceConf_Input = {
-    format?: 'xml.gz' | 'xml';
-    url: string;
-    tvg_id_overrides?: {
-        [key: string]: (string);
-    };
-};
-
-export type format = 'xml.gz' | 'xml';
-
-/**
- * EPG (Electronic Program Guide) configuration definition.
- *
- * tvg_id_overrides is a str:str dict where you can override stream tvg_ids to match those in the EPG.
- */
-export type EPGInstanceConf_Output = {
-    format?: 'xml.gz' | 'xml';
-    url: string;
-    tvg_id_overrides?: {
-        [key: string]: (string);
-    };
-    /**
-     * Generate a slug from the url.
-     */
-    readonly slug: string;
+export type ConfigExport = {
+    scraper: AceScrapeConf;
 };
 
 export type ErrorDetails = {
@@ -242,8 +158,6 @@ export type FoundAceStreamAPI = {
     tvg_id: string;
     tvg_logo?: (string | null);
     last_scraped_time: string;
-    program_title: string;
-    program_description: string;
     quality: number;
     has_ever_worked: boolean;
     m3u_failures: number;
@@ -255,7 +169,6 @@ export type HealthResponseModel = {
     time_zone: string;
     threads: Array<ThreadHealthModel>;
     memory_usage_mb: string;
-    auth_disabled: boolean;
 };
 
 /**
@@ -279,28 +192,12 @@ export type ManuallyAddedAceStream = {
     group_title: string;
 };
 
-export type Message = {
-    message: string;
-};
-
 /**
  * Generic API response message model.
  */
 export type MessageResponseModel = {
     message: string;
     errors?: (Array<(string)> | Array<ErrorDetails> | null);
-};
-
-export type NewPassword = {
-    token: string;
-    new_password: string;
-};
-
-export type PrivateUserCreate = {
-    username: string;
-    password: string;
-    full_name: string;
-    is_verified?: boolean;
 };
 
 export type RemoteSettingsURLGetModel = {
@@ -344,10 +241,6 @@ export type ScrapeSiteIPTV = {
     title_filter?: TitleFilter;
 };
 
-export type StreamToken = {
-    stream_token: string;
-};
-
 export type ThreadHealthModel = {
     name: string;
     is_alive: boolean;
@@ -372,66 +265,6 @@ export type TitleFilter = {
     regex_postprocessing?: Array<(string)>;
 };
 
-export type Token = {
-    access_token: string;
-    token_type?: string;
-};
-
-/**
- * Model for TVG EPG mappings response.
- */
-export type TVGEPGMappingsResponse = {
-    [key: string]: (string | null);
-};
-
-export type UpdatePassword = {
-    current_password: string;
-    new_password: string;
-};
-
-export type UserCreate = {
-    username: string;
-    is_active?: boolean;
-    is_superuser?: boolean;
-    stream_token?: string;
-    full_name?: (string | null);
-    password: string;
-};
-
-export type UserPublic = {
-    username: string;
-    is_active?: boolean;
-    is_superuser?: boolean;
-    stream_token?: string;
-    full_name?: (string | null);
-    id: string;
-};
-
-export type UserRegister = {
-    username: string;
-    password: string;
-    full_name?: (string | null);
-};
-
-export type UsersPublic = {
-    data: Array<UserPublic>;
-    count: number;
-};
-
-export type UserUpdate = {
-    username?: (string | null);
-    is_active?: boolean;
-    is_superuser?: boolean;
-    stream_token?: string;
-    full_name?: (string | null);
-    password?: (string | null);
-};
-
-export type UserUpdateMe = {
-    full_name?: (string | null);
-    username?: (string | null);
-};
-
 export type ValidationError = {
     loc: Array<(string | number)>;
     msg: string;
@@ -440,6 +273,11 @@ export type ValidationError = {
     ctx?: {
         [key: string]: unknown;
     };
+};
+
+export type XCCredentials = {
+    username: string;
+    password: string;
 };
 
 export type AcePoolPoolResponse = (AcePoolForApi);
@@ -476,13 +314,13 @@ export type AcePoolStatsByPidData = {
 
 export type AcePoolStatsByPidResponse = (AcePoolStat);
 
-export type ConfigGetConfigResponse = (ConfigExport_Output);
+export type ConfigGetConfigResponse = (ConfigExport);
 
 export type ConfigUpdateConfigData = {
-    requestBody: ConfigExport_Input;
+    requestBody: ConfigExport;
 };
 
-export type ConfigUpdateConfigResponse = (ConfigExport_Output);
+export type ConfigUpdateConfigResponse = (ConfigExport);
 
 export type ConfigFetchRemoteSettingsResponse = (RemoteSettingsURLGetModel);
 
@@ -494,86 +332,23 @@ export type ConfigTriggerFetchRemoteSettingsResponse = (MessageResponseModel);
 
 export type ConfigReloadConfigResponse = (MessageResponseModel);
 
-export type EpgEpgHealthResponse = (EPGApiHandlerHealthResponse);
-
-export type EpgGetEpgsResponse = (Array<EPGInstanceConf_Output>);
-
-export type EpgAddEpgData = {
-    requestBody: (EPGInstanceConf_Input | Array<EPGInstanceConf_Input>);
-};
-
-export type EpgAddEpgResponse = (unknown);
-
-export type EpgGetEpgData = {
-    slug: string;
-};
-
-export type EpgGetEpgResponse = (EPGInstanceConf_Output);
-
-export type EpgDeleteEpgData = {
-    slug: string;
-};
-
-export type EpgDeleteEpgResponse = (unknown);
-
-export type EpgTvgEpgMappingsResponse = (TVGEPGMappingsResponse);
-
 export type FrontendFrontendIndexHtmlResponse = (string);
 
 export type FrontendFrontendIndexResponse = (string);
 
 export type HealthHealthResponse = (HealthResponseModel);
 
-export type LoginLoginAccessTokenData = {
-    formData: Body_Login_login_access_token;
-};
-
-export type LoginLoginAccessTokenResponse = (Token);
-
-export type LoginTestTokenResponse = (UserPublic);
-
-export type LoginResetPasswordData = {
-    requestBody: NewPassword;
-};
-
-export type LoginResetPasswordResponse = (Message);
-
-export type MediaIptvIptvM3U83Data = {
-    token?: string;
-};
-
 export type MediaIptvIptvM3U83Response = (unknown);
-
-export type MediaIptvIptvM3U2Data = {
-    token?: string;
-};
 
 export type MediaIptvIptvM3U2Response = (unknown);
 
-export type MediaIptvIptvM3U81Data = {
-    token?: string;
-};
-
 export type MediaIptvIptvM3U81Response = (unknown);
 
-export type MediaXmlEpgXmlData = {
-    token?: string;
-};
+export type MediaIptvIptvTsM3U83Response = (unknown);
 
-export type MediaXmlEpgXmlResponse = (unknown);
+export type MediaIptvIptvTsM3U2Response = (unknown);
 
-export type MediaXmlEpgXml3Data = {
-    password?: string;
-    username?: string;
-};
-
-export type MediaXmlEpgXml3Response = (unknown);
-
-export type PrivateCreateUserData = {
-    requestBody: PrivateUserCreate;
-};
-
-export type PrivateCreateUserResponse = (UserPublic);
+export type MediaIptvIptvTsM3U81Response = (unknown);
 
 export type ScraperSourcesResponse = (Array<AceScraperSourceApi>);
 
@@ -588,6 +363,13 @@ export type ScraperSourceData = {
 };
 
 export type ScraperSourceResponse = (AceScraperSourceApi);
+
+export type ScraperUpdateSourceData = {
+    requestBody: AceScraperSourceApi;
+    slug: string;
+};
+
+export type ScraperUpdateSourceResponse = (MessageResponseModel);
 
 export type ScraperRemoveSourceData = {
     slug: string;
@@ -634,63 +416,7 @@ export type StreamsAddStreamResponse = (MessageResponseModel);
 
 export type StreamsCheckResponse = (MessageResponseModel);
 
-export type UsersReadUsersData = {
-    limit?: number;
-    skip?: number;
-};
-
-export type UsersReadUsersResponse = (UsersPublic);
-
-export type UsersCreateUserData = {
-    requestBody: UserCreate;
-};
-
-export type UsersCreateUserResponse = (UserPublic);
-
-export type UsersReadUserMeResponse = (UserPublic);
-
-export type UsersDeleteUserMeResponse = (Message);
-
-export type UsersUpdateUserMeData = {
-    requestBody: UserUpdateMe;
-};
-
-export type UsersUpdateUserMeResponse = (UserPublic);
-
-export type UsersUpdatePasswordMeData = {
-    requestBody: UpdatePassword;
-};
-
-export type UsersUpdatePasswordMeResponse = (Message);
-
-export type UsersReadStreamTokenMeResponse = (StreamToken);
-
-export type UsersRegenerateStreamTokenMeResponse = (StreamToken);
-
-export type UsersRegisterUserData = {
-    requestBody: UserRegister;
-};
-
-export type UsersRegisterUserResponse = (UserPublic);
-
-export type UsersReadUserByIdData = {
-    userId: string;
-};
-
-export type UsersReadUserByIdResponse = (UserPublic);
-
-export type UsersUpdateUserData = {
-    requestBody: UserUpdate;
-    userId: string;
-};
-
-export type UsersUpdateUserResponse = (UserPublic);
-
-export type UsersDeleteUserData = {
-    userId: string;
-};
-
-export type UsersDeleteUserResponse = (Message);
+export type XtreamCodesGetXcCredentialsResponse = (XCCredentials);
 
 export type XtreamCodesXcIptvRouterData = {
     action?: string;
@@ -702,6 +428,7 @@ export type XtreamCodesXcIptvRouterData = {
 export type XtreamCodesXcIptvRouterResponse = (unknown);
 
 export type XtreamCodesXcGetData = {
+    output?: string;
     password?: string;
     type?: string;
     username?: string;

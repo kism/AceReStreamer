@@ -23,7 +23,10 @@ def acestream_db_handler(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Ace
     test_engine = create_engine(f"sqlite:///{tmp_path / 'test_acestreams.db'}", echo=False)
 
     xc_stream_handler = ContentIdXcIdDatabaseHandler(test_engine=test_engine)
-    monkeypatch.setattr("acere.database.handlers.acestreams.get_xc_stream_db_handler", lambda: xc_stream_handler)
+    monkeypatch.setattr(
+        "acere.database.handlers.acestreams.get_xc_stream_db_handler",
+        lambda: xc_stream_handler,
+    )
 
     return AceStreamDBHandler(test_engine=test_engine)
 
@@ -46,7 +49,7 @@ def test_init(acestream_db_handler: AceStreamDBHandler, monkeypatch: pytest.Monk
     assert handler.get_content_id_by_tvg_id("nonexistent") is None
     assert handler.get_content_id_by_xc_id(1) is None
     assert isinstance(handler.get_xc_id_by_content_id("nonexistent"), int)  # Creates mapping on demand
-    assert "#EXTM3U" in handler.get_streams_as_iptv(token="")
+    assert "#EXTM3U" in handler.get_streams_as_iptv()
     assert len(handler.get_streams_as_iptv_xc(xc_category_filter=None)) == 0
     handler._mark_alternate_streams([])
 
@@ -83,7 +86,7 @@ def test_add_and_delete(acestream_db_handler: AceStreamDBHandler) -> None:
     assert handler.get_content_id_by_tvg_id("test.tvg.id") is not None
     assert handler.get_content_id_by_xc_id(1) == content_id
     assert handler.get_xc_id_by_content_id(content_id) == 1
-    assert "#EXTM3U" in handler.get_streams_as_iptv(token="")
+    assert "#EXTM3U" in handler.get_streams_as_iptv()
     assert len(handler.get_streams_as_iptv_xc(xc_category_filter=None)) == 1
     handler._mark_alternate_streams([])
 
@@ -155,22 +158,13 @@ def test_get_streams_as_iptv_url_validation(
     )
     handler.update_stream(stream_2)
 
-    # Get IPTV without token
-    m3u8_content = handler.get_streams_as_iptv(token="")
+    m3u8_content = handler.get_streams_as_iptv()
 
     # Verify M3U8 header exists
     assert m3u8_content.startswith("#EXTM3U")
 
-    # Verify EPG URL is valid and in the header
-    assert "x-tvg-url=" in m3u8_content
-    assert "http://192.168.100.130:5100/epg.xml" in m3u8_content
-
-    # Extract and validate EPG URL from header
-    epg_url_start = m3u8_content.find('x-tvg-url="') + len('x-tvg-url="')
-    epg_url_end = m3u8_content.find('"', epg_url_start)
-    epg_url_str = m3u8_content[epg_url_start:epg_url_end]
-    epg_url = HttpUrl(epg_url_str)  # Should not raise ValidationError
-    assert str(epg_url) == "http://192.168.100.130:5100/epg.xml"
+    # No EPG anymore, so no x-tvg-url in the header
+    assert "x-tvg-url=" not in m3u8_content
 
     # Verify HLS stream URLs are valid
     assert f"http://192.168.100.130:5100/hls/{content_id_1}" in m3u8_content
@@ -182,20 +176,61 @@ def test_get_streams_as_iptv_url_validation(
     assert str(hls_url_1) == f"http://192.168.100.130:5100/hls/{content_id_1}"
     assert str(hls_url_2) == f"http://192.168.100.130:5100/hls/{content_id_2}"
 
-    # Test with token
-    m3u8_with_token = handler.get_streams_as_iptv(token="test_token")
-    assert f"http://192.168.100.130:5100/hls/{content_id_1}?token=test_token" in m3u8_with_token
-    assert f"http://192.168.100.130:5100/hls/{content_id_2}?token=test_token" in m3u8_with_token
-
     # Test with different EXTERNAL_URL formats
     # URL without port
     monkeypatch.setattr("acere.instances.config.settings.EXTERNAL_URL", "http://ace.pytest.internal")
-    m3u8_no_port = handler.get_streams_as_iptv(token="")
-    assert "http://ace.pytest.internal/epg.xml" in m3u8_no_port
+    m3u8_no_port = handler.get_streams_as_iptv()
     assert f"http://ace.pytest.internal/hls/{content_id_1}" in m3u8_no_port
 
     # HTTPS URL with port
-    monkeypatch.setattr("acere.instances.config.settings.EXTERNAL_URL", "https://secure.ace.pytest.internal:8443")
-    m3u8_https = handler.get_streams_as_iptv(token="")
-    assert "https://secure.ace.pytest.internal:8443/epg.xml" in m3u8_https
+    monkeypatch.setattr(
+        "acere.instances.config.settings.EXTERNAL_URL",
+        "https://secure.ace.pytest.internal:8443",
+    )
+    m3u8_https = handler.get_streams_as_iptv()
     assert f"https://secure.ace.pytest.internal:8443/hls/{content_id_1}" in m3u8_https
+
+
+def test_get_streams_as_iptv_ts_url_prefix(
+    acestream_db_handler: AceStreamDBHandler,
+) -> None:
+    """Test that get_streams_as_iptv with ts_url_prefix emits XC-style .ts URLs."""
+    handler = acestream_db_handler
+
+    content_id = get_random_content_id()
+    handler.update_stream(
+        FoundAceStream(
+            content_id=content_id,
+            title="Test Stream",
+            tvg_id="test.stream",
+            sites_found_on=["TestSite"],
+            last_scraped_time=datetime.now(tz=UTC),
+        )
+    )
+
+    m3u8_content = handler.get_streams_as_iptv(output="ts", ts_url_prefix="http://localhost:8000/live/user/pass")
+
+    xc_id = handler.get_xc_id_by_content_id(content_id)
+    assert f"http://localhost:8000/live/user/pass/{xc_id}.ts" in m3u8_content
+    assert f"/hls/{content_id}" not in m3u8_content
+
+
+def test_get_streams_as_iptv_ts_plain(acestream_db_handler: AceStreamDBHandler) -> None:
+    """Test that get_streams_as_iptv output="ts" without a prefix emits plain /ts/ URLs."""
+    handler = acestream_db_handler
+
+    content_id = get_random_content_id()
+    handler.update_stream(
+        FoundAceStream(
+            content_id=content_id,
+            title="Test Stream",
+            tvg_id="test.stream",
+            sites_found_on=["TestSite"],
+            last_scraped_time=datetime.now(tz=UTC),
+        )
+    )
+
+    m3u8_content = handler.get_streams_as_iptv(output="ts")
+
+    assert f"/ts/{content_id}" in m3u8_content
+    assert f"/hls/{content_id}" not in m3u8_content

@@ -83,9 +83,6 @@ class FoundAceStreamAPI(BaseModel):
     tvg_id: str
     tvg_logo: str | None = None
     last_scraped_time: datetime
-    # EPG
-    program_title: str  # Forces me to try populate it
-    program_description: str  # Forces me to try populate it
     # Quality
     quality: int
     has_ever_worked: bool

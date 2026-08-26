@@ -1,7 +1,7 @@
 import { Container } from "@chakra-ui/react"
 import RemoteConfig from "./RemoteConfig/RemoteConfig"
 
-function ConfigManagement() {
+function RemoteConfigManagement() {
   return (
     <Container maxW="full">
       <RemoteConfig />
@@ -9,4 +9,4 @@ function ConfigManagement() {
   )
 }
 
-export default ConfigManagement
+export default RemoteConfigManagement

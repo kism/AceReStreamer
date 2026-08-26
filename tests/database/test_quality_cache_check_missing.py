@@ -106,9 +106,9 @@ async def test_check_missing_quality_with_streams(
     # Mock HLS
     hls_calls: list[dict[str, Any]] = []
 
-    async def mock_hls(path: str, *, authentication_override: bool = False) -> None:
+    async def mock_hls(path: str) -> None:
         """Mock HLS function that tracks calls."""
-        hls_calls.append({"path": path, "authentication_override": authentication_override})
+        hls_calls.append({"path": path})
 
     monkeypatch.setattr("acere.api.routes.hls.hls", mock_hls)
 
@@ -123,9 +123,6 @@ async def test_check_missing_quality_with_streams(
             break
 
     assert len(hls_calls) >= 1  # hls() was called at least once
-
-    for call in hls_calls:  # Verify authentication_override was set to True
-        assert call["authentication_override"] is True
 
     checked_content_ids = {call["path"] for call in hls_calls}  # Extract checked content IDs
     assert content_ids[0] in checked_content_ids or content_ids[2] in checked_content_ids, (
@@ -169,7 +166,7 @@ async def test_check_missing_quality_with_exception(
     )
 
     # Mock HLS
-    async def mock_hls_exception(path: str, *, authentication_override: bool = False) -> None:
+    async def mock_hls_exception(path: str) -> None:
         raise RuntimeError("Test exception")
 
     monkeypatch.setattr("acere.api.routes.hls.hls", mock_hls_exception)

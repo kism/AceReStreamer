@@ -7,11 +7,10 @@ from multidict import CIMultiDict, CIMultiDictProxy
 from yarl import URL
 
 if TYPE_CHECKING:
-    from aiohttp.pytest_plugin import AiohttpServer
-    from pytest_mock import MockerFixture  # pragma: no cover
+    from collections.abc import AsyncIterator, Generator
 else:
-    MockerFixture = object
-    AiohttpServer = object
+    AsyncIterator = object
+    Generator = object
 
 
 class FakeResponseDef(TypedDict):
@@ -32,6 +31,10 @@ class FakeContent:
         result = self._data[self._position : self._position + size]
         self._position += size
         return result
+
+    async def iter_chunked(self, n: int) -> AsyncIterator[bytes]:
+        while chunk := await self.read(n):
+            yield chunk
 
 
 class FakeResponse:
@@ -69,13 +72,20 @@ class FakeResponse:
     async def read(self) -> bytes:
         return self._data
 
-    async def raw_headers(self) -> bytes:
-        return b""
-
     async def __aenter__(self) -> Self:
         return self
 
     async def __aexit__(self, *args: object) -> None:
+        pass
+
+    def __await__(self) -> Generator[Any, None, Self]:
+        # aiohttp's session.get() is both awaitable and an async context manager
+        async def _coro() -> Self:
+            return self
+
+        return _coro().__await__()
+
+    def close(self) -> None:
         pass
 
 
@@ -90,16 +100,6 @@ class FakeSession:
             return FakeResponse(data=b"", status=404, url=url)
 
         return FakeResponse(data=response_def["data"], status=response_def["status"], url=url)
-
-    async def request(self, method: str, url: str, **kwargs: Any) -> FakeResponse:
-        response_def = self.responses.get(url)
-        if response_def is None:
-            return FakeResponse(data=b"", status=404, url=url)
-
-        return FakeResponse(data=response_def["data"], status=response_def["status"], url=url)
-
-    async def send(self, *args: object, **kwargs: object) -> FakeResponse:
-        return FakeResponse(data=b"", status=404)
 
     async def __aenter__(self) -> Self:
         self.closed = False

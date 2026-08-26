@@ -1,12 +1,7 @@
 import logging
 from typing import TYPE_CHECKING
 
-from pydantic import HttpUrl
-
-from acere.core.config import (
-    AceReStreamerConf,
-    EPGInstanceConf,
-)
+from acere.core.config import AceReStreamerConf
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -15,59 +10,6 @@ if TYPE_CHECKING:
 else:
     pytest = object
     Path = object
-
-
-def test_add_epg() -> None:
-    """Test adding an EPG source."""
-    config = AceReStreamerConf.force_load_defaults()
-    initial_count = len(config.epgs)
-
-    new_epg = EPGInstanceConf(format="xml.gz", url=HttpUrl("http://ace.pytest.internal/epg.xml.gz"))
-    config.add_epg(new_epg)
-
-    assert len(config.epgs) == initial_count + 1
-    assert config.epgs[-1].url == new_epg.url
-
-
-def test_add_duplicate_epg_updates() -> None:
-    """Test that adding a duplicate EPG updates the existing one."""
-    config = AceReStreamerConf.force_load_defaults()
-
-    new_epg = EPGInstanceConf(format="xml.gz", url=HttpUrl("http://ace.pytest.internal/duplicate.xml.gz"))
-    config.add_epg(new_epg)
-    initial_count = len(config.epgs)
-
-    # Try to add the same EPG again (same URL)
-    duplicate_epg = EPGInstanceConf(format="xml", url=HttpUrl("http://ace.pytest.internal/duplicate.xml.gz"))
-    config.add_epg(duplicate_epg)
-
-    # Should not add a new EPG, count should remain the same
-    assert len(config.epgs) == initial_count
-
-
-def test_remove_epg() -> None:
-    """Test removing an EPG source."""
-    config = AceReStreamerConf.force_load_defaults()
-
-    new_epg = EPGInstanceConf(format="xml.gz", url=HttpUrl("http://ace.pytest.internal/remove.xml.gz"))
-    config.add_epg(new_epg)
-    initial_count = len(config.epgs)
-
-    # Get the slug of the EPG we just added
-    epg_slug = new_epg.slug
-    success = config.remove_epg(epg_slug)
-
-    assert success is True
-    assert len(config.epgs) == initial_count - 1
-
-
-def test_remove_nonexistent_epg() -> None:
-    """Test removing an EPG that doesn't exist."""
-    config = AceReStreamerConf.force_load_defaults()
-
-    success = config.remove_epg("nonexistent-slug")
-
-    assert success is False
 
 
 def test_force_load_config_file_existing(tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
@@ -105,5 +47,4 @@ def test_force_load_config_file_nonexistent(tmp_path: Path) -> None:
     # Should return default config
     assert config.app.ace_max_streams == 4
     assert config.scraper.playlist_name == "acerestreamer"
-    assert len(config.epgs) == 0
     assert config.ENVIRONMENT == "local"

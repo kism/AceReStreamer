@@ -12,18 +12,22 @@ import {
 } from "@/components/ui/table"
 import { QualityCell } from "./QualityCell"
 
-const loadVideoPlayerModule = () => import("@/hooks/useVideoPlayer")
-
-function getStreamQueryOptions(content_id: string) {
-  return {
-    queryFn: () => StreamsService.byContentId({ contentId: content_id }),
-    queryKey: ["content_id", content_id],
-  }
+function EmptyInstancesRow() {
+  return (
+    <TableRow opacity={0.5}>
+      <TableCell textAlign="center">-</TableCell>
+      <TableCell textAlign="center">-</TableCell>
+      <QualityCell quality={-1} />
+      <TableCell textAlign="center">-</TableCell>
+      <TableCell textAlign="center">-</TableCell>
+    </TableRow>
+  )
 }
 
 function InstanceQuality({ contentId }: { contentId: string }) {
   const { data } = useQuery({
-    ...getStreamQueryOptions(contentId),
+    queryFn: () => StreamsService.byContentId({ contentId }),
+    queryKey: ["content_id", contentId],
     enabled: !!contentId,
     refetchInterval: 30000, // Refetch every 30 seconds
   })
@@ -37,15 +41,7 @@ function InstanceQuality({ contentId }: { contentId: string }) {
         whiteSpace="nowrap"
         textAlign={"center"}
       >
-        <Link
-          onClick={() =>
-            loadVideoPlayerModule().then((module) => {
-              module.loadPlayStream(data?.content_id)
-            })
-          }
-        >
-          {data?.title || "N/A"}
-        </Link>
+        {data?.title || "N/A"}
       </TableCell>
     </>
   )
@@ -68,14 +64,10 @@ export function AcePoolInstancesTable({
     },
   })
 
-  if (acePoolData.ace_instances.length === 0) {
-    return null
-  }
-
   return (
     <Box>
       <Heading size="sm" py={1}>
-        AceStream Instances
+        Active AceStream Streams
       </Heading>
       <AppTableRoot preset="outlineSm" maxW="fit-content">
         <TableHeader>
@@ -88,32 +80,36 @@ export function AcePoolInstancesTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {acePoolData.ace_instances.map((instance, index: number) => (
-            <TableRow key={index}>
-              <TableCell textAlign={"center"}>{instance.ace_pid}</TableCell>
-              <TableCell textAlign={"center"}>
-                {instance.locked_in
-                  ? `🔒 Locked for (${Math.floor((instance.time_until_unlock ?? 0) / 60)}:${((instance.time_until_unlock ?? 0) % 60).toString().padStart(2, "0")})`
-                  : "Available"}
-              </TableCell>
-              <InstanceQuality contentId={instance.content_id} />
-              <TableCell textAlign={"center"}>
-                {instance.locked_in ? (
-                  <Link
-                    colorPalette="red"
-                    onClick={() =>
-                      deleteStreamMutation.mutate(instance.content_id)
-                    }
-                    cursor="pointer"
-                  >
-                    🔓 Unlock Instance
-                  </Link>
-                ) : (
-                  "-"
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
+          {acePoolData.ace_instances.length === 0 ? (
+            <EmptyInstancesRow />
+          ) : (
+            acePoolData.ace_instances.map((instance, index: number) => (
+              <TableRow key={index}>
+                <TableCell textAlign={"center"}>{instance.ace_pid}</TableCell>
+                <TableCell textAlign={"center"}>
+                  {instance.locked_in
+                    ? `🔒 Locked for (${Math.floor((instance.time_until_unlock ?? 0) / 60)}:${((instance.time_until_unlock ?? 0) % 60).toString().padStart(2, "0")})`
+                    : "Available"}
+                </TableCell>
+                <InstanceQuality contentId={instance.content_id} />
+                <TableCell textAlign={"center"}>
+                  {instance.locked_in ? (
+                    <Link
+                      colorPalette="red"
+                      onClick={() =>
+                        deleteStreamMutation.mutate(instance.content_id)
+                      }
+                      cursor="pointer"
+                    >
+                      🔓 Unlock Instance
+                    </Link>
+                  ) : (
+                    "-"
+                  )}
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </AppTableRoot>
     </Box>

@@ -20,6 +20,9 @@ logger = get_logger(__name__)
 
 LOCK_IN_TIME: timedelta = timedelta(minutes=5)
 LOCK_IN_RESET_MAX: timedelta = timedelta(minutes=15)
+# An instance used this recently has a client keeping the engine alive itself
+# (HLS clients poll the manifest through us, TS clients touch() every ~6.4MB)
+KEEP_ALIVE_ACTIVE_SKIP: timedelta = timedelta(seconds=60)
 
 
 class AcePoolEntry:
@@ -31,7 +34,6 @@ class AcePoolEntry:
         ace_pid: int,
         ace_address: HttpUrl,
         content_id: str,
-        infohash: str = "",
         *,
         transcode_audio: bool,
     ) -> None:
@@ -44,7 +46,6 @@ class AcePoolEntry:
 
         self.ace_pid = ace_pid
         self.content_id = content_id
-        self.infohash = infohash
         self.ace_address = ace_address
 
         self.ace_middleware_url = get_middleware_url(
@@ -52,6 +53,13 @@ class AcePoolEntry:
             content_id=self.content_id,
             ace_pid=self.ace_pid,
             transcode_audio=transcode_audio,
+        )
+        self.ace_ts_middleware_url = get_middleware_url(
+            ace_url=self.ace_address,
+            content_id=self.content_id,
+            ace_pid=self.ace_pid,
+            transcode_audio=transcode_audio,
+            endpoint="ace/getstream",
         )
 
         self._middleware_info: AceMiddlewareResponse | None = None
@@ -66,31 +74,30 @@ class AcePoolEntry:
         ace_pid: int,
         ace_address: HttpUrl,
         content_id: str,
-        infohash: str = "",
         *,
         transcode_audio: bool,
     ) -> AcePoolEntry:
         """Create and initialize an AceStream pool entry asynchronously, populating URLs."""
-        instance = cls(ace_pid, ace_address, content_id, infohash, transcode_audio=transcode_audio)
+        instance = cls(ace_pid, ace_address, content_id, transcode_audio=transcode_audio)
         await instance.populate_urls()
         return instance
 
-    async def populate_urls(self) -> None:
-        """Populate the AceStream URLs for this instance."""
+    async def _fetch_middleware(self, url: str) -> AceMiddlewareResponse | None:
+        """Fetch and parse an AceStream middleware handshake response."""
         try:
             timeout = aiohttp.ClientTimeout(total=ACESTREAM_API_TIMEOUT)
             async with aiohttp.ClientSession(timeout=timeout) as session:
-                async with session.get(self.ace_middleware_url) as resp:
+                async with session.get(url) as resp:
                     resp.raise_for_status()
                     response_json = await resp.json()
                     middleware_response = AceMiddlewareResponseFull(**response_json)
         except (aiohttp.ClientError, ValueError) as e:
             logger.warning(
                 "Failed to fetch AceStream URLs for content_id %s: %s",
-                self.ace_middleware_url,
+                url,
                 str(e),
             )
-            return
+            return None
 
         if middleware_response.error:
             logger.error(
@@ -98,9 +105,15 @@ class AcePoolEntry:
                 self.content_id,
                 middleware_response.error,
             )
-            return
+            return None
 
-        self._middleware_info = middleware_response.response
+        return middleware_response.response
+
+    async def populate_urls(self) -> None:
+        """Populate the AceStream URLs for this instance."""
+        middleware_info = await self._fetch_middleware(self.ace_middleware_url)
+        if middleware_info:
+            self._middleware_info = middleware_info
 
     def update_last_used(self) -> None:
         """Update the last used timestamp."""
@@ -117,6 +130,12 @@ class AcePoolEntry:
             return None
 
         return self._middleware_info.playback_url
+
+    async def get_ts_url(self) -> HttpUrl | None:
+        """Get the direct MPEG-TS playback URL (fresh handshake each call)."""
+        # ponytail: re-handshake per call; cache if new-connection rate ever matters
+        middleware_info = await self._fetch_middleware(self.ace_ts_middleware_url)
+        return middleware_info.playback_url if middleware_info else None
 
     async def get_ace_stat(self) -> AcePoolStat | None:
         """Get the AceStream statistics for this instance."""
@@ -221,6 +240,11 @@ class AcePoolEntry:
     # region Health
     async def keep_alive(self) -> None:
         """The keep_alive method, should be called by poolboy thread."""
+        # An actively watched stream doesn't need us, skip the manifest+segment fetch
+        if datetime.now(tz=UTC) - self.date_last_used < KEEP_ALIVE_ACTIVE_SKIP:
+            logger.trace("Not keeping alive %s, actively in use", self.content_id)
+            return
+
         # If we are locked in, we keep the stream alive
         # Also check if the content_id is valid, as a failsafe
         await self.populate_urls()
@@ -256,7 +280,10 @@ class AcePoolEntry:
 
                     if last_segment_url:
                         async with session.get(last_segment_url) as resp_segment:
-                            logger.trace("Keep alive ts segment, response: %s", resp_segment.status)
+                            logger.trace(
+                                "Keep alive ts segment, response: %s",
+                                resp_segment.status,
+                            )
 
         else:
             logger.trace("Not keeping alive %s, not locked in", self.ace_address)

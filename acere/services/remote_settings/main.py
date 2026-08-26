@@ -8,9 +8,9 @@ from pydantic import HttpUrl, ValidationError
 
 from acere.core.config import AceReStreamerConf, ConfigExport
 from acere.instances.config import settings
-from acere.instances.epg import get_epg_handler
 from acere.instances.scraper import get_ace_scraper
 from acere.utils.exception_handling import log_aiohttp_exception
+from acere.utils.helpers import stop_threads
 from acere.utils.logger import get_logger
 
 from .models import RemoteSettingsURLGetModel
@@ -39,10 +39,7 @@ class RemoteSettingsFetcher:
         )
 
     def get_export_config(self) -> ConfigExport:
-        return ConfigExport(
-            scraper=settings.scraper,
-            epgs=settings.epgs,
-        )
+        return ConfigExport(scraper=settings.scraper)
 
     # region POST
     def set_remote_settings_url(self, url: HttpUrl | None) -> None:
@@ -64,7 +61,6 @@ class RemoteSettingsFetcher:
             return current_config
 
         settings.scraper = config.scraper
-        settings.epgs = config.epgs
         settings.write_backup_config(
             config_path=None,
             existing_data=json.loads(settings.model_dump_json()),
@@ -72,31 +68,38 @@ class RemoteSettingsFetcher:
         )
         self.reload_config()
 
-        return ConfigExport(
-            scraper=settings.scraper,
-            epgs=settings.epgs,
-        )
+        return ConfigExport(scraper=settings.scraper)
 
     def reload_config(self) -> None:
         """Reload the current configuration."""
         settings.write_config()
         get_ace_scraper().start_scrape_thread()
-        get_epg_handler().update_epgs(settings.epgs)
 
     # region Fetch http
     async def fetch_settings(self) -> None:
         if settings.REMOTE_SETTINGS_URL is None:
-            logger.trace("Remote settings URL is not set; skipping fetch. id: %s", self._instance_id)
+            logger.trace(
+                "Remote settings URL is not set; skipping fetch. id: %s",
+                self._instance_id,
+            )
             return
 
-        logger.info("Fetching remote settings from %s", settings.REMOTE_SETTINGS_URL.encoded_string())
+        logger.info(
+            "Fetching remote settings from %s",
+            settings.REMOTE_SETTINGS_URL.encoded_string(),
+        )
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.get(settings.REMOTE_SETTINGS_URL.encoded_string()) as resp:
                     resp.raise_for_status()
                     data = await resp.text()
             except (aiohttp.ClientError, TimeoutError) as e:
-                log_aiohttp_exception(logger, settings.REMOTE_SETTINGS_URL, e, "Failed to fetch remote settings")
+                log_aiohttp_exception(
+                    logger,
+                    settings.REMOTE_SETTINGS_URL,
+                    e,
+                    "Failed to fetch remote settings",
+                )
                 return
             except Exception as e:
                 self._status = e.__class__.__name__
@@ -118,12 +121,7 @@ class RemoteSettingsFetcher:
         self._status = "fetched"
         self._last_fetch_time = datetime.now(tz=UTC)
 
-        self.update_config_with_export(
-            ConfigExport(
-                scraper=new_settings.scraper,
-                epgs=new_settings.epgs,
-            )
-        )
+        self.update_config_with_export(ConfigExport(scraper=new_settings.scraper))
 
     # region Thread
     def fetch_settings_thread(self) -> None:
@@ -137,24 +135,17 @@ class RemoteSettingsFetcher:
     def start_fetching(self) -> None:
         self.stop_all_threads()
         thread = threading.Thread(
-            target=self.fetch_settings_thread, name="RemoteSettingsFetcher: fetch_settings", daemon=True
+            target=self.fetch_settings_thread,
+            name="RemoteSettingsFetcher: fetch_settings",
+            daemon=True,
         )
         self._threads.append(thread)
         thread.start()
 
     def stop_all_threads(self) -> None:
         """Stop all threads in the RemoteSettingsFetcher."""
-        if len(self._threads) == 0:
-            return
-
-        logger.info("Stopping all %s threads [%s]", self.__class__.__name__, self._instance_id)
-        self._stop_event.set()
-        for thread in self._threads.copy():
-            if thread.is_alive():
-                thread.join(timeout=60)
-                if not thread.is_alive():
-                    self._threads.remove(thread)
-                else:
-                    logger.warning("Thread %s did not stop in time.", thread.name)
-
-        self._stop_event.clear()
+        stop_threads(
+            self._threads,
+            self._stop_event,
+            f"{self.__class__.__name__} [{self._instance_id}]",
+        )

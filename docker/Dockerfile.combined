@@ -19,7 +19,7 @@ COPY ./frontend /app/
 RUN bun run build
 
 
-# Stage 1, based on Nginx, to have only the compiled app, ready for production with Nginx
+# Stage 1, the FastAPI backend serving the compiled frontend internally
 FROM python:3.14
 
 ENV PYTHONUNBUFFERED=1

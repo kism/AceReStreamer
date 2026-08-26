@@ -1,7 +1,6 @@
 """Scraper service."""
 
 from acere.services.scraper.api import APIStreamScraper
-from acere.services.scraper.cache import ScraperCache
 from acere.services.scraper.helpers import create_unique_stream_list
 from acere.services.scraper.html import HTMLStreamScraper
 from acere.services.scraper.iptv import IPTVStreamScraper
@@ -20,7 +19,5 @@ __all__ = [
     "FoundAceStreamAPI",
     "HTMLStreamScraper",
     "IPTVStreamScraper",
-    "Quality",
-    "ScraperCache",
     "create_unique_stream_list",
 ]

@@ -11,7 +11,7 @@ from pydantic import HttpUrl, TypeAdapter
 
 from acere.instances.config import settings
 from acere.utils.exception_handling import log_aiohttp_exception
-from acere.utils.helpers import check_valid_content_id_or_infohash
+from acere.utils.helpers import check_valid_content_id_or_infohash, stop_threads
 from acere.utils.logger import get_logger
 
 from .constants import ACESTREAM_API_TIMEOUT
@@ -132,8 +132,8 @@ class AcePool:
         logger.error("Ace pool is full, could not get available instance.")
         return None
 
-    async def get_instance_hls_url_by_content_id(self, content_id: str) -> HttpUrl | None:
-        """Find the AceStream instance URL for a given content_id, create a new instance if it doesn't exist."""
+    async def _get_or_create_instance(self, content_id: str) -> AcePoolEntry | None:
+        """Find the AceStream instance for a given content_id, create a new instance if it doesn't exist."""
         if not check_valid_content_id_or_infohash(content_id):
             logger.error("Invalid AceStream content ID: %s", content_id)
             return None
@@ -141,7 +141,7 @@ class AcePool:
         if self._ace_instances.get(content_id):
             instance = self._ace_instances[content_id]
             instance.update_last_used()
-            return instance.get_m3u8_url()
+            return instance
 
         new_instance_number = await self.get_available_instance_number()
         if new_instance_number is None:
@@ -157,7 +157,22 @@ class AcePool:
 
         self._ace_instances[content_id] = new_instance
 
-        return new_instance.get_m3u8_url()
+        return new_instance
+
+    async def get_instance_hls_url_by_content_id(self, content_id: str) -> HttpUrl | None:
+        """Find the AceStream instance HLS URL for a given content_id, create a new instance if it doesn't exist."""
+        instance = await self._get_or_create_instance(content_id)
+        return instance.get_m3u8_url() if instance else None
+
+    async def get_instance_ts_url_by_content_id(self, content_id: str) -> HttpUrl | None:
+        """Find the AceStream instance MPEG-TS URL for a given content_id, create a new instance if needed."""
+        instance = await self._get_or_create_instance(content_id)
+        return await instance.get_ts_url() if instance else None
+
+    def touch(self, content_id: str) -> None:
+        """Mark an instance as recently used, to protect a long-lived TS stream from LRU reclaim."""
+        if instance := self._ace_instances.get(content_id):
+            instance.update_last_used()
 
     def get_instance_by_multistream_path(self, ace_multistream_path: str) -> str:
         """Find the AceStream instance content_id for a given multistream path."""
@@ -324,17 +339,8 @@ class AcePool:
 
     def stop_all_threads(self) -> None:
         """Stop all threads in the AcePool."""
-        if len(self._threads) == 0:
-            return
-
-        logger.info("Stopping all %s threads [%s]", self.__class__.__name__, self._instance_id)
-        self._stop_event.set()
-        for thread in self._threads.copy():
-            if thread.is_alive():
-                thread.join(timeout=60)
-                if not thread.is_alive():
-                    self._threads.remove(thread)
-                else:
-                    logger.warning("Thread %s did not stop in time.", thread.name)
-
-        self._stop_event.clear()
+        stop_threads(
+            self._threads,
+            self._stop_event,
+            f"{self.__class__.__name__} [{self._instance_id}]",
+        )

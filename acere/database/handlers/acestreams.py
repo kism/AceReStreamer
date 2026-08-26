@@ -1,6 +1,6 @@
 """Handler for content_id to xc_id mapping."""
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from pydantic import HttpUrl
 from sqlmodel import select
@@ -44,7 +44,9 @@ class AceStreamDBHandler(BaseDatabaseHandler):
                 session.add(result)
                 session.commit()
                 logger.trace(
-                    "Updated AceStreamDBEntry for content_id/infohash: %s/%s", stream.content_id, stream.infohash
+                    "Updated AceStreamDBEntry for content_id/infohash: %s/%s",
+                    stream.content_id,
+                    stream.infohash,
                 )
                 self._get_streams_cache = None  # Invalidate cache
             else:
@@ -53,11 +55,26 @@ class AceStreamDBHandler(BaseDatabaseHandler):
                 session.add(new_entry)
                 session.commit()
                 logger.debug(
-                    "Created new AceStreamDBEntry for content_id/infohash: %s/%s", stream.content_id, stream.infohash
+                    "Created new AceStreamDBEntry for content_id/infohash: %s/%s",
+                    stream.content_id,
+                    stream.infohash,
                 )
 
         # Ensure persistent xc_id mapping exists
         get_xc_stream_db_handler().get_or_create_xc_id(stream.content_id)
+
+    def update_title(self, content_id: str, title: str) -> bool:
+        """Update only the title of an existing AceStreamDBEntry."""
+        with self._get_session() as session:
+            statement = select(AceStreamDBEntry).where(AceStreamDBEntry.content_id == content_id)
+            result = session.exec(statement).first()
+            if not result:
+                return False
+            result.title = title
+            session.add(result)
+            session.commit()
+            self._get_streams_cache = None  # Invalidate cache
+            return True
 
     # region DELETE API
     def delete_by_content_id(self, content_id: str) -> bool:
@@ -121,33 +138,34 @@ class AceStreamDBHandler(BaseDatabaseHandler):
         return get_xc_stream_db_handler().get_or_create_xc_id(content_id)
 
     # region GET IPTV
-    def get_streams_as_iptv(self, token: str) -> str:
-        """Get the found streams as an IPTV M3U8 string."""
+    def get_streams_as_iptv(self, output: Literal["hls", "ts"] = "hls", ts_url_prefix: str | None = None) -> str:
+        """Get the found streams as an IPTV M3U8 string.
+
+        output="ts" points entries at MPEG-TS URLs: XC-style "{ts_url_prefix}/{xc_id}.ts" when
+        ts_url_prefix is set (e.g. "<external_url>/live/<user>/<pass>"), plain "/ts/{content_id}" otherwise.
+        """
         external_url = settings.EXTERNAL_URL
 
-        # There are a few standards for the tag for the tvg url, most to least common x-tvg-url, url-tvg, tvg-url
-        epg_url_str = f"{external_url}/epg.xml"
-        if token:
-            epg_url_str += f"?token={token}"
-        epg_url = HttpUrl(epg_url_str)
-        m3u8_content = f'#EXTM3U x-tvg-url="{epg_url}" url-tvg="{epg_url}" refresh="3600"\n'
+        m3u8_content = '#EXTM3U refresh="3600"\n'
 
         iptv_set = set()
+        external_url_tvg = HttpUrl(f"{external_url}/tvg-logo/")
 
         # I used to filter this for whether the stream has ever worked,
         # but sometimes sites change the id of their stream often...
         for stream in self.get_streams_cached():
-            logger.debug(stream)
-
-            external_url_tvg = HttpUrl(f"{external_url}/tvg-logo/")
-
             line_one = create_extinf_line(
-                stream, tvg_url_base=external_url_tvg, token=token, last_found=int(stream.last_scraped_time.timestamp())
+                stream,
+                tvg_url_base=external_url_tvg,
+                last_found=int(stream.last_scraped_time.timestamp()),
             )
-            line_two_url = HttpUrl(f"{external_url}/hls/{stream.content_id}")
-            line_two = str(line_two_url)
-            if token:
-                line_two += f"?token={token}"
+            if output == "ts" and ts_url_prefix:
+                xc_id = self.get_xc_id_by_content_id(stream.content_id)
+                line_two = str(HttpUrl(f"{ts_url_prefix}/{xc_id}.ts"))
+            elif output == "ts":
+                line_two = str(HttpUrl(f"{external_url}/ts/{stream.content_id}"))
+            else:
+                line_two = str(HttpUrl(f"{external_url}/hls/{stream.content_id}"))
 
             iptv_set.add(line_one + line_two)
 
@@ -158,20 +176,17 @@ class AceStreamDBHandler(BaseDatabaseHandler):
         with self._get_session() as session:
             statement = select(AceStreamDBEntry.tvg_id).distinct()
             results = session.exec(statement).all()
-            return set(results)
+            return {str(tvg_id) for tvg_id in results}
 
     # region GET IPTV XC
     def get_streams_as_iptv_xc(
         self,
         xc_category_filter: int | None,
-        token: str = "",
     ) -> list[XCStream]:
         """Get the found streams as a list of XCStream objects."""
         category_handler = get_xc_category_db_handler()
         xc_stream_handler = get_xc_stream_db_handler()
         result_streams: list[XCStream] = []
-
-        token_str = "" if token == "" else f"?token={token}"
 
         streams = self.get_streams_cached()
 
@@ -185,9 +200,7 @@ class AceStreamDBHandler(BaseDatabaseHandler):
                         num=current_stream_number,
                         name=stream.title,
                         stream_id=xc_id,
-                        stream_icon=f"{settings.EXTERNAL_URL}/tvg-logo/{stream.tvg_logo}{token_str}"
-                        if stream.tvg_logo
-                        else "",
+                        stream_icon=f"{settings.EXTERNAL_URL}/tvg-logo/{stream.tvg_logo}" if stream.tvg_logo else "",
                         epg_channel_id=stream.tvg_id,
                         category_id=str(xc_category_id),
                     )
@@ -207,14 +220,12 @@ class AceStreamDBHandler(BaseDatabaseHandler):
     def _mark_alternate_streams(self, streams: list[AceStreamDBEntry]) -> None:
         """Iterates through streams and for any identical title, for duplicates mark the titles with a stream number."""
         results: dict[str, list[AceStreamDBEntry]] = {}  # Title, list of streams with that title
-        streams_to_return: list[AceStreamDBEntry] = []
 
         for stream in streams:
             results[stream.title] = [*results.get(stream.title, []), stream]
 
         for streams_results in results.values():
             if len(streams_results) <= 1:
-                streams_to_return.extend(streams_results)
                 continue
 
             # Sort by xc_id, will approximatly be by date discovered

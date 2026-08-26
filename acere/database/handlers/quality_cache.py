@@ -18,7 +18,7 @@ from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.config import settings
 from acere.services.ace_quality import Quality
 from acere.utils.ace import ace_id_short
-from acere.utils.helpers import check_valid_content_id_or_infohash
+from acere.utils.helpers import check_valid_content_id_or_infohash, stop_threads
 from acere.utils.logger import get_logger
 
 from .base import BaseDatabaseHandler
@@ -83,7 +83,11 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
         if not quality.time_to_write_to_db():
             return
 
-        logger.trace("Writing quality cache to DB for content_id %s: %s", content_id, ace_id_short(content_id))
+        logger.trace(
+            "Writing quality cache to DB for content_id %s: %s",
+            content_id,
+            ace_id_short(content_id),
+        )
         with self._get_session() as session:
             result = session.exec(select(AceQualityCache).where(AceQualityCache.content_id == content_id)).first()
             if not result:
@@ -113,7 +117,29 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
         entry = self.get_quality(content_id)
         entry.update_quality(m3u_playlist)
 
-        logger.debug("Stream quality %s: %s [%s]", ace_id_short(content_id), entry.quality, entry.last_message)
+        logger.debug(
+            "Stream quality %s: %s [%s]",
+            ace_id_short(content_id),
+            entry.quality,
+            entry.last_message,
+        )
+
+        self.set_quality(content_id, entry)
+
+    def increment_quality_raw(self, content_id: str, rating: int, message: str) -> None:
+        """Increment the quality of a stream directly, for transports with no m3u8 to parse (MPEG-TS)."""
+        if not check_valid_content_id_or_infohash(content_id):
+            return
+
+        entry = self.get_quality(content_id)
+        entry.update_quality_raw(rating, message)
+
+        logger.debug(
+            "Stream quality %s: %s [%s]",
+            ace_id_short(content_id),
+            entry.quality,
+            entry.last_message,
+        )
 
         self.set_quality(content_id, entry)
 
@@ -174,7 +200,7 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
                                 asyncio.TimeoutError,
                                 fastapi.exceptions.HTTPException,
                             ):
-                                await hls(path=stream.content_id, authentication_override=True)
+                                await hls(path=stream.content_id)
                             await asyncio.sleep(attempt_delay)
 
                         await asyncio.sleep(stream_delay)
@@ -184,7 +210,10 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
             except Exception as e:  # This is a background task so it won't crash the app
                 exception_name = e.__class__.__name__
                 logger.exception("")
-                logger.error("Unhandled exception occurred during quality check: %s", exception_name)
+                logger.error(
+                    "Unhandled exception occurred during quality check: %s",
+                    exception_name,
+                )
 
             AceQualityCacheHandler._currently_checking_quality.clear()
 
@@ -261,20 +290,7 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
 
     def stop_all_threads(self) -> None:
         """Stop all threads managed by this handler."""
-        if not self._threads:
-            return
-
-        logger.info("Stopping all %s threads", self.__class__.__name__)
-        self._stop_event.set()
-        for thread in self._threads.copy():
-            if thread.is_alive():
-                thread.join(timeout=60)
-                if not thread.is_alive():
-                    self._threads.remove(thread)
-                else:
-                    logger.warning("Thread %s did not stop in time.", thread.name)
-
-        self._stop_event.clear()
+        stop_threads(self._threads, self._stop_event, self.__class__.__name__)
 
     # region Helpers
     def clean_table(self) -> None:

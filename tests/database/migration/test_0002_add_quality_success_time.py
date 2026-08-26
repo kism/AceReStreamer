@@ -65,8 +65,9 @@ def test_0002_upgrade_from_old_schema(engine: Engine, get_columns: Callable[[Eng
     assert "last_quality_success_time" in columns_after
     assert "has_ever_worked" not in columns_after
 
+    # 0004 drops the user table entirely
     user_columns_after = get_columns(engine, "user")
-    assert "password_changed_at" in user_columns_after
+    assert user_columns_after == set()
 
 
 def test_0002_upgrade_idempotent(engine: Engine, get_columns: Callable[[Engine, str], set[str]]) -> None:

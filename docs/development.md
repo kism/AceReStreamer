@@ -4,7 +4,7 @@ This repo is based on the FastAPI fullstack template at [this commit](https://gi
 
 ## Backend (FastAPI)
 
-### Generate SDK and clinent
+### Generate SDK and client
 
 ```bash
 ./scripts/generate-client.sh
@@ -39,7 +39,7 @@ bun install
 Run development server, you can use a `.env` file if desired. The variable will affect builds, not just the dev server.
 
 ```bash
-export VITE_BACKEND_URL="http://localhost:5100"  # Adjust if your backend is running elsewhere
+export VITE_API_URL="http://localhost:5100"  # Adjust if your backend is running elsewhere
 bun run dev
 ```
 
@@ -51,31 +51,32 @@ Build a combined container with both frontend and backend:
 docker buildx build --network=host --file docker/Dockerfile.combined . -t acerestreamer
 ```
 
-### Separate Frontend and Backend Container
-
-Build the backend and frontend containers separately:
-
-```bash
-docker buildx build --file docker/Dockerfile.backend . -t acerestreamer-backend
-docker buildx build --build-arg VITE_API_URL="https://api.example.com" --file docker/Dockerfile.frontend ./frontend -t acerestreamer-frontend
-```
-
 ## XC (Xtream Codes) API Reference
 
 God I hate this.
 
 ### Live Stream URLs
 
-```text
-/username/password/{stream_number}
-/username/password/{stream_number}.m3u8
-/username/password/{stream_number}.ts
-/live/username/password/{stream_number}.m3u8
-```
+Depending on the IPTV client, any of these will be hit when requesting a stream. All four forms are handled by `xc_live_stream()` in `acere/api/routes/hls.py`, which picks the transport from the file extension — only `.m3u8` gets HLS, everything else (including no extension) gets MPEG-TS, matching what a real XC server does.
 
-Depending on the IPTV client, any of these will be hit when requesting a stream.
+| Request | Transport | Seen from |
+| --- | --- | --- |
+| `/username/password/{stream_number}` | MPEG-TS | Smarters Player Lite (iOS), iMPlayer Android |
+| `/username/password/{stream_number}.ts` | MPEG-TS | iMPlayer iOS, TiViMate, Purple Simple |
+| `/username/password/{stream_number}.m3u8` | HLS | SparkleTV |
+| `/live/username/password/{stream_number}.m3u8` | HLS | UHF, M3UAndroid, IPTV Smarters Pro |
+
+The `/live/` prefix is accepted on any of these, not just the `.m3u8` form.
+
+Note the route pattern `/{u}/{p}/{stream}` is mounted at the server root, so it swallows *any* three-segment path. An unrelated stale URL like `/api/v1/epg` will come back as a 401 from the XC auth check rather than a 404.
+
+### Playlists
+
+`get.php?type=m3u_plus` returns a playlist of HLS URLs; adding `output=ts` returns MPEG-TS URLs pointing back at the `/live/...` stream route above. Outside of XC, the same two playlists are served unauthenticated at `/iptv*` and `/iptv-ts*`.
 
 ### XC Listings
+
+The JSON below is what a **real** XC server returns, kept here as protocol reference. Our emulation in `acere/services/xc/models.py` is deliberately narrower: `allowed_output_formats` is `["m3u8", "ts"]` (no rtmp), `rtmp_port` is omitted entirely, and the timezone is always UTC. Only `get_live_categories` and `get_live_streams` are implemented — the VOD and series actions return 501, and there is no EPG (removed in 1.3.0), so `epg_channel_id` is populated from `tvg_id` but nothing serves an XMLTV document.
 
 `player_api.php?username=a&password=b`
 

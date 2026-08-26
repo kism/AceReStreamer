@@ -1,6 +1,7 @@
 import {
   Box,
   Code,
+  Editable,
   Flex,
   Heading,
   HStack,
@@ -9,16 +10,22 @@ import {
 } from "@chakra-ui/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useCallback } from "react"
-import { StreamsService } from "@/client"
+import { FaPencilAlt } from "react-icons/fa"
+import { FiPlay } from "react-icons/fi"
+import {
+  type FoundAceStreamAPI,
+  ScraperService,
+  StreamsService,
+} from "@/client"
+import type { ApiError } from "@/client/core/ApiError"
 import { getQualityColor } from "@/components/Index/QualityCell"
 import { Button } from "@/components/ui/button"
-
-function getStreamsQueryOptions() {
-  return {
-    queryFn: () => StreamsService.streams(),
-    queryKey: ["items"],
-  }
-}
+import { CopyButton } from "@/components/ui/copy-button"
+import { Loading } from "@/components/ui/loading"
+import baseURL from "@/helpers"
+import useCustomToast from "@/hooks/useCustomToast"
+import { setPreviewStream } from "@/hooks/usePreviewStream"
+import { handleError } from "@/utils"
 
 function GetRelativeTimeText(timestamp: string) {
   const time = new Date(timestamp)
@@ -46,9 +53,11 @@ function GetRelativeTimeText(timestamp: string) {
 
 function StreamAdminTable() {
   const queryClient = useQueryClient()
+  const { showSuccessToast } = useCustomToast()
 
   const { data, isLoading } = useQuery({
-    ...getStreamsQueryOptions(),
+    queryFn: () => StreamsService.streams(),
+    queryKey: ["items"],
     placeholderData: (prevData) => prevData,
   })
 
@@ -59,6 +68,50 @@ function StreamAdminTable() {
       queryClient.invalidateQueries({ queryKey: ["items"] })
     },
   })
+
+  const renameMutation = useMutation({
+    // Override both keys so the rename sticks whichever one a scraper finds
+    mutationFn: async (data: {
+      contentId: string
+      infohash: string | null | undefined
+      name: string
+    }) => {
+      await ScraperService.addNameOverride({
+        contentId: data.contentId,
+        name: data.name,
+      })
+      if (data.infohash) {
+        await ScraperService.addNameOverride({
+          contentId: data.infohash,
+          name: data.name,
+        })
+      }
+    },
+    onSuccess: () => {
+      showSuccessToast("Name override added successfully.")
+    },
+    onError: (err: ApiError) => {
+      handleError(err)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["items"] })
+    },
+  })
+
+  const handleRename = useCallback(
+    (item: FoundAceStreamAPI, name: string) => {
+      const trimmed = name.trim()
+      if (!trimmed || trimmed === item.title || renameMutation.isPending) {
+        return
+      }
+      renameMutation.mutate({
+        contentId: item.content_id,
+        infohash: item.infohash,
+        name: trimmed,
+      })
+    },
+    [renameMutation],
+  )
 
   const handleRemoveByContentId = useCallback(
     (slug: string) => {
@@ -72,7 +125,7 @@ function StreamAdminTable() {
   )
 
   if (isLoading) {
-    return <Box>Loading...</Box>
+    return <Loading />
   }
 
   const items = data ?? []
@@ -93,9 +146,26 @@ function StreamAdminTable() {
           >
             <Flex width="full" flexDirection="column" gap={1}>
               <Flex justify="space-between" align="center" width="full">
-                <Heading size="sm" py={0}>
-                  {item.title}
-                </Heading>
+                <Editable.Root
+                  key={item.title}
+                  defaultValue={item.title}
+                  onValueCommit={(e) => handleRename(item, e.value)}
+                  activationMode="dblclick"
+                  size="sm"
+                  fontWeight="bold"
+                  flex="1"
+                  mr={2}
+                >
+                  <Editable.Preview />
+                  <Editable.Input />
+                  <Editable.Control>
+                    <Editable.EditTrigger asChild>
+                      <Button size="2xs" variant="ghost" color="ui.main">
+                        <FaPencilAlt />
+                      </Button>
+                    </Editable.EditTrigger>
+                  </Editable.Control>
+                </Editable.Root>
                 <Button
                   size="2xs"
                   colorPalette="red"
@@ -145,25 +215,41 @@ function StreamAdminTable() {
               <Flex flexWrap="wrap" gap={1} fontSize={"xs"} alignItems="center">
                 <Box flex="0 1 auto" bg="bg.muted" px={2} py={1}>
                   TVG ID:{" "}
-                  <Code backgroundColor="bg.emphasized">{item.tvg_id}</Code>
+                  <Code backgroundColor="bg.emphasized">
+                    {item.tvg_id || "-"}
+                  </Code>
                 </Box>
                 <Box flex="0 1 auto" bg="bg.muted" px={2} py={1}>
                   TVG Logo:{" "}
-                  <Code backgroundColor="bg.emphasized">{item.tvg_logo}</Code>
+                  <Code backgroundColor="bg.emphasized">
+                    {item.tvg_logo || "-"}
+                  </Code>
                 </Box>
-                <HStack flex="0 1 auto" bg="bg.muted" px={2} py={1}>
-                  Program:
-                  <Text
-                    maxW="200px"
-                    overflow="hidden"
-                    textOverflow="ellipsis"
-                    whiteSpace="nowrap"
-                    color={item.program_title !== "" ? "fg" : "fg.error"}
-                  >
-                    {item.program_title !== "" ? item.program_title : "???"}
-                  </Text>
-                </HStack>
               </Flex>
+              <HStack bg="bg.muted" px={2} py={1} minWidth={0}>
+                <Text flexShrink={0}>Stream URL:</Text>
+                <Code
+                  backgroundColor="bg.emphasized"
+                  overflowX="auto"
+                  whiteSpace="nowrap"
+                  display="block"
+                  flex={1}
+                  minWidth={0}
+                >
+                  {`${baseURL()}/hls/${item.content_id}`}
+                </Code>
+                <CopyButton text={`${baseURL()}/hls/${item.content_id}`} />
+                <Button
+                  size="2xs"
+                  p="0"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  onClick={() => setPreviewStream(item)}
+                >
+                  <FiPlay />
+                </Button>
+              </HStack>
             </Flex>
           </Box>
         ))}

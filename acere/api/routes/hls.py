@@ -1,20 +1,20 @@
 """Stream Handling Blueprint."""
 
 from http import HTTPStatus
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 
 import aiohttp
 from fastapi import APIRouter, HTTPException, Query, Request, Response
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import HttpUrl
 
 from acere.constants import STATIC_DIR
-from acere.core.stream_token import verify_stream_token
 from acere.instances.ace_pool import get_ace_pool
 from acere.instances.ace_quality import get_quality_handler
 from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.config import settings
 from acere.instances.paths import get_app_path_handler
+from acere.services.ace_quality import LATE_SEGMENT_PUNISHMENT
 from acere.services.xc.helpers import check_xc_auth
 from acere.utils.api_models import MessageResponseModel
 from acere.utils.exception_handling import log_aiohttp_exception
@@ -23,6 +23,11 @@ from acere.utils.hls import (
     replace_hls_m3u_sources,
 )
 from acere.utils.logger import get_logger
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+else:
+    AsyncGenerator = object
 
 logger = get_logger(__name__)
 router = APIRouter(tags=["Media/Stream"])
@@ -35,20 +40,14 @@ REVERSE_PROXY_EXCLUDED_HEADERS = [
     "keep-alive",
 ]
 REVERSE_PROXY_TIMEOUT = 10  # Very high but alas
+TS_CHUNK_SIZE = 64 * 1024
+TS_TOUCH_EVERY = 100  # Chunks between update_last_used calls (~6MB), protects long watches from LRU reclaim
 
 
 # region /hls/
 @router.api_route("/hls/{path}", methods=["GET", "HEAD"], response_class=Response)
-async def hls(
-    path: str,
-    token: str = "",
-    *,
-    authentication_override: bool = False,
-) -> Response:
+async def hls(path: str) -> Response:
     """Reverse proxy the HLS from Ace."""
-    if not authentication_override:
-        verify_stream_token(token)
-
     ace_pool = get_ace_pool()
 
     if not check_valid_content_id_or_infohash(path):
@@ -83,20 +82,14 @@ async def hls(
         log_aiohttp_exception(logger, f"[ace hls {path}]", e)
 
         # Determine error type and response
-        if isinstance(e, (TimeoutError)):
+        if isinstance(e, TimeoutError):
             error_msg, status = "HLS stream timeout", HTTPStatus.REQUEST_TIMEOUT
             get_quality_handler().increment_quality(path, "")
-        elif isinstance(e, aiohttp.ClientError):
+        else:
             error_msg, status = (
                 "Cannot connect to Ace",
                 HTTPStatus.INTERNAL_SERVER_ERROR,
             )
-        else:
-            error_msg, status = (
-                "Failed to fetch HLS stream",
-                HTTPStatus.INTERNAL_SERVER_ERROR,
-            )
-            get_quality_handler().increment_quality(path, "")
 
         raise HTTPException(status_code=status, detail=error_msg) from e
 
@@ -115,7 +108,6 @@ async def hls(
         m3u_content=content_str,
         ace_address=settings.app.ace_address,
         server_name=HttpUrl(settings.EXTERNAL_URL),
-        token=token,
     )
 
     get_quality_handler().increment_quality(path, m3u_playlist=content_str)
@@ -130,10 +122,8 @@ async def hls(
 # region /hls/m/
 # Taking the easy route and capturing the full following path
 @router.get("/hls/m/{path:path}", response_class=Response)
-async def hls_multi(path: str, token: str = "") -> Response:
+async def hls_multi(path: str) -> Response:
     """Reverse proxy the HLS multistream from Ace."""
-    verify_stream_token(token)
-
     ace_pool = get_ace_pool()
 
     content_id = ace_pool.get_instance_by_multistream_path(path)
@@ -172,7 +162,6 @@ async def hls_multi(path: str, token: str = "") -> Response:
         m3u_content=content_str,
         ace_address=settings.app.ace_address,
         server_name=HttpUrl(settings.EXTERNAL_URL),
-        token=token,
     )
 
     get_quality_handler().increment_quality(content_id, m3u_playlist=content_str)
@@ -180,15 +169,88 @@ async def hls_multi(path: str, token: str = "") -> Response:
     return Response(content_str, status_code)
 
 
+# region /ts/
+@router.api_route("/ts/{content_id}", methods=["GET", "HEAD"])
+async def ts(content_id: str, request: Request) -> Response:
+    """Reverse proxy the MPEG-TS stream from Ace."""
+    ace_pool = get_ace_pool()
+
+    if not check_valid_content_id_or_infohash(content_id):
+        msg = f"Invalid content ID or infohash: {content_id}"
+        logger.error("TS stream error: %s", msg)
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail=msg,
+        )
+
+    # Some clients probe with HEAD, answer without tying up an engine slot
+    if request.method == "HEAD":
+        return Response(media_type="video/MP2T")
+
+    ts_url = await ace_pool.get_instance_ts_url_by_content_id(content_id)
+
+    if not ts_url:
+        msg = f"Can't serve ts_stream, Ace pool is full or invalid stream: {content_id}"
+        logger.error("TS stream error: %s", msg)
+        raise HTTPException(
+            status_code=HTTPStatus.SERVICE_UNAVAILABLE,
+            detail=msg,
+        )
+
+    logger.trace("TS stream requested for url: %s", ts_url)
+
+    # No total timeout, a live TS stream never ends
+    timeout = aiohttp.ClientTimeout(total=None, sock_connect=REVERSE_PROXY_TIMEOUT, sock_read=REVERSE_PROXY_TIMEOUT)
+    session = aiohttp.ClientSession(timeout=timeout)
+    try:
+        ace_resp = await session.get(ts_url.encoded_string())
+        ace_resp.raise_for_status()
+    except (aiohttp.ClientError, TimeoutError) as e:
+        await session.close()
+        log_aiohttp_exception(logger, f"[ace ts {content_id}]", e)
+        if isinstance(e, TimeoutError):
+            get_quality_handler().increment_quality(content_id, "")
+            error_msg, status = "TS stream timeout", HTTPStatus.REQUEST_TIMEOUT
+        else:
+            error_msg, status = (
+                "Cannot connect to Ace",
+                HTTPStatus.INTERNAL_SERVER_ERROR,
+            )
+        raise HTTPException(status_code=status, detail=error_msg) from e
+
+    async def stream() -> AsyncGenerator[bytes]:
+        # Client disconnect -> Starlette closes the generator -> finally releases the engine connection
+        try:
+            chunk_n = 0
+            async for chunk in ace_resp.content.iter_chunked(TS_CHUNK_SIZE):
+                yield chunk
+                chunk_n += 1
+                if chunk_n % TS_TOUCH_EVERY == 0:
+                    ace_pool.touch(content_id)
+                    get_quality_handler().increment_quality_raw(content_id, 1, "TS stream flowing")
+            # A live stream ending on its own is a death signal, client disconnects never reach here
+            get_quality_handler().increment_quality_raw(content_id, LATE_SEGMENT_PUNISHMENT, "TS stream ended")
+        except (aiohttp.ClientError, TimeoutError) as e:
+            # Headers already sent as 200, log and end the stream, the player will retry
+            log_aiohttp_exception(logger, f"[ace ts {content_id}]", e)
+            get_quality_handler().increment_quality_raw(content_id, LATE_SEGMENT_PUNISHMENT, "TS stream stalled")
+        finally:
+            ace_resp.close()
+            await session.close()
+
+    return StreamingResponse(stream(), media_type="video/MP2T")
+
+
 # region XC
+# Only .m3u8 gets HLS, everything else (.ts, extensionless) gets MPEG-TS like a real XC server.
 # Depending on the Client, it will either be:
 # /live/u/p/<xc_id>.m3u8  | UHF, M3UAndroid, IPTV Smarters Pro
-# /u/p/<xc_id>            | Smarters Player Lite (iOS), iMPlayer Android
-# /u/p/<xc_id>.ts         | iMPlayer iOS, TiViMate, Purple Simple (okay that m3u8 is the response)
+# /u/p/<xc_id>            | Smarters Player Lite (iOS), iMPlayer Android (TODO: re-test on MPEG-TS)
+# /u/p/<xc_id>.ts         | iMPlayer iOS, TiViMate, Purple Simple (real MPEG-TS)
 # /u/p/<xc_id>.m3u8      | SparkleTV
 @router.get("/{_path_username}/{_path_password}/{xc_stream}", response_class=Response)
 @router.get("/live/{_path_username}/{_path_password}/{xc_stream}", response_class=Response)
-async def xc_m3u8(
+async def xc_live_stream(
     request: Request,
     _path_username: str = "",
     _path_password: str = "",
@@ -203,12 +265,10 @@ async def xc_m3u8(
     username = _path_username or username
     password = _path_password or password
 
-    stream_token = check_xc_auth(username=username, stream_token=password)
-
-    content_id: str | None = None
+    check_xc_auth(username=username, password=password)
 
     logger.trace(
-        "XC HLS: path='%s' args='%s' ua='%s'",
+        "XC stream: path='%s' args='%s' ua='%s'",
         str(request.url) if request else xc_stream,
         f"username={username},password={password}",
         request.headers.get("User-Agent", "") if request else "",
@@ -226,26 +286,24 @@ async def xc_m3u8(
 
     content_id = get_ace_streams_db_handler().get_content_id_by_xc_id(xc_id_int)
 
-    if content_id is None:
-        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="Invalid XC ID format")
-
     if not content_id:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
             detail="Content ID not found for the given XC ID",
         )
 
-    return await hls(content_id, stream_token)
+    if xc_stream.endswith(".m3u8"):
+        return await hls(content_id)
+
+    return await ts(content_id, request)
 
 
 # region /ace/c/ and /hls/c/ Content paths for regular and multistream
 # Do a full path capture here, since ace puts a bunch of stuff following
 @router.get("/ace/c/{path:path}", response_class=Response, name="ace_content_1")
 @router.get("/hls/c/{path:path}", response_class=Response, name="ace_content_2")
-async def ace_content(path: str, request: Request, token: str = "") -> Response:
+async def ace_content(path: str, request: Request) -> Response:
     """Reverse proxy the Ace content."""
-    verify_stream_token(token)
-
     # Determine the correct URL based on the request path
     if "/hls/c/" in request.url.path:
         url = HttpUrl(f"{settings.app.ace_address}hls/c/{path}").encoded_string()
@@ -293,12 +351,10 @@ async def ace_content(path: str, request: Request, token: str = "") -> Response:
 
 # region /tvg-logo/
 @router.get("/tvg-logo/{path}", response_class=FileResponse)
-def tvg_logo(path: str, token: str = "") -> FileResponse:
+def tvg_logo(path: str) -> FileResponse:
     """Serve the TVG logo from the local filesystem."""
     # You'll need to define where static_folder and instance_path come from
     # This might be from settings or app configuration
-    verify_stream_token(token)
-
     # Not sure if this check is needed
     if STATIC_DIR is None:
         raise HTTPException(

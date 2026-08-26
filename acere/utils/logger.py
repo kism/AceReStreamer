@@ -29,9 +29,6 @@ TRACE_LEVEL_NUM = 5
 MIN_LOG_LEVEL_INT = 0
 MAX_LOG_LEVEL_INT = 50
 
-FILE_HANDLER_MAX_BYTES = 1000000  # 1MB
-FILE_HANDLER_BACKUP_COUNT = 5
-
 
 class LoggingConf(BaseModel):
     """Logging configuration definition."""
@@ -141,8 +138,6 @@ def setup_logger(
     logging.getLogger("uvicorn").propagate = False
     logging.getLogger("uvicorn.error").setLevel(logging.INFO)
     logging.getLogger("uvicorn.error").propagate = False
-    logging.getLogger("urllib3").setLevel(logging.WARNING)
-    logging.getLogger("passlib").setLevel(logging.ERROR)
     logging.getLogger("watchfiles").setLevel(logging.WARNING)
     logging.getLogger("python_multipart").setLevel(TRACE_LEVEL_NUM)
     logging.getLogger("python_multipart.multipart").setLevel(TRACE_LEVEL_NUM)

@@ -1,6 +1,7 @@
 import { Box, Heading, HStack, Text, VStack } from "@chakra-ui/react"
 import { Code } from "@/components/ui/code"
 import { CopyButton } from "@/components/ui/copy-button"
+import { Loading } from "@/components/ui/loading"
 import {
   AppTableRoot,
   TableBody,
@@ -12,9 +13,9 @@ import baseURL from "@/helpers"
 const VITE_API_URL = baseURL()
 
 interface IptvInfoProps {
-  user: {
-    username?: string
-    stream_token?: string
+  credentials: {
+    username: string
+    password: string
   } | null
   isLoading: boolean
   error: Error | null
@@ -48,22 +49,22 @@ function renderTableRows(items: Array<{ name: string; value: string }>) {
   ))
 }
 
-export function IptvInfo({ user, isLoading, error }: IptvInfoProps) {
-  if (isLoading) return <Text>Loading...</Text>
+export function IptvInfo({ credentials, isLoading, error }: IptvInfoProps) {
+  if (isLoading) return <Loading />
   if (error)
     return (
       <Text color="red">Cannot Load IPTV information: {error.message}</Text>
     )
 
-  const tokenString = user?.stream_token ? `?token=${user.stream_token}` : ""
-
   const serverAddress = VITE_API_URL
-  const username = user?.username || "any"
-  const password = user?.stream_token || "any"
-  const playlistUrl = `${VITE_API_URL}/iptv${tokenString}`
-  const playlistM3uUrl = `${VITE_API_URL}/iptv.m3u${tokenString}`
-  const playlistM3u8Url = `${VITE_API_URL}/iptv.m3u8${tokenString}`
-  const epgXmlUrl = `${VITE_API_URL}/epg.xml${tokenString}`
+  const username = credentials?.username || "any"
+  const password = credentials?.password || "any"
+  const playlistUrl = `${VITE_API_URL}/iptv`
+  const playlistM3uUrl = `${VITE_API_URL}/iptv.m3u`
+  const playlistM3u8Url = `${VITE_API_URL}/iptv.m3u8`
+  const playlistTsUrl = `${VITE_API_URL}/iptv-ts`
+  const playlistTsM3uUrl = `${VITE_API_URL}/iptv-ts.m3u`
+  const playlistTsM3u8Url = `${VITE_API_URL}/iptv-ts.m3u8`
 
   const xtreamItems = [
     { name: "Server / Portal URL", value: serverAddress },
@@ -75,17 +76,23 @@ export function IptvInfo({ user, isLoading, error }: IptvInfoProps) {
     { name: "Playlist URL", value: playlistUrl },
     { name: "Playlist URL (.m3u)", value: playlistM3uUrl },
     { name: "Playlist URL (.m3u8)", value: playlistM3u8Url },
-    { name: "EPG URL", value: epgXmlUrl },
+  ]
+
+  const iptvTsItems = [
+    { name: "Playlist URL", value: playlistTsUrl },
+    { name: "Playlist URL (.m3u)", value: playlistTsM3uUrl },
+    { name: "Playlist URL (.m3u8)", value: playlistTsM3u8Url },
   ]
 
   return (
     <VStack gap={6} align="stretch">
       <VStack gap={2} align="stretch">
-        <Heading>Xtream IPTV</Heading>
+        <Heading size="sm" py={1}>
+          Xtream IPTV (XC)
+        </Heading>
         <Text>
           Add a playlist/source with your IPTV app, use the XC/Xtream setting
-          when adding. EPG should work automatically. If its not available,
-          follow the regular IPTV instructions.
+          when adding.
         </Text>
         <Box maxW={{ base: "100%", sm: "450px" }}>
           <AppTableRoot preset="outlineSm" width="100%" maxWidth="100%">
@@ -95,15 +102,31 @@ export function IptvInfo({ user, isLoading, error }: IptvInfoProps) {
       </VStack>
 
       <VStack gap={2} align="stretch">
-        <Heading>IPTV</Heading>
+        <Heading size="sm" py={1}>
+          M3U8 IPTV
+        </Heading>
         <Text>
-          Depending on the app, you might need to use an alternate Playlist or
-          EPG url.
+          Depending on the app, you might need to use an alternate Playlist url.
         </Text>
         <Text>Some apps will only work if this site is on https.</Text>
         <Box maxW={{ base: "100%", md: "700px" }}>
           <AppTableRoot preset="outlineSm" width="100%" maxWidth="100%">
             <TableBody>{renderTableRows(iptvItems)}</TableBody>
+          </AppTableRoot>
+        </Box>
+      </VStack>
+
+      <VStack gap={2} align="stretch">
+        <Heading size="sm" py={1}>
+          M3U8 IPTV (MPEG-TS streams)
+        </Heading>
+        <Text>
+          Same playlist, but the streams are MPEG-TS instead of HLS. Try this if
+          a stream won't play from the playlists above.
+        </Text>
+        <Box maxW={{ base: "100%", md: "700px" }}>
+          <AppTableRoot preset="outlineSm" width="100%" maxWidth="100%">
+            <TableBody>{renderTableRows(iptvTsItems)}</TableBody>
           </AppTableRoot>
         </Box>
       </VStack>

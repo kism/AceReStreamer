@@ -19,7 +19,12 @@ else:
     Path = object
     Engine = object
 
-_LEGACY_TABLES = ["acequalitycache", "contentidinfohash", "content_id_infohash", "content_id_xc_id"]
+_LEGACY_TABLES = [
+    "acequalitycache",
+    "contentidinfohash",
+    "content_id_infohash",
+    "content_id_xc_id",
+]
 
 
 @pytest.fixture

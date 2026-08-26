@@ -13,7 +13,11 @@ export function getQualityColor(quality: number) {
   return "fg.error"
 }
 
-export function QualityCell({ quality, ...props }: { quality: number } & any) {
+type QualityCellProps = { quality: number } & React.ComponentProps<
+  typeof TableCell
+>
+
+export function QualityCell({ quality, ...props }: QualityCellProps) {
   const color = getQualityColor(quality)
 
   return (

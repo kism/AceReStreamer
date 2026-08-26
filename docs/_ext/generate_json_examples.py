@@ -6,7 +6,13 @@ from typing import TYPE_CHECKING
 
 from pydantic import HttpUrl
 
-from acere.core.config.scraper import HTMLScraperFilter, ScrapeSiteAPI, ScrapeSiteHTML, ScrapeSiteIPTV, TitleFilter
+from acere.core.config.scraper import (
+    HTMLScraperFilter,
+    ScrapeSiteAPI,
+    ScrapeSiteHTML,
+    ScrapeSiteIPTV,
+    TitleFilter,
+)
 from acere.services.scraper.api import APISiteResponseItem
 
 if TYPE_CHECKING:

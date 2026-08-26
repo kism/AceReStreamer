@@ -5,7 +5,6 @@ import asyncio
 from pathlib import Path
 
 import aiohttp
-import anyio
 
 from acere.constants import DEFAULT_INSTANCE_PATH, XC_USER_AGENT
 from acere.utils.cli import console
@@ -20,17 +19,14 @@ XC_ACTIONS = [
     "get_series",
 ]
 
-_CHUNK_SIZE = 65536
-
 
 async def _stream_to_file(response: aiohttp.ClientResponse, out_file: Path) -> None:
-    async with await anyio.Path(out_file).open("wb") as f:
-        async for chunk in response.content.iter_chunked(_CHUNK_SIZE):
-            await f.write(chunk)
+    # ponytail: blocking write of a small JSON/m3u debug dump, not worth an anyio dependency
+    out_file.write_bytes(await response.read())  # noqa: ASYNC240
 
 
 async def fetch_all_endpoints(base_url: str, username: str, password: str, output_dir: Path) -> None:
-    """Fetch all standard XC endpoints, streaming each response directly to disk."""
+    """Fetch all standard XC endpoints, saving each response to disk."""
     base = base_url.rstrip("/")
     player_api_url = base + "/player_api.php"
     get_url = base + "/get.php"
@@ -67,7 +63,11 @@ async def fetch_all_endpoints(base_url: str, username: str, password: str, outpu
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Fetch all standard XC API endpoints and save responses to disk.")
-    parser.add_argument("url", type=str, help="Base URL of the XC server (e.g. http://myserver.com:8080)")
+    parser.add_argument(
+        "url",
+        type=str,
+        help="Base URL of the XC server (e.g. http://myserver.com:8080)",
+    )
     parser.add_argument("username", type=str, help="XC server username")
     parser.add_argument("password", type=str, help="XC server password")
     parser.add_argument(

@@ -4,34 +4,21 @@ import asyncio
 import re
 import threading
 import time
-from typing import TYPE_CHECKING
 
-from acere.core.config.scraper import HTMLScraperFilter
+from acere.core.config.scraper import ScrapeSiteHTML
 from acere.instances.ace_streams import get_ace_streams_db_handler
 from acere.instances.config import settings
-from acere.instances.epg import get_epg_handler
+from acere.utils.helpers import stop_threads
 from acere.utils.logger import get_logger
 
 from .api import APIStreamScraper
-from .helpers import create_unique_stream_list, get_content_id_from_infohash_acestream_api
+from .helpers import (
+    create_unique_stream_list,
+    get_content_id_from_infohash_acestream_api,
+)
 from .html import HTMLStreamScraper
 from .iptv import IPTVStreamScraper
 from .models import AceScraperSourceApi, FoundAceStream
-
-if TYPE_CHECKING:
-    from acere.core.config.epg import EPGInstanceConf
-    from acere.core.config.scraper import (
-        AceScrapeConf,
-        ScrapeSiteHTML,
-        ScrapeSiteIPTV,
-    )
-    from acere.services.ace_quality import Quality
-else:
-    ScrapeSiteHTML = object
-    ScrapeSiteIPTV = object
-    EPGInstanceConf = object
-    AceScrapeConf = object
-    Quality = object
 
 logger = get_logger(__name__)
 
@@ -58,45 +45,21 @@ class AceScraper:
     # region GET API Scraper
     def get_scraper_sources_flat_api(self) -> list[AceScraperSourceApi]:
         """Get the sources for the scraper, as a flat list."""
-        sources = [
+        all_sites = [
+            *settings.scraper.html,
+            *settings.scraper.iptv_m3u8,
+            *settings.scraper.api,
+        ]
+        return [
             AceScraperSourceApi(
                 name=site.name,
                 url=site.url,
                 title_filter=site.title_filter,
-                type="html",
-                html_filter=HTMLScraperFilter(
-                    check_sibling=site.html_filter.check_sibling,
-                    target_class=site.html_filter.target_class,
-                ),
+                type=site.type,
+                html_filter=site.html_filter if isinstance(site, ScrapeSiteHTML) else None,
             )
-            for site in settings.scraper.html
+            for site in all_sites
         ]
-
-        sources.extend(
-            [
-                AceScraperSourceApi(
-                    name=site.name,
-                    url=site.url,
-                    title_filter=site.title_filter,
-                    type="iptv",
-                )
-                for site in settings.scraper.iptv_m3u8
-            ]
-        )
-
-        sources.extend(
-            [
-                AceScraperSourceApi(
-                    name=site.name,
-                    url=site.url,
-                    title_filter=site.title_filter,
-                    type="api",
-                )
-                for site in settings.scraper.api
-            ]
-        )
-
-        return sources
 
     # region Helpers
     def _print_streams(self, all_found_streams: list[FoundAceStream]) -> None:
@@ -172,11 +135,6 @@ class AceScraper:
         for stream in self._streams.values():
             handler.update_stream(stream=stream)
 
-    def _update_epg_with_streams(self) -> None:
-        """Update the EPG with the found streams."""
-        tvg_id_list = [stream.tvg_id for stream in self._streams.values()]
-        get_epg_handler().add_tvg_ids(tvg_ids=tvg_id_list)
-
     # region Thread
     def start_scrape_thread(self) -> None:  # noqa: C901
         """Run the scraper to find AceStreams."""
@@ -214,7 +172,6 @@ class AceScraper:
 
                 # Populate ourself
                 self._print_streams(found_streams)
-                self._update_epg_with_streams()
 
                 # For streams with only an infohash, populate the content_id using the api
                 for attempt in range(2):
@@ -242,11 +199,10 @@ class AceScraper:
                     # Only sleep if we're going to retry
                     if attempt < 1:
                         logger.info(
-                            "Still have %d streams with missing content_ids, retrying in 60 seconds", len(still_missing)
+                            "Still have %d streams with missing content_ids, retrying in 60 seconds",
+                            len(still_missing),
                         )
                         time.sleep(60)
-
-                self._update_epg_with_streams()
 
                 self._print_warnings()
                 if self._stop_event.wait(SCRAPE_INTERVAL):
@@ -260,17 +216,8 @@ class AceScraper:
 
     def stop_all_threads(self) -> None:
         """Stop all threads in the AceScraper."""
-        if len(self._threads) == 0:
-            return
-
-        logger.info("Stopping all %s threads [%s]", self.__class__.__name__, self._instance_id)
-        self._stop_event.set()
-        for thread in self._threads.copy():
-            if thread.is_alive():
-                thread.join(timeout=60)
-                if not thread.is_alive():
-                    self._threads.remove(thread)
-                else:
-                    logger.warning("Thread %s did not stop in time.", thread.name)
-
-        self._stop_event.clear()
+        stop_threads(
+            self._threads,
+            self._stop_event,
+            f"{self.__class__.__name__} [{self._instance_id}]",
+        )

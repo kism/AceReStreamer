@@ -32,12 +32,21 @@ async def scraper(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> IPTVStream
     async def _mock_download_tvg_logo(*args: Any, **kwargs: Any) -> None:
         return
 
-    monkeypatch.setattr("acere.services.scraper.iptv.tvg_logo.download_and_save_logo", _mock_download_tvg_logo)
-    monkeypatch.setattr("acere.services.scraper.iptv.tvg_logo.fetch_logo_content", _mock_download_tvg_logo)
+    monkeypatch.setattr(
+        "acere.services.scraper.iptv.tvg_logo.download_and_save_logo",
+        _mock_download_tvg_logo,
+    )
+    monkeypatch.setattr(
+        "acere.services.scraper.iptv.tvg_logo.fetch_logo_content",
+        _mock_download_tvg_logo,
+    )
 
     def _mock_find_tvg_logo_image(title: str) -> str:
         return f"http://pytest.internal/logos/{title.replace(' ', '_')}.png"
 
-    monkeypatch.setattr("acere.services.scraper.name_processor.find_tvg_logo_image", _mock_find_tvg_logo_image)
+    monkeypatch.setattr(
+        "acere.services.scraper.name_processor.find_tvg_logo_image",
+        _mock_find_tvg_logo_image,
+    )
 
     return scraper

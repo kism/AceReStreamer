@@ -20,17 +20,14 @@ def create_extinf_line(
     stream: FoundAceStream | AceStreamDBEntry,
     tvg_url_base: HttpUrl | None,
     last_found: int,
-    token: str = "",
 ) -> str:
     """Create an M3U EXTINF line for a given FoundAceStream object."""
-    token_str = "" if token == "" else f"?token={token}"
-
     final_url_base = None
     if tvg_url_base is not None:
         final_url_base = tvg_url_base.encoded_string().removesuffix("/")
     out = [
         "#EXTINF:-1",
-        f'tvg-logo="{final_url_base}/{stream.tvg_logo}{token_str}"' if stream.tvg_logo and final_url_base else "",
+        f'tvg-logo="{final_url_base}/{stream.tvg_logo}"' if stream.tvg_logo and final_url_base else "",
         f'tvg-id="{stream.tvg_id}"',
         f'group-title="{stream.group_title}"',
         f'x-last-found="{last_found}"',

@@ -82,7 +82,10 @@ async def test_check_ace_running_healthy(monkeypatch: pytest.MonkeyPatch) -> Non
     )
 
     # Mock aiohttp.ClientSession in the pool module
-    monkeypatch.setattr("acere.services.ace_pool.pool.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr(
+        "acere.services.ace_pool.pool.aiohttp.ClientSession",
+        lambda **kwargs: fake_session,
+    )
 
     pool = AcePool(instance_id="test")
     result = await pool.check_ace_running()
@@ -100,7 +103,10 @@ async def test_check_ace_running_unhealthy(monkeypatch: pytest.MonkeyPatch) -> N
     fake_session = FakeSession({})  # Empty dict means all URLs return 404
 
     # Mock aiohttp.ClientSession
-    monkeypatch.setattr("acere.services.ace_pool.pool.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr(
+        "acere.services.ace_pool.pool.aiohttp.ClientSession",
+        lambda **kwargs: fake_session,
+    )
 
     pool = AcePool(instance_id="test")
     result = await pool.check_ace_running()
@@ -198,8 +204,14 @@ async def test_get_set_valid(monkeypatch: pytest.MonkeyPatch) -> None:
         }
     )
 
-    monkeypatch.setattr("acere.services.ace_pool.pool.aiohttp.ClientSession", lambda **kwargs: fake_session)
-    monkeypatch.setattr("acere.services.ace_pool.entry.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr(
+        "acere.services.ace_pool.pool.aiohttp.ClientSession",
+        lambda **kwargs: fake_session,
+    )
+    monkeypatch.setattr(
+        "acere.services.ace_pool.entry.aiohttp.ClientSession",
+        lambda **kwargs: fake_session,
+    )
 
     # Mark pool as healthy so stats queries work
     pool._healthy = True
@@ -247,6 +259,103 @@ async def test_get_set_valid(monkeypatch: pytest.MonkeyPatch) -> None:
     # Remove
     assert await pool.remove_instance_by_content_id(content_id, caller="Test")
     assert await pool.get_stats_by_content_id(content_id) is None
+
+
+@pytest.mark.asyncio
+async def test_get_ts_url(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test getting the MPEG-TS URL, second call reuses the same pool entry."""
+    content_id = get_random_content_id()
+    mock_hls_playback_url = HttpUrl("http://localhost:6878/ace/m/whatever.m3u8")
+    mock_ts_playback_url = HttpUrl("http://localhost:6878/ace/r/whatever/stream")
+    mock_stat_url = HttpUrl("http://localhost:6878/stat/whatever")
+    mock_command_url = HttpUrl("http://localhost:6878/ace/cmd/whatever")
+
+    pool = AcePool(instance_id="test")
+
+    hls_middleware_url = get_middleware_url(
+        ace_url=pool._ace_address,
+        content_id=content_id,
+        ace_pid=1,
+        transcode_audio=pool._transcode_audio,
+    )
+    ts_middleware_url = get_middleware_url(
+        ace_url=pool._ace_address,
+        content_id=content_id,
+        ace_pid=1,
+        transcode_audio=pool._transcode_audio,
+        endpoint="ace/getstream",
+    )
+
+    fake_session = FakeSession(
+        {
+            hls_middleware_url: {
+                "status": 200,
+                "data": create_mock_middleware_response(
+                    playback_url=mock_hls_playback_url,
+                    stat_url=mock_stat_url,
+                    command_url=mock_command_url,
+                    playback_session_id="session123",
+                ).model_dump_json(),
+            },
+            ts_middleware_url: {
+                "status": 200,
+                "data": create_mock_middleware_response(
+                    playback_url=mock_ts_playback_url,
+                    stat_url=mock_stat_url,
+                    command_url=mock_command_url,
+                    playback_session_id="session123",
+                ).model_dump_json(),
+            },
+        }
+    )
+
+    monkeypatch.setattr(
+        "acere.services.ace_pool.pool.aiohttp.ClientSession",
+        lambda **kwargs: fake_session,
+    )
+    monkeypatch.setattr(
+        "acere.services.ace_pool.entry.aiohttp.ClientSession",
+        lambda **kwargs: fake_session,
+    )
+
+    url_1 = await pool.get_instance_ts_url_by_content_id(content_id)
+    url_2 = await pool.get_instance_ts_url_by_content_id(content_id)
+
+    assert url_1 == mock_ts_playback_url
+    assert url_1 == url_2
+    assert len(pool._ace_instances) == 1
+
+    # HLS and TS share the same entry / pid
+    hls_url = await pool.get_instance_hls_url_by_content_id(content_id)
+    assert hls_url == mock_hls_playback_url
+    assert len(pool._ace_instances) == 1
+
+    # touch updates last used
+    instance = next(iter(pool._ace_instances.values()))
+    before = instance.date_last_used
+    pool.touch(content_id)
+    assert instance.date_last_used >= before
+
+
+async def test_keep_alive_skips_actively_watched(mocker: MockerFixture) -> None:
+    """Test keep_alive returns early when a client is actively watching."""
+    entry = AcePoolEntry(
+        ace_pid=1,
+        ace_address=HttpUrl("http://localhost:6878/"),
+        content_id=get_random_content_id(),
+        transcode_audio=False,
+    )
+    mock_populate = mocker.patch.object(entry, "populate_urls")
+
+    # Just used -> skip entirely
+    entry.update_last_used()
+    await entry.keep_alive()
+    mock_populate.assert_not_called()
+
+    # Idle past the active window -> keep_alive proceeds
+    entry.date_last_used = datetime.now(tz=UTC) - timedelta(minutes=2)
+    await entry.keep_alive()
+    mock_populate.assert_called_once()
 
 
 async def test_when_not_healthy() -> None:

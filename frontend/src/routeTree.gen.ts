@@ -9,21 +9,12 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
-import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
-import { Route as LayoutEpgRouteImport } from './routes/_layout/epg'
-import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
-import { Route as LayoutInfoIndexRouteImport } from './routes/_layout/info/index'
-import { Route as LayoutInfoPlaybackRouteImport } from './routes/_layout/info/playback'
-import { Route as LayoutInfoIptvRouteImport } from './routes/_layout/info/iptv'
+import { Route as LayoutChannelsRouteImport } from './routes/_layout/channels'
+import { Route as LayoutScrapersRouteImport } from './routes/_layout/scrapers'
+import { Route as LayoutSystemRouteImport } from './routes/_layout/system'
 
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LayoutRoute = LayoutRouteImport.update({
   id: '/_layout',
   getParentRoute: () => rootRouteImport,
@@ -33,117 +24,62 @@ const LayoutIndexRoute = LayoutIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
+const LayoutChannelsRoute = LayoutChannelsRouteImport.update({
+  id: '/channels',
+  path: '/channels',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutEpgRoute = LayoutEpgRouteImport.update({
-  id: '/epg',
-  path: '/epg',
+const LayoutScrapersRoute = LayoutScrapersRouteImport.update({
+  id: '/scrapers',
+  path: '/scrapers',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutAdminRoute = LayoutAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => LayoutRoute,
-} as any)
-const LayoutInfoIndexRoute = LayoutInfoIndexRouteImport.update({
-  id: '/info/',
-  path: '/info/',
-  getParentRoute: () => LayoutRoute,
-} as any)
-const LayoutInfoPlaybackRoute = LayoutInfoPlaybackRouteImport.update({
-  id: '/info/playback',
-  path: '/info/playback',
-  getParentRoute: () => LayoutRoute,
-} as any)
-const LayoutInfoIptvRoute = LayoutInfoIptvRouteImport.update({
-  id: '/info/iptv',
-  path: '/info/iptv',
+const LayoutSystemRoute = LayoutSystemRouteImport.update({
+  id: '/system',
+  path: '/system',
   getParentRoute: () => LayoutRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
-  '/login': typeof LoginRoute
-  '/admin': typeof LayoutAdminRoute
-  '/epg': typeof LayoutEpgRoute
-  '/settings': typeof LayoutSettingsRoute
-  '/info/iptv': typeof LayoutInfoIptvRoute
-  '/info/playback': typeof LayoutInfoPlaybackRoute
-  '/info/': typeof LayoutInfoIndexRoute
+  '/channels': typeof LayoutChannelsRoute
+  '/scrapers': typeof LayoutScrapersRoute
+  '/system': typeof LayoutSystemRoute
 }
 export interface FileRoutesByTo {
-  '/login': typeof LoginRoute
-  '/admin': typeof LayoutAdminRoute
-  '/epg': typeof LayoutEpgRoute
-  '/settings': typeof LayoutSettingsRoute
+  '/channels': typeof LayoutChannelsRoute
+  '/scrapers': typeof LayoutScrapersRoute
+  '/system': typeof LayoutSystemRoute
   '/': typeof LayoutIndexRoute
-  '/info/iptv': typeof LayoutInfoIptvRoute
-  '/info/playback': typeof LayoutInfoPlaybackRoute
-  '/info': typeof LayoutInfoIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_layout': typeof LayoutRouteWithChildren
-  '/login': typeof LoginRoute
-  '/_layout/admin': typeof LayoutAdminRoute
-  '/_layout/epg': typeof LayoutEpgRoute
-  '/_layout/settings': typeof LayoutSettingsRoute
+  '/_layout/channels': typeof LayoutChannelsRoute
+  '/_layout/scrapers': typeof LayoutScrapersRoute
+  '/_layout/system': typeof LayoutSystemRoute
   '/_layout/': typeof LayoutIndexRoute
-  '/_layout/info/iptv': typeof LayoutInfoIptvRoute
-  '/_layout/info/playback': typeof LayoutInfoPlaybackRoute
-  '/_layout/info/': typeof LayoutInfoIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/login'
-    | '/admin'
-    | '/epg'
-    | '/settings'
-    | '/info/iptv'
-    | '/info/playback'
-    | '/info/'
+  fullPaths: '/' | '/channels' | '/scrapers' | '/system'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/login'
-    | '/admin'
-    | '/epg'
-    | '/settings'
-    | '/'
-    | '/info/iptv'
-    | '/info/playback'
-    | '/info'
+  to: '/channels' | '/scrapers' | '/system' | '/'
   id:
     | '__root__'
     | '/_layout'
-    | '/login'
-    | '/_layout/admin'
-    | '/_layout/epg'
-    | '/_layout/settings'
+    | '/_layout/channels'
+    | '/_layout/scrapers'
+    | '/_layout/system'
     | '/_layout/'
-    | '/_layout/info/iptv'
-    | '/_layout/info/playback'
-    | '/_layout/info/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   LayoutRoute: typeof LayoutRouteWithChildren
-  LoginRoute: typeof LoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_layout': {
       id: '/_layout'
       path: ''
@@ -158,69 +94,42 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/settings': {
-      id: '/_layout/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof LayoutSettingsRouteImport
+    '/_layout/channels': {
+      id: '/_layout/channels'
+      path: '/channels'
+      fullPath: '/channels'
+      preLoaderRoute: typeof LayoutChannelsRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/epg': {
-      id: '/_layout/epg'
-      path: '/epg'
-      fullPath: '/epg'
-      preLoaderRoute: typeof LayoutEpgRouteImport
+    '/_layout/scrapers': {
+      id: '/_layout/scrapers'
+      path: '/scrapers'
+      fullPath: '/scrapers'
+      preLoaderRoute: typeof LayoutScrapersRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/admin': {
-      id: '/_layout/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof LayoutAdminRouteImport
-      parentRoute: typeof LayoutRoute
-    }
-    '/_layout/info/': {
-      id: '/_layout/info/'
-      path: '/info'
-      fullPath: '/info/'
-      preLoaderRoute: typeof LayoutInfoIndexRouteImport
-      parentRoute: typeof LayoutRoute
-    }
-    '/_layout/info/playback': {
-      id: '/_layout/info/playback'
-      path: '/info/playback'
-      fullPath: '/info/playback'
-      preLoaderRoute: typeof LayoutInfoPlaybackRouteImport
-      parentRoute: typeof LayoutRoute
-    }
-    '/_layout/info/iptv': {
-      id: '/_layout/info/iptv'
-      path: '/info/iptv'
-      fullPath: '/info/iptv'
-      preLoaderRoute: typeof LayoutInfoIptvRouteImport
+    '/_layout/system': {
+      id: '/_layout/system'
+      path: '/system'
+      fullPath: '/system'
+      preLoaderRoute: typeof LayoutSystemRouteImport
       parentRoute: typeof LayoutRoute
     }
   }
 }
 
 interface LayoutRouteChildren {
-  LayoutAdminRoute: typeof LayoutAdminRoute
-  LayoutEpgRoute: typeof LayoutEpgRoute
-  LayoutSettingsRoute: typeof LayoutSettingsRoute
+  LayoutChannelsRoute: typeof LayoutChannelsRoute
+  LayoutScrapersRoute: typeof LayoutScrapersRoute
+  LayoutSystemRoute: typeof LayoutSystemRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
-  LayoutInfoIptvRoute: typeof LayoutInfoIptvRoute
-  LayoutInfoPlaybackRoute: typeof LayoutInfoPlaybackRoute
-  LayoutInfoIndexRoute: typeof LayoutInfoIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
-  LayoutAdminRoute: LayoutAdminRoute,
-  LayoutEpgRoute: LayoutEpgRoute,
-  LayoutSettingsRoute: LayoutSettingsRoute,
+  LayoutChannelsRoute: LayoutChannelsRoute,
+  LayoutScrapersRoute: LayoutScrapersRoute,
+  LayoutSystemRoute: LayoutSystemRoute,
   LayoutIndexRoute: LayoutIndexRoute,
-  LayoutInfoIptvRoute: LayoutInfoIptvRoute,
-  LayoutInfoPlaybackRoute: LayoutInfoPlaybackRoute,
-  LayoutInfoIndexRoute: LayoutInfoIndexRoute,
 }
 
 const LayoutRouteWithChildren =
@@ -228,7 +137,6 @@ const LayoutRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   LayoutRoute: LayoutRouteWithChildren,
-  LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

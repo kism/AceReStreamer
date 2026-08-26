@@ -20,19 +20,7 @@ def test_replace_hls_m3u_sources() -> None:
         m3u_content=_SAMPLE_INPUT_M3U,
         ace_address=_LOCAL_ACE_ADDRESS,
         server_name=_EXTERNAL_ADDRESS,
-        token="",
     )
 
     assert _LOCAL_ACE_ADDRESS.encoded_string() not in output_m3u
     assert _EXTERNAL_ADDRESS.encoded_string() in output_m3u
-
-    output_m3u_with_token = replace_hls_m3u_sources(
-        m3u_content=_SAMPLE_INPUT_M3U,
-        ace_address=_LOCAL_ACE_ADDRESS,
-        server_name=_EXTERNAL_ADDRESS,
-        token="sometoken",
-    )
-
-    assert _LOCAL_ACE_ADDRESS.encoded_string() not in output_m3u_with_token
-    assert _EXTERNAL_ADDRESS.encoded_string() in output_m3u
-    assert "?token=sometoken" in output_m3u_with_token

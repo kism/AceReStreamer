@@ -24,7 +24,11 @@ class ContentIdXcIdDatabaseHandler(BaseDatabaseHandler):
             session.add(new_mapping)
             session.commit()
             session.refresh(new_mapping)
-            logger.trace("Created new XC stream ID mapping: %s -> %d", content_id, new_mapping.xc_id)
+            logger.trace(
+                "Created new XC stream ID mapping: %s -> %d",
+                content_id,
+                new_mapping.xc_id,
+            )
             return new_mapping.xc_id
 
     def get_content_id_by_xc_id(self, xc_id: int) -> str | None:

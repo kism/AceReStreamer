@@ -94,6 +94,16 @@ class Quality(BaseModel):
                 seconds_int = float(seconds.group(1))
                 self._next_segment_expected = timedelta(seconds=seconds_int)
 
+        self._apply_rating(rating)
+
+    def update_quality_raw(self, rating: int, message: str) -> None:
+        """Apply a rating directly, for transports with no m3u8 to parse (MPEG-TS)."""
+        self.last_message = message
+        if rating > 0:
+            self.m3u_failures = 0
+        self._apply_rating(rating)
+
+    def _apply_rating(self, rating: int) -> None:
         if rating > 0:  # If it works at all, we set the quality to a minimum of QUALITY_ON_FIRST_SUCCESS
             self.quality = max(QUALITY_ON_FIRST_SUCCESS, self.quality)
             self.has_ever_worked = True

@@ -3,17 +3,15 @@
 import json
 import os
 import secrets
+import string
 import typing
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Annotated, Any, Literal, Self
+from typing import TYPE_CHECKING, Literal, Self
 
 from pydantic import (
-    AnyUrl,
     BaseModel,
-    BeforeValidator,
     ConfigDict,
     HttpUrl,
-    computed_field,
     field_validator,
 )
 from pydantic_settings import (
@@ -28,7 +26,6 @@ from acere.instances.paths import get_app_path_handler, setup_app_path_handler
 from acere.utils.logger import LoggingConf, get_logger
 
 from .app import AppConf
-from .epg import EPGInstanceConf
 from .scraper import AceScrapeConf
 
 if TYPE_CHECKING:
@@ -42,18 +39,9 @@ __all__ = [
     "AceReStreamerConf",
     "AceScrapeConf",
     "AppConf",
-    "EPGInstanceConf",
 ]
 
 setup_app_path_handler(DEFAULT_INSTANCE_PATH)
-
-
-def parse_cors(v: Any) -> list[str] | str:  # noqa: ANN401 JSON things
-    if isinstance(v, str) and not v.startswith("["):
-        return [i.strip() for i in v.split(",")]
-    if isinstance(v, list | str):
-        return v
-    raise ValueError(v)
 
 
 class AceReStreamerConf(BaseSettings):
@@ -73,17 +61,11 @@ class AceReStreamerConf(BaseSettings):
     app: AppConf = AppConf()
     logging: LoggingConf = LoggingConf()
     scraper: AceScrapeConf = AceScrapeConf()
-    epgs: list[EPGInstanceConf] = []
     REMOTE_SETTINGS_URL: HttpUrl | None = None
     FRONTEND_HOST: str = ""  # Set to http://localhost:5173 for local dev
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
     EXTERNAL_URL: str = "http://localhost:5100"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 90  # 90 days, this is not a high security app.
-    SECRET_KEY: str = ""
-    FIRST_SUPERUSER: str = "admin"
-    FIRST_SUPERUSER_PASSWORD: str = ""
-    AUTH_DISABLED: bool = False
-    BACKEND_CORS_ORIGINS: Annotated[list[AnyUrl] | str, BeforeValidator(parse_cors)] = []
+    XC_PASSWORD: str = ""  # Generated on first run, see validator
 
     @classmethod
     def settings_customise_sources(
@@ -115,12 +97,12 @@ class AceReStreamerConf(BaseSettings):
         """Ensure EXTERNAL_URL does not end with a slash."""
         return value.rstrip("/")
 
-    @field_validator("SECRET_KEY", mode="before")
+    @field_validator("XC_PASSWORD", mode="before")
     @classmethod
-    def validate_secret_key(cls, value: str) -> str:
-        """Validate the secret key, generate one if not set."""
+    def validate_xc_password(cls, value: str) -> str:
+        """Validate the XC password, generate one if not set."""
         if not value or value.strip() == "":
-            value = secrets.token_urlsafe(32)
+            value = "".join(secrets.choice(string.ascii_letters + string.digits) for _ in range(20))
         return value
 
     @field_validator("REMOTE_SETTINGS_URL", mode="before")
@@ -130,33 +112,6 @@ class AceReStreamerConf(BaseSettings):
         if value == "" or value is None:
             return None
         return value
-
-    @computed_field
-    @property
-    def all_cors_origins(self) -> list[str]:
-        return [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS] + [self.FRONTEND_HOST]
-
-    def add_epg(self, epg: EPGInstanceConf) -> None:
-        """Add an EPG instance to the config."""
-        matching_epg = next((existing_epg for existing_epg in self.epgs if existing_epg.url == epg.url), None)
-
-        if not matching_epg:
-            self.epgs.append(epg)
-            logger.info("Added new EPG source, total sources: %d", len(self.epgs))
-        else:
-            matching_epg = epg
-            logger.info("Updating existing EPG source: %s", epg.url)
-
-    def remove_epg(self, epg_url_slug: str) -> bool:
-        """Remove an EPG instance from the config via URL."""
-        matching_epg = next((existing_epg for existing_epg in self.epgs if existing_epg.slug == epg_url_slug), None)
-
-        if matching_epg:
-            self.epgs.remove(matching_epg)
-            logger.info("Removed EPG source, total sources: %d", len(self.epgs))
-            return True
-
-        return False
 
     def write_backup_config(
         self,
@@ -199,12 +154,8 @@ class AceReStreamerConf(BaseSettings):
         if existing_data != config_data:  # The new object will be valid, so we back up the old one
             self.write_backup_config(config_path, existing_data)
 
+        logger.info("Writing config to %s", config_path)
         with config_path.open("w") as f:
-            f.write(json.dumps(config_data))
-
-        config_path_json = config_path.with_suffix(".json")
-        logger.info("Writing config to %s", config_path_json)
-        with config_path_json.open("w") as f:
             f.write(self.model_dump_json(indent=2, exclude_none=False))
 
         logger.info("Config write complete")
@@ -244,4 +195,3 @@ class ConfigExport(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     scraper: AceScrapeConf
-    epgs: list[EPGInstanceConf]

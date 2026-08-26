@@ -79,6 +79,9 @@ export default defineConfig({
         },
       },
     },
-    chunkSizeWarningLimit: 500,
+    // ponytail: react-chakra vendor chunk is ~660 kB minified (~188 kB gzip) and can't
+    // shrink without dropping Chakra; shaka-player is ~1 MB but lazy-loaded only when
+    // the preview dialog opens; raise limit so real regressions still warn
+    chunkSizeWarningLimit: 1100,
   },
 })

@@ -1,17 +1,21 @@
 import { Container } from "@chakra-ui/react"
+import { Button } from "../ui/button"
 import { SectionSeparator } from "../ui/separator-section"
-import AddScraperJson from "./Scraper/AddScraper"
-import NameOverrides from "./Scraper/NameOverrides"
+import ScraperFormDialog from "./Scraper/ScraperFormDialog"
 import ScraperTable from "./Scraper/Table"
 
 function ScraperManagement() {
   return (
     <Container maxW="full">
-      <AddScraperJson />
+      <ScraperFormDialog
+        trigger={
+          <Button size="xs" colorPalette="teal" mt={2}>
+            Add Scraper Source
+          </Button>
+        }
+      />
       <SectionSeparator />
       <ScraperTable />
-      <SectionSeparator />
-      <NameOverrides />
     </Container>
   )
 }

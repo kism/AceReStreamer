@@ -2,13 +2,11 @@ import shaka from "shaka-player/dist/shaka-player.ui"
 import "shaka-player/dist/controls.css"
 import "./videoPlayer.css"
 
-import { UsersService } from "@/client"
 import baseURL from "@/helpers"
 
 import { updateStreamStatus } from "./useStreamStatus"
 
-const VITE_API_URL = baseURL()
-const baseHLSURL = `${VITE_API_URL}/hls`
+const baseHLSURL = `${baseURL()}/hls`
 
 const VIDEO_CODEC_NAMES: Record<string, string> = {
   avc1: "H.264",
@@ -58,7 +56,6 @@ function friendlyResolution(width: number, height: number): string {
 
 let overlay: shaka.ui.Overlay | null = null
 let player: shaka.Player | null = null
-let cachedToken: string | null = null
 let statsInterval: ReturnType<typeof setInterval> | null = null
 
 const STATS_POLL_INTERVAL_MS = 5000
@@ -88,24 +85,25 @@ function stopStatsPolling() {
   }
 }
 
-async function getAuthToken() {
-  if (cachedToken !== null) {
-    return cachedToken
+export function getStreamURL(content_id: string) {
+  return `${baseHLSURL}/${content_id}`
+}
+
+export async function unloadStream() {
+  stopStatsPolling()
+  if (overlay) {
+    await overlay.destroy()
+    overlay = null
+    player = null
   }
-  const result = await UsersService.readStreamTokenMe()
-  cachedToken = result?.stream_token || ""
-  return cachedToken
+  updateStreamStatus({
+    hlsStatus: "Idle",
+    streamURL: "<no stream loaded>",
+    videoStats: "",
+  })
 }
 
-export async function getStreamURL(content_id: string) {
-  const token = await getAuthToken()
-  return `${baseHLSURL}/${content_id}?token=${token}`
-}
-
-export async function loadStream(content_id?: string) {
-  const actualContentId = content_id || window.location.hash.substring(1)
-  window.location.hash = `#${actualContentId}`
-
+export async function loadStream(content_id: string) {
   updateStreamStatus({
     hlsStatus: "Initialising",
     videoStats: "",
@@ -138,7 +136,7 @@ export async function loadStream(content_id?: string) {
     }
   }
 
-  const fullUrl = await getStreamURL(actualContentId)
+  const fullUrl = getStreamURL(content_id)
   updateStreamStatus({ streamURL: fullUrl })
 
   if (shaka.Player.isBrowserSupported()) {
@@ -231,11 +229,4 @@ export async function loadStream(content_id?: string) {
     updateStreamStatus({ hlsStatus: "HLS not supported" })
   }
   return video
-}
-
-export async function loadPlayStream(content_id?: string) {
-  const actualContentId = content_id || window.location.hash.substring(1)
-  window.location.hash = `#${actualContentId}`
-  const video = await loadStream(actualContentId)
-  video?.play().catch((e) => console.error("Playback failed:", e))
 }

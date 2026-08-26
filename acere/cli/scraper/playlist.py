@@ -160,12 +160,7 @@ class PlaylistCreator:
         for uri_scheme, prefix in M3U_URI_SCHEMES.items():
             playlist_path = playlists_dir / f"{settings.scraper.playlist_name}-{uri_scheme}.m3u"
             with playlist_path.open("w", encoding="utf-8") as m3u_file:
-                epg_urls = [epg.url for epg in settings.epgs]
-                epg_str = ""
-                if epg_urls:
-                    epg_str = f'x-tvg-url="{",".join(epg_url.encoded_string() for epg_url in epg_urls)}"'
-
-                m3u_file.write(f"#EXTM3U {epg_str}\n")
+                m3u_file.write("#EXTM3U\n")
                 logger.debug("Creating playlist %s", playlist_path.name)
                 for stream in streams:
                     # This logic is for adhoc scraper not chaning playlists unless they are not found recently
@@ -173,7 +168,9 @@ class PlaylistCreator:
                     last_scraped_time = 0 if scraped_within_minute else int(stream.last_scraped_time.timestamp())
 
                     top_line = create_extinf_line(
-                        stream, tvg_url_base=settings.scraper.tvg_logo_external_url, last_found=last_scraped_time
+                        stream,
+                        tvg_url_base=settings.scraper.tvg_logo_external_url,
+                        last_found=last_scraped_time,
                     )
                     if uri_scheme == infohash_scheme and stream.infohash is not None:
                         m3u_file.write(top_line)

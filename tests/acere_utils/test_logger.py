@@ -3,7 +3,12 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from acere.utils.logger import TRACE_LEVEL_NUM, LoggingConf, _add_file_handler, get_logger
+from acere.utils.logger import (
+    TRACE_LEVEL_NUM,
+    LoggingConf,
+    _add_file_handler,
+    get_logger,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -57,6 +62,6 @@ def test_verbosity_cli() -> None:
 
 
 def test_path_wraps_to_none() -> None:
-    conf = LoggingConf(path="")  # type: ignore[arg-type]  # ty:ignore[invalid-argument-type]
+    conf = LoggingConf(path="")
 
     assert conf.path is None

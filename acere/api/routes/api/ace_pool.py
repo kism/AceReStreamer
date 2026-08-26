@@ -2,9 +2,8 @@
 
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 
-from acere.api.deps import get_current_user
 from acere.instances.ace_pool import get_ace_pool
 from acere.services.ace_pool.models import (
     AcePoolAllStatsApi,
@@ -20,7 +19,6 @@ logger = get_logger(__name__)
 router = APIRouter(
     prefix="/ace-pool",
     tags=["Ace Pool"],
-    dependencies=[Depends(get_current_user)],
 )
 
 content_id_not_found_tmp_str = "Ace content_id '{content_id}' not found in Ace pool"

@@ -9,19 +9,23 @@ from sqlmodel import Session, select
 from starlette.middleware.cors import CORSMiddleware
 from starlette_compress import CompressMiddleware
 
-from acere.api.main import api_router, api_router_xc, frontend_router, hls_router, iptv_router
+from acere.api.main import (
+    api_router,
+    api_router_xc,
+    frontend_router,
+    hls_router,
+    iptv_router,
+)
 from acere.constants import API_V1_STR, DEFAULT_INSTANCE_PATH
 from acere.database.handlers.quality_cache import AceQualityCacheHandler
 from acere.database.init import engine, init_db
 from acere.instances.ace_pool import set_ace_pool
 from acere.instances.ace_quality import set_quality_handler
 from acere.instances.config import settings
-from acere.instances.epg import set_epg_handler
 from acere.instances.paths import get_app_path_handler, setup_app_path_handler
 from acere.instances.remote_settings import set_remote_settings_fetcher
 from acere.instances.scraper import set_ace_scraper
 from acere.services.ace_pool.pool import AcePool
-from acere.services.epg import EPGHandler
 from acere.services.remote_settings import RemoteSettingsFetcher
 from acere.services.scraper import AceScraper
 from acere.utils.logger import get_logger, setup_logger
@@ -68,9 +72,6 @@ External URL: {settings.EXTERNAL_URL}
 
     logger.info(msg)
 
-    if settings.AUTH_DISABLED:
-        logger.warning("Authentication is DISABLED. All endpoints are accessible without credentials.")
-
 
 def custom_generate_unique_id(route: APIRoute) -> str:
     return f"{route.tags[0]}-{route.name}"
@@ -83,13 +84,9 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     # Initialize database
     with Session(engine) as session:
         session.exec(select(1))
-        init_db(session)
+    init_db()
 
     instance_id = str(random.randbytes(4).hex())  # noqa: S311 Not crypto related
-
-    # EPG Handler, needs to be before the scraper
-    epg_handler = EPGHandler(instance_id=instance_id)
-    set_epg_handler(epg_handler)
 
     # Pool
     ace_pool = AcePool(instance_id=instance_id)
@@ -110,11 +107,10 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
     yield
 
-    handlers: list[AceScraper | AcePool | RemoteSettingsFetcher | EPGHandler | AceQualityCacheHandler] = [
+    handlers: list[AceScraper | AcePool | RemoteSettingsFetcher | AceQualityCacheHandler] = [
         ace_pool,
         ace_scraper,
         remote_settings_fetcher,
-        epg_handler,
         quality_handler,
     ]  # Can't do a sneaky one-liner due to type checking
     for handler in handlers:
@@ -141,11 +137,11 @@ hls_app.include_router(hls_router)
 app.mount("/", hls_app)
 
 
-# Set all CORS enabled origins
-if settings.all_cors_origins:
+# CORS is only needed in dev, where the vite dev server hosts the frontend on another origin
+if settings.FRONTEND_HOST:
     app.add_middleware(
         middleware_class=CORSMiddleware,
-        allow_origins=settings.all_cors_origins,
+        allow_origins=[settings.FRONTEND_HOST],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
