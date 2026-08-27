@@ -136,7 +136,7 @@ function StreamAdminTable() {
       <Heading size="md" mt={2} mb={1}>
         Streams Management
       </Heading>
-      <VStack align="start">
+      <VStack align="start" maxW="900px" >
         {items?.map((item) => (
           <Box
             key={item.content_id}
