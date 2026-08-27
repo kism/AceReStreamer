@@ -47,4 +47,3 @@ function Layout() {
     </PageTitleContext.Provider>
   )
 }
-export default Layout
