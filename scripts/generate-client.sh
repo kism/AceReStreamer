@@ -12,7 +12,7 @@ if [ -z "$VIRTUAL_ENV" ]; then
     exit 1
 fi
 
-if [ ! -f "$ORIGINAL_PWD/acere/main.py" ]; then
+if [ ! -f "$ORIGINAL_PWD/src/acere/main.py" ]; then
     echo "Please run this script from the root of the AceReStreamer repository."
     exit 1
 fi
@@ -25,4 +25,4 @@ bun run generate-client
 
 # Generate frontend paths to help fastapi serve them when in all-in-one mode
 cd "$ORIGINAL_PWD/frontend"
-bun run generate-frontend-paths "$ORIGINAL_PWD/acere/api/routes/frontend/generated_frontend_paths.json"
+bun run generate-frontend-paths "$ORIGINAL_PWD/src/acere/api/routes/frontend/generated_frontend_paths.json"

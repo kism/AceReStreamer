@@ -1,7 +1,7 @@
 import { execSync } from "node:child_process"
 import path from "node:path"
 import { tanstackRouter } from "@tanstack/router-plugin/vite"
-import react from "@vitejs/plugin-react-swc"
+import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 
 const getGitBranch = () => {
@@ -26,7 +26,7 @@ const getGitCommit = () => {
 export default defineConfig({
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": path.resolve(import.meta.dirname, "./src"),
     },
   },
   define: {

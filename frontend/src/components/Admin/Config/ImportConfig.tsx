@@ -2,7 +2,6 @@ import { Heading, HStack, Text, Textarea, VStack } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { type ConfigExport, ConfigService } from "@/client"
-import type { ApiError } from "@/client/core/ApiError"
 import { Button } from "@/components/ui/button"
 import { CodeBlock } from "@/components/ui/code"
 import { Field } from "@/components/ui/field"
@@ -21,13 +20,13 @@ function ImportConfig() {
 
   const mutation = useMutation({
     mutationFn: (data: ConfigExport) =>
-      ConfigService.updateConfig({ requestBody: data }),
+      ConfigService.configUpdateConfig({ body: data }),
     onSuccess: () => {
       showSuccessToast("Configuration imported successfully.")
       setJsonInput("")
       setIsSubmitting(false)
     },
-    onError: (err: ApiError) => {
+    onError: (err) => {
       handleError(err)
       setIsSubmitting(false)
     },

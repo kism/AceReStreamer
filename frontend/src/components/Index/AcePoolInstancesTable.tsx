@@ -26,7 +26,8 @@ function EmptyInstancesRow() {
 
 function InstanceQuality({ contentId }: { contentId: string }) {
   const { data } = useQuery({
-    queryFn: () => StreamsService.byContentId({ contentId }),
+    queryFn: () =>
+      StreamsService.streamsByContentId({ path: { content_id: contentId } }),
     queryKey: ["content_id", contentId],
     enabled: !!contentId,
     refetchInterval: 30000, // Refetch every 30 seconds
@@ -58,7 +59,9 @@ export function AcePoolInstancesTable({
 
   const deleteStreamMutation = useMutation({
     mutationFn: (contentId: string) =>
-      AcePoolService.deleteByContentId({ contentId }),
+      AcePoolService.acePoolDeleteByContentId({
+        path: { content_id: contentId },
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ace_instances"] })
     },

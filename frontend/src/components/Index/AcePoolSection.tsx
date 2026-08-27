@@ -7,7 +7,7 @@ import { AcePoolInstancesTable } from "@/components/Index/AcePoolInstancesTable"
 
 export function AcePoolSection() {
   const { isLoading, error, data, isPlaceholderData } = useQuery({
-    queryFn: () => AcePoolService.pool(),
+    queryFn: () => AcePoolService.acePoolPool(),
     queryKey: ["ace_instances"],
     placeholderData: (prevData) => prevData,
     refetchInterval: 30000,

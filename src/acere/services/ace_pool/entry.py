@@ -155,6 +155,13 @@ class AcePoolEntry:
                 async with session.get(stat_url.encoded_string()) as resp_stat:
                     resp_stat.raise_for_status()
                     resp_stat_json = await resp_stat.json()
+                    if resp_stat_json.get("response") is None:  # Engine error, e.g. "unknown playback session id"
+                        logger.warning(
+                            "AceStream stat error for content_id %s: %s",
+                            self.content_id,
+                            resp_stat_json.get("error"),
+                        )
+                        return None
                     return AcePoolStat(**resp_stat_json)
         except aiohttp.ClientError:
             pass

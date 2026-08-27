@@ -1,11 +1,20 @@
+import json
 from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING
 
 from pydantic import HttpUrl
 
+if TYPE_CHECKING:
+    import pytest
+else:
+    pytest = object
+
 from acere.services.ace_pool.entry import AcePoolEntry
+from acere.services.ace_pool.models import AceMiddlewareResponse
 from tests.test_utils.ace import (
     get_random_content_id,
 )
+from tests.test_utils.aiohttp import FakeSession
 
 
 def test_stale_logic() -> None:
@@ -98,3 +107,34 @@ def test_stale_logic() -> None:
     # Just crossed the lock-in threshold, and immediately unlocked/stale
     assert entry.check_running_long_enough_to_lock_in() is True
     assert entry.check_if_stale() is True
+
+
+async def test_get_ace_stat_engine_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    """An engine error payload (response=None) returns None, no ValidationError."""
+    stat_url = "http://pytest.internal/ace/stat/abc"
+    entry = AcePoolEntry(
+        content_id=get_random_content_id(),
+        ace_address=HttpUrl("http://pytest.internal/ace"),
+        ace_pid=1,
+        transcode_audio=False,
+    )
+    entry._middleware_info = AceMiddlewareResponse(
+        playback_url=HttpUrl("http://pytest.internal/ace/play/abc"),
+        stat_url=HttpUrl(stat_url),
+        command_url=HttpUrl("http://pytest.internal/ace/cmd/abc"),
+        infohash="a" * 40,
+        playback_session_id="abc",
+        is_live=1,
+        is_encrypted=0,
+        client_session_id=1,
+    )
+
+    fake_session = FakeSession(
+        {stat_url: {"status": 200, "data": json.dumps({"response": None, "error": "unknown playback session id"})}}
+    )
+    monkeypatch.setattr(
+        "acere.services.ace_pool.entry.aiohttp.ClientSession",
+        lambda **_kwargs: fake_session,
+    )
+
+    assert await entry.get_ace_stat() is None

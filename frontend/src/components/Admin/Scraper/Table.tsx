@@ -2,7 +2,6 @@ import { Heading, VStack } from "@chakra-ui/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useCallback } from "react"
 import { ScraperService } from "@/client"
-import type { ApiError } from "@/client/core/ApiError"
 import { Button } from "@/components/ui/button"
 import { Code, CodeBlock } from "@/components/ui/code"
 import { CollapsibleSection } from "@/components/ui/collapsible-section"
@@ -16,17 +15,18 @@ function ScraperTable() {
   const { showSuccessToast } = useCustomToast()
 
   const { data, isLoading } = useQuery({
-    queryFn: () => ScraperService.sources(),
+    queryFn: () => ScraperService.scraperSources(),
     queryKey: ["scrapers"],
     placeholderData: (prevData) => prevData,
   })
 
   const mutation = useMutation({
-    mutationFn: (slug: string) => ScraperService.removeSource({ slug: slug }),
+    mutationFn: (slug: string) =>
+      ScraperService.scraperRemoveSource({ path: { slug } }),
     onSuccess: () => {
       showSuccessToast("Scraper source deleted successfully.")
     },
-    onError: (err: ApiError) => {
+    onError: (err) => {
       handleError(err)
     },
     onSettled: () => {

@@ -21,17 +21,17 @@ function HealthManagement() {
 
   const { data: generalHealth, isLoading: isLoadingGeneral } = useQuery({
     queryKey: ["health", "general"],
-    queryFn: () => HealthService.health(),
+    queryFn: () => HealthService.healthHealth(),
   })
 
   const { data: acePoolData, isLoading: isLoadingAcePool } = useQuery({
     queryKey: ["health", "acePool"],
-    queryFn: () => AcePoolService.pool(),
+    queryFn: () => AcePoolService.acePoolPool(),
   })
 
   const { data: acePoolStats, isLoading: isLoadingAcePoolStats } = useQuery({
     queryKey: ["health", "acePoolStats"],
-    queryFn: () => AcePoolService.stats(),
+    queryFn: () => AcePoolService.acePoolStats(),
   })
 
   const healthSections = useMemo(
@@ -80,7 +80,7 @@ function HealthManagement() {
   const handleConfigRefresh = useCallback(async () => {
     setIsRefreshingConfig(true)
     try {
-      const data = await ConfigService.reloadConfig()
+      const data = await ConfigService.configReloadConfig()
       setConfigRefreshResult(data)
     } catch (error) {
       setConfigRefreshResult({ error: String(error) })
@@ -92,7 +92,7 @@ function HealthManagement() {
   const handleStreamCheck = useCallback(async () => {
     setIsCheckingStreams(true)
     try {
-      const data = await StreamsService.check()
+      const data = await StreamsService.streamsCheck()
       setStreamCheckResult(data)
     } catch (error) {
       setStreamCheckResult({ error: String(error) })
