@@ -5,7 +5,7 @@ import StreamAdminTable from "./Streams/Table"
 
 function StreamManagement() {
   return (
-    <Container maxW="full">
+    <Container maxW="950px" ml="0">
       <AddStream />
       <SectionSeparator />
       <StreamAdminTable />
