@@ -1,12 +1,12 @@
 import { useSyncExternalStore } from "react"
-import type { FoundAceStreamAPI } from "@/client"
+import type { FoundAceStreamApi } from "@/client"
 
 // Module-level store so the preview player survives route navigation,
 // same pattern as useStreamStatus.
-let previewStream: FoundAceStreamAPI | null = null
+let previewStream: FoundAceStreamApi | null = null
 const listeners = new Set<() => void>()
 
-export function setPreviewStream(stream: FoundAceStreamAPI | null) {
+export function setPreviewStream(stream: FoundAceStreamApi | null) {
   previewStream = stream
   for (const listener of listeners) {
     listener()

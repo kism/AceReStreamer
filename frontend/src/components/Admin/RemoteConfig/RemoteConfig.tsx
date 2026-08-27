@@ -10,7 +10,6 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
 import { ConfigService } from "@/client"
-import type { ApiError } from "@/client/core/ApiError"
 import { Button } from "@/components/ui/button"
 import { CodeBlock } from "@/components/ui/code"
 import { Field } from "@/components/ui/field"
@@ -24,7 +23,7 @@ function RemoteConfig() {
   const [urlInput, setUrlInput] = useState("")
 
   const { data, isLoading } = useQuery({
-    queryFn: () => ConfigService.fetchRemoteSettings(),
+    queryFn: () => ConfigService.configFetchRemoteSettings(),
     queryKey: ["remoteConfig"],
     placeholderData: (prevData) => prevData,
   })
@@ -37,7 +36,7 @@ function RemoteConfig() {
 
   const mutation = useMutation({
     mutationFn: (url: string | null) =>
-      ConfigService.triggerFetchRemoteSettings({ requestBody: { url } }),
+      ConfigService.configTriggerFetchRemoteSettings({ body: { url } }),
     onSuccess: async () => {
       showSuccessToast("Remote settings URL updated successfully.")
       setUrlInput("")
@@ -45,7 +44,7 @@ function RemoteConfig() {
       await queryClient.invalidateQueries({ queryKey: ["remoteConfig"] })
       await queryClient.invalidateQueries({ queryKey: ["config"] })
     },
-    onError: (err: ApiError) => {
+    onError: (err) => {
       handleError(err)
     },
   })

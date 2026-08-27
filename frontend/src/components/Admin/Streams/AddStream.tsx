@@ -2,7 +2,6 @@ import { Box, Heading, Input, SimpleGrid, Text, VStack } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { type ManuallyAddedAceStream, StreamsService } from "@/client"
-import type { ApiError } from "@/client/core/ApiError"
 import { Button } from "@/components/ui/button"
 import { Field } from "@/components/ui/field"
 import useCustomToast from "@/hooks/useCustomToast"
@@ -20,7 +19,7 @@ function AddStream() {
 
   const mutation = useMutation({
     mutationFn: (data: ManuallyAddedAceStream) =>
-      StreamsService.addStream({ requestBody: data }),
+      StreamsService.streamsAddStream({ body: data }),
     onSuccess: () => {
       showSuccessToast("Stream added successfully.")
       setFormData({
@@ -30,7 +29,7 @@ function AddStream() {
       })
       setIsSubmitting(false)
     },
-    onError: (err: ApiError) => {
+    onError: (err) => {
       handleError(err)
       setIsSubmitting(false)
     },

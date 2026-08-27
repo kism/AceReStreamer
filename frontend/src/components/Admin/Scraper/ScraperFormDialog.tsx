@@ -12,7 +12,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { FaRegQuestionCircle } from "react-icons/fa"
 import { type AceScraperSourceApi, ScraperService } from "@/client"
-import type { ApiError } from "@/client/core/ApiError"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -143,11 +142,11 @@ function ScraperFormDialog({ existing, trigger }: ScraperFormDialogProps) {
   const mutation = useMutation({
     mutationFn: (data: AceScraperSourceApi) =>
       existing
-        ? ScraperService.updateSource({
-            slug: existing.name,
-            requestBody: data,
+        ? ScraperService.scraperUpdateSource({
+            path: { slug: existing.name },
+            body: data,
           })
-        : ScraperService.addSource({ requestBody: data }),
+        : ScraperService.scraperAddSource({ body: data }),
     onSuccess: () => {
       showSuccessToast(
         existing
@@ -156,7 +155,7 @@ function ScraperFormDialog({ existing, trigger }: ScraperFormDialogProps) {
       )
       setOpen(false)
     },
-    onError: (err: ApiError) => {
+    onError: (err) => {
       handleError(err)
     },
     onSettled: () => {

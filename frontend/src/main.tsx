@@ -3,13 +3,13 @@ import { createRouter, RouterProvider } from "@tanstack/react-router"
 import { StrictMode } from "react"
 import ReactDOM from "react-dom/client"
 import baseURL from "@/helpers"
-import { OpenAPI } from "./client"
+import { client } from "./client/client.gen"
 import { CustomProvider } from "./components/ui/provider"
 import { routeTree } from "./routeTree.gen"
 
 const VITE_API_URL = baseURL()
 
-OpenAPI.BASE = VITE_API_URL
+client.setConfig({ baseUrl: VITE_API_URL })
 
 const queryClient = new QueryClient()
 

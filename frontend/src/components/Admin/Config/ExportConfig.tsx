@@ -9,7 +9,7 @@ function ExportConfig() {
   const { showSuccessToast, showErrorToast } = useCustomToast()
 
   const { data, isLoading } = useQuery({
-    queryFn: () => ConfigService.getConfig(),
+    queryFn: () => ConfigService.configGetConfig(),
     queryKey: ["config"],
     placeholderData: (prevData) => prevData,
   })

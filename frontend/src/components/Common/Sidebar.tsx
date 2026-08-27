@@ -79,7 +79,7 @@ const Sidebar = ({
 }: SidebarProps) => {
   const { data: healthData } = useQuery({
     queryKey: ["health"],
-    queryFn: HealthService.health,
+    queryFn: () => HealthService.healthHealth(),
   })
 
   return (

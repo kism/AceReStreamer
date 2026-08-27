@@ -19,7 +19,7 @@ function Info() {
     error,
   } = useQuery({
     queryKey: ["xcCredentials"],
-    queryFn: XtreamCodesService.getXcCredentials,
+    queryFn: () => XtreamCodesService.xtreamCodesGetXcCredentials(),
   })
 
   return (

@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.10",
-    "@hey-api/openapi-ts": "0.73.0",
+    "@hey-api/openapi-ts": "0.97.3",
     "@tanstack/react-query-devtools": "^5.102.6",
     "@tanstack/react-router-devtools": "^1.167.1",
     "@tanstack/router-plugin": "^1.168.35",

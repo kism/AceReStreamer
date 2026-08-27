@@ -13,11 +13,10 @@ import { useCallback } from "react"
 import { FaPencilAlt } from "react-icons/fa"
 import { FiPlay } from "react-icons/fi"
 import {
-  type FoundAceStreamAPI,
+  type FoundAceStreamApi,
   ScraperService,
   StreamsService,
 } from "@/client"
-import type { ApiError } from "@/client/core/ApiError"
 import { getQualityColor } from "@/components/Index/QualityCell"
 import { Button } from "@/components/ui/button"
 import { CopyButton } from "@/components/ui/copy-button"
@@ -56,14 +55,16 @@ function StreamAdminTable() {
   const { showSuccessToast } = useCustomToast()
 
   const { data, isLoading } = useQuery({
-    queryFn: () => StreamsService.streams(),
+    queryFn: () => StreamsService.streamsStreams(),
     queryKey: ["items"],
     placeholderData: (prevData) => prevData,
   })
 
   const mutation = useMutation({
     mutationFn: (contentId: string) =>
-      StreamsService.deleteByContentId({ contentId }),
+      StreamsService.streamsDeleteByContentId({
+        path: { content_id: contentId },
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["items"] })
     },
@@ -76,21 +77,21 @@ function StreamAdminTable() {
       infohash: string | null | undefined
       name: string
     }) => {
-      await ScraperService.addNameOverride({
-        contentId: data.contentId,
-        name: data.name,
+      await ScraperService.scraperAddNameOverride({
+        path: { content_id: data.contentId },
+        query: { name: data.name },
       })
       if (data.infohash) {
-        await ScraperService.addNameOverride({
-          contentId: data.infohash,
-          name: data.name,
+        await ScraperService.scraperAddNameOverride({
+          path: { content_id: data.infohash },
+          query: { name: data.name },
         })
       }
     },
     onSuccess: () => {
       showSuccessToast("Name override added successfully.")
     },
-    onError: (err: ApiError) => {
+    onError: (err) => {
       handleError(err)
     },
     onSettled: () => {
@@ -99,7 +100,7 @@ function StreamAdminTable() {
   })
 
   const handleRename = useCallback(
-    (item: FoundAceStreamAPI, name: string) => {
+    (item: FoundAceStreamApi, name: string) => {
       const trimmed = name.trim()
       if (!trimmed || trimmed === item.title || renameMutation.isPending) {
         return
