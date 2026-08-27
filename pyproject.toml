@@ -148,11 +148,8 @@ addopts = [
     "--asyncio-mode=auto",
 ]
 
-[[tool.ty.overrides]]
-# Not sure what ty is upset about here
-include = ["src/acere/main.py", "tests/core/config/test_ace_scrape_conf.py"]
-[tool.ty.overrides.rules]
-"invalid-argument-type" = "ignore"
+[tool.ty.analysis]
+strict-equality-semantics = true
 
 [tool.fastapi]
 entrypoint = "acere.main:app"
