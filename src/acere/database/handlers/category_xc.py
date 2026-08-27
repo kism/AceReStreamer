@@ -20,18 +20,19 @@ class CategoryXCCategoryIDDatabaseHandler(BaseDatabaseHandler):
             result = session.exec(
                 select(CategoryXCCategoryID).where(CategoryXCCategoryID.category == category_name)
             ).first()
-            if isinstance(result, CategoryXCCategoryID):
-                return result.xc_category_id
-
-            new_mapping = CategoryXCCategoryID(category=category_name)
-            session.add(new_mapping)
-            session.commit()
-            logger.trace(
-                "Created new XC category ID mapping: %s -> %d",
-                category_name,
-                new_mapping.xc_category_id,
-            )
-            return new_mapping.xc_category_id
+            if result is None:
+                result = CategoryXCCategoryID(category=category_name)
+                session.add(result)
+                session.commit()
+                logger.trace(
+                    "Created new XC category ID mapping: %s -> %d",
+                    category_name,
+                    result.xc_category_id,
+                )
+            if result.xc_category_id is None:  # Can't happen, the DB assigns the PK on insert
+                msg = f"No xc_category_id assigned for category {category_name}"
+                raise RuntimeError(msg)
+            return result.xc_category_id
 
     def get_category_name(self, xc_category_id: int) -> str | None:
         """Get the category name for a given XC category ID."""

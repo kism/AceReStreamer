@@ -77,7 +77,6 @@ ignore = [
     "D1",     # Not going to document everything, we have good type checking
     "TC001",  # Breaks Pydantic completely
     "CPY",    # Copyright
-    # "FIX",    # WIP FIXME
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -157,11 +156,5 @@ include = ["src/acere/main.py", "tests/core/config/test_ace_scrape_conf.py"]
 [tool.ty.overrides.rules]
 "invalid-argument-type" = "ignore"
 
-[[tool.ty.overrides]]
-# Not sure what ty is upset about here
-include = [
-    "src/acere/database/handlers/category_xc.py",
-    "src/acere/database/handlers/content_id_xc_id.py",
-]
-[tool.ty.overrides.rules]
-"missing-argument" = "ignore"
+[tool.fastapi]
+entrypoint = "acere.main:app"
