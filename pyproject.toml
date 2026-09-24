@@ -25,7 +25,7 @@ dependencies = [
     "alembic>=1.19.1",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 type = ["ty", "types-psutil>=7.0.0.20250601"]
 lint = ["ruff", "memray"]
 test = [

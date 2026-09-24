@@ -31,7 +31,7 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
 
       - name: Install the project
-        run: uv sync --extra test
+        run: uv sync --group test
 
       - name: Test with pytest
         run: uv run pytest --cov=acere --cov-report=xml --junitxml=junit.xml -o junit_family=legacy
@@ -59,7 +59,7 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
 
       - name: Install the project
-        run: uv sync --extra docs
+        run: uv sync --group docs
 
       - name: Build Sphinx documentation
         run: |
