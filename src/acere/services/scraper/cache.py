@@ -32,31 +32,14 @@ def load_from_cache(url: HttpUrl) -> str:
 def is_cache_valid(url: HttpUrl, cache_max_age: timedelta = DEFAULT_CACHE_MAX_AGE) -> bool:
     """Check if the cache for the given URL is valid."""
     cache_path = _get_cache_file_path(url)
-    if cache_path.exists():
-        time_now = datetime.now(tz=UTC)
-        file_mod_time = datetime.fromtimestamp(cache_path.stat().st_mtime, tz=UTC)
-
-        time_since_mod = time_now - file_mod_time
-
-        if time_since_mod < cache_max_age:
-            logger.debug(
-                "Cache file is valid: %s [mod time %s < max age %s]",
-                url,
-                time_since_mod,
-                cache_max_age,
-            )
-            return True
-
-        logger.debug(
-            "Cache file is outdated: %s [mod time %s >= max age %s]",
-            url,
-            time_since_mod,
-            cache_max_age,
-        )
-    else:
+    if not cache_path.exists():
         logger.debug("Cache file does not exist: %s", url)
+        return False
 
-    return False
+    age = datetime.now(tz=UTC) - datetime.fromtimestamp(cache_path.stat().st_mtime, tz=UTC)
+    valid = age < cache_max_age
+    logger.debug("Cache file %s: %s [age %s, max age %s]", "valid" if valid else "outdated", url, age, cache_max_age)
+    return valid
 
 
 def save_to_cache(url: HttpUrl, content: str) -> None:

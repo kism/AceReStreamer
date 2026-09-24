@@ -5,8 +5,8 @@ from datetime import UTC
 
 from fastapi import APIRouter
 from psutil import Process
+from pydantic import BaseModel
 
-from acere.utils.health import HealthResponseModel, ThreadHealthModel
 from acere.utils.logger import get_logger
 from acere.version import PROGRAM_NAME_WITH_FULL_VERSION, PROGRAM_VERSION
 
@@ -16,6 +16,19 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/health", tags=["Health"])
 
 PROCESS = Process()
+
+
+class ThreadHealthModel(BaseModel):
+    name: str
+    is_alive: bool
+
+
+class HealthResponseModel(BaseModel):
+    version: str
+    version_full: str
+    time_zone: str
+    threads: list[ThreadHealthModel]
+    memory_usage_mb: str
 
 
 @router.get("")

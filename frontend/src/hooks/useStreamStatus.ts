@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useSyncExternalStore } from "react"
 
 export interface StreamStatus {
   hlsStatus: string
@@ -12,26 +12,21 @@ let streamStatus: StreamStatus = {
   videoStats: "",
 }
 
-const statusListeners: Set<(status: StreamStatus) => void> = new Set()
+const listeners = new Set<() => void>()
 
 export function updateStreamStatus(newStatus: Partial<StreamStatus>) {
   streamStatus = { ...streamStatus, ...newStatus }
-  statusListeners.forEach((listener) => {
-    listener(streamStatus)
-  })
+  for (const listener of listeners) {
+    listener()
+  }
 }
 
 export function useStreamStatus() {
-  const [status, setStatus] = useState<StreamStatus>(streamStatus)
-
-  useEffect(() => {
-    const listener = (newStatus: StreamStatus) => setStatus(newStatus)
-    statusListeners.add(listener)
-
-    return () => {
-      statusListeners.delete(listener)
-    }
-  }, [])
-
-  return status
+  return useSyncExternalStore(
+    (listener) => {
+      listeners.add(listener)
+      return () => listeners.delete(listener)
+    },
+    () => streamStatus,
+  )
 }
