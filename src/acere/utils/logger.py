@@ -12,22 +12,10 @@ from rich.highlighter import NullHighlighter
 from rich.logging import RichHandler
 from rich.theme import Theme
 
-LOG_LEVELS = [
-    "TRACE",
-    "DEBUG",
-    "INFO",
-    "WARNING",
-    "ERROR",
-    "CRITICAL",
-]  # Valid str logging levels.
-
 # This is the logging message format that I like.
 SIMPLE_LOG_FORMAT = "%(levelname)s:%(message)s"
 SIMPLE_LOG_FORMAT_DEBUG = "%(levelname)s:%(name)s:%(message)s"
 TRACE_LEVEL_NUM = 5
-
-MIN_LOG_LEVEL_INT = 0
-MAX_LOG_LEVEL_INT = 50
 
 
 class LoggingConf(BaseModel):
@@ -43,21 +31,17 @@ class LoggingConf(BaseModel):
         """Validate the logging level."""
 
         def process_level(level: str | int) -> str | int:
-            if isinstance(level, int):
-                if level < MIN_LOG_LEVEL_INT or level > MAX_LOG_LEVEL_INT:
-                    msg = f"Invalid logging level {level}, must be between {MIN_LOG_LEVEL_INT} and {MAX_LOG_LEVEL_INT}."
-                    logger.warning(msg)
-                    logger.warning("Defaulting logging level to 'INFO'.")
-                    level = "INFO"
-            else:
+            if isinstance(level, str):
                 level = level.strip().upper()
-                if level not in LOG_LEVELS:
-                    msg = f"Invalid logging level '{level}', must be one of {', '.join(LOG_LEVELS)}"
-                    logger.warning(msg)
-                    logger.warning("Defaulting logging level to 'INFO'.")
-                    level = "INFO"
-
-            return level
+            valid_names = logging.getLevelNamesMapping()  # Includes TRACE, registered at import
+            if isinstance(level, int) and not 0 <= level <= logging.CRITICAL:
+                logger.warning("Invalid logging level %s, must be between 0 and %s.", level, logging.CRITICAL)
+            elif isinstance(level, str) and level not in valid_names:
+                logger.warning("Invalid logging level '%s', must be one of %s", level, ", ".join(valid_names))
+            else:
+                return level
+            logger.warning("Defaulting logging level to 'INFO'.")
+            return "INFO"
 
         self.level = process_level(self.level)
         self.level_http = process_level(self.level_http)
@@ -183,11 +167,7 @@ def _get_log_level_int(level: str | int) -> int:
     """Get the log level as an int."""
     if isinstance(level, int):
         return level
-
-    level = level.upper()
-    if level == "TRACE":
-        return TRACE_LEVEL_NUM
-    return getattr(logging, level, logging.INFO)
+    return logging.getLevelNamesMapping().get(level.upper(), logging.INFO)
 
 
 def _set_log_level(
