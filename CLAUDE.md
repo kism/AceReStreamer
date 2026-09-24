@@ -53,11 +53,11 @@ Two separate FastAPI apps are composed: the main `app` (API + frontend static fi
 
 ### Transport symmetry
 
-MPEG-TS was added after HLS, so watch for code that treats HLS as the default. Both transports share one `AcePool` entry per `content_id` — `get_instance_hls_url_by_content_id()` and `get_instance_ts_url_by_content_id()` both route through `_get_or_create_instance()`, differing only in the Ace middleware endpoint (`ace/manifest.m3u8` vs `ace/getstream`, see `get_middleware_url()` in `src/acere/utils/ace.py`). Quality tracking has a path for each: `increment_quality()` parses an m3u8 playlist, `increment_quality_raw()` takes a rating directly for TS, which has no manifest to parse. The background quality checker only probes via the HLS route, which is fine — it's the same engine either way.
+MPEG-TS was added after HLS, so watch for code that treats HLS as the default. Both transports share one `AcePool` entry per `content_id` — `get_instance_hls_url_by_content_id()` and `get_instance_ts_url_by_content_id()` both route through `_get_or_create_instance()`, differing only in the Ace middleware endpoint (`ace/manifest.m3u8` vs `ace/getstream`, see `get_middleware_url()` in `src/acere/utils/ace.py`). Quality tracking (`AceQualityCacheHandler` in `src/acere/database/handlers/quality_cache.py`) has a path for each: `increment_quality()` parses an m3u8 playlist, `increment_quality_raw()` takes a rating directly for TS, which has no manifest to parse. The background quality checker only probes via the HLS route, which is fine — it's the same engine either way.
 
 ### Global singletons (`src/acere/instances/`)
 
-Every long-lived service (AcePool, AceScraper, RemoteSettingsFetcher, quality handler, app path handler, config, xc category/stream caches) is wired through `src/acere/instances/`, one module per service, each exposing a paired `get_*()`/`set_*()` (or `setup_*()`) function backed by a `GlobalInstance[T]` (defined in `src/acere/instances/__init__.py`). `PLW0603` (global statement) is intentionally disabled in this package — don't try to refactor these into dependency injection. Business logic itself lives in `src/acere/services/`; `src/acere/instances/` only holds the process-wide handle to it.
+Every long-lived service (AcePool, AceScraper, RemoteSettingsFetcher, quality handler, app path handler, config, and the acestream/XC category/XC stream DB handlers) is wired through `src/acere/instances/`, one module per service, each backed by a `GlobalInstance[T]` (defined in `src/acere/instances/__init__.py`). Services built in `lifespan()` expose a paired `get_*()`/`set_*()` (or `setup_*()`); the DB handlers are lazily created by a `GlobalInstance` factory and only expose `get_*()`. Don't try to refactor these into dependency injection. Business logic itself lives in `src/acere/services/`; `src/acere/instances/` only holds the process-wide handle to it.
 
 ### Layout
 
@@ -66,9 +66,9 @@ Every long-lived service (AcePool, AceScraper, RemoteSettingsFetcher, quality ha
 - `src/acere/database/` — SQLModel models (`models/`), query/handler classes (`handlers/`), Alembic migrations (`migration/`, `acerestreamer-migrate` CLI)
 - `src/acere/core/config/` — pydantic-settings config; loads from a JSON file plus `ACERE_`-prefixed env vars (`app.py` is the `AppConf` schema, e.g. `ace_address`, `ace_max_streams`)
 - `src/acere/cli/` — the three console scripts (`scraper/`, `db_migrate/`, `get_xc_server_response/`), each a `__main__.py` module
-- `tests/` mirrors the `src/acere/` package layout 1:1
+- `tests/` mirrors the `src/acere/` package layout, except `src/acere/utils/` is tested in `tests/acere_utils/`; `tests/test_utils/` holds shared test helpers (fake Ace/aiohttp/HLS fixtures), not tests
 
 ## Typing conventions
 
 - `if TYPE_CHECKING: from x import Y else: Y = object` is a deliberate pattern used throughout to avoid circular imports while keeping runtime-safe fallbacks — not dead code, don't "simplify" it away.
-- `ty` is run in strict mode; a handful of per-file rule overrides live in `pyproject.toml` under `[[tool.ty.overrides]]` for known ty false positives (documented inline with a short comment in each case).
+- `ty` is run in strict mode (config in `pyproject.toml` under `[tool.ty.*]`). There are currently no per-file overrides; if a known ty false positive needs one, add a `[[tool.ty.overrides]]` entry with a short inline comment explaining it.
