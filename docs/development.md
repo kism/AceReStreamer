@@ -33,14 +33,14 @@ code frontend/
 ```
 
 ```bash
-bun install
+pnpm install
 ```
 
 Run development server, you can use a `.env` file if desired. The variable will affect builds, not just the dev server.
 
 ```bash
 export VITE_API_URL="http://localhost:5100"  # Adjust if your backend is running elsewhere
-bun run dev
+pnpm run dev
 ```
 
 ## Docker Build

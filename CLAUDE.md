@@ -17,12 +17,12 @@ Backend (run from repo root, inside the uv-managed venv):
 - `uv run ty check .` — type check (strict; mypy was dropped from dev deps in 2026-07)
 - `uv run ruff format && uv run ruff check --fix` — format + lint (ruff `select = ["ALL"]`, see `pyproject.toml` for the ignore list)
 - `fastapi dev --reload --port 5100 --entrypoint acere.main:app` — run the dev server (add `--host 0.0.0.0` to expose to other hosts)
-- `bash scripts/run-ci-local.sh` — runs the full local CI sequence (ty, ruff, pytest, sphinx docs build, then bun lint/typecheck) — must be run inside the activated venv
+- `bash scripts/run-ci-local.sh` — runs the full local CI sequence (ty, ruff, pytest, sphinx docs build, then pnpm lint/typecheck) — must be run inside the activated venv
 - `bash scripts/generate-client.sh` — regenerates `frontend/src/client/` from the live OpenAPI schema (dumps `frontend/openapi.json` from the FastAPI app, then runs the frontend's `generate-client` and `generate-frontend-paths`). Run this after changing any API route signature, request/response model, or route path.
 - `uv run sphinx-build -b html docs docs_out` — build docs (CI runs this with `--fail-on-warning`)
 - CLI entry points (installed via `pyproject.toml`): `acerestreamer-scrape`, `acerestreamer-debug-get-xc-server-response`, `acerestreamer-migrate`
 
-Frontend: see [frontend/CLAUDE.md](frontend/CLAUDE.md) (`bun run dev`, `bun run typecheck`, `bun run lint`, `bun run build-aio`).
+Frontend: see [frontend/CLAUDE.md](frontend/CLAUDE.md) (`pnpm run dev`, `pnpm run typecheck`, `pnpm run lint`, `pnpm run build-aio`).
 
 ## Testing
 

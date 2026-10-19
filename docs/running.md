@@ -14,7 +14,7 @@ Build frontend to be served by fastapi
 
 ```bash
 cd frontend
-bun run build-aio
+pnpm run build-aio
 ```
 
 Run production server, you can use a `.env` file if you desire

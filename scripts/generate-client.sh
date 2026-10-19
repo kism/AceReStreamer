@@ -21,8 +21,8 @@ cd "$ORIGINAL_PWD"
 # Generate OpenAPI spec for frontend
 python -c "import acere.main; import json; print(json.dumps(acere.main.app.openapi()))" > "$ORIGINAL_PWD/frontend/openapi.json"
 cd "$ORIGINAL_PWD/frontend"
-bun run generate-client
+pnpm run generate-client
 
 # Generate frontend paths to help fastapi serve them when in all-in-one mode
 cd "$ORIGINAL_PWD/frontend"
-bun run generate-frontend-paths "$ORIGINAL_PWD/src/acere/api/routes/frontend/generated_frontend_paths.json"
+pnpm run generate-frontend-paths "$ORIGINAL_PWD/src/acere/api/routes/frontend/generated_frontend_paths.json"

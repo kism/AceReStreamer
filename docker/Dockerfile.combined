@@ -1,6 +1,6 @@
 # Dockerfile for all-in-one deployment
-# Stage 0, "build-stage", uses bun, to build and compile the frontend
-FROM oven/bun:latest AS build-stage
+# Stage 0, "build-stage", uses node + pnpm, to build and compile the frontend
+FROM node:lts AS build-stage
 
 WORKDIR /app
 
@@ -10,13 +10,14 @@ RUN apt-get install -y git
 COPY .git /app/
 
 COPY frontend/package.json /app/
-COPY frontend/bun.lock /app/
+COPY frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml /app/
 
-RUN bun install
+RUN npm install -g pnpm@12.14.0
+RUN pnpm install --frozen-lockfile
 
 COPY ./frontend /app/
 
-RUN bun run build
+RUN pnpm run build
 
 
 # Stage 1, the FastAPI backend serving the compiled frontend internally

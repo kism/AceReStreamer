@@ -4,19 +4,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-React 19 + TypeScript frontend for AceReStreamer (re-streams AceStream links as HLS or MPEG-TS). Built with Vite, uses bun as package manager, Chakra UI v3 for components, TanStack Router (file-based) and TanStack Query for data. The FastAPI backend lives at `../src/acere` (outside this directory, not covered by this file).
+React 19 + TypeScript frontend for AceReStreamer (re-streams AceStream links as HLS or MPEG-TS). Built with Vite, uses pnpm as package manager, Chakra UI v3 for components, TanStack Router (file-based) and TanStack Query for data. The FastAPI backend lives at `../src/acere` (outside this directory, not covered by this file).
 
 This is an admin/config UI, not a viewing app — end users are expected to watch in an IPTV app or VLC. The only playback here is the admin stream preview (see Components below).
 
 ## Commands
 
-- `bun run dev` — start the Vite dev server
-- `bun run typecheck` — `tsc --noEmit`
-- `bun run lint` — Biome check with `--write --unsafe` (auto-fixes)
-- `bun run build` — `tsc -p tsconfig.build.json` + `vite build` into `dist/` (used by `docker/Dockerfile.combined`'s build stage, which copies the output into the backend image). Note both build scripts typecheck against `tsconfig.build.json`, not the `--noEmit` config that `bun run typecheck` uses.
-- `bun run build-aio` — same, but `vite build --emptyOutDir --outDir ../src/acere/dist` (the "all-in-one" mode where FastAPI serves the built frontend directly). This is the only production deployment — a separately hosted frontend is dev-only via `bun run dev`.
-- `bun run generate-client` — regenerates `src/client/` from `./openapi.json` via `@hey-api/openapi-ts` (see `openapi-ts.config.ts`). Don't run this directly to get fresh types — use `../scripts/generate-client.sh` from the repo root inside the backend's venv, which first dumps the live OpenAPI schema from the FastAPI app into `openapi.json` and then runs this.
-- `bun run generate-frontend-paths` — walks `routeTree.gen.ts` and `public/` to emit a JSON list of every frontend route/asset path, used by the backend to know which paths to hand off to the SPA in all-in-one mode.
+- `pnpm run dev` — start the Vite dev server
+- `pnpm run typecheck` — `tsc --noEmit`
+- `pnpm run lint` — Biome check with `--write --unsafe` (auto-fixes)
+- `pnpm run build` — `tsc -p tsconfig.build.json` + `vite build` into `dist/` (used by `docker/Dockerfile.combined`'s build stage, which copies the output into the backend image). Note both build scripts typecheck against `tsconfig.build.json`, not the `--noEmit` config that `pnpm run typecheck` uses.
+- `pnpm run build-aio` — same, but `vite build --emptyOutDir --outDir ../src/acere/dist` (the "all-in-one" mode where FastAPI serves the built frontend directly). This is the only production deployment — a separately hosted frontend is dev-only via `pnpm run dev`.
+- `pnpm run generate-client` — regenerates `src/client/` from `./openapi.json` via `@hey-api/openapi-ts` (see `openapi-ts.config.ts`). Don't run this directly to get fresh types — use `../scripts/generate-client.sh` from the repo root inside the backend's venv, which first dumps the live OpenAPI schema from the FastAPI app into `openapi.json` and then runs this.
+- `pnpm run generate-frontend-paths` — walks `routeTree.gen.ts` and `public/` to emit a JSON list of every frontend route/asset path, used by the backend to know which paths to hand off to the SPA in all-in-one mode.
 
 There is no test runner configured in this package (no vitest/jest). Correctness is enforced via `typecheck` + `lint` plus manual verification in the browser.
 

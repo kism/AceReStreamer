@@ -25,11 +25,8 @@ sphinx-build --fail-on-warning -b html docs docs_out
 
 cd frontend
 
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
+print_heading "pnpm lint"
+pnpm run lint
 
-print_heading "bun lint"
-bun run lint
-
-print_heading "bun typecheck"
-bun run typecheck
+print_heading "pnpm typecheck"
+pnpm run typecheck
