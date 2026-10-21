@@ -46,7 +46,7 @@ jobs:
       - name: Set up pnpm
         uses: pnpm/setup@v3
         with:
-          package_json_file: frontend/package.json
+          package-json-file: frontend/package.json
 
       - name: Set up node
         uses: actions/setup-node@v6
