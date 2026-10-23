@@ -6,11 +6,11 @@ from sqlmodel import Session, SQLModel
 from acere.database.init import engine
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Generator
 
     from sqlalchemy.engine.base import Engine
 else:
-    Iterator = object
+    Generator = object
     Engine = object
 
 
@@ -23,7 +23,7 @@ class BaseDatabaseHandler:
         SQLModel.metadata.create_all(self._engine)
 
     @contextmanager
-    def _get_session(self) -> Iterator[Session]:
+    def _get_session(self) -> Generator[Session]:
         """Get a database session as a context manager."""
         with Session(self._engine) as session:
             yield session

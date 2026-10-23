@@ -149,6 +149,7 @@ addopts = [
 
 [tool.ty.analysis]
 strict-equality-semantics = true
+return-type-inference = "never"
 
 [tool.fastapi]
 entrypoint = "acere.main:app"

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from fastapi import FastAPI
 from rich import traceback
-from sqlmodel import Session, select
+from sqlmodel import Session, literal, select
 from starlette.middleware.cors import CORSMiddleware
 from starlette_compress import CompressMiddleware
 
@@ -32,11 +32,11 @@ from acere.utils.logger import get_logger, setup_logger
 from acere.version import PROGRAM_NAME, PROGRAM_VERSION
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncIterator
+    from collections.abc import AsyncGenerator
 
     from fastapi.routing import APIRoute
 else:
-    AsyncIterator = object
+    AsyncGenerator = object
     APIRoute = object
 
 
@@ -78,12 +78,12 @@ def custom_generate_unique_id(route: APIRoute) -> str:
 
 
 @asynccontextmanager
-async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
     """Manage application lifespan - startup and shutdown."""
     # Startup
     # Initialize database
     with Session(engine) as session:
-        session.exec(select(1))
+        session.exec(select(literal(1)))
     init_db()
 
     instance_id = str(random.randbytes(4).hex())  # noqa: S311 Not crypto related

@@ -61,7 +61,6 @@ class ScrapeSiteGeneric(BaseModel):
 
     model_config = ConfigDict(extra="ignore")  # Ignore extras for config related things
 
-    type: Literal["html", "iptv", "api"]
     name: str
     url: HttpUrl
     title_filter: TitleFilter = TitleFilter()
