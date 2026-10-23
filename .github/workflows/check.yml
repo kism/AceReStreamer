@@ -7,7 +7,19 @@ on:
       - main
       - test
     paths-ignore:
-      - "**/README.md"
+      - "**/*.md"
+      - ".claude/**"
+      - ".vscode/**"
+      - ".github/dependabot.yml"
+      - ".github/workflows/ghcr.yml"
+      - ".gitattributes"
+      - "**/.gitignore"
+      - "**/.dockerignore"
+      - ".readthedocs.yaml"
+      - "docker/**"
+      - "docker-compose*.yml"
+      - "scripts/**" # Local dev scripts, not run in CI
+      - "frontend/public/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

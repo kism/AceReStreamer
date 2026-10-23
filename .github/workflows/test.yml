@@ -7,8 +7,22 @@ on:
       - main
       - test
     paths-ignore:
-      - "**/README.md"
-      - "**/README*.md"
+      - "**/*.md"
+      - ".claude/**"
+      - ".vscode/**"
+      - ".github/dependabot.yml"
+      - ".github/workflows/ghcr.yml"
+      - ".gitattributes"
+      - "**/.gitignore"
+      - "**/.dockerignore"
+      - ".readthedocs.yaml"
+      - "docker/**"
+      - "docker-compose*.yml"
+      - "scripts/**" # Local dev scripts, not run in CI
+      - "frontend/public/**"
+      - "!docs/**" # Sphinx builds from docs/*.md
+      - "frontend/**"
+      - "!frontend/package.json" # tests/test_meta.py checks the version
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
