@@ -29,7 +29,7 @@ Frontend: see [frontend/CLAUDE.md](frontend/CLAUDE.md) (`pnpm run dev`, `pnpm ru
 - `ACERE_TESTING=1` must be set before any `acere` imports — `tests/conftest.py` handles this automatically
 - Test config is loaded from `tests/configs/test_valid.json`
 - Sockets are disabled by default via pytest-socket (`--disable-socket`); only `127.0.0.1`, `127.0.1.1`, `::1` are allowed (`--allow-hosts` in `pyproject.toml`) — tests that need network access must mock it
-- starlette ≥1.3's `TestClient` needs the `httpx2` package (in the `test` extra) or it warns and falls back to plain `httpx`
+- starlette ≥1.3's `TestClient` needs `httpx2` (now a main dependency, also the app's HTTP client) or it warns and falls back to plain `httpx`
 
 ## Architecture
 
@@ -66,7 +66,7 @@ Every long-lived service (AcePool, AceScraper, RemoteSettingsFetcher, quality ha
 - `src/acere/database/` — SQLModel models (`models/`), query/handler classes (`handlers/`), Alembic migrations (`migration/`, `acerestreamer-migrate` CLI)
 - `src/acere/core/config/` — pydantic-settings config; loads from a JSON file plus `ACERE_`-prefixed env vars (`app.py` is the `AppConf` schema, e.g. `ace_address`, `ace_max_streams`)
 - `src/acere/cli/` — the three console scripts (`scraper/`, `db_migrate/`, `get_xc_server_response/`), each a `__main__.py` module
-- `tests/` mirrors the `src/acere/` package layout, except `src/acere/utils/` is tested in `tests/acere_utils/`; `tests/test_utils/` holds shared test helpers (fake Ace/aiohttp/HLS fixtures), not tests
+- `tests/` mirrors the `src/acere/` package layout, except `src/acere/utils/` is tested in `tests/acere_utils/`; `tests/test_utils/` holds shared test helpers (fake Ace/httpx/HLS fixtures), not tests
 
 ## Typing conventions
 

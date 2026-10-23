@@ -6,11 +6,11 @@ import threading
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
-import aiohttp
+import httpx2
 from pydantic import HttpUrl, TypeAdapter
 
 from acere.instances.config import settings
-from acere.utils.exception_handling import log_aiohttp_exception
+from acere.utils.exception_handling import log_http_exception
 from acere.utils.helpers import check_valid_content_id_or_infohash, stop_threads
 from acere.utils.logger import get_logger
 
@@ -64,16 +64,15 @@ class AcePool:
         version_data_json = {}
 
         try:
-            timeout = aiohttp.ClientTimeout(total=ACESTREAM_API_TIMEOUT)
-            async with aiohttp.ClientSession(timeout=timeout) as session:
-                async with session.get(url) as response:
-                    response.raise_for_status()
-                    version_data_json = await response.json()
+            async with httpx2.AsyncClient(timeout=ACESTREAM_API_TIMEOUT) as client:
+                response = await client.get(url)
+                response.raise_for_status()
+                version_data_json = response.json()
             if not self._healthy:
                 logger.info("Ace Instance %s is now healthy", self._ace_address)
             healthy = True
-        except (aiohttp.ClientError, TimeoutError) as e:
-            log_aiohttp_exception(logger, url, e, "Ace Instance is not healthy")
+        except httpx2.HTTPError as e:
+            log_http_exception(logger, url, e, "Ace Instance is not healthy")
             healthy = False
         except Exception as e:  # noqa: BLE001 Last resort
             logger.error(

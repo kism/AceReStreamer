@@ -14,7 +14,7 @@ from acere.services.ace_pool.models import AceMiddlewareResponse
 from tests.test_utils.ace import (
     get_random_content_id,
 )
-from tests.test_utils.aiohttp import FakeSession
+from tests.test_utils.fake_http import FakeSession
 
 
 def test_stale_logic() -> None:
@@ -133,7 +133,7 @@ async def test_get_ace_stat_engine_error(monkeypatch: pytest.MonkeyPatch) -> Non
         {stat_url: {"status": 200, "data": json.dumps({"response": None, "error": "unknown playback session id"})}}
     )
     monkeypatch.setattr(
-        "acere.services.ace_pool.entry.aiohttp.ClientSession",
+        "acere.services.ace_pool.entry.httpx2.AsyncClient",
         lambda **_kwargs: fake_session,
     )
 

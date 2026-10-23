@@ -3,7 +3,7 @@
 from http import HTTPStatus
 from typing import TYPE_CHECKING, Annotated
 
-import aiohttp
+import httpx2
 from fastapi import APIRouter, HTTPException, Query, Request, Response
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import HttpUrl
@@ -17,7 +17,7 @@ from acere.instances.paths import get_app_path_handler
 from acere.services.ace_quality import LATE_SEGMENT_PUNISHMENT
 from acere.services.xc.helpers import check_xc_auth
 from acere.utils.api_models import MessageResponseModel
-from acere.utils.exception_handling import log_aiohttp_exception
+from acere.utils.exception_handling import log_http_exception
 from acere.utils.helpers import check_valid_content_id_or_infohash
 from acere.utils.hls import (
     replace_hls_m3u_sources,
@@ -71,18 +71,14 @@ async def hls(path: str) -> Response:
     logger.trace("HLS stream requested for path: %s", instance_ace_hls_m3u8_url)
 
     try:
-        timeout = aiohttp.ClientTimeout(total=REVERSE_PROXY_TIMEOUT)
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            async with session.get(instance_ace_hls_m3u8_url.encoded_string()) as ace_resp:
-                ace_resp.raise_for_status()
-                content_bytes = await ace_resp.read()
-                status_code = ace_resp.status
-                headers = ace_resp.headers
-    except (aiohttp.ClientError, TimeoutError) as e:
-        log_aiohttp_exception(logger, f"[ace hls {path}]", e)
+        async with httpx2.AsyncClient(timeout=REVERSE_PROXY_TIMEOUT) as client:
+            ace_resp = await client.get(instance_ace_hls_m3u8_url.encoded_string())
+            ace_resp.raise_for_status()
+    except httpx2.HTTPError as e:
+        log_http_exception(logger, f"[ace hls {path}]", e)
 
         # Determine error type and response
-        if isinstance(e, TimeoutError):
+        if isinstance(e, httpx2.TimeoutException):
             error_msg, status = "HLS stream timeout", HTTPStatus.REQUEST_TIMEOUT
             get_quality_handler().increment_quality(path, "")
         else:
@@ -93,7 +89,7 @@ async def hls(path: str) -> Response:
 
         raise HTTPException(status_code=status, detail=error_msg) from e
 
-    content_str = content_bytes.decode("utf-8", errors="replace")
+    content_str = ace_resp.content.decode("utf-8", errors="replace")
 
     if "#EXTM3U" not in content_str:
         logger.error("Invalid HLS stream received for path: %s", path)
@@ -112,9 +108,13 @@ async def hls(path: str) -> Response:
 
     get_quality_handler().increment_quality(path, m3u_playlist=content_str)
 
-    resp = Response(content_str, status_code)
+    resp = Response(content_str, ace_resp.status_code)
     resp.headers.update(
-        {name: value for (name, value) in headers.items() if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS}
+        {
+            name: value
+            for (name, value) in ace_resp.headers.items()
+            if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS
+        }
     )
     return resp
 
@@ -133,19 +133,16 @@ async def hls_multi(path: str) -> Response:
     ).encoded_string()  # This will deduplicate slashes
 
     try:
-        timeout = aiohttp.ClientTimeout(total=REVERSE_PROXY_TIMEOUT)
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            async with session.get(url) as ace_resp:
-                ace_resp.raise_for_status()
-                content_bytes = await ace_resp.read()
-                status_code = ace_resp.status
-    except (aiohttp.ClientError, TimeoutError) as e:
+        async with httpx2.AsyncClient(timeout=REVERSE_PROXY_TIMEOUT) as client:
+            ace_resp = await client.get(url)
+            ace_resp.raise_for_status()
+    except httpx2.HTTPError as e:
         error_msg = "Failed to fetch HLS multistream"
-        log_aiohttp_exception(logger, url, e, error_msg)
+        log_http_exception(logger, url, e, error_msg)
 
         raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=error_msg) from e
 
-    content_str = content_bytes.decode("utf-8", errors="replace")
+    content_str = ace_resp.content.decode("utf-8", errors="replace")
 
     if "#EXTM3U" not in content_str:
         logger.error("Invalid HLS stream received for path: %s", path)
@@ -166,7 +163,7 @@ async def hls_multi(path: str) -> Response:
 
     get_quality_handler().increment_quality(content_id, m3u_playlist=content_str)
 
-    return Response(content_str, status_code)
+    return Response(content_str, ace_resp.status_code)
 
 
 # region /ts/
@@ -199,16 +196,15 @@ async def ts(content_id: str, request: Request) -> Response:
 
     logger.trace("TS stream requested for url: %s", ts_url)
 
-    # No total timeout, a live TS stream never ends
-    timeout = aiohttp.ClientTimeout(total=None, sock_connect=REVERSE_PROXY_TIMEOUT, sock_read=REVERSE_PROXY_TIMEOUT)
-    session = aiohttp.ClientSession(timeout=timeout)
+    # httpx timeouts are per operation (no total), so a live TS stream can run forever as long as chunks keep coming
+    client = httpx2.AsyncClient(timeout=REVERSE_PROXY_TIMEOUT)
     try:
-        ace_resp = await session.get(ts_url.encoded_string())
+        ace_resp = await client.send(client.build_request("GET", ts_url.encoded_string()), stream=True)
         ace_resp.raise_for_status()
-    except (aiohttp.ClientError, TimeoutError) as e:
-        await session.close()
-        log_aiohttp_exception(logger, f"[ace ts {content_id}]", e)
-        if isinstance(e, TimeoutError):
+    except httpx2.HTTPError as e:
+        await client.aclose()
+        log_http_exception(logger, f"[ace ts {content_id}]", e)
+        if isinstance(e, httpx2.TimeoutException):
             get_quality_handler().increment_quality(content_id, "")
             error_msg, status = "TS stream timeout", HTTPStatus.REQUEST_TIMEOUT
         else:
@@ -222,7 +218,7 @@ async def ts(content_id: str, request: Request) -> Response:
         # Client disconnect -> Starlette closes the generator -> finally releases the engine connection
         try:
             chunk_n = 0
-            async for chunk in ace_resp.content.iter_chunked(TS_CHUNK_SIZE):
+            async for chunk in ace_resp.aiter_bytes(TS_CHUNK_SIZE):
                 yield chunk
                 chunk_n += 1
                 if chunk_n % TS_TOUCH_EVERY == 0:
@@ -230,13 +226,13 @@ async def ts(content_id: str, request: Request) -> Response:
                     get_quality_handler().increment_quality_raw(content_id, 1, "TS stream flowing")
             # A live stream ending on its own is a death signal, client disconnects never reach here
             get_quality_handler().increment_quality_raw(content_id, LATE_SEGMENT_PUNISHMENT, "TS stream ended")
-        except (aiohttp.ClientError, TimeoutError) as e:
+        except httpx2.HTTPError as e:
             # Headers already sent as 200, log and end the stream, the player will retry
-            log_aiohttp_exception(logger, f"[ace ts {content_id}]", e)
+            log_http_exception(logger, f"[ace ts {content_id}]", e)
             get_quality_handler().increment_quality_raw(content_id, LATE_SEGMENT_PUNISHMENT, "TS stream stalled")
         finally:
-            ace_resp.close()
-            await session.close()
+            await ace_resp.aclose()
+            await client.aclose()
 
     return StreamingResponse(stream(), media_type="video/MP2T")
 
@@ -313,18 +309,14 @@ async def ace_content(path: str, request: Request) -> Response:
     logger.trace("Ace content requested for url: %s", url)
 
     try:
-        timeout = aiohttp.ClientTimeout(total=REVERSE_PROXY_TIMEOUT)
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            async with session.get(url) as resp:
-                resp.raise_for_status()
-                content = await resp.read()
-                status_code = resp.status
-                response_headers = resp.headers
-    except (aiohttp.ClientError, TimeoutError) as e:
-        log_aiohttp_exception(logger, url, e)
+        async with httpx2.AsyncClient(timeout=REVERSE_PROXY_TIMEOUT) as client:
+            resp = await client.get(url)
+            resp.raise_for_status()
+    except httpx2.HTTPError as e:
+        log_http_exception(logger, url, e)
         response_body = MessageResponseModel(message="Ace content timeout").model_dump_json()
 
-        if isinstance(e, TimeoutError):
+        if isinstance(e, httpx2.TimeoutException):
             return Response(
                 content=response_body,
                 media_type="application/json",
@@ -337,12 +329,10 @@ async def ace_content(path: str, request: Request) -> Response:
         )
 
     headers = [
-        (name, value)
-        for (name, value) in response_headers.items()
-        if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS
+        (name, value) for (name, value) in resp.headers.items() if name.lower() not in REVERSE_PROXY_EXCLUDED_HEADERS
     ]
 
-    response = Response(content=content, status_code=status_code, headers=dict(headers))
+    response = Response(content=resp.content, status_code=resp.status_code, headers=dict(headers))
 
     response.headers["Content-Type"] = "video/MP2T"
 

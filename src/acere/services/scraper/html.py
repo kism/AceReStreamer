@@ -4,10 +4,11 @@ from collections import Counter
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
-import aiohttp
+import httpx2
 from bs4 import BeautifulSoup, Tag
 
-from acere.utils.exception_handling import log_aiohttp_exception
+from acere.constants import HTTP_TIMEOUT
+from acere.utils.exception_handling import log_http_exception
 from acere.utils.helpers import check_valid_content_id_or_infohash
 from acere.utils.logger import get_logger
 
@@ -48,13 +49,13 @@ class HTMLStreamScraper:
         if not cache.is_cache_valid(site.url, cache_max_age):
             logger.info("Scraping streams from HTML site: %s", site.name)
             try:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(site.url.encoded_string()) as response:
-                        response.raise_for_status()
-                        scraped_site_str = await response.text()
+                async with httpx2.AsyncClient(timeout=HTTP_TIMEOUT, follow_redirects=True) as client:
+                    response = await client.get(site.url.encoded_string())
+                    response.raise_for_status()
+                    scraped_site_str = response.text
 
-            except (aiohttp.ClientError, TimeoutError) as e:
-                log_aiohttp_exception(logger, site.url, e)
+            except httpx2.HTTPError as e:
+                log_http_exception(logger, site.url, e)
                 return []
         else:
             logger.debug("Loaded HTML site content from cache for: %s", site.name)

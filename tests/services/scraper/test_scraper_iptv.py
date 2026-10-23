@@ -5,7 +5,7 @@ from pydantic import HttpUrl
 from acere.core.config.scraper import ScrapeSiteIPTV
 from acere.instances.paths import setup_app_path_handler
 from acere.services.scraper.iptv import IPTVStreamScraper, tvg_logo
-from tests.test_utils.aiohttp import FakeResponseDef, FakeSession
+from tests.test_utils.fake_http import FakeResponseDef, FakeSession
 
 from . import SCRAPER_TEST_SITES
 from .utils import common_title_check
@@ -72,14 +72,14 @@ async def test_get_site_content(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Test _get_site_content method with aiohttp mocks."""
+    """Test _get_site_content method with httpx mocks."""
     # Create scraper without mocking _get_site_content
     scraper = IPTVStreamScraper()
 
     # Read test data
     test_content = (SCRAPER_TEST_SITES / "playlist1.m3u8").read_text(encoding="utf-8")
 
-    # Create a mock aiohttp session that returns our test content
+    # Create a mock httpx session that returns our test content
     fake_responses: dict[str, FakeResponseDef] = {
         "http://ace.pytest.internal/test.m3u8": {
             "status": 200,
@@ -87,11 +87,11 @@ async def test_get_site_content(
         }
     }
 
-    # Patch aiohttp.ClientSession to return our FakeSession
+    # Patch httpx2.AsyncClient to return our FakeSession
     def fake_client_session(*args: Any, **kwargs: Any) -> FakeSession:
         return FakeSession(fake_responses)
 
-    monkeypatch.setattr("aiohttp.ClientSession", fake_client_session)
+    monkeypatch.setattr("httpx2.AsyncClient", fake_client_session)
 
     # Test successful fetch
     site_config = ScrapeSiteIPTV(
@@ -118,13 +118,13 @@ async def test_download_tvg_logo(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Test download_and_save_logo with aiohttp mocks."""
+    """Test download_and_save_logo with httpx mocks."""
     setup_app_path_handler(instance_path=tmp_path)
 
     # Create fake logo content
     fake_logo_data = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01"
 
-    # Create mock aiohttp session
+    # Create mock httpx session
     fake_responses: dict[str, FakeResponseDef] = {
         "http://ace.pytest.internal/logos/test.png": {
             "status": 200,
@@ -139,7 +139,7 @@ async def test_download_tvg_logo(
     def fake_client_session(*args: Any, **kwargs: Any) -> FakeSession:
         return FakeSession(fake_responses)
 
-    monkeypatch.setattr("aiohttp.ClientSession", fake_client_session)
+    monkeypatch.setattr("httpx2.AsyncClient", fake_client_session)
 
     # Test successful download
     logo_url = HttpUrl("http://ace.pytest.internal/logos/test.png")

@@ -16,7 +16,7 @@ from tests.test_utils.ace import (
     create_mock_stat_response,
     get_random_content_id,
 )
-from tests.test_utils.aiohttp import FakeSession
+from tests.test_utils.fake_http import FakeSession
 
 if TYPE_CHECKING:
     from pytest_mock import MockerFixture
@@ -81,9 +81,9 @@ async def test_check_ace_running_healthy(monkeypatch: pytest.MonkeyPatch) -> Non
         }
     )
 
-    # Mock aiohttp.ClientSession in the pool module
+    # Mock httpx2.AsyncClient in the pool module
     monkeypatch.setattr(
-        "acere.services.ace_pool.pool.aiohttp.ClientSession",
+        "acere.services.ace_pool.pool.httpx2.AsyncClient",
         lambda **kwargs: fake_session,
     )
 
@@ -102,9 +102,9 @@ async def test_check_ace_running_unhealthy(monkeypatch: pytest.MonkeyPatch) -> N
     """Test check_ace_running when AceStream is not responding."""
     fake_session = FakeSession({})  # Empty dict means all URLs return 404
 
-    # Mock aiohttp.ClientSession
+    # Mock httpx2.AsyncClient
     monkeypatch.setattr(
-        "acere.services.ace_pool.pool.aiohttp.ClientSession",
+        "acere.services.ace_pool.pool.httpx2.AsyncClient",
         lambda **kwargs: fake_session,
     )
 
@@ -205,11 +205,11 @@ async def test_get_set_valid(monkeypatch: pytest.MonkeyPatch) -> None:
     )
 
     monkeypatch.setattr(
-        "acere.services.ace_pool.pool.aiohttp.ClientSession",
+        "acere.services.ace_pool.pool.httpx2.AsyncClient",
         lambda **kwargs: fake_session,
     )
     monkeypatch.setattr(
-        "acere.services.ace_pool.entry.aiohttp.ClientSession",
+        "acere.services.ace_pool.entry.httpx2.AsyncClient",
         lambda **kwargs: fake_session,
     )
 
@@ -310,11 +310,11 @@ async def test_get_ts_url(monkeypatch: pytest.MonkeyPatch) -> None:
     )
 
     monkeypatch.setattr(
-        "acere.services.ace_pool.pool.aiohttp.ClientSession",
+        "acere.services.ace_pool.pool.httpx2.AsyncClient",
         lambda **kwargs: fake_session,
     )
     monkeypatch.setattr(
-        "acere.services.ace_pool.entry.aiohttp.ClientSession",
+        "acere.services.ace_pool.entry.httpx2.AsyncClient",
         lambda **kwargs: fake_session,
     )
 

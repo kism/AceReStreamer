@@ -3,6 +3,7 @@
 from http import HTTPStatus
 from typing import TYPE_CHECKING, Any
 
+import httpx2
 import pytest
 from pydantic import HttpUrl
 
@@ -12,7 +13,7 @@ from acere.instances.config import settings
 from acere.instances.paths import get_app_path_handler
 from acere.services.xc.helpers import XC_USERNAME
 from tests.test_utils.ace import get_random_content_id
-from tests.test_utils.aiohttp import FakeSession
+from tests.test_utils.fake_http import FakeSession
 from tests.test_utils.hls import generate_hls_m3u8
 
 if TYPE_CHECKING:
@@ -67,8 +68,8 @@ async def test_hls_success(
         }
     )
 
-    # Mock aiohttp ClientSession
-    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    # Mock httpx ClientSession
+    monkeypatch.setattr("acere.api.routes.hls.httpx2.AsyncClient", lambda **kwargs: fake_session)
 
     # Mock ace pool to return our test URL
     async def mock_get_instance_hls_url(self: Any, content_id: str) -> HttpUrl:
@@ -137,7 +138,7 @@ async def test_hls_invalid_response_from_ace(
         }
     )
 
-    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr("acere.api.routes.hls.httpx2.AsyncClient", lambda **kwargs: fake_session)
 
     async def mock_get_instance_hls_url(self: Any, content_id: str) -> HttpUrl:
         return mock_hls_url
@@ -177,7 +178,7 @@ async def test_hls_multi_success(
         }
     )
 
-    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr("acere.api.routes.hls.httpx2.AsyncClient", lambda **kwargs: fake_session)
 
     # Mock ace pool
     monkeypatch.setattr(
@@ -215,7 +216,7 @@ async def test_ace_content_success(
         }
     )
 
-    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr("acere.api.routes.hls.httpx2.AsyncClient", lambda **kwargs: fake_session)
 
     response = client.get(f"/ace/c/{content_path}")
 
@@ -244,7 +245,7 @@ async def test_hls_content_success(
         }
     )
 
-    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr("acere.api.routes.hls.httpx2.AsyncClient", lambda **kwargs: fake_session)
 
     response = client.get(f"/hls/c/{content_path}")
 
@@ -327,7 +328,7 @@ async def test_ts_success(
         }
     )
 
-    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr("acere.api.routes.hls.httpx2.AsyncClient", lambda **kwargs: fake_session)
 
     async def mock_get_instance_ts_url(self: Any, content_id: str) -> HttpUrl:
         return mock_ts_url
@@ -408,7 +409,7 @@ async def test_xc_ts_success(
         }
     )
 
-    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr("acere.api.routes.hls.httpx2.AsyncClient", lambda **kwargs: fake_session)
 
     async def mock_get_instance_ts_url(self: Any, content_id: str) -> HttpUrl:
         return mock_ts_url
@@ -460,7 +461,7 @@ async def test_xc_extensionless_returns_ts(
         }
     )
 
-    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr("acere.api.routes.hls.httpx2.AsyncClient", lambda **kwargs: fake_session)
 
     async def mock_get_instance_ts_url(self: Any, content_id: str) -> HttpUrl:
         return mock_ts_url
@@ -508,17 +509,14 @@ async def test_ts_timeout_returns_408(
     """Test /ts/ returns 408 when Ace times out."""
     mock_ts_url = HttpUrl(f"http://localhost:6878/ace/r/{valid_content_id}/stream")
 
-    class TimeoutSession:
+    class TimeoutSession(FakeSession):
         def __init__(self, **kwargs: Any) -> None:
-            pass
+            super().__init__({})
 
-        async def get(self, url: str, **kwargs: Any) -> None:
-            raise TimeoutError
+        async def send(self, request: httpx2.Request, **kwargs: Any) -> httpx2.Response:
+            raise httpx2.ReadTimeout("timed out", request=request)
 
-        async def close(self) -> None:
-            pass
-
-    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", TimeoutSession)
+    monkeypatch.setattr("acere.api.routes.hls.httpx2.AsyncClient", TimeoutSession)
 
     async def mock_get_instance_ts_url(self: Any, content_id: str) -> HttpUrl:
         return mock_ts_url
@@ -568,7 +566,7 @@ async def test_xc_m3u8_success(
         }
     )
 
-    monkeypatch.setattr("acere.api.routes.hls.aiohttp.ClientSession", lambda **kwargs: fake_session)
+    monkeypatch.setattr("acere.api.routes.hls.httpx2.AsyncClient", lambda **kwargs: fake_session)
 
     async def mock_get_instance_hls_url(self: Any, content_id: str) -> HttpUrl:
         return mock_hls_url

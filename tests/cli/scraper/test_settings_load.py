@@ -12,7 +12,7 @@ from pydantic import HttpUrl
 from acere.cli.scraper.__main__ import async_main
 from acere.core.config import AceReStreamerConf
 from acere.core.config.scraper import ScrapeSiteIPTV
-from tests.test_utils.aiohttp import FakeSession
+from tests.test_utils.fake_http import FakeSession
 
 
 @pytest.mark.asyncio
@@ -44,7 +44,7 @@ async def test_async_main_with_app_config(tmp_path: Path) -> None:
     # Mock sys.argv to simulate CLI arguments
     test_args = ["scraper", "--app-config", str(config_path)]
 
-    # Create fake aiohttp session with m3u8 content
+    # Create fake httpx session with m3u8 content
     fake_responses = {
         "http://ace.pytest.internal/test.m3u": {
             "status": 200,
@@ -55,11 +55,11 @@ async def test_async_main_with_app_config(tmp_path: Path) -> None:
     def fake_client_session(*_: Any, **__: Any) -> FakeSession:
         return FakeSession(fake_responses)  # type: ignore[arg-type]  # ty:ignore[invalid-argument-type]
 
-    # Mock aiohttp.ClientSession to return our fake session in the scraper module
+    # Mock httpx2.AsyncClient to return our fake session in the scraper module
     # Also need to patch the global settings object that the scrapers use
     with (
         patch.object(sys, "argv", test_args),
-        patch("acere.services.scraper.iptv.aiohttp.ClientSession", fake_client_session),
+        patch("acere.services.scraper.iptv.httpx2.AsyncClient", fake_client_session),
     ):
         await async_main()
 

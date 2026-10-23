@@ -4,9 +4,9 @@ import argparse
 import asyncio
 from pathlib import Path
 
-import aiohttp
+import httpx2
 
-from acere.constants import DEFAULT_INSTANCE_PATH, XC_USER_AGENT
+from acere.constants import DEFAULT_INSTANCE_PATH, HTTP_TIMEOUT, XC_USER_AGENT
 from acere.utils.cli import console
 from acere.utils.helpers import slugify
 
@@ -20,9 +20,9 @@ XC_ACTIONS = [
 ]
 
 
-async def _stream_to_file(response: aiohttp.ClientResponse, out_file: Path) -> None:
+def _write_to_file(response: httpx2.Response, out_file: Path) -> None:
     # ponytail: blocking write of a small JSON/m3u debug dump, not worth an anyio dependency
-    out_file.write_bytes(await response.read())  # noqa: ASYNC240
+    out_file.write_bytes(response.content)
 
 
 async def fetch_all_endpoints(base_url: str, username: str, password: str, output_dir: Path) -> None:
@@ -32,7 +32,9 @@ async def fetch_all_endpoints(base_url: str, username: str, password: str, outpu
     get_url = base + "/get.php"
     auth_params = {"username": username, "password": password}
 
-    async with aiohttp.ClientSession(headers={"User-Agent": XC_USER_AGENT}) as session:
+    async with httpx2.AsyncClient(
+        headers={"User-Agent": XC_USER_AGENT}, timeout=HTTP_TIMEOUT, follow_redirects=True
+    ) as client:
         # player_api.php — base info and action endpoints
         for label, filename, params in [
             ("base info", "player_api.json", auth_params),
@@ -41,10 +43,10 @@ async def fetch_all_endpoints(base_url: str, username: str, password: str, outpu
             console.print(f"Fetching {label}...")
             out_file = output_dir / filename
             try:
-                async with session.get(player_api_url, params=params) as response:
-                    console.print(f"  [cyan]URL:[/cyan] {response.url}")
-                    response.raise_for_status()
-                    await _stream_to_file(response, out_file)
+                response = await client.get(player_api_url, params=params)
+                console.print(f"  [cyan]URL:[/cyan] {response.url}")
+                response.raise_for_status()
+                _write_to_file(response, out_file)
                 console.print(f"  [green]Saved[/green] {out_file}")
             except Exception as e:  # noqa: BLE001
                 console.print(f"  [red]Failed: {e}[/red]")
@@ -53,9 +55,9 @@ async def fetch_all_endpoints(base_url: str, username: str, password: str, outpu
         console.print("Fetching get.php?type=m3u_plus...")
         out_file = output_dir / "get-m3u-plus.m3u"
         try:
-            async with session.get(get_url, params={**auth_params, "type": "m3u_plus"}) as response:
-                response.raise_for_status()
-                await _stream_to_file(response, out_file)
+            response = await client.get(get_url, params={**auth_params, "type": "m3u_plus"})
+            response.raise_for_status()
+            _write_to_file(response, out_file)
             console.print(f"  [green]Saved[/green] {out_file}")
         except Exception as e:  # noqa: BLE001
             console.print(f"  [red]Failed: {e}[/red]")

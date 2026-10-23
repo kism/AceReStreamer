@@ -26,3 +26,4 @@ SUPPORTED_TVG_LOGO_EXTENSIONS = ["png", "jpg", "jpeg", "webp", "svg"]
 
 
 XC_USER_AGENT = "TiviMate/5.1.6 (Android 12)"
+HTTP_TIMEOUT = 30  # Seconds, per connect/read/write, for outbound requests to third-party sites

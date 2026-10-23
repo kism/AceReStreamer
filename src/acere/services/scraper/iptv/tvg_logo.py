@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING
 
-import aiohttp
+import httpx2
 from pydantic import HttpUrl
 
 from acere.constants import SUPPORTED_TVG_LOGO_EXTENSIONS
@@ -31,11 +31,11 @@ async def fetch_logo_content(logo_url: HttpUrl, title: str) -> bytes | None:
     """
     output_logo = None
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(logo_url.encoded_string(), timeout=aiohttp.ClientTimeout(total=5)) as response:
-                response.raise_for_status()
-                output_logo = await response.read()
-    except (aiohttp.ClientError, TimeoutError) as e:
+        async with httpx2.AsyncClient(timeout=5, follow_redirects=True) as client:
+            response = await client.get(logo_url.encoded_string())
+            response.raise_for_status()
+            output_logo = response.content
+    except httpx2.HTTPError as e:
         error_short = type(e).__name__
         logger.debug("Error downloading TVG logo for %s [%s], %s", title, logo_url, error_short)
 

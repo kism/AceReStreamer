@@ -3,10 +3,11 @@
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-import aiohttp
+import httpx2
 from pydantic import BaseModel, ConfigDict, ValidationError
 
-from acere.utils.exception_handling import log_aiohttp_exception
+from acere.constants import HTTP_TIMEOUT
+from acere.utils.exception_handling import log_http_exception
 from acere.utils.logger import get_logger
 
 from . import name_processor
@@ -53,12 +54,12 @@ class APIStreamScraper:
 
         logger.debug("Scraping streams from API site: %s", site.name)
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(site.url.encoded_string()) as response:
-                    response.raise_for_status()
-                    response_json = await response.json()
-        except (aiohttp.ClientError, TimeoutError) as e:
-            log_aiohttp_exception(logger, site.url, e)
+            async with httpx2.AsyncClient(timeout=HTTP_TIMEOUT, follow_redirects=True) as client:
+                response = await client.get(site.url.encoded_string())
+                response.raise_for_status()
+                response_json = response.json()
+        except httpx2.HTTPError as e:
+            log_http_exception(logger, site.url, e)
             return []
 
         logger.debug("Scraped %d items from API site: %s", len(response_json), site.name)

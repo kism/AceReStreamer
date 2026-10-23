@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING
 
-import aiohttp
+import httpx2
 
 from acere.instances.config import settings
 from acere.utils.logger import get_logger
@@ -62,20 +62,17 @@ async def get_content_id_from_infohash_acestream_api(infohash: str) -> str:
     url = f"{settings.app.ace_address}server/api?api_version=3&method=get_content_id&infohash={infohash}"
 
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                url,
-                timeout=aiohttp.ClientTimeout(total=10),
-            ) as resp:
-                resp.raise_for_status()
-                data = await resp.json()
-    except aiohttp.ClientConnectorError:
+        async with httpx2.AsyncClient(timeout=10) as client:
+            resp = await client.get(url)
+            resp.raise_for_status()
+            data = resp.json()
+    except httpx2.ConnectError:
         logger.error(
             "Connection error while trying to reach Ace Stream API at %s",
             url,
         )
         return content_id
-    except (aiohttp.ClientError, ValueError) as e:
+    except (httpx2.HTTPError, ValueError) as e:
         error_short = type(e).__name__
         logger.error(
             "%s Failed to fetch content ID for infohash %s",

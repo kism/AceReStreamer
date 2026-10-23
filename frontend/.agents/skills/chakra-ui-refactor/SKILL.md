@@ -1,14 +1,15 @@
 ---
+
 name: chakra-ui-refactor
 description: >
-  Review, convert, and improve UI code using Chakra UI v3. Use this skill
-  whenever a user wants to review Chakra UI code for issues, convert plain
-  HTML/CSS, Tailwind, CSS Modules, or styled-components to Chakra UI, clean up
-  messy Chakra components, fix layout structure or token usage, or asks anything
-  like "is this correct", "what's wrong with this", "review my component",
-  "refactor this", "clean up", "convert", or "chakra-ify this" — even without
-  the words "review" or "refactor". Trigger on any request to check, improve, or
-  convert Chakra UI code, however casually phrased.
+Review, convert, and improve UI code using Chakra UI v3. Use this skill
+whenever a user wants to review Chakra UI code for issues, convert plain
+HTML/CSS, Tailwind, CSS Modules, or styled-components to Chakra UI, clean up
+messy Chakra components, fix layout structure or token usage, or asks anything
+like "is this correct", "what's wrong with this", "review my component",
+"refactor this", "clean up", "convert", or "chakra-ify this" — even without
+the words "review" or "refactor". Trigger on any request to check, improve, or
+convert Chakra UI code, however casually phrased.
 ---
 
 # Chakra UI Refactor & Review
@@ -22,7 +23,6 @@ Read the code and project context fully before producing any output.
 ## Step 1 — Orient and determine intent
 
 Before any output, establish:
-
 - **Chakra UI version** — check `package.json`; use v3 by default
 - **Framework** — Next.js App Router, Pages Router, Vite, plain React
 - **Source type** — existing Chakra, plain HTML/CSS, Tailwind, CSS Modules,
@@ -48,7 +48,6 @@ review, they become findings. For refactor, they become the checklist of what to
 fix.
 
 **Accessibility**
-
 - Do all interactive elements have accessible labels? (`aria-label` on icon
   buttons, `htmlFor`/`id` on label+input pairs, `alt` on images)
 - Is keyboard navigation possible? (focus rings not suppressed, interactive
@@ -60,14 +59,12 @@ fix.
 - Does the component work without color as the only signal?
 
 **Responsiveness**
-
 - Do layout components specify behavior at multiple breakpoints?
 - Are there hardcoded pixel values where responsive tokens would work better?
 - Would this break on mobile? (fixed widths, `overflow: hidden` on small
   viewports)
 
 **Chakra API correctness**
-
 - Are v3 prop names used? (`disabled` not `isDisabled`, `colorPalette` not
   `colorScheme`, `gap` not `spacing`, `open` not `isOpen`)
 - Are compound components used correctly? (`Field.Root`/`Field.Label`,
@@ -77,7 +74,6 @@ fix.
   `useColorModeValue`, `sx` prop)
 
 **Token and style usage**
-
 - Are hardcoded colors used where semantic tokens would work? (`bg="#f9fafb"` →
   `bg="bg.subtle"`)
 - Are raw hex or palette values used instead of semantic tokens? These won't
@@ -85,7 +81,6 @@ fix.
 - Are there inline `style={{}}` props that should be Chakra style props?
 
 **Component structure**
-
 - Is there unnecessary nesting? (`Box > Box > Box` when one would do)
 - Is manual spacing (`mt={4}` on every child) used where `Stack gap={4}` would
   be cleaner?
@@ -93,7 +88,6 @@ fix.
   `SimpleGrid`)
 
 **Maintainability**
-
 - Does the same visual pattern repeat 3+ times? (candidate for a component or
   recipe)
 - Are there one-off style overrides that suggest a recipe or slot recipe?
@@ -109,7 +103,6 @@ Categorize findings by impact:
 
 **Critical** — bugs and accessibility failures that break behavior or exclude
 users
-
 - Missing `aria-label` on an icon-only button
 - Form field with no label association
 - Interactive `Box` with `onClick` but no keyboard access
@@ -118,14 +111,12 @@ users
 - `"use client"` missing on a component that uses hooks in App Router
 
 **Improvements** — correctness and quality issues that aren't urgent
-
 - Hardcoded colors that break dark mode
 - Missing responsive breakpoints
 - Unnecessary nesting or wrong layout primitive
 - v2 patterns that still work but should be updated
 
 **Optional suggestions** — non-blocking ideas
-
 - Extract a repeated pattern into a component
 - Replace a one-off style with a recipe variant
 - Add a missing TypeScript type
@@ -195,7 +186,7 @@ Replace Tailwind responsive prefixes with Chakra's breakpoint object syntax:
 
 ```tsx
 // Tailwind: text-sm md:base lg:text-lg
-<Text fontSize={{ base: "sm", md: "md", lg: "lg" }} />
+;<Text fontSize={{ base: "sm", md: "md", lg: "lg" }} />
 ```
 
 **From CSS Modules** — convert what you can to Chakra props; keep `className`
@@ -221,7 +212,6 @@ const Card = styled.div`padding: 1rem; &:hover { background: #f3f4f6; }`
 ```
 
 **From existing Chakra UI (cleanup)**
-
 - Flatten `Box > Box > Box` nesting; replace `mt`/`mb` on every child with
   `Stack gap={N}`
 - Replace `sx` with `css` (v3 rename); update nested `&:hover` selectors inside
@@ -248,10 +238,14 @@ const Card = styled.div`padding: 1rem; &:hover { background: #f3f4f6; }`
 
 ```tsx
 import NextLink from "next/link"
-<ChakraLink asChild><NextLink href="/about">About</NextLink></ChakraLink>
+;<ChakraLink asChild>
+  <NextLink href="/about">About</NextLink>
+</ChakraLink>
 
 import NextImage from "next/image"
-<ChakraImage asChild><NextImage src="/hero.png" alt="Hero" width={800} height={400} /></ChakraImage>
+;<ChakraImage asChild>
+  <NextImage src="/hero.png" alt="Hero" width={800} height={400} />
+</ChakraImage>
 ```
 
 ### Refactor output format
@@ -275,7 +269,6 @@ extracting a reusable component, adopting a recipe, migrating a v2 pattern.
 ## When to ask vs proceed
 
 Proceed if the code and intent are clear. Ask when:
-
 - The code isn't shared yet
 - The component is very large and scope is unclear
 - There's context or state you can't see that would change the review

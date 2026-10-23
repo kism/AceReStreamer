@@ -128,7 +128,7 @@ return (
 **With a custom value formatter:**
 
 ```tsx
-<BarList.Value valueFormatter={(v) => `${(v / 1000).toFixed(0)}K`} />
+;<BarList.Value valueFormatter={(v) => `${(v / 1000).toFixed(0)}K`} />
 ```
 
 **With multiple value columns:**
@@ -193,7 +193,7 @@ return (
 **With a reference line (e.g. target):**
 
 ```tsx
-<BarSegment.Bar tooltip>
+;<BarSegment.Bar tooltip>
   <BarSegment.Reference label="Target" value={600_000} />
 </BarSegment.Bar>
 ```
@@ -343,7 +343,7 @@ return (
 ### `Chart.Tooltip`
 
 ```tsx
-<Tooltip
+;<Tooltip
   cursor={false}
   content={
     <Chart.Tooltip
@@ -360,7 +360,7 @@ return (
 ### `Chart.Legend`
 
 ```tsx
-<Legend
+;<Legend
   content={
     <Chart.Legend
       title="Channels"
@@ -397,7 +397,7 @@ Defines an SVG gradient for area fills. Must be inside a `<defs>` block:
 Centers a title + description inside a pie or donut chart:
 
 ```tsx
-<Label
+;<Label
   content={
     <Chart.RadialText
       viewBox={undefined}
@@ -449,7 +449,6 @@ series: [
 ## Output format
 
 When building chart components:
-
 1. Show the `useChart` setup and data shape first
 2. Produce complete, runnable JSX with correct imports from both
    `@chakra-ui/charts` and `recharts`

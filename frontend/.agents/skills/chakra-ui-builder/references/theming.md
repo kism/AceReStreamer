@@ -9,7 +9,6 @@ existing theme file (`theme.ts`, `system.ts`) to understand what's already
 defined.
 
 Clarify scope when needed:
-
 - **Full design system** — tokens, semantic tokens, and component recipes from
   scratch
 - **Partial update** — adding or changing specific tokens or recipes
@@ -319,7 +318,6 @@ overriding a few tokens), extending with `defineConfig` is simpler.
 ## Output format
 
 Produce:
-
 1. **Complete theme config** — `defineConfig` with all relevant sections
 2. **Proper imports** — `defineConfig`, `createSystem`, `defineRecipe`, etc.
    from `@chakra-ui/react`

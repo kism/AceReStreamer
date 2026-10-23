@@ -7,8 +7,8 @@ import threading
 from datetime import UTC, datetime, timedelta
 from typing import ClassVar
 
-import aiohttp
 import fastapi
+import httpx2
 from pydantic import HttpUrl
 from sqlmodel import select
 
@@ -196,8 +196,7 @@ class AceQualityCacheHandler(BaseDatabaseHandler):
 
                         for _ in range(3):
                             with contextlib.suppress(
-                                aiohttp.ClientError,
-                                asyncio.TimeoutError,
+                                httpx2.HTTPError,
                                 fastapi.exceptions.HTTPException,
                             ):
                                 await hls(path=stream.content_id)

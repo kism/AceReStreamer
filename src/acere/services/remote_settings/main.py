@@ -3,13 +3,14 @@ import json
 import threading
 from datetime import UTC, datetime, timedelta
 
-import aiohttp
+import httpx2
 from pydantic import HttpUrl, ValidationError
 
+from acere.constants import HTTP_TIMEOUT
 from acere.core.config import AceReStreamerConf, ConfigExport
 from acere.instances.config import settings
 from acere.instances.scraper import get_ace_scraper
-from acere.utils.exception_handling import log_aiohttp_exception
+from acere.utils.exception_handling import log_http_exception
 from acere.utils.helpers import stop_threads
 from acere.utils.logger import get_logger
 
@@ -88,13 +89,13 @@ class RemoteSettingsFetcher:
             "Fetching remote settings from %s",
             settings.REMOTE_SETTINGS_URL.encoded_string(),
         )
-        async with aiohttp.ClientSession() as session:
+        async with httpx2.AsyncClient(timeout=HTTP_TIMEOUT, follow_redirects=True) as client:
             try:
-                async with session.get(settings.REMOTE_SETTINGS_URL.encoded_string()) as resp:
-                    resp.raise_for_status()
-                    data = await resp.text()
-            except (aiohttp.ClientError, TimeoutError) as e:
-                log_aiohttp_exception(
+                resp = await client.get(settings.REMOTE_SETTINGS_URL.encoded_string())
+                resp.raise_for_status()
+                data = resp.text
+            except httpx2.HTTPError as e:
+                log_http_exception(
                     logger,
                     settings.REMOTE_SETTINGS_URL,
                     e,

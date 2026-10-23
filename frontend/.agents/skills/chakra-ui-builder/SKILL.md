@@ -1,19 +1,20 @@
 ---
+
 name: chakra-ui-builder
 description: >
-  Build responsive, accessible UI components and layouts using Chakra UI v3,
-  install or configure Chakra UI in new and existing projects, and design
-  scalable themes using tokens, semantic tokens, recipes, and slot recipes. Use
-  this skill whenever a user asks to build, create, or generate any UI
-  component, page, form, dashboard, navbar, card, landing section, pricing
-  table, or layout using Chakra UI; wants to add Chakra UI to a project, set up
-  ChakraProvider, run CLI snippets, configure color mode, or fix provider
-  wrapping; or asks about theming — defining brand colors, design tokens,
-  semantic tokens, dark mode values, component recipes, slot recipes, typegen,
-  or ejecting the default theme. Trigger on any Chakra UI building, setup, or
-  theming or charts request, however casually phrased — "add my brand colors",
-  "make a reusable card style", "build a bar chart", "show me a line chart",
-  "make me a login form", "build a sidebar", "add Chakra to my app".
+Build responsive, accessible UI components and layouts using Chakra UI v3,
+install or configure Chakra UI in new and existing projects, and design
+scalable themes using tokens, semantic tokens, recipes, and slot recipes. Use
+this skill whenever a user asks to build, create, or generate any UI
+component, page, form, dashboard, navbar, card, landing section, pricing
+table, or layout using Chakra UI; wants to add Chakra UI to a project, set up
+ChakraProvider, run CLI snippets, configure color mode, or fix provider
+wrapping; or asks about theming — defining brand colors, design tokens,
+semantic tokens, dark mode values, component recipes, slot recipes, typegen,
+or ejecting the default theme. Trigger on any Chakra UI building, setup, or
+theming or charts request, however casually phrased — "add my brand colors",
+"make a reusable card style", "build a bar chart", "show me a line chart",
+"make me a login form", "build a sidebar", "add Chakra to my app".
 ---
 
 # Chakra UI Builder
@@ -28,7 +29,6 @@ build or set up.
 ## Step 1 — Read the project context
 
 Check `package.json` if available. Look for:
-
 - Chakra UI version (use v3 patterns by default; only use v2 if explicitly on
   v2)
 - Framework: Next.js App Router, Pages Router, Vite, plain React
@@ -238,7 +238,7 @@ Use `Field.Root` for all form fields — it wires up label, input, error, and he
 text correctly:
 
 ```tsx
-<Field.Root invalid={!!error} required>
+;<Field.Root invalid={!!error} required>
   <Field.Label>Email address</Field.Label>
   <Input type="email" placeholder="you@example.com" />
   <Field.ErrorText>{error}</Field.ErrorText>
@@ -255,8 +255,8 @@ buttons. Group related fields in a `Stack gap={4}`.
 
 Chakra's built-in components handle most accessibility automatically — don't
 override it. The things you do need to provide:
-
 - **Icon-only buttons**: always add `aria-label`
+
   ```tsx
   <IconButton aria-label="Close dialog" icon={<CloseIcon />} />
   ```
@@ -276,7 +276,6 @@ In Next.js App Router, Server Components are the default. Add `"use client"`
 only to files that need it — not to entire layouts or pages.
 
 A component needs `"use client"` when it:
-
 - Uses React hooks (`useState`, `useEffect`, `useContext`, etc.)
 - Handles browser events (`onClick` with state, form submission, etc.)
 - Uses browser APIs
@@ -291,7 +290,6 @@ export default function ProductCard({ name, price }: Props) {
     </Box>
   )
 }
-
 // Client Component — needs the directive
 ;("use client")
 export function AddToCartButton({ productId }: { productId: string }) {
@@ -339,7 +337,6 @@ with guidance on when to choose one over a similar alternative.
 ## Output format
 
 Produce:
-
 1. **Complete, runnable code** — correct imports, no placeholders like `TODO` or
    `...rest of component`
 2. **Proper import statements** — group Chakra imports, then local imports
@@ -363,7 +360,6 @@ import { SomeLocalComponent } from "./SomeLocalComponent"
 
 Build immediately if the request is clear enough to produce something useful.
 Ask first when:
-
 - The data shape is unknown and it changes the entire structure (e.g., "build a
   table" — how many columns? what data?)
 - There are meaningful design choices the user might care about (layout

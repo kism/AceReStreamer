@@ -1,14 +1,15 @@
 ---
+
 name: chakra-ui-migrate
 description: >
-  Migrate Chakra UI projects from v2 to v3, covering package changes, codemods,
-  provider setup, color mode, prop renaming, compound components, theming,
-  recipes, and Next.js updates. Use this skill whenever a user is upgrading
-  Chakra UI versions, encountering breaking changes after an upgrade, converting
-  old v2 patterns (ColorModeScript, useColorModeValue, styleConfig, extendTheme,
-  isDisabled, colorScheme, @chakra-ui/icons, framer-motion dependency), fixing
-  compound component patterns, or asking about differences between Chakra UI v2
-  and v3 — even if they don't say "migrate" or "upgrade" explicitly.
+Migrate Chakra UI projects from v2 to v3, covering package changes, codemods,
+provider setup, color mode, prop renaming, compound components, theming,
+recipes, and Next.js updates. Use this skill whenever a user is upgrading
+Chakra UI versions, encountering breaking changes after an upgrade, converting
+old v2 patterns (ColorModeScript, useColorModeValue, styleConfig, extendTheme,
+isDisabled, colorScheme, @chakra-ui/icons, framer-motion dependency), fixing
+compound component patterns, or asking about differences between Chakra UI v2
+and v3 — even if they don't say "migrate" or "upgrade" explicitly.
 ---
 
 # Chakra UI Migration: v2 → v3
@@ -31,7 +32,6 @@ package.json
 ```
 
 Look for:
-
 - Current `@chakra-ui/react` version (v2.x vs v3.x)
 - Related packages: `@chakra-ui/icons`, `@chakra-ui/hooks`,
   `@chakra-ui/next-js`, `@emotion/styled`, `framer-motion`
@@ -40,7 +40,6 @@ Look for:
   `package-lock.json`)
 
 Also spot-check key files when helpful:
-
 - Provider / theme setup (`_app.tsx`, `layout.tsx`, `theme.ts`)
 - Color mode usage (`ColorModeScript`, `useColorMode`, `useColorModeValue`)
 - Any component files showing heavy v2 patterns
@@ -197,7 +196,7 @@ semantic tokens that automatically respond to the active color mode:
 
 ```tsx
 // Use Chakra semantic tokens — they flip automatically in dark mode
-<Box color="fg.default" bg="bg.subtle">
+;<Box color="fg.default" bg="bg.subtle">
   ...
 </Box>
 ```
@@ -355,7 +354,6 @@ these, but complex custom usage needs manual review.
 ```
 
 All `FormControl` sub-parts map to `Field.*`:
-
 - `FormLabel` → `Field.Label`
 - `FormErrorMessage` → `Field.ErrorText`
 - `FormHelperText` → `Field.HelpText`
@@ -374,10 +372,14 @@ import { LinkOverlay } from "@chakra-ui/next-js"
 
 // v3 — asChild pattern
 import NextLink from "next/link"
-<ChakraLink asChild><NextLink href="/about">About</NextLink></ChakraLink>
+;<ChakraLink asChild>
+  <NextLink href="/about">About</NextLink>
+</ChakraLink>
 
 import NextImage from "next/image"
-<ChakraImage asChild><NextImage src="..." alt="..." /></ChakraImage>
+;<ChakraImage asChild>
+  <NextImage src="..." alt="..." />
+</ChakraImage>
 ```
 
 ---
@@ -467,7 +469,6 @@ Remove any `ColorModeScript` from `pages/_document.tsx` — it is not used in v3
 ## Step 10 — Validation checklist
 
 Work through this after the migration is complete:
-
 - [ ] Reinstall dependencies: `npm install` / `pnpm install`
 - [ ] TypeScript: `npx tsc --noEmit` — resolve all type errors
 - [ ] Lint: `npm run lint`
@@ -477,6 +478,7 @@ Work through this after the migration is complete:
 - [ ] Test form components: Checkbox, Select/NativeSelect, Input, Radio
 - [ ] Check for visual regressions across key pages
 - [ ] Search codebase for leftover v2 imports:
+
   ```bash
   grep -r "ColorModeScript\|useColorModeValue\|extendTheme\|styleConfig\|@chakra-ui/icons\|@chakra-ui/next-js" src/
   ```
@@ -486,7 +488,6 @@ Work through this after the migration is complete:
 ## Clarifying questions (when context is unclear)
 
 If the user's version, framework, or scope is ambiguous, ask:
-
 1. "What version of `@chakra-ui/react` are you on right now?"
 2. "Are you using Next.js App Router, Pages Router, Vite, or plain React?"
 3. "Are you migrating the full codebase or just specific components?"
