@@ -108,9 +108,12 @@ def setup_logger(
     if not in_logger:  # in_logger should only exist when testing with PyTest.
         in_logger = logging.getLogger()  # Get the root logger
 
-    # If the logger doesn't have a console handler (root logger doesn't by default)
-    if not any(isinstance(handler, (RichHandler, StreamHandler)) for handler in in_logger.handlers):
-        _add_console_handler(settings, in_logger)
+    # Replace any console handler, an earlier call may have set it up with different settings (e.g. rich vs simple)
+    for handler in in_logger.handlers.copy():
+        # Exact type match, so subclasses like FileHandler and pytest's LogCaptureHandler are left alone
+        if type(handler) in {RichHandler, StreamHandler}:
+            in_logger.removeHandler(handler)
+    _add_console_handler(settings, in_logger)
 
     _set_log_level(settings, in_logger)
 
