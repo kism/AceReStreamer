@@ -9,7 +9,7 @@ import uvloop
 from acere.core.config import AceReStreamerConf
 from acere.instances.config import settings
 from acere.instances.paths import setup_app_path_handler
-from acere.utils.logger import get_logger, setup_logger
+from acere.utils.logger import LoggingConf, get_logger, setup_logger
 from acere.version import PROGRAM_VERSION
 
 from .playlist import PlaylistCreator
@@ -50,7 +50,7 @@ async def async_main() -> None:
     instance_path = args.app_config.parent
     setup_app_path_handler(instance_path=instance_path)
 
-    setup_logger()
+    setup_logger(settings=LoggingConf(simple=True))  # Config not loaded yet
 
     logger.info(msg)
     cli_conf = AceReStreamerConf.force_load_config_file(config_path=args.app_config)
