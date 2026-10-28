@@ -34,13 +34,8 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v5
 
-      - name: Configure Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.14"
-
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v10.3.2
 
       - name: Run the scraper
         run: uvx --from "git+https://github.com/kism/acerestreamer" acerestreamer-scrape --app-config config.json
