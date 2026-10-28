@@ -15,7 +15,9 @@
       "!**/.vite/**/*",
       "!**/src/routeTree.gen.ts",
       "!**/src/client/**/*",
-      "!**/public/**/*"
+      "!**/public/**/*",
+      "!**/pnpm-lock.yaml",
+      "!**/pnpm-workspace.yaml"
     ]
   },
   "linter": {
@@ -42,8 +44,7 @@
     }
   },
   "formatter": {
-    "indentStyle": "space",
-    "includes": ["**", "!pnpm-workspace.yaml"]
+    "indentStyle": "space"
   },
   "javascript": {
     "formatter": {
