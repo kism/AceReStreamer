@@ -42,7 +42,8 @@
     }
   },
   "formatter": {
-    "indentStyle": "space"
+    "indentStyle": "space",
+    "includes": ["**", "!pnpm-workspace.yaml"]
   },
   "javascript": {
     "formatter": {
